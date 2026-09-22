@@ -30,6 +30,7 @@ import {
   setDisciplina,
   setSemestre,
   getDisciplinasDeSemestre,
+  resolveIcone,
   SEMESTRES,
 } from '../../src/global.js';
 
@@ -85,7 +86,10 @@ function _resolverDisciplina(disc, semestre) {
     );
   }
 
-  return discInfo || lista[0] || { id: disc, nome: disc, arquivo: disc, emoji: '📚' };
+  /* Fallback sem entrada em _DISCIPLINAS: usa a chave 'code' de
+     _ICONES (mesmo ícone padrão que resolveIcone() já assume
+     quando nenhuma chave é encontrada — ver global.js). */
+  return discInfo || lista[0] || { id: disc, nome: disc, arquivo: disc, icone: 'code' };
 }
 
 
@@ -108,11 +112,46 @@ function _aplicarTema(arquivo) {
 
 
 /* ══════════════════════════════════════════════════════════
+   PASSO 3.5 — Ícone da disciplina (badge #disc-emoji)
+
+   O badge #disc-emoji exibia um emoji como texto puro
+   (setText). Agora recebe o SVG resolvido via resolveIcone(),
+   então passa a usar setHTML.
+
+   Esta função injeta uma regra CSS mínima e específica ao
+   próprio badge (#disc-emoji svg), sem tocar em nenhum
+   arquivo CSS do projeto:
+     • dimensiona o SVG em `em`, herdando o font-size já
+       definido para #disc-emoji (mesmo tamanho do emoji
+       anterior);
+     • herda a cor via currentColor, preservando a cor do
+       badge já controlada pelo tema (--accent);
+     • mantém alinhamento vertical equivalente ao glifo de
+       texto que havia antes.
+   ══════════════════════════════════════════════════════════ */
+
+function _injetarEstiloIconeDisciplina() {
+  if (document.getElementById('disc-emoji-svg-style')) return;
+  var style = document.createElement('style');
+  style.id = 'disc-emoji-svg-style';
+  style.textContent =
+    '#disc-emoji svg {' +
+      'width: 1em;' +
+      'height: 1em;' +
+      'display: block;' +
+      'color: currentColor;' +
+      'vertical-align: middle;' +
+    '}';
+  document.head.appendChild(style);
+}
+
+
+/* ══════════════════════════════════════════════════════════
    PASSO 4 — Montar componentes visuais do template
    ══════════════════════════════════════════════════════════ */
 
 function _atualizarTextos(info, modoConfig, semestre) {
-  setText('disc-emoji',    info.emoji);
+  setHTML('disc-emoji',    resolveIcone(info.icone));
   setText('disc-nome',     info.nome);
   setHTML('page-title-h1', modoConfig.h1);
   setText('page-footer',   'Nexus Study · ' + info.nome + ' · ' + modoConfig.label);
@@ -136,6 +175,7 @@ function _montarUrlBack(semestre, arquivo) {
 }
 
 function _montarVisual(params, info, modoConfig) {
+  _injetarEstiloIconeDisciplina();
   _atualizarTextos(info, modoConfig, params.semestre);
   _atualizarBadgeSemestre(params.semestre);
 

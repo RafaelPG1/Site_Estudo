@@ -11,6 +11,7 @@ import {
   setSemestre,
   SEMESTRES,
   parseSemestre,
+  resolveIcone,
 } from '../src/global.js';
 
 import { resolverSemestreDeURL, sincronizarSemNaURL } from '../shared/js/utils/url.js';
@@ -857,7 +858,7 @@ function _mostrarEstadoSemConteudo() {
   const disc = State.disciplina;
   const eEl  = document.getElementById('state-disc-emoji');
   const nEl  = document.getElementById('state-disc-name');
-  if (eEl) eEl.textContent = disc?.emoji ?? '';
+  if (eEl) eEl.innerHTML = disc?.icone ? resolveIcone(disc.icone) : '';
   if (nEl) nEl.textContent  = disc?.nome  ?? '';
   _mostrarEstado('no-content');
 }
@@ -870,7 +871,7 @@ function _renderHeroStats(total) {
 
   const toggleHtml = total > 0 ? _buildToggleHtml() : '';
   c.innerHTML = disc
-    ? `<div class="stat-pill">${disc.emoji} ${disc.nome}</div>${toggleHtml}`
+    ? `<div class="stat-pill">${resolveIcone(disc.icone)} ${disc.nome}</div>${toggleHtml}`
     : '';
 
   if (total > 0 && toggleHtml) {
@@ -1014,9 +1015,9 @@ function _criarCard(aula, idx) {
     </div>`;
 
   _bindCardHover(card);
-  card.addEventListener('click', () => _abrirModal(aula));
+  card.addEventListener('click', () => _abrirModal(aula, idx));
   card.addEventListener('keydown', e => {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _abrirModal(aula); }
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _abrirModal(aula, idx); }
   });
   return card;
 }
@@ -1058,9 +1059,9 @@ function _criarCardSintese(aula, idx) {
     </div>`;
 
   _bindCardHover(card);
-  card.addEventListener('click', () => { if (temSint) _abrirModal(sint); });
+  card.addEventListener('click', () => { if (temSint) _abrirModal(sint, idx); });
   card.addEventListener('keydown', e => {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (temSint) _abrirModal(sint); }
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); if (temSint) _abrirModal(sint, idx); }
   });
   return card;
 }
@@ -1100,14 +1101,14 @@ function _criarCardResumao(res, idx) {
     </div>`;
 
   _bindCardHover(card);
-  card.addEventListener('click', () => _abrirModalResumao(res));
+  card.addEventListener('click', () => _abrirModalResumao(res, idx));
   card.addEventListener('keydown', e => {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _abrirModalResumao(res); }
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _abrirModalResumao(res, idx); }
   });
   return card;
 }
 
-function _abrirModalResumao(res) {
+function _abrirModalResumao(res, idx) {
   playSound('click', 'resumos');
   playSound('openModal', 'resumos');
 
@@ -1130,7 +1131,7 @@ function _abrirModalResumao(res) {
   }
 
   const body = document.getElementById('rm-body');
-  if (body) body.innerHTML = _buildReaderBody(res);
+  if (body) body.innerHTML = _buildReaderBody(res, idx);
 
   const _accordionKey = _storageKeyAccordion((res.aula ?? String(Date.now())) + '__resumao');
   _bindReaderAccordion(_accordionKey);
@@ -1182,10 +1183,10 @@ function _fecharModal() {
   }
 }
 
-function _buildModalBody(aula) { return _buildReaderBody(aula); }
+function _buildModalBody(aula, idx) { return _buildReaderBody(aula, idx); }
 function _ativarSecao() {}
 
-function _abrirModal(aula) {
+function _abrirModal(aula, idx) {
   playSound('click', 'resumos');
   playSound('openModal', 'resumos');
 
@@ -1207,7 +1208,7 @@ function _abrirModal(aula) {
   }
 
   const body = document.getElementById('rm-body');
-  if (body) body.innerHTML = _buildReaderBody(aula);
+  if (body) body.innerHTML = _buildReaderBody(aula, idx);
 
   const _accordionKey = _storageKeyAccordion(aula.aula ?? aula.id ?? String(Date.now()));
   _bindReaderAccordion(_accordionKey);
@@ -1280,13 +1281,17 @@ function _bindReaderAccordion(storageKey) {
   });
 }
 
-function _buildReaderBody(aula) {
+function _buildReaderBody(aula, idx) {
   const secoes  = aula.secoes ?? [];
   const aulaStr = aula.aula ?? '';
   const m       = aulaStr.match(/^(Aula\s*[\d\/]+)\s*[—–-]\s*(.+)$/i);
   const aulaNum = m ? m[1] : aulaStr;
   const aulaTit = m ? m[2] : '';
-  const aulaNumero = aulaNum.replace(/\D/g, '');
+  // Fallback: quando o título não traz "Aula N —" (regex não casa),
+  // usa a posição real da aula na lista (idx) em vez de deixar o
+  // número grande simplesmente sumir. Number.isInteger(idx) cobre o
+  // caso de _buildReaderBody ser chamado sem idx (compatibilidade).
+  const aulaNumero = aulaNum.replace(/\D/g, '') || (Number.isInteger(idx) ? String(idx + 1) : '');
 
   // Título do resumo — conteúdo principal desta tela.
   const tituloResumo = aulaTit || aulaStr;
@@ -1490,12 +1495,17 @@ function _renderSidebar() {
   lista.innerHTML = State.disciplinas.map(disc => {
     const ativo = disc.id === State.disciplina?.id;
     const label = disc.apelido ?? disc.nome;
+    // Cor própria de CADA disciplina da lista — não a --cor-tema
+    // global (essa reflete só a disciplina ativa). Sobrescrita local
+    // via inline style para o SVG do ícone (var(--cor-tema,...))
+    // resolver para a cor certa item a item.
+    const corIcone = State.DISC_CORES?.[disc.arquivo]?.corTema ?? null;
     return `
       <button class="disc-item${ativo ? ' disc-item--active' : ''}"
               data-disc-id="${_esc(disc.id)}"
               aria-current="${ativo ? 'page' : 'false'}"
               title="${_esc(disc.nome)}">
-        <span class="disc-item__emoji">${disc.emoji ?? ''}</span>
+        <span class="disc-item__emoji"${corIcone ? ` style="--cor-tema:${corIcone}"` : ''}>${disc.icone ? resolveIcone(disc.icone) : ''}</span>
         <span class="disc-item__info">
           <span class="disc-item__nome">${_esc(label)}</span>
         </span>
@@ -1528,7 +1538,7 @@ function _renderHeader() {
       const label = disc.apelido ?? disc.nome;
       badge.style.display = '';
       badge.innerHTML = `
-        <span style="flex-shrink:0">${disc.emoji}</span>
+        <span style="flex-shrink:0">${resolveIcone(disc.icone)}</span>
         <span style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;min-width:0">${label}</span>`;
     } else {
       badge.style.display = 'none';
@@ -1554,4 +1564,4 @@ function _parseInline(str) {
   return _esc(str)
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/`([^`]+)`/g, '<code>$1</code>');
-}
+} 

@@ -11,6 +11,7 @@ import {
   getConfigs,
   setConfigs,
   limparDadosQuiz,
+  resolveIcone,
 } from '../src/global.js';
 
 import { DISC_CORES }                       from '../shared/js/themes/cores.js';
@@ -62,6 +63,47 @@ import '../src/session-tracker.js';
         }
       })
       .catch(err => console.error('[Quiz] Falha ao carregar IA:', err));
+  }
+
+  /* ══════════════════════════════════════════════
+     ÍCONES DE DISCIPLINA (SVG) — ajuste de estilo
+
+     Antes, `.disc-card__icon` recebia um emoji (texto) e seu
+     tamanho/alinhamento era controlado inteiramente via
+     font-size/line-height no CSS do card.
+
+     Agora `.disc-card__icon` recebe um <svg> (resolveIcone()).
+     Para que o ícone SVG ocupe o mesmo espaço visual do emoji
+     anterior — sem precisar tocar no arquivo CSS do projeto —
+     injetamos aqui uma regra mínima e específica ao contexto
+     (`.disc-card__icon svg`) que:
+       • dimensiona o SVG em `em`, herdando o font-size já
+         definido para `.disc-card__icon` (mesmo tamanho do
+         emoji antigo);
+       • usa `color: currentColor` implícito via `stroke`/`fill`
+         no próprio SVG (definidos em _ICONES no global.js),
+         herdando a cor do elemento pai — preservando as cores
+         já aplicadas por `--card-accent` etc.;
+       • mantém alinhamento vertical equivalente ao de um
+         glifo de texto (emoji) centralizado no bloco.
+     Nenhuma outra regra do projeto é alterada.
+  ══════════════════════════════════════════════ */
+  function _injetarEstiloIconeDisciplina() {
+    if (document.getElementById('disc-icon-svg-style')) return;
+    const style = document.createElement('style');
+    style.id = 'disc-icon-svg-style';
+    style.textContent = `
+      .disc-card__icon {
+        color: var(--card-accent, currentColor);
+      }
+      .disc-card__icon svg {
+        width: 1em;
+        height: 1em;
+        display: block;
+        vertical-align: middle;
+      }
+    `;
+    document.head.appendChild(style);
   }
 
   /* ══════════════════════════════════════════════
@@ -201,6 +243,7 @@ import '../src/session-tracker.js';
       const cor   = _resolverCorCard(disc.arquivo, idx);
       const label = disc.apelido ?? disc.nome;
       const num   = String(idx + 1).padStart(2, '0');
+      const icone = resolveIcone(disc.icone);
 
       const a = document.createElement('a');
       a.href      = href;
@@ -216,7 +259,7 @@ import '../src/session-tracker.js';
       a.innerHTML = `
         <div class="disc-card__inner">
           <span class="disc-card__num">${num}</span>
-          <div class="disc-card__icon" aria-hidden="true">${disc.emoji}</div>
+          <div class="disc-card__icon" aria-hidden="true">${icone}</div>
           <div class="disc-card__body">
             <h2 class="disc-card__title">${label}</h2>
             <p class="disc-card__desc">${disc.nome}</p>
@@ -485,6 +528,9 @@ import '../src/session-tracker.js';
     // Botão de config
     document.getElementById('btn-quiz-config')
       ?.addEventListener('click', _abrirModalConfig);
+
+    // Estilo dos ícones SVG das disciplinas (ver _injetarEstiloIconeDisciplina)
+    _injetarEstiloIconeDisciplina();
 
     // Cards
     gerarCards(semAtual);

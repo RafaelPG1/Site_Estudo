@@ -14,9 +14,9 @@
    usado pelo próprio Dashboard (mesma fonte do card "Disciplinas"). */
 
 import { getUsuario, getSemestreAtual, getDisciplinasDeSemestre } from '../../../src/global.js';
+import { State } from '../dashboard_data.js';
 import * as TarefaStorage from './tarefa_storage.js';
 import { renderTarefas, reabrirRascunhoNovaListaSeExistir } from './tarefa_renderer.js';
-
 /* ─────────────────────────────────────────────
    UI STATE MANAGER (sistema global de preservação de estado)
    ─────────────────────────────────────────────
@@ -57,7 +57,12 @@ function _carregarDisciplinasSemestreAtual() {
   try {
     const semestre = getSemestreAtual();
     const lista = getDisciplinasDeSemestre(semestre) ?? [];
-    return lista.map(d => ({ id: d.id, nome: d.nome, emoji: d.emoji ?? null }));
+    return lista.map(d => ({
+      id:    d.id,
+      nome:  d.nome,
+      icone: d.icone ?? null,
+      cor:   State.DISC_CORES?.[d.arquivo]?.corTema ?? null,
+    }));
   } catch (err) {
     console.warn('[tarefa] falha ao resolver disciplinas do semestre atual.', err);
     return [];

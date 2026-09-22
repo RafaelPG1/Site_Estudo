@@ -1,3 +1,4 @@
+RESUMÃO 
 Você receberá um objeto JavaScript chamado aulas, contendo um array de aulas com seções e blocos estruturados.
 Sua tarefa é analisar todo o conteúdo e retornar um único objeto JavaScript no mesmo formato de uma entrada do array aulas, representando a aula de revisão completa.
 

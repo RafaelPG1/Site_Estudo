@@ -42,6 +42,12 @@ import { abrirModalTexto, abrirModalConfirmar, abrirModalNovaLista, CHAVE_RASCUN
    persistida de volta, então um F5 no meio de Tarefas volta
    exatamente com as mesmas listas/categorias abertas ou fechadas. */
 import { UIState } from '../utils/ui_state_manager.js';
+import { resolveIcone } from '../../../src/global.js';
+
+const _ICON_FOLDER_FALLBACK = `
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+    <path d="M1.5 4.5a1 1 0 011-1h3.2l1.1 1.4h6.2a1 1 0 011 1v6.1a1 1 0 01-1 1h-10.5a1 1 0 01-1-1v-7.5z"/>
+  </svg>`;
 
 /* ─────────────────────────────────────────────
    FIX MOBILE — "scroll travado" até abrir uma lista
@@ -171,9 +177,14 @@ function _nomeDisciplina(disciplinaId) {
   return _disciplinasAtuais.find(d => d.id === disciplinaId)?.nome ?? null;
 }
 
-function _emojiDisciplina(disciplinaId) {
+function _iconeDisciplina(disciplinaId) {
   if (!disciplinaId) return null;
-  return _disciplinasAtuais.find(d => d.id === disciplinaId)?.emoji ?? null;
+  return _disciplinasAtuais.find(d => d.id === disciplinaId)?.icone ?? null;
+}
+
+function _corDisciplina(disciplinaId) {
+  if (!disciplinaId) return null;
+  return _disciplinasAtuais.find(d => d.id === disciplinaId)?.cor ?? null;
 }
 
 function _renderItemHtml(tarefa) {
@@ -230,13 +241,15 @@ function _renderListaHtml(lista) {
     ? categorias.map(c => _renderCategoriaHtml(lista, c)).join('')
     : '<span class="tarefa-vazio">Nenhuma categoria ainda. Use "+ Categoria" para começar.</span>';
   const nomeDisc  = _nomeDisciplina(lista.disciplinaId);
-  const emojiDisc = _emojiDisciplina(lista.disciplinaId);
+  const iconeDisc = _iconeDisciplina(lista.disciplinaId);
+  const corDisc   = _corDisciplina(lista.disciplinaId);
+  const corStyle  = corDisc ? ` style="--cor-tema:${_escapeHtml(corDisc)}"` : '';
 
   return `
     <section class="tarefa-lista-block${colapsada ? ' is-collapsed' : ''}" data-lista-id="${_escapeHtml(lista.id)}">
       <div class="tarefa-lista-header">
         <button type="button" class="tarefa-lista-toggle" aria-expanded="${!colapsada}">
-          <span class="tarefa-lista-emoji">${emojiDisc ? _escapeHtml(emojiDisc) : '📋'}</span>
+          <span class="tarefa-lista-emoji"${corStyle}>${iconeDisc ? resolveIcone(iconeDisc) : _ICON_FOLDER_FALLBACK}</span>
           <div class="tarefa-lista-info">
             <div class="tarefa-lista-title-row">
               <h3 class="tarefa-lista-nome">${_escapeHtml(lista.nome)}</h3>

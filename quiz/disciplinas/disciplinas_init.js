@@ -1,19 +1,80 @@
 // @ts-nocheck
 /* ============================================================
-   NEXUS STUDY — quiz/disciplinas/disciplinas_init.js  v7.2
+   NEXUS STUDY — quiz/disciplinas/disciplinas_init.js  v7.4
 
    RESPONSABILIDADES (e apenas estas):
      1. Resolver o semestre da URL                      (navegação)
      2. Propagar ?sem= nos hrefs dos cards              (navegação)
      3. Exibir badge de semestre no header              (visual)
      4. Aplicar cores da disciplina                     (visual)
-     5. Injetar logo                                    (visual)
-     6. Inicializar áudio e eventos nos cards           (UX)
-     7. Buscar catalog.json e marcar cards              (UX)
+     5. Resolver ícone + nome da disciplina a partir de
+        _DISCIPLINAS (global.js) e aplicar no header     (visual)
+     6. Aplicar os ícones SVG dos MODOS de estudo (AVA,
+        Questões, ENADE, Fixação) — centralizados aqui,
+        não são dados de disciplina                      (visual)
+     7. Injetar logo, inicializar áudio e eventos
+        nos cards                                        (visual/UX)
+     8. Buscar catalog.json e marcar cards              (UX)
         sem conteúdo como disc-card--vazio
-     8. Expor contexto de leitura (disciplina/semestre/
-        catalog) em window, para a IA consumir          (contexto)
      9. Inicializar a IA (Nexus Assistente)             (IA)
+
+     (contexto de leitura para a IA — disciplina/semestre/
+      catalog — é exposto em window como Passo 4.5, antes
+      do DOMContentLoaded)
+
+   MUDANÇAS v7.4 — ÍCONES SVG DOS MODOS DE ESTUDO
+   (SUBSTITUINDO OS EMOJIS FIXOS DA v7.3):
+
+     Problema: os emojis de cada modo (📚/❓/🏛️/📌) eram texto
+     simples aplicado via textContent. Isso funcionava, mas
+     destoava visualmente do restante do produto, que já usa
+     ícones SVG em outline (mesmo padrão do ícone de disciplina
+     resolvido via resolveIcone() em global.js).
+
+     Solução:
+       • `_EMOJIS_MODO` foi substituído por `_ICONES_MODO`, um
+         dicionário de SVGs inline (outline, stroke="currentColor",
+         mesmo padrão visual dos ícones de disciplina).
+       • `_aplicarEmojisModo()` foi substituído por
+         `_aplicarIconesModo()`, que injeta o SVG via innerHTML
+         (em vez de textContent) no mesmo `<span>` que cada card
+         já possui dentro de `.disc-card__icon-wrap`.
+       • Uma regra CSS mínima (`_injetarEstiloIconeModo`) garante
+         que o SVG herde tamanho (1em) e cor (currentColor) do
+         elemento pai, sem tocar em nenhum CSS do projeto — mesmo
+         padrão já usado para o ícone de disciplina no Passo 5.
+
+     Fonte única: para trocar o ícone de um modo em todas as
+     páginas de todas as disciplinas, basta editar o SVG
+     correspondente em `_ICONES_MODO`, aqui. Os HTMLs continuam
+     declarando apenas `<span></span>` vazio dentro de
+     `.disc-card__icon-wrap` — nenhum SVG/emoji fica fixo nos
+     arquivos HTML.
+
+   MUDANÇAS v7.3 — CENTRALIZAÇÃO DE ÍCONE/NOME DE DISCIPLINA
+   (ANTES FIXOS NOS HTMLs):
+
+     Problema: cada HTML de disciplina (banco_dados.html,
+     poo.html, analise_projeto.html etc.) foi criado copiando
+     a mesma estrutura e fixando manualmente o emoji/nome da
+     disciplina no eyebrow do header, e o emoji de cada modo
+     (AVA/Questões/ENADE/Fixação) em cada card. Trocar um
+     ícone/emoji exigia editar dezenas de arquivos HTML.
+
+     Solução:
+       • Ícone + nome da disciplina — passam a vir de
+         _DISCIPLINAS (fonte única já existente em global.js).
+         Este arquivo resolve o registro da disciplina atual
+         via getDisciplinasDeSemestre(_sem) e injeta:
+           #disc-emoji → resolveIcone(discInfo.icone)  (SVG)
+           #disc-nome  → discInfo.nome                 (texto)
+         Os HTMLs só precisam declarar os elementos vazios
+         (<span id="disc-emoji">, <span id="disc-nome">) —
+         nenhum dado de disciplina fica fixo no HTML.
+
+     Nenhum dado é duplicado: a fonte de disciplina continua
+     sendo exclusivamente _DISCIPLINAS (global.js); este
+     arquivo apenas lê e aplica no DOM.
 
    MUDANÇAS v7.2 — INICIALIZAÇÃO DA IA:
      - Adicionado _inicializarIA() no Passo 9.
@@ -64,6 +125,7 @@
        .disc-card — isso NÃO é responsabilidade deste arquivo
    ============================================================ */
 
+import { getDisciplinasDeSemestre, resolveIcone } from '../../src/global.js';
 import { DISC_CORES }          from '../../shared/js/themes/cores.js';
 import { aplicarCoresDisciplina } from '../../shared/js/themes/theme.js';
 import { injetarLogo }            from '../../shared/js/utils/logo.js';
@@ -131,6 +193,43 @@ try {
 
 
 /* ══════════════════════════════════════════════════════════
+   PASSO 3.5 — Resolver registro completo da disciplina
+   (ícone + nome), a partir da fonte única _DISCIPLINAS
+   em global.js
+
+   Por que aqui (e não em cada HTML):
+     _discId (Passo 1) e _sem (Passo 3) já identificam qual
+     disciplina/semestre estamos exibindo. getDisciplinasDeSemestre()
+     retorna a lista de disciplinas cadastradas em global.js para
+     esse semestre — este passo apenas localiza, dentro dela, a
+     entrada cujo `id` ou `arquivo` corresponde a _discId.
+
+     Nenhum dado novo é criado: nome, apelido e ícone continuam
+     vindo exclusivamente de _DISCIPLINAS (global.js). Se a
+     disciplina não for encontrada (ex.: HTML "solto", sem
+     entrada correspondente ainda cadastrada), cai em um fallback
+     visual mínimo — mesma chave de ícone padrão que resolveIcone()
+     já assume quando nenhuma chave é reconhecida.
+   ══════════════════════════════════════════════════════════ */
+function _resolverInfoDisciplina(discId, sem) {
+  try {
+    var lista = getDisciplinasDeSemestre(sem);
+    var info = lista.find(function (d) { return d.id === discId || d.arquivo === discId; });
+    if (info) return info;
+  } catch (e) {
+    console.warn('[disciplinas_init] Falha ao resolver disciplina via global.js:', e.message);
+  }
+  console.warn(
+    '[disciplinas_init] Disciplina "' + discId + '" não encontrada em _DISCIPLINAS para "' +
+    sem + '". Usando fallback visual.'
+  );
+  return { id: discId, nome: discId, arquivo: discId, icone: 'code' };
+}
+
+var _discInfo = _resolverInfoDisciplina(_discId, _sem);
+
+
+/* ══════════════════════════════════════════════════════════
    PASSO 4 — Propagar ?sem= nos hrefs dos cards e back-btn
    ══════════════════════════════════════════════════════════ */
 try {
@@ -168,7 +267,7 @@ try {
    instancia nenhum assistente, não cria <script> dinâmico.
 
    _catalogDiscEntry começa null e é preenchido (se existir)
-   pelo Passo 6, quando o catalog.json responder — getConteudoIndex()
+   pelo Passo 8, quando o catalog.json responder — getConteudoIndex()
    reflete esse valor por closure, sem necessidade de re-sincronizar
    window.__NEXUS_CONTEXT__ manualmente.
    ══════════════════════════════════════════════════════════ */
@@ -190,9 +289,156 @@ window.getConteudoIndex   = getConteudoIndex;
 
 
 /* ══════════════════════════════════════════════════════════
-   PASSO 5 — Logo, áudio e eventos (após DOMContentLoaded)
+   PASSO 5 — Ícone + nome da disciplina no header
+
+   Aplica no DOM o que foi resolvido no Passo 3.5. O HTML só
+   precisa declarar os elementos vazios:
+     <span id="disc-emoji"></span>
+     <span id="disc-nome"></span>
+
+   #disc-emoji recebe SVG (não mais emoji/texto), então usamos
+   innerHTML. Uma regra CSS mínima é injetada (ver
+   _injetarEstiloIconeDisciplina) para que o SVG ocupe o mesmo
+   espaço visual do emoji anterior, herdando tamanho
+   (font-size → 1em) e cor (currentColor) do elemento pai —
+   sem tocar em nenhum arquivo CSS do projeto.
+   ══════════════════════════════════════════════════════════ */
+
+function _injetarEstiloIconeDisciplina() {
+  if (document.getElementById('disc-emoji-svg-style')) return;
+  var style = document.createElement('style');
+  style.id = 'disc-emoji-svg-style';
+  style.textContent =
+    '#disc-emoji svg {' +
+      'width: 1em;' +
+      'height: 1em;' +
+      'display: block;' +
+      'color: currentColor;' +
+      'vertical-align: middle;' +
+    '}';
+  document.head.appendChild(style);
+}
+
+function _renderizarCabecalhoDisciplina() {
+  try {
+    _injetarEstiloIconeDisciplina();
+
+    var iconeEl = document.getElementById('disc-emoji');
+    if (iconeEl) iconeEl.innerHTML = resolveIcone(_discInfo.icone);
+
+    var nomeEl = document.getElementById('disc-nome');
+    if (nomeEl) nomeEl.textContent = _discInfo.nome;
+  } catch (e) {
+    console.warn('[disciplinas_init] Ícone/nome da disciplina não aplicado:', e.message);
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   PASSO 6 — Ícones SVG dos MODOS de estudo (AVA/Questões/
+   ENADE/Fixação)
+
+   Estes ícones representam o MODO de estudo, não a
+   disciplina — são os mesmos em toda disciplina. Por isso
+   NÃO pertencem a _DISCIPLINAS/_ICONES (global.js), que
+   guardam apenas dados por disciplina. Ficam centralizados
+   aqui: para trocar o ícone de um modo em todas as páginas
+   de todas as disciplinas, basta editar o SVG correspondente
+   neste objeto.
+
+   Padrão visual (idêntico ao dos ícones de disciplina
+   resolvidos por resolveIcone() em global.js):
+     fill="none"
+     stroke="currentColor"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     viewBox="0 0 24 24"
+
+   Aplicados via o atributo `data-modo` que cada `.disc-card`
+   já possui — nenhum novo atributo é necessário no HTML.
+   O HTML só precisa do `<span>` vazio dentro de
+   `.disc-card__icon-wrap`.
+   ══════════════════════════════════════════════════════════ */
+
+var _ICONES_MODO = {
+  /* AVA — livro aberto (material/atividades do ambiente virtual) */
+  ava:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+    'stroke-linecap="round" stroke-linejoin="round">' +
+      '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>' +
+      '<path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>' +
+    '</svg>',
+
+  /* QUESTÕES — círculo com interrogação (banco de questões adaptativas) */
+  questoes:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+    'stroke-linecap="round" stroke-linejoin="round">' +
+      '<circle cx="12" cy="12" r="10"/>' +
+      '<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>' +
+      '<line x1="12" y1="17" x2="12.01" y2="17"/>' +
+    '</svg>',
+
+  /* ENADE — fachada de instituição (prova de avaliação institucional) */
+  enade:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+    'stroke-linecap="round" stroke-linejoin="round">' +
+      '<line x1="3" y1="22" x2="21" y2="22"/>' +
+      '<line x1="6" y1="18" x2="6" y2="11"/>' +
+      '<line x1="10" y1="18" x2="10" y2="11"/>' +
+      '<line x1="14" y1="18" x2="14" y2="11"/>' +
+      '<line x1="18" y1="18" x2="18" y2="11"/>' +
+      '<polygon points="12 2 20 7 4 7"/>' +
+    '</svg>',
+
+  /* FIXAÇÃO — alfinete (revisão/consolidação do conteúdo) */
+  fixacao:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+    'stroke-linecap="round" stroke-linejoin="round">' +
+      '<path d="M12 17v5"/>' +
+      '<path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/>' +
+    '</svg>',
+};
+
+function _injetarEstiloIconeModo() {
+  if (document.getElementById('disc-card-icon-svg-style')) return;
+  var style = document.createElement('style');
+  style.id = 'disc-card-icon-svg-style';
+  style.textContent =
+    '.disc-card__icon-wrap svg {' +
+      'width: 1em;' +
+      'height: 1em;' +
+      'display: block;' +
+      'color: currentColor;' +
+      'vertical-align: middle;' +
+    '}';
+  document.head.appendChild(style);
+}
+
+function _aplicarIconesModo() {
+  try {
+    _injetarEstiloIconeModo();
+    document.querySelectorAll('.disc-card[data-modo]').forEach(function (card) {
+      var svg = _ICONES_MODO[card.dataset.modo];
+      if (!svg) return;
+      var span = card.querySelector('.disc-card__icon-wrap span');
+      if (span) span.innerHTML = svg;
+    });
+  } catch (e) {
+    console.warn('[disciplinas_init] Ícones de modo não aplicados:', e.message);
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   PASSO 7 — Logo, áudio e eventos (após DOMContentLoaded)
    ══════════════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', function () {
+
+  /* Ícone + nome da disciplina (Passo 5) */
+  _renderizarCabecalhoDisciplina();
+
+  /* Ícones dos modos de estudo (Passo 6) */
+  _aplicarIconesModo();
 
   /* Logo */
   try { injetarLogo('#header-logo-wrap'); } catch (e) {
@@ -246,7 +492,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 /* ══════════════════════════════════════════════════════════
-   PASSO 6 — Verificar disponibilidade via catalog.json
+   PASSO 8 — Verificar disponibilidade via catalog.json
 
    Fluxo:
      1. Usa o semestre completo como chave do catalog

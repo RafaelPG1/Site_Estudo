@@ -413,6 +413,17 @@
   justify-content: center;
   font-size: 17px;
   flex-shrink: 0;
+  overflow: hidden; /* segurança: nunca deixa o ícone vazar do box */
+}
+/* O SVG de resolveIcone() (global.js) só tem viewBox, sem width/
+   height — sem isso o navegador usa o tamanho intrínseco padrão
+   (~300x150px) e o ícone "explode" para fora do container fixo
+   acima. width/height aqui é o que realmente define o tamanho —
+   display:block sozinho (usado antes) não bastava. */
+.checklist-disc-emoji svg {
+  width: 20px;
+  height: 20px;
+  display: block;
 }
 
 .checklist-disc-info {
@@ -709,6 +720,7 @@
   .checklist-disc-body-inner { padding: 14px 18px 16px; }
   .checklist-disc-bar-bg { max-width: none; }
   .checklist-disc-emoji { width: 34px; height: 34px; font-size: 15px; }
+  .checklist-disc-emoji svg { width: 18px; height: 18px; }
 }
 
 @media (max-width: 480px) {

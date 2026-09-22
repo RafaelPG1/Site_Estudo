@@ -200,6 +200,12 @@
   justify-content: center;
   font-size: 17px;
   flex-shrink: 0;
+  overflow: hidden;
+}
+.tarefa-lista-emoji svg {
+  width: 20px;
+  height: 20px;
+  display: block;
 }
 
 .tarefa-lista-info {
@@ -528,6 +534,7 @@
   .tarefa-lista-body-inner { padding: 14px 18px 16px; }
   .tarefa-lista-bar-bg { max-width: none; }
   .tarefa-lista-emoji { width: 34px; height: 34px; font-size: 15px; }
+  .tarefa-lista-emoji svg { width: 18px; height: 18px; }
 }
 
 @media (max-width: 480px) {

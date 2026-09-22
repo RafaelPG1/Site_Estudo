@@ -181,12 +181,13 @@ function _mesclarComDisciplinasOficiais(checklistData, disciplinasOficiais, seme
       itens: cat.itens ?? [],
     }));
 
-    mescladas.push({
-      id:    oficial.id,
-      nome:  oficial.nome,
-      emoji: oficial.emoji ?? null,
-      categorias,
-    });
+mescladas.push({
+  id:     oficial.id,
+  nome:   oficial.nome,
+  icone:  oficial.icone ?? null,
+  cor:    State.DISC_CORES?.[oficial.arquivo]?.corTema ?? null,
+  categorias,
+});
   });
 
   return mescladas;

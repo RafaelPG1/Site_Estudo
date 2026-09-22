@@ -109,6 +109,21 @@
    genérica — mesma função usada por todos os outros módulos, ver
    dashboard/js/utils/ui_state_manager.js. */
 import { UIState } from '../utils/ui_state_manager.js';
+import { resolveIcone } from '../../../src/global.js';
+
+const _ICON_BOOK_FALLBACK = `
+  <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+    <path d="M2 3.5c1.5-1 4-1 5.5 0v9c-1.5-1-4-1-5.5 0v-9z"/>
+    <path d="M13.5 3.5c-1.5-1-4-1-5.5 0v9c1.5-1 4-1 5.5 0v-9z"/>
+  </svg>`;
+
+/* Substitui '🎉' em "Tudo concluído!" */
+const _ICON_CELEBRATE = `
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"
+       stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:-2px;margin-left:3px">
+    <path d="M2 14l3.2-9.5L11.5 2l2.5 2.5-2.5 6.3L2 14z"/>
+    <path d="M9 9l2-2"/>
+  </svg>`;
 
 /* ─────────────────────────────────────────────
    FIX MOBILE — "scroll travado" até abrir uma disciplina
@@ -341,6 +356,7 @@ function _renderDisciplinaHtml(disciplina, progresso) {
   const status     = _statusDisciplina(total, pct);
   const categorias = disciplina.categorias ?? [];
   const colapsado  = _estado.colapsados.has(disciplina.id);
+  const corStyle   = disciplina.cor ? ` style="--cor-tema:${_escapeHtml(disciplina.cor)}"` : '';
 
   const categoriasHtml = categorias.length
     ? categorias.map(cat => _renderCategoriaHtml(disciplina, cat, progresso)).join('')
@@ -349,7 +365,7 @@ function _renderDisciplinaHtml(disciplina, progresso) {
   return `
     <section class="checklist-disc-block${colapsado ? ' is-collapsed' : ''}" data-disc-id="${_escapeHtml(disciplina.id)}">
       <button type="button" class="checklist-disc-header" aria-expanded="${!colapsado}">
-        <span class="checklist-disc-emoji">${disciplina.emoji ? _escapeHtml(disciplina.emoji) : '📚'}</span>
+        <span class="checklist-disc-emoji"${corStyle}>${disciplina.icone ? resolveIcone(disciplina.icone) : _ICON_BOOK_FALLBACK}</span>
         <div class="checklist-disc-info">
           <div class="checklist-disc-title-row">
             <h3 class="checklist-disc-nome">${_escapeHtml(disciplina.nome)}</h3>
@@ -405,7 +421,7 @@ function _construirHeaderHtml(stats, semestre) {
           <div class="checklist-ring-info">
             <span class="checklist-ring-fracao">${stats.concluidosItens} / ${stats.totalItens}</span>
             <span class="checklist-ring-label">conteúdos concluídos</span>
-            <span class="checklist-ring-restam">${restantes > 0 ? `Faltam ${restantes} conteúdos` : 'Tudo concluído! 🎉'}</span>
+            <span class="checklist-ring-restam">${restantes > 0 ? `Faltam ${restantes} conteúdos` : `Tudo concluído!${_ICON_CELEBRATE}`}</span>
           </div>
         </div>
       </div>
@@ -667,7 +683,7 @@ function _atualizarHeaderStats(containerEl, stats) {
 
   const restam = stats.totalItens - stats.concluidosItens;
   const restamEl = containerEl.querySelector('.checklist-ring-restam');
-  if (restamEl) restamEl.textContent = restam > 0 ? `Faltam ${restam} conteúdos` : 'Tudo concluído! 🎉';
+  if (restamEl) restamEl.innerHTML = restam > 0 ? `Faltam ${restam} conteúdos` : `Tudo concluído!${_ICON_CELEBRATE}`;
 
   const mapa = {
     total: stats.totalDisc,

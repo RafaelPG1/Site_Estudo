@@ -189,10 +189,10 @@ export function abrirModalNovaLista({ disciplinas = [] } = {}) {
 
           <div class="tarefa-modal-section">
             <label class="tarefa-modal-label">Associar a uma disciplina <span class="tarefa-modal-opcional">(opcional)</span></label>
-            <select class="tarefa-modal-select" id="tnl-disciplina">
-              <option value="">Nenhuma</option>
-              ${disciplinas.map(d => `<option value="${_escapeHtmlModal(d.id)}">${d.emoji ? _escapeHtmlModal(d.emoji) + ' ' : ''}${_escapeHtmlModal(d.nome)}</option>`).join('')}
-            </select>
+<select class="tarefa-modal-select" id="tnl-disciplina">
+  <option value="">Nenhuma</option>
+  ${disciplinas.map(d => `<option value="${_escapeHtmlModal(d.id)}">${_escapeHtmlModal(d.nome)}</option>`).join('')}
+</select>
           </div>
 
           <div class="tarefa-modal-section tarefa-modal-secao-categorias" id="tnl-secao-categorias" hidden>

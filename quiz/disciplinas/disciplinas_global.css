@@ -1,5 +1,5 @@
 /* =============================================
-   NEXUS STUDY — quiz/disciplinas/disciplinas_global.css  v8.0
+   NEXUS STUDY — quiz/disciplinas/disciplinas_global.css  v8.1
 
    Visual: Arena Mental — idêntico ao quiz.css
    Design: Space Grotesk + Inter · Violeta elétrico + Âmbar
@@ -9,6 +9,22 @@
    2. Animações são enfeites, nunca gates.
    3. @media (prefers-reduced-motion) zera tudo limpo.
    4. display:none / opacity:0 NÃO como estado padrão de card.
+
+   MUDANÇAS v8.1 — CHIP DE FUNDO PARA O ÍCONE DO BADGE:
+     O SVG da disciplina (#disc-emoji, injetado pelo Passo 5 de
+     disciplinas_init.js via resolveIcone()) passa a ficar dentro
+     de um pequeno container com fundo na cor de identidade da
+     disciplina, em vez de flutuar solto sobre o fundo do badge.
+
+     A cor usada é --cor-tema-rgb, já definida no elemento por
+     aplicarCoresDisciplina(_discId, DISC_CORES) (Passo 2 de
+     disciplinas_init.js) — a MESMA fonte de cor que quiz.js usa
+     em _resolverCorCard() para colorir os cards da grade. Nenhum
+     mapa de cores novo foi criado; nenhuma cor foi escolhida à
+     mão por disciplina.
+
+     Nenhuma lógica de disciplina, resolveIcone() ou JS foi
+     alterada — o ajuste é puramente visual/CSS.
    ============================================= */
 
 /* ══════════════════════════════════════════════
@@ -278,6 +294,32 @@ a { text-decoration: none; color: inherit; }
   margin-bottom: 1.25rem;
 }
 
+/* ── Ícone da disciplina dentro do badge (#disc-emoji) ──
+   O SVG é injetado via innerHTML por disciplinas_init.js
+   (Passo 5 · resolveIcone()). Aqui apenas damos a ele um
+   pequeno "chip" de fundo, na cor de identidade da própria
+   disciplina (--cor-tema-rgb), para melhorar o contraste dos
+   ícones mais claros/finos. --cor-tema-rgb já é aplicada por
+   aplicarCoresDisciplina() (Passo 2) — mesma fonte de cor usada
+   por quiz.js em _resolverCorCard(). Nenhuma cor nova é definida
+   aqui, apenas reutilizada. */
+.page-header__eyebrow #disc-emoji {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  background: rgba(var(--cor-tema-rgb), 0.090);
+}
+
+.page-header__eyebrow #disc-emoji svg {
+  width: 12px;
+  height: 12px;
+  color: var(--cor-tema);
+}
+
 .page-header__title {
   font-family: var(--f-display);
   font-size: clamp(2.4rem, 6vw, 3.8rem);
@@ -458,7 +500,7 @@ a { text-decoration: none; color: inherit; }
   border-color: rgba(108,99,255,0.45);
   box-shadow: 0 12px 40px rgba(108,99,255,0.18);
 }
-.disc-card--ava .disc-card__icon-wrap    { background: rgba(108,99,255,0.12); }
+.disc-card--ava .disc-card__icon-wrap    { background: rgba(108,99,255,0.12); color: var(--violet); }
 .disc-card--ava:hover .disc-card__arrow  {
   border-color: var(--violet);
   color: var(--violet);
@@ -477,7 +519,7 @@ a { text-decoration: none; color: inherit; }
   border-color: rgba(61,217,194,0.4);
   box-shadow: 0 12px 40px rgba(61,217,194,0.15);
 }
-.disc-card--quiz .disc-card__icon-wrap    { background: rgba(61,217,194,0.12); }
+.disc-card--quiz .disc-card__icon-wrap    { background: rgba(61,217,194,0.12); color: var(--cyan); }
 .disc-card--quiz:hover .disc-card__arrow  {
   border-color: var(--cyan);
   color: var(--cyan);
@@ -496,7 +538,7 @@ a { text-decoration: none; color: inherit; }
   border-color: rgba(247,201,72,0.4);
   box-shadow: 0 12px 40px rgba(247,201,72,0.15);
 }
-.disc-card--enade .disc-card__icon-wrap    { background: var(--amber-dim); }
+.disc-card--enade .disc-card__icon-wrap    { background: var(--amber-dim); color: var(--amber); }
 .disc-card--enade:hover .disc-card__arrow  {
   border-color: var(--amber);
   color: var(--amber);
@@ -515,7 +557,7 @@ a { text-decoration: none; color: inherit; }
   border-color: rgba(255,107,138,0.4);
   box-shadow: 0 12px 40px rgba(255,107,138,0.15);
 }
-.disc-card--fixacao .disc-card__icon-wrap    { background: rgba(255,107,138,0.12); }
+.disc-card--fixacao .disc-card__icon-wrap    { background: rgba(255,107,138,0.12); color: var(--rose); }
 .disc-card--fixacao:hover .disc-card__arrow  {
   border-color: var(--rose);
   color: var(--rose);
@@ -534,7 +576,7 @@ a { text-decoration: none; color: inherit; }
   border-color: rgba(93,232,160,0.4);
   box-shadow: 0 12px 40px rgba(93,232,160,0.15);
 }
-.disc-card--sage .disc-card__icon-wrap    { background: rgba(93,232,160,0.12); }
+.disc-card--sage .disc-card__icon-wrap    { background: rgba(93,232,160,0.12); color: var(--sage); }
 .disc-card--sage:hover .disc-card__arrow  {
   border-color: var(--sage);
   color: var(--sage);
@@ -551,7 +593,7 @@ a { text-decoration: none; color: inherit; }
   border-color: rgba(108,99,255,0.45);
   box-shadow: 0 12px 40px rgba(108,99,255,0.18);
 }
-.disc-card--violet .disc-card__icon-wrap    { background: var(--violet-dim); }
+.disc-card--violet .disc-card__icon-wrap    { background: var(--violet-dim); color: var(--violet); }
 .disc-card--violet:hover .disc-card__arrow  {
   border-color: var(--violet); color: var(--violet);
   background: var(--violet-dim); box-shadow: 0 0 12px var(--violet-glow);
@@ -566,7 +608,7 @@ a { text-decoration: none; color: inherit; }
   border-color: rgba(61,217,194,0.4);
   box-shadow: 0 12px 40px rgba(61,217,194,0.15);
 }
-.disc-card--cyan .disc-card__icon-wrap    { background: rgba(61,217,194,0.12); }
+.disc-card--cyan .disc-card__icon-wrap    { background: rgba(61,217,194,0.12); color: var(--cyan); }
 .disc-card--cyan:hover .disc-card__arrow  {
   border-color: var(--cyan); color: var(--cyan);
   background: rgba(61,217,194,0.1); box-shadow: 0 0 12px rgba(61,217,194,0.3);
@@ -581,7 +623,7 @@ a { text-decoration: none; color: inherit; }
   border-color: rgba(247,201,72,0.4);
   box-shadow: 0 12px 40px rgba(247,201,72,0.15);
 }
-.disc-card--amber .disc-card__icon-wrap    { background: var(--amber-dim); }
+.disc-card--amber .disc-card__icon-wrap    { background: var(--amber-dim); color: var(--amber); }
 .disc-card--amber:hover .disc-card__arrow  {
   border-color: var(--amber); color: var(--amber);
   background: var(--amber-dim); box-shadow: 0 0 12px rgba(247,201,72,0.3);

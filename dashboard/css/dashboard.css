@@ -405,6 +405,11 @@ body {
   flex-shrink: 0;
   opacity: .8;
 }
+.nav-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
 
 /* Disciplinas dinâmicas usam emoji como ícone em vez de SVG.
    Mesmo tamanho e alinhamento do .nav-icon para consistência visual. */
@@ -1373,7 +1378,7 @@ body {
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--r-md);
-  padding: 14px;
+  padding: 16px;
   min-width: 0;
   transition: border-color .15s, transform .15s;
   cursor: default;
@@ -1384,25 +1389,48 @@ body {
   transform: translateY(-1px);
 }
 
-.disc-color {
-  width: 24px; height: 4px;
-  border-radius: 4px;
-  margin-bottom: 10px;
+/* Badge do ícone — mesmo princípio visual de .tool-icon/.stat-icon:
+   caixa colorida com fundo tintado, ícone em destaque. Substitui a
+   barrinha de cor (.disc-color) e o ícone inline (.disc-sessions-icon),
+   que deixavam o card com duas linhas de texto do mesmo peso
+   competindo pela mesma informação (nome vs. ícone+apelido). */
+.disc-icon-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+  /* fallback caso a disciplina não tenha cor definida em cores.js */
+  background: var(--border);
+  color: var(--text-3);
+}
+.disc-icon-badge svg {
+  width: 17px;
+  height: 17px;
+  display: block;
 }
 
 .disc-name {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-1);
-  margin-bottom: 2px;
+  margin-bottom: 3px;
   font-family: 'Space Grotesk', sans-serif;
+  line-height: 1.3;
   overflow-wrap: break-word;
 }
 
-.disc-sessions {
-  font-size: 11px;
+/* Legenda — deliberadamente discreta (menor, cor apagada), para não
+   competir visualmente com .disc-name: é um complemento, não uma
+   segunda linha de mesma hierarquia. */
+.disc-apelido {
+  font-size: 10.5px;
   color: var(--text-3);
-  margin-bottom: 10px;
+  font-weight: 450;
+  overflow-wrap: break-word;
 }
 
 .disc-pct {

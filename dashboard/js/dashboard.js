@@ -169,8 +169,8 @@ import {
   setPagina,
   SEMESTRES,
   getUsuario,
+  resolveIcone,
 } from '../../src/global.js';
-
 import { criarSemestreSelect } from '../../shared/js/utils/dom.js';
 
 import { resolverSemestreDeURL } from '../../shared/js/utils/url.js';
@@ -335,7 +335,7 @@ function _corDaDisciplina(disc) {
   const entry = disc?.arquivo ? State.DISC_CORES?.[disc.arquivo] : null;
   if (!entry) return null;
   if (typeof entry === 'string') return entry;
-  return entry.cor ?? entry.hex ?? entry.primary ?? entry.principal ?? null;
+  return entry.corTema ?? entry.cor ?? entry.hex ?? entry.primary ?? entry.principal ?? null;
 }
 
 function _renderDisciplinas() {
@@ -359,21 +359,28 @@ function _renderDisciplinas() {
     item.className      = 'disc-item';
     item.dataset.discId = disc.id;
 
-    const colorBar     = document.createElement('div');
-    colorBar.className = 'disc-color';
-    if (cor) colorBar.style.background = cor;
+    const iconBadge     = document.createElement('div');
+    iconBadge.className = 'disc-icon-badge';
+    if (disc.icone) iconBadge.innerHTML = resolveIcone(disc.icone);
+    if (cor) {
+      iconBadge.style.setProperty('--cor-tema', cor);
+      iconBadge.style.color      = cor;
+      iconBadge.style.background = cor.startsWith('#')
+        ? `${cor}1f` /* ~12% opacidade em hex */
+        : cor;
+    }
 
     const nome          = document.createElement('div');
     nome.className      = 'disc-name';
     nome.textContent    = disc.nome;
 
-    const sub           = document.createElement('div');
-    sub.className       = 'disc-sessions';
-    sub.textContent     = `${disc.emoji ? disc.emoji + ' ' : ''}${disc.apelido ?? disc.id}`;
+    const apelido        = document.createElement('div');
+    apelido.className    = 'disc-apelido';
+    apelido.textContent  = disc.apelido ?? disc.id;
 
-    item.appendChild(colorBar);
+    item.appendChild(iconBadge);
     item.appendChild(nome);
-    item.appendChild(sub);
+    item.appendChild(apelido);
     grid.appendChild(item);
   });
 }
@@ -385,14 +392,17 @@ function _renderSidebarDisciplinas() {
   wrap.innerHTML = '';
 
   State.disciplinas.forEach(disc => {
+    const cor = _corDaDisciplina(disc);
+
     const a       = document.createElement('a');
     a.className   = 'nav-item';
     a.href        = '#';
 
-    const icon    = document.createElement('span');
-    icon.className = 'nav-icon nav-emoji';
-    icon.textContent = disc.emoji ?? '📚';
+    const icon      = document.createElement('span');
+    icon.className  = 'nav-icon nav-icon-svg';
+    icon.innerHTML  = disc.icone ? resolveIcone(disc.icone) : '';
     icon.setAttribute('aria-hidden', 'true');
+    if (cor) icon.style.setProperty('--cor-tema', cor);
 
     const label = document.createTextNode(disc.apelido ?? disc.nome);
 
