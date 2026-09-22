@@ -169,7 +169,7 @@ window.questoes = {
 
 // Capítulo 2 — Funções em Python
 
-// 1 - Parâmetro vs argumento
+// 11 - Parâmetro vs argumento
 {
   aula: "Capítulo 2: Funções em Python",
   tipo: "Explicativa",
@@ -185,7 +185,7 @@ window.questoes = {
   feedback: "'nome' é o parâmetro, definido na função; 'Maria' é o argumento, o valor concreto passado na chamada."
 },
 
-// 2 - Parâmetro com valor padrão
+// 12 - Parâmetro com valor padrão
 {
   aula: "Capítulo 2: Funções em Python",
   tipo: "Explicativa",
@@ -201,7 +201,7 @@ window.questoes = {
   feedback: "Como nenhum argumento foi passado, Python usa o valor padrão 'visitante' definido na assinatura da função."
 },
 
-// 3 - return vs print
+// 13 - return vs print
 {
   aula: "Capítulo 2: Funções em Python",
   tipo: "Explicativa",
@@ -217,7 +217,7 @@ window.questoes = {
   feedback: "print apenas mostra o valor na tela; sem um return explícito, a função sempre devolve None, mesmo que algo tenha sido impresso durante a execução."
 },
 
-// 4 - args e kwargs
+// 14 - args e kwargs
 {
   aula: "Capítulo 2: Funções em Python",
   tipo: "Contextualizada",
@@ -238,7 +238,7 @@ window.questoes = {
   feedback: "*args sempre empacota os argumentos posicionais extras em uma tupla. Somando 1+2+3+4, o resultado é 10."
 },
 
-// 5 - Escopo local vs global
+// 15 - Escopo local vs global
 {
   aula: "Capítulo 2: Funções em Python",
   tipo: "Contextualizada",
@@ -254,7 +254,7 @@ window.questoes = {
   feedback: "y foi criada dentro da função, então é uma variável local: ela deixa de existir assim que a função termina, e tentar acessá-la fora gera um erro."
 },
 
-// 6 - Palavra-chave global
+// 16 - Palavra-chave global
 {
   aula: "Capítulo 2: Funções em Python",
   tipo: "Contextualizada",
@@ -275,7 +275,7 @@ print(x)`,
   feedback: "Sem global, x = 99 dentro da função cria uma variável local independente. A variável global x continua com o valor 10 depois da chamada da função."
 },
 
-// 7 - Argumentos nomeados vs posicionais
+// 17 - Argumentos nomeados vs posicionais
 {
   aula: "Capítulo 2: Funções em Python",
   tipo: "Aplicação",
@@ -291,7 +291,7 @@ print(x)`,
   feedback: "Quando um argumento nomeado aparece antes de um posicional na chamada, o Python não sabe interpretar a ordem corretamente, e isso gera um erro de sintaxe."
 },
 
-// 8 - Retorno de múltiplos valores
+// 18 - Retorno de múltiplos valores
 {
   aula: "Capítulo 2: Funções em Python",
   tipo: "Aplicação",
@@ -311,7 +311,7 @@ soma, sub = calcular(10, 4)`,
   feedback: "return a + b, a - b devolve a tupla (14, 6), que é desempacotada automaticamente: soma recebe 14 e sub recebe 6."
 },
 
-// 9 - Código morto após return
+// 19 - Código morto após return
 {
   aula: "Capítulo 2: Funções em Python",
   tipo: "Aplicação",
@@ -332,7 +332,7 @@ soma, sub = calcular(10, 4)`,
   feedback: "Como todo caminho da função termina em um return antes de chegar ao print, essa linha é código morto: nunca será executada."
 },
 
-// 10 - Função chamando outra função
+// 20 - Função chamando outra função
 {
   aula: "Capítulo 2: Funções em Python",
   tipo: "Explicativa",
@@ -354,7 +354,7 @@ def quadruplo(n):
 },
 
 // Capítulo 3 — Recursão
-// 1 - Caso base e caso recursivo
+// 21 - Caso base e caso recursivo
 {
   aula: "Capítulo 3: Recursão",
   tipo: "Explicativa",
@@ -375,7 +375,7 @@ def quadruplo(n):
   feedback: "O caso base é a condição if n == 0: return 1, pois nela a função devolve um valor diretamente, sem fazer nenhuma nova chamada recursiva."
 },
 
-// 2 - Erro sem caso base
+// 22 - Erro sem caso base
 {
   aula: "Capítulo 3: Recursão",
   tipo: "Explicativa",
@@ -393,7 +393,7 @@ def quadruplo(n):
   feedback: "Sem nenhuma condição de parada, a função continua chamando a si mesma para sempre, até estourar o limite de profundidade da pilha de chamadas."
 },
 
-// 3 - Direção do caso base
+// 23 - Direção do caso base
 {
   aula: "Capítulo 3: Recursão",
   tipo: "Explicativa",
@@ -414,7 +414,7 @@ def quadruplo(n):
   feedback: "Como n cresce (n + 1) em vez de diminuir, ele nunca chega a 0. O caso base existe, mas é inalcançável do jeito que a função está escrita."
 },
 
-// 4 - Rastreando a execução do fatorial
+// 24 - Rastreando a execução do fatorial
 {
   aula: "Capítulo 3: Recursão",
   tipo: "Contextualizada",
@@ -430,7 +430,7 @@ def quadruplo(n):
   feedback: "A recursão desce até fatorial(0)=1 (caso base) e depois sobe: 1×1=1, 2×1=2, 3×2=6, 4×6=24. O cálculo real acontece de baixo para cima."
 },
 
-// 5 - Dois casos base no Fibonacci
+// 25 - Dois casos base no Fibonacci
 {
   aula: "Capítulo 3: Recursão",
   tipo: "Contextualizada",
@@ -452,7 +452,7 @@ def quadruplo(n):
   feedback: "Como cada chamada soma fibonacci(n-1) e fibonacci(n-2), é necessário ter os dois primeiros valores da sequência definidos diretamente, sem chamada recursiva."
 },
 
-// 6 - Esquecer return na chamada recursiva
+// 26 - Esquecer return na chamada recursiva
 {
   aula: "Capítulo 3: Recursão",
   tipo: "Contextualizada",
@@ -472,7 +472,7 @@ def quadruplo(n):
   feedback: "Mesmo o cálculo n * fatorial_sem_return(n - 1) sendo feito corretamente, sem return esse valor é descartado, e a função sempre devolve None por padrão."
 },
 
-// 7 - Soma de lista com recursão
+// 27 - Soma de lista com recursão
 {
   aula: "Capítulo 3: Recursão",
   tipo: "Aplicação",
@@ -492,7 +492,7 @@ def quadruplo(n):
   feedback: "A cada chamada, lista[1:] remove o primeiro elemento, criando uma lista cada vez menor, até chegar à lista vazia, que é o caso base."
 },
 
-// 8 - Recursão vs iteração e memória
+// 28 - Recursão vs iteração e memória
 {
   aula: "Capítulo 3: Recursão",
   tipo: "Aplicação",
@@ -508,7 +508,7 @@ def quadruplo(n):
   feedback: "Para n muito grande, a recursão corre risco de estourar a pilha de chamadas (RecursionError). A versão iterativa evita esse problema, pois usa apenas uma variável total sendo atualizada."
 },
 
-// 9 - Relação entre recursão e pilha
+// 29 - Relação entre recursão e pilha
 {
   aula: "Capítulo 3: Recursão",
   tipo: "Aplicação",
@@ -524,7 +524,7 @@ def quadruplo(n):
   feedback: "Assim como em uma pilha, a última chamada recursiva feita (a mais profunda, perto do caso base) é resolvida primeiro, e as chamadas anteriores só terminam depois, na ordem inversa em que foram feitas."
 },
 
-// 10 - Complexidade do Fibonacci recursivo
+// 30 - Complexidade do Fibonacci recursivo
 {
   aula: "Capítulo 3: Recursão",
   tipo: "Contextualizada",
@@ -541,7 +541,7 @@ def quadruplo(n):
 },
 
 // Capítulo 4 — Classes e Objetos em Python
-// 1 - Classe vs objeto
+// 31 - Classe vs objeto
 {
   aula: "Capítulo 4: Classes e Objetos em Python",
   tipo: "Explicativa",
@@ -557,7 +557,7 @@ def quadruplo(n):
   feedback: "rex é um objeto, uma instância concreta criada a partir do molde Cachorro, com seus próprios valores de nome ('Rex') e raça ('Labrador')."
 },
 
-// 2 - Self obrigatório nos métodos
+// 32 - Self obrigatório nos métodos
 {
   aula: "Capítulo 4: Classes e Objetos em Python",
   tipo: "Explicativa",
@@ -579,7 +579,7 @@ obj.metodo()`,
   feedback: "O Python sempre passa o objeto automaticamente como primeiro argumento de um método. Sem o self na definição, esse argumento extra causa um erro de quantidade de parâmetros."
 },
 
-// 3 - Construtor __init__
+// 33 - Construtor __init__
 {
   aula: "Capítulo 4: Classes e Objetos em Python",
   tipo: "Explicativa",
@@ -599,7 +599,7 @@ obj.metodo()`,
   feedback: "O __init__ roda automaticamente sempre que um objeto é instanciado com Ponto(...), sem precisar de chamada explícita."
 },
 
-// 4 - Atributo de instância vs de classe
+// 34 - Atributo de instância vs de classe
 {
   aula: "Capítulo 4: Classes e Objetos em Python",
   tipo: "Contextualizada",
@@ -622,7 +622,7 @@ a2 = Aluno("Bruno")`,
   feedback: "Como nome é definido com self. dentro do __init__, ele é um atributo de instância: pertence individualmente a cada objeto, então alterar a1 não afeta a2."
 },
 
-// 5 - Método especial __str__
+// 35 - Método especial __str__
 {
   aula: "Capítulo 4: Classes e Objetos em Python",
   tipo: "Contextualizada",
@@ -646,7 +646,7 @@ p = Pessoa("Carlos", 25)`,
   feedback: "Como a classe define __str__, o Python usa o texto retornado por esse método ao imprimir o objeto, exibindo 'Carlos, 25 anos' em vez da representação padrão."
 },
 
-// 6 - Classe vs dicionário
+// 36 - Classe vs dicionário
 {
   aula: "Capítulo 4: Classes e Objetos em Python",
   tipo: "Contextualizada",
@@ -668,7 +668,7 @@ p = Pessoa("Carlos", 25)`,
   feedback: "Além de guardar dados como um dicionário, a classe permite definir métodos, como aprovado(), que operam diretamente sobre os atributos do objeto, algo que um dicionário sozinho não faz."
 },
 
-// 7 - Contadores independentes
+// 37 - Contadores independentes
 {
   aula: "Capítulo 4: Classes e Objetos em Python",
   tipo: "Aplicação",
@@ -695,7 +695,7 @@ c2.incrementar()`,
   feedback: "c1 e c2 são objetos independentes: c1.incrementar() foi chamado duas vezes (valor = 2), enquanto c2.incrementar() foi chamado apenas uma vez (valor = 1)."
 },
 
-// 8 - Conta bancária com métodos
+// 38 - Conta bancária com métodos
 {
   aula: "Capítulo 4: Classes e Objetos em Python",
   tipo: "Aplicação",
@@ -726,7 +726,7 @@ conta.sacar(30)`,
   feedback: "O saldo começa em 100, sobe para 150 após o depósito de 50, e desce para 120 após o saque de 30 (150 - 30 = 120)."
 },
 
-// 9 - Esquecer parênteses ao instanciar
+// 39 - Esquecer parênteses ao instanciar
 {
   aula: "Capítulo 4: Classes e Objetos em Python",
   tipo: "Aplicação",
@@ -742,7 +742,7 @@ conta.sacar(30)`,
   feedback: "Sem os parênteses, nenhum objeto é instanciado: obj apenas se torna outro nome para a classe Cachorro em si, não para uma instância dela."
 },
 
-// 10 - Uso incorreto de self dentro de método
+// 40 - Uso incorreto de self dentro de método
 {
   aula: "Capítulo 4: Classes e Objetos em Python",
   tipo: "Explicativa",
@@ -764,7 +764,7 @@ conta.sacar(30)`,
 },
 
 // Capítulo 5 — Análise de Complexidade e Eficiência de Algoritmos
-// 1 - Simplificação de constantes no Big O
+// 51 - Simplificação de constantes no Big O
 {
   aula: "Capítulo 5: Análise de Complexidade e Eficiência de Algoritmos",
   tipo: "Explicativa",
@@ -780,7 +780,7 @@ conta.sacar(30)`,
   feedback: "Descartamos a constante multiplicativa 3 e a constante aditiva 7, restando apenas o termo que cresce com n: O(n)."
 },
 
-// 2 - Tempo constante O(1)
+// 42 - Tempo constante O(1)
 {
   aula: "Capítulo 5: Análise de Complexidade e Eficiência de Algoritmos",
   tipo: "Explicativa",
@@ -798,7 +798,7 @@ conta.sacar(30)`,
   feedback: "Acessar lista[0] é sempre uma única operação direta, não importa se a lista tem 3 ou 3 milhões de elementos — por isso a complexidade é constante, O(1)."
 },
 
-// 3 - Laços aninhados O(n²)
+// 43 - Laços aninhados O(n²)
 {
   aula: "Capítulo 5: Análise de Complexidade e Eficiência de Algoritmos",
   tipo: "Explicativa",
@@ -817,7 +817,7 @@ conta.sacar(30)`,
   feedback: "Como os dois laços dependem de n e estão aninhados, a complexidade é O(n²): o laço interno roda n vezes para cada uma das n voltas do laço externo."
 },
 
-// 4 - Laço interno com quantidade fixa
+// 44 - Laço interno com quantidade fixa
 {
   aula: "Capítulo 5: Análise de Complexidade e Eficiência de Algoritmos",
   tipo: "Contextualizada",
@@ -836,7 +836,7 @@ conta.sacar(30)`,
   feedback: "O laço interno roda sempre 5 vezes, independente do valor de n. Isso resulta em O(n × 5), que simplifica para O(n), pois constantes são descartadas."
 },
 
-// 5 - Laços sequenciais somam
+// 45 - Laços sequenciais somam
 {
   aula: "Capítulo 5: Análise de Complexidade e Eficiência de Algoritmos",
   tipo: "Contextualizada",
@@ -856,7 +856,7 @@ for j in range(n):
   feedback: "Como os laços não estão um dentro do outro, suas complexidades se somam: O(n) + O(n) = O(2n), que simplifica para O(n)."
 },
 
-// 6 - x in lista vs x in dicionario/conjunto
+// 46 - x in lista vs x in dicionario/conjunto
 {
   aula: "Capítulo 5: Análise de Complexidade e Eficiência de Algoritmos",
   tipo: "Contextualizada",
@@ -876,7 +876,7 @@ for j in range(n):
   feedback: "Mesmo sem um segundo laço visível, o item in lista2 já é O(n) por si só. Multiplicando pelo laço externo (também O(n)), o total é O(n²) — uma pegadinha clássica de prova."
 },
 
-// 7 - Escolher set para busca frequente
+// 47 - Escolher set para busca frequente
 {
   aula: "Capítulo 5: Análise de Complexidade e Eficiência de Algoritmos",
   tipo: "Aplicação",
@@ -892,7 +892,7 @@ for j in range(n):
   feedback: "Como a busca in em um set é O(1) em média (contra O(n) em uma lista), usar um conjunto reduz drasticamente o tempo total quando há muitas verificações repetidas."
 },
 
-// 8 - Busca binária O(log n)
+// 48 - Busca binária O(log n)
 {
   aula: "Capítulo 5: Análise de Complexidade e Eficiência de Algoritmos",
   tipo: "Aplicação",
@@ -919,7 +919,7 @@ for j in range(n):
   feedback: "Como cada passo da busca binária elimina metade das possibilidades restantes, o número de comparações necessárias cresce de forma logarítmica, muito menor que uma varredura linear completa."
 },
 
-// 9 - Pior caso em if/else
+// 49 - Pior caso em if/else
 {
   aula: "Capítulo 5: Análise de Complexidade e Eficiência de Algoritmos",
   tipo: "Aplicação",
@@ -941,7 +941,7 @@ for j in range(n):
   feedback: "Big O foca no pior caso possível: mesmo que o ramo else seja O(1), o ramo if pode executar um laço O(n), e é esse cenário mais custoso que define a complexidade da função."
 },
 
-// 10 - Complexidade de recursões diferentes
+// 50 - Complexidade de recursões diferentes
 {
   aula: "Capítulo 5: Análise de Complexidade e Eficiência de Algoritmos",
   tipo: "Contextualizada",
@@ -958,7 +958,7 @@ for j in range(n):
 },
 
 // Capítulo 6 — Pilhas e Filas
-// 1 - Regra LIFO da pilha
+// 51 - Regra LIFO da pilha
 {
   aula: "Capítulo 6: Pilhas e Filas",
   tipo: "Explicativa",
@@ -978,7 +978,7 @@ pilha.append(3)`,
   feedback: "Como a pilha segue a regra LIFO, o elemento 3, que foi inserido por último, é removido primeiro pelo pop()."
 },
 
-// 2 - Regra FIFO da fila
+// 52 - Regra FIFO da fila
 {
   aula: "Capítulo 6: Pilhas e Filas",
   tipo: "Explicativa",
@@ -999,7 +999,7 @@ fila.append("Carla")`,
   feedback: "Como a fila segue a regra FIFO, 'Ana', que entrou primeiro, também é a primeira a sair quando chamamos popleft()."
 },
 
-// 3 - peek não remove elemento
+// 53 - peek não remove elemento
 {
   aula: "Capítulo 6: Pilhas e Filas",
   tipo: "Explicativa",
@@ -1023,7 +1023,7 @@ p.itens = [1, 2, 3]`,
   feedback: "peek() apenas olha o elemento do topo (nesse caso, sempre retornando 3), sem alterar o conteúdo da pilha. Por isso p.itens permanece [1, 2, 3] após as duas chamadas."
 },
 
-// 4 - Eficiência de append/pop no final da lista
+// 54 - Eficiência de append/pop no final da lista
 {
   aula: "Capítulo 6: Pilhas e Filas",
   tipo: "Contextualizada",
@@ -1039,7 +1039,7 @@ p.itens = [1, 2, 3]`,
   feedback: "Inserir ou remover no início de uma lista exige deslocar todos os elementos restantes (O(n)), enquanto operar no final não afeta os demais elementos, sendo O(1) — por isso o final da lista é escolhido como topo da pilha."
 },
 
-// 5 - Ineficiência da fila com lista comum
+// 55 - Ineficiência da fila com lista comum
 {
   aula: "Capítulo 6: Pilhas e Filas",
   tipo: "Contextualizada",
@@ -1062,7 +1062,7 @@ p.itens = [1, 2, 3]`,
   feedback: "O gargalo está em itens.pop(0): remover o primeiro elemento de uma lista exige deslocar todos os outros, tornando essa operação O(n) — por isso deque com popleft() (O(1)) é a alternativa recomendada."
 },
 
-// 6 - Relação entre pilha e recursão
+// 56 - Relação entre pilha e recursão
 {
   aula: "Capítulo 6: Pilhas e Filas",
   tipo: "Contextualizada",
@@ -1078,7 +1078,7 @@ p.itens = [1, 2, 3]`,
   feedback: "Cada chamada recursiva pendente ocupa espaço na pilha de execução do programa. Se o caso base nunca é atingido, essas chamadas se acumulam até estourar o limite da pilha, causando o RecursionError."
 },
 
-// 7 - Verificação de parênteses balanceados
+// 57 - Verificação de parênteses balanceados
 {
   aula: "Capítulo 6: Pilhas e Filas",
   tipo: "Aplicação",
@@ -1104,7 +1104,7 @@ p.itens = [1, 2, 3]`,
   feedback: "Nessa expressão há dois '(' e apenas um ')'. Ao final, a pilha ainda tem um elemento não desempilhado, então a função retorna False, indicando parênteses não balanceados."
 },
 
-// 8 - Escolher pilha para desfazer ações
+// 58 - Escolher pilha para desfazer ações
 {
   aula: "Capítulo 6: Pilhas e Filas",
   tipo: "Aplicação",
@@ -1120,7 +1120,7 @@ p.itens = [1, 2, 3]`,
   feedback: "Como a ação mais recente deve ser desfeita primeiro, esse é exatamente o comportamento LIFO de uma pilha: cada ação é empilhada, e o Ctrl+Z desempilha a última realizada."
 },
 
-// 9 - Fila para atendimento de banco
+// 59 - Fila para atendimento de banco
 {
   aula: "Capítulo 6: Pilhas e Filas",
   tipo: "Aplicação",
@@ -1136,7 +1136,7 @@ p.itens = [1, 2, 3]`,
   feedback: "Como a ordem de chegada precisa ser respeitada no atendimento, a fila (FIFO) é a estrutura correta: o primeiro cliente a entrar é o primeiro a ser atendido."
 },
 
-// 10 - Inverter lista usando pilha
+// 60 - Inverter lista usando pilha
 {
   aula: "Capítulo 6: Pilhas e Filas",
   tipo: "Explicativa",
@@ -1159,6 +1159,326 @@ p.itens = [1, 2, 3]`,
   answer: 1,
   feedback: "Como pop() sempre remove o último elemento inserido (comportamento LIFO), desempilhar tudo devolve os elementos na ordem inversa à que foram empilhados, invertendo a lista original."
 },
+
+// 61 - Ideia do Bubble Sort
+{
+  aula: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+  tipo: "Explicativa",
+  texto: "O Bubble Sort percorre a lista repetidamente comparando pares de elementos vizinhos e trocando-os de lugar quando estão fora de ordem. A cada passagem completa, o maior elemento ainda não posicionado vai parando no final da lista, como uma bolha subindo até a superfície.",
+  question: "Em uma lista [5, 3, 8, 1], o que acontece com o elemento 8 já na primeira passagem completa do Bubble Sort?",
+  options: [
+    "Ele é comparado apenas com o primeiro elemento da lista",
+    "Ele vai parar na posição final da lista, pois é o maior elemento",
+    "Ele permanece na posição original, sem ser comparado",
+    "Ele é movido para o início da lista"
+  ],
+  answer: 1,
+  feedback: "Como o Bubble Sort compara vizinhos e troca quando necessário, o maior valor encontrado numa passagem sempre acaba \"empurrado\" até a última posição ainda não fixada."
+},
+
+// 62 - Característica do Selection Sort
+{
+  aula: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+  tipo: "Explicativa",
+  texto: "O Selection Sort separa a lista em uma parte ordenada e outra não ordenada. A cada passagem, ele varre toda a parte não ordenada em busca do menor elemento e faz, no máximo, uma única troca para colocá-lo na posição correta.",
+  question: "Qual é a principal diferença no número de trocas entre o Selection Sort e o Bubble Sort?",
+  options: [
+    "O Selection Sort nunca faz trocas, apenas comparações",
+    "O Selection Sort faz no máximo uma troca por passagem, enquanto o Bubble Sort pode trocar vários pares de vizinhos na mesma passagem",
+    "Os dois fazem exatamente o mesmo número de trocas",
+    "O Bubble Sort faz apenas uma troca por passagem, como o Selection Sort"
+  ],
+  answer: 1,
+  feedback: "O Selection Sort só troca depois de encontrar o menor elemento de toda a parte não ordenada, enquanto o Bubble Sort troca a cada par de vizinhos fora de ordem que encontra."
+},
+
+// 63 - Melhor caso do Insertion Sort
+{
+  aula: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+  tipo: "Explicativa",
+  texto: "O Insertion Sort pega cada elemento da parte não ordenada e o insere na posição correta dentro da parte já ordenada, deslocando os maiores para a direita quando necessário. Quando a lista já está quase ordenada, poucos deslocamentos são necessários, o que torna esse algoritmo muito rápido nesse cenário.",
+  question: "Por que o Insertion Sort tem complexidade O(n) no melhor caso, diferente do Bubble Sort e do Selection Sort?",
+  options: [
+    "Porque ele usa menos memória que os outros dois",
+    "Porque, se a lista já estiver ordenada, cada elemento é inserido sem precisar deslocar nada, exigindo apenas uma passagem",
+    "Porque ele divide a lista ao meio, como o Merge Sort",
+    "Porque ele não faz nenhuma comparação entre elementos"
+  ],
+  answer: 1,
+  feedback: "Bubble e Selection sempre varrem a lista inteira mesmo se ela já estiver ordenada, mas o Insertion Sort consegue perceber que não há nada para deslocar e termina em tempo linear nesse caso."
+},
+
+// 64 - Estratégia do Merge Sort
+{
+  aula: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+  tipo: "Contextualizada",
+  texto: "O Merge Sort usa a estratégia de dividir para conquistar: primeiro quebra a lista ao meio recursivamente até sobrarem apenas listas de 1 elemento, e depois vai mesclando essas listinhas de volta, sempre comparando o primeiro elemento de cada metade e colocando o menor primeiro no resultado. Essa lógica de \"quebrar o problema em partes menores\" é a mesma usada na recursão em geral.",
+  question: "Ao contrário do Bubble, Selection e Insertion Sort, o que o Merge Sort faz antes de começar a comparar elementos de fato?",
+  options: [
+    "Ele ordena a lista inteira de uma vez, sem dividir nada",
+    "Ele divide a lista inteira repetidamente ao meio até chegar a listas de um único elemento",
+    "Ele troca os elementos vizinhos, como o Bubble Sort",
+    "Ele procura o menor elemento da lista toda"
+  ],
+  answer: 1,
+  feedback: "As comparações só acontecem na fase de mesclagem; antes disso, o Merge Sort apenas divide a lista original em partes cada vez menores."
+},
+
+// 65 - Trocas: Bubble vs Selection
+{
+  aula: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+  tipo: "Contextualizada",
+  texto: "Mesmo tendo a mesma complexidade O(n²) no pior e no caso médio, Bubble Sort e Selection Sort se comportam de forma diferente na prática: o Bubble Sort pode realizar várias trocas dentro de uma única passagem, enquanto o Selection Sort limita-se a, no máximo, uma troca por passagem, já que só troca depois de identificar o menor elemento restante.",
+  question: "Dois algoritmos podem ter o mesmo Big O e ainda assim se comportar de forma diferente na prática. Isso se aplica ao Bubble e ao Selection Sort porque:",
+  options: [
+    "O Selection Sort geralmente faz menos trocas que o Bubble Sort, mesmo com a mesma complexidade O(n²)",
+    "O Bubble Sort nunca faz mais de uma troca, assim como o Selection Sort",
+    "Os dois algoritmos têm complexidades diferentes, então a comparação não faz sentido",
+    "Big O mede exatamente o número de trocas realizadas, então eles são idênticos na prática"
+  ],
+  answer: 0,
+  feedback: "Big O descreve o crescimento assintótico, não o número exato de operações — por isso dois algoritmos O(n²) podem ter desempenhos práticos bem diferentes."
+},
+
+// 66 - Comparação de complexidades na tabela
+{
+  aula: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+  tipo: "Contextualizada",
+  texto: "Dos quatro algoritmos vistos, três (Bubble, Selection e Insertion) têm pior caso O(n²), enquanto o Merge Sort mantém O(n log n) tanto no melhor quanto no pior caso, graças à divisão pela metade repetida (o \"log n\") combinada com o trabalho de mesclar as partes (o \"n\").",
+  question: "Para uma lista muito grande e em ordem totalmente aleatória, qual algoritmo tende a ser mais eficiente considerando o pior caso?",
+  options: [
+    "Bubble Sort, por ser o mais simples de implementar",
+    "Selection Sort, porque faz poucas trocas",
+    "Insertion Sort, porque tem melhor caso O(n)",
+    "Merge Sort, porque garante O(n log n) mesmo no pior caso"
+  ],
+  answer: 3,
+  feedback: "Para listas grandes e sem nenhuma ordem prévia, o pior caso é o que mais importa — e o Merge Sort é o único dos quatro que garante O(n log n) mesmo nesse cenário."
+},
+
+// 67 - Aplicação: lista quase ordenada
+{
+  aula: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+  tipo: "Aplicação",
+  texto: "Imagine um sistema que recebe diariamente uma lista de preços já quase ordenada, com apenas 2 ou 3 itens fora do lugar em relação ao dia anterior. Nesse cenário, o Insertion Sort tende a fazer pouquíssimos deslocamentos, aproximando-se do seu melhor caso O(n).",
+  question: "Nesse cenário de lista quase ordenada, qual algoritmo dos quatro estudados tende a apresentar o melhor desempenho?",
+  options: [
+    "Bubble Sort, pois sempre percorre a lista inteira independentemente da ordem",
+    "Selection Sort, pois sempre busca o menor elemento em toda a parte não ordenada",
+    "Insertion Sort, pois se aproxima do seu melhor caso O(n) quando a lista já está quase ordenada",
+    "Merge Sort, pois divide a lista pela metade independentemente da ordem"
+  ],
+  answer: 2,
+  feedback: "O Insertion Sort é o único dos quatro cujo melhor caso é O(n), e ele acontece justamente quando a lista já está (quase) ordenada."
+},
+
+// 68 - Aplicação: lista grande e desordenada
+{
+  aula: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+  tipo: "Aplicação",
+  texto: "Uma aplicação precisa ordenar um milhão de registros vindos em ordem completamente aleatória, e a equipe quer garantir um tempo de execução previsível, sem risco de \"piores casos\" muito lentos.",
+  question: "Para esse cenário de grande volume de dados totalmente desordenados, qual algoritmo seria a escolha mais segura entre os quatro estudados?",
+  options: [
+    "Bubble Sort, por ser o mais simples de implementar",
+    "Selection Sort, porque faz poucas trocas",
+    "Merge Sort, porque mantém O(n log n) garantido, independentemente da ordem inicial",
+    "Insertion Sort, porque tem melhor caso O(n)"
+  ],
+  answer: 2,
+  feedback: "Como os dados estão totalmente desordenados, o melhor caso do Insertion Sort não se aplica — e o Merge Sort é o único que garante desempenho previsível (O(n log n)) mesmo no pior cenário."
+},
+
+// 69 - Aplicação: trade-off de memória no Merge Sort
+{
+  aula: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+  tipo: "Aplicação",
+  texto: "Um sistema embarcado com memória muito limitada precisa ordenar pequenas listas de sensores. O Merge Sort, apesar de eficiente em tempo, precisa criar listas temporárias durante a mesclagem, consumindo memória extra — algo que pode ser um problema nesse tipo de ambiente restrito.",
+  question: "Nesse cenário de memória limitada e listas pequenas, por que o Merge Sort pode não ser a melhor escolha, mesmo sendo o mais eficiente em tempo?",
+  options: [
+    "Porque o Merge Sort tem complexidade pior que o Bubble Sort",
+    "Porque o Merge Sort precisa de memória extra para as listas temporárias da mesclagem, o que pesa mais em ambientes restritos",
+    "Porque o Merge Sort não funciona corretamente em listas pequenas",
+    "Porque o Merge Sort sempre precisa de mais trocas que o Selection Sort"
+  ],
+  answer: 1,
+  feedback: "Esse é o trade-off clássico do Merge Sort: ele ganha em tempo (O(n log n) garantido), mas gasta memória extra — o que pode pesar justamente em sistemas com poucos recursos."
+},
+
+// 70 - Reforço: Bubble Sort compara só vizinhos
+{
+  aula: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+  tipo: "Explicativa",
+  texto: "Uma pegadinha comum é achar que o Bubble Sort pode comparar quaisquer dois elementos da lista. Na verdade, ele só compara elementos que estão em posições adjacentes (lado a lado) em cada passagem — ele nunca \"pula\" elementos para comparar posições distantes.",
+  question: "Em uma passagem do Bubble Sort sobre a lista [3, 5, 8, 1], quais comparações diretas o algoritmo realiza?",
+  options: [
+    "Compara 3 com 8, e depois 5 com 1",
+    "Compara apenas o primeiro elemento com o último",
+    "Compara 3 com 5, depois 5 com 8, depois 8 com 1 — sempre elementos vizinhos",
+    "Compara todos os elementos entre si, dois a dois"
+  ],
+  answer: 2,
+  feedback: "O Bubble Sort trabalha exclusivamente com pares de posições adjacentes, avançando pela lista uma comparação de vizinhos por vez."
+},
+
+// 71 - O que é memoização
+{
+  aula: "Capítulo 8 — Memoização",
+  tipo: "Explicativa",
+  texto: "Memoização é uma técnica de otimização que guarda (cacheia) o resultado de chamadas de função já calculadas. Se a mesma entrada aparecer de novo, a função retorna o valor guardado em vez de recalcular tudo do zero, economizando tempo de processamento.",
+  question: "O que exatamente a memoização evita que uma função recursiva faça?",
+  options: [
+    "Evita que a função use variáveis locais",
+    "Evita que a função recalcule resultados para entradas que já foram calculadas antes",
+    "Evita que a função seja chamada mais de uma vez no total",
+    "Evita que a função retorne um valor numérico"
+  ],
+  answer: 1,
+  feedback: "A ideia central da memoização é simples: se uma entrada já foi processada antes, não vale a pena repetir o trabalho — basta consultar o valor guardado."
+},
+
+// 72 - Fibonacci sem memoização é exponencial
+{
+  aula: "Capítulo 8 — Memoização",
+  tipo: "Explicativa",
+  texto: "A versão recursiva simples do Fibonacci, sem memoização, recalcula os mesmos valores várias vezes — por exemplo, ao calcular fibonacci(5), o algoritmo acaba calculando fibonacci(3) duas vezes e fibonacci(2) três vezes. Isso faz com que sua complexidade seja O(2ⁿ), extremamente ineficiente para valores grandes de n.",
+  question: "Por que o Fibonacci recursivo simples é considerado ineficiente para valores grandes de n?",
+  options: [
+    "Porque ele usa um laço for muito grande",
+    "Porque ele recalcula repetidamente os mesmos valores, gerando uma árvore de chamadas que cresce exponencialmente",
+    "Porque ele não usa recursão de verdade",
+    "Porque ele armazena todos os valores em um dicionário desnecessário"
+  ],
+  answer: 1,
+  feedback: "O desperdício de trabalho repetido é exatamente o que torna essa versão O(2ⁿ) — e é justamente esse problema que a memoização resolve."
+},
+
+// 73 - Como funciona o cache manual
+{
+  aula: "Capítulo 8 — Memoização",
+  tipo: "Explicativa",
+  texto: "Na implementação manual de memoização com dicionário, antes de calcular um resultado a função verifica se aquele valor já está no cache. Se estiver, retorna direto o valor guardado; se não estiver, calcula normalmente e só então guarda o resultado no cache antes de retornar.",
+  question: "Qual é o papel do dicionário (cache) na memoização manual do Fibonacci?",
+  options: [
+    "Guardar apenas o último valor calculado, substituindo o anterior a cada chamada",
+    "Associar cada entrada n já calculada ao seu respectivo resultado, para consultas futuras",
+    "Armazenar o código-fonte da função",
+    "Contar quantas vezes a função foi chamada"
+  ],
+  answer: 1,
+  feedback: "O cache funciona como uma tabela de \"entrada → resultado já calculado\", permitindo que chamadas repetidas com o mesmo n sejam resolvidas instantaneamente."
+},
+
+// 74 - lru_cache como alternativa pronta
+{
+  aula: "Capítulo 8 — Memoização",
+  tipo: "Contextualizada",
+  texto: "Python oferece o decorador @lru_cache, do módulo functools, que adiciona memoização automática a uma função sem precisar criar um dicionário manualmente. Usando maxsize=None, o cache pode crescer sem limite, guardando todos os resultados já calculados durante a execução.",
+  question: "Qual é a principal vantagem de usar @lru_cache em vez de implementar o cache manualmente com um dicionário?",
+  options: [
+    "@lru_cache torna a função mais lenta, mas mais legível",
+    "@lru_cache adiciona o comportamento de cache automaticamente, sem precisar escrever a lógica de verificação e armazenamento na mão",
+    "@lru_cache só funciona com números inteiros",
+    "@lru_cache elimina a necessidade de casos base na função recursiva"
+  ],
+  answer: 1,
+  feedback: "O decorador encapsula toda a lógica de cache (verificar, retornar do cache ou calcular e guardar) que, na versão manual, precisaria ser escrita explicitamente com um dicionário."
+},
+
+// 75 - Impacto na complexidade: trade-off tempo x espaço
+{
+  aula: "Capítulo 8 — Memoização",
+  tipo: "Contextualizada",
+  texto: "Com memoização, o Fibonacci recursivo deixa de ser O(2ⁿ) e passa a ser O(n), já que cada valor de n só é calculado uma única vez — todas as chamadas repetidas passam a ser resolvidas em O(1), direto do cache. Esse ganho de tempo, porém, tem um custo: a memória extra usada para armazenar o cache.",
+  question: "Ao aplicar memoização no Fibonacci recursivo, que tipo de troca (trade-off) está sendo feito?",
+  options: [
+    "Troca-se precisão pelo resultado, tornando os cálculos aproximados",
+    "Troca-se tempo de processamento por memória extra: o algoritmo fica mais rápido, mas passa a consumir mais espaço",
+    "Troca-se recursão por iteração, eliminando completamente as chamadas de função",
+    "Troca-se legibilidade do código por desempenho, sem nenhum outro impacto"
+  ],
+  answer: 1,
+  feedback: "Esse é o trade-off clássico da memoização: reduzir o tempo de execução (de exponencial para linear) ao custo de gastar memória extra guardando os resultados já calculados."
+},
+
+// 76 - Memoização não ajuda o fatorial
+{
+  aula: "Capítulo 8 — Memoização",
+  tipo: "Contextualizada",
+  texto: "A memoização só traz ganho de desempenho quando a função é chamada repetidamente com os mesmos argumentos. No cálculo do fatorial(n), por exemplo, cada chamada recursiva usa um valor de n diferente e único dentro de uma mesma execução — não havendo nenhuma chamada repetida, não há nada para \"economizar\" com o cache.",
+  question: "Por que aplicar memoização na função fatorial(n) não traz nenhum ganho de desempenho?",
+  options: [
+    "Porque o fatorial não é uma função recursiva",
+    "Porque cada chamada recursiva do fatorial usa um valor de n diferente, então nunca há uma chamada repetida para ser evitada",
+    "Porque o Python não permite usar dicionários dentro de funções recursivas",
+    "Porque o fatorial já é mais rápido que o Fibonacci em qualquer caso"
+  ],
+  answer: 1,
+  feedback: "Memoização só ajuda quando há chamadas redundantes com os mesmos argumentos, como no Fibonacci. No fatorial, como cada n aparece uma única vez, o cache fica praticamente vazio de repetições."
+},
+
+// 77 - Aplicação: Fibonacci de valores grandes
+{
+  aula: "Capítulo 8 — Memoização",
+  tipo: "Aplicação",
+  texto: "Um sistema precisa calcular fibonacci(40) repetidas vezes ao longo da execução do programa, em diferentes momentos. Sem memoização, cada chamada recalcularia toda a árvore de subchamadas do zero, o que seria extremamente custoso.",
+  question: "Nesse cenário, qual seria a melhor estratégia para tornar os cálculos de fibonacci(40) eficientes ao longo da execução do programa?",
+  options: [
+    "Reescrever o fatorial em vez do Fibonacci",
+    "Aplicar memoização (manual ou com @lru_cache), já que os mesmos valores serão recalculados repetidamente",
+    "Aumentar o valor de n para reduzir o número de chamadas",
+    "Remover o caso base da função recursiva"
+  ],
+  answer: 1,
+  feedback: "Como fibonacci(40) será chamado várias vezes e internamente recalcula os mesmos subvalores, esse é exatamente o tipo de cenário onde a memoização reduz drasticamente o tempo de execução."
+},
+
+// 78 - Aplicação: função sem argumentos repetidos
+{
+  aula: "Capítulo 8 — Memoização",
+  tipo: "Aplicação",
+  texto: "Uma função recursiva percorre uma lista de tarefas processando cada item uma única vez, sempre com um índice diferente e crescente, sem nunca revisitar um índice já processado durante a mesma execução.",
+  question: "Faz sentido aplicar memoização nessa função que percorre a lista de tarefas?",
+  options: [
+    "Sim, porque toda função recursiva se beneficia de memoização",
+    "Não, porque como cada índice é processado uma única vez, não há chamadas repetidas para serem evitadas pelo cache",
+    "Sim, mas apenas se a lista tiver mais de 1000 itens",
+    "Não, porque memoização só funciona com números inteiros"
+  ],
+  answer: 1,
+  feedback: "Assim como no fatorial, se não há repetição de argumentos dentro da mesma execução, o cache nunca é reaproveitado — logo, memoização não traz nenhum ganho real nesse caso."
+},
+
+// 79 - Aplicação: escolher lru_cache vs dicionário manual
+{
+  aula: "Capítulo 8 — Memoização",
+  tipo: "Aplicação",
+  texto: "Um estudante está implementando memoização em uma função recursiva simples e quer uma solução rápida de escrever, sem se preocupar em criar e gerenciar manualmente um dicionário de cache dentro do código.",
+  question: "Nesse cenário, qual abordagem seria mais prática para o estudante aplicar memoização rapidamente?",
+  options: [
+    "Criar manualmente um dicionário como parâmetro padrão da função",
+    "Usar o decorador @lru_cache do módulo functools, que adiciona o cache automaticamente",
+    "Reescrever a função inteira de forma iterativa",
+    "Remover a recursão e usar apenas laços for"
+  ],
+  answer: 1,
+  feedback: "O @lru_cache existe justamente para casos assim: ele entrega o comportamento de cache pronto, sem exigir que o programador escreva a lógica de verificação e armazenamento manualmente."
+},
+
+// 80 - Reforço: cache mutável como parâmetro padrão
+{
+  aula: "Capítulo 8 — Memoização",
+  tipo: "Explicativa",
+  texto: "Na implementação manual de memoização, é comum usar um dicionário mutável como valor padrão de parâmetro (cache={}). Isso funciona porque esse dicionário é criado uma única vez e compartilhado entre todas as chamadas da função — um comportamento normalmente evitado em Python, mas que a memoização aproveita de propósito.",
+  question: "Por que usar cache={} como parâmetro padrão funciona bem especificamente no contexto de memoização, mesmo sendo uma prática geralmente desencorajada em Python?",
+  options: [
+    "Porque em memoização os parâmetros padrão nunca são realmente usados",
+    "Porque o comportamento de compartilhar o mesmo dicionário entre chamadas é justamente o que a memoização precisa para funcionar",
+    "Porque dicionários mutáveis são sempre recriados a cada chamada em Python",
+    "Porque isso impede que a função seja chamada mais de uma vez"
+  ],
+  answer: 1,
+  feedback: "O \"efeito colateral\" de compartilhar o dicionário entre chamadas — normalmente uma armadilha em Python — é exatamente o mecanismo que permite ao cache persistir os resultados entre as chamadas recursivas."
+}
 
 
   ],
@@ -2451,6 +2771,370 @@ print(fila)`,
   answer: 1,
   feedback: "Ao empilhar todos os elementos e depois desempilhá-los, o comportamento **LIFO** da pilha faz com que o último elemento inserido seja o primeiro a ser removido, o que naturalmente gera a lista na ordem inversa da original."
 },
+
+// 61 - Escolha de algoritmo por cenário (Conceitual Contextualizada)
+{
+  aula: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+  tipo: "Conceitual Contextualizada",
+  texto: "Uma pequena loja virtual mantém uma lista de preços de produtos que é atualizada diariamente. Na maioria dos dias, apenas dois ou três produtos mudam de posição em relação ao dia anterior, permanecendo o restante da lista praticamente na mesma ordem.",
+  question: "Considerando as características dos algoritmos de ordenação estudados, qual deles tende a apresentar o melhor desempenho nesse cenário específico?",
+  options: [
+    "Bubble Sort, pois sempre realiza o mesmo número fixo de passagens, independentemente da ordem",
+    "Selection Sort, pois localiza o menor elemento em tempo constante",
+    "Insertion Sort, pois se aproxima do seu melhor caso O(n) quando a lista já está quase ordenada",
+    "Merge Sort, pois sua complexidade O(n log n) é sempre a mais baixa entre os quatro, em qualquer situação"
+  ],
+  answer: 2,
+  feedback: "O **melhor caso O(n) do Insertion Sort** ocorre justamente quando poucos elementos estão fora de posição, exigindo poucos deslocamentos — cenário raro para Bubble e Selection Sort, que sempre percorrem a lista inteira."
+},
+
+// 62 - Trade-offs entre os quatro algoritmos (Múltiplas Afirmativas)
+{
+  aula: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Uma equipe de desenvolvimento está avaliando qual algoritmo de ordenação utilizar em diferentes módulos de um sistema, considerando fatores como previsibilidade de desempenho, consumo de memória e comportamento em listas quase ordenadas.",
+  question: "Analise as afirmativas a seguir sobre os algoritmos de ordenação estudados:",
+  assertions: [
+    "I. O Merge Sort garante complexidade O(n log n) tanto no melhor quanto no pior caso, mas exige memória extra para as listas temporárias da mesclagem.",
+    "II. O Selection Sort realiza, no máximo, uma troca por passagem, o que reduz o número total de trocas em comparação ao Bubble Sort.",
+    "III. O Bubble Sort é capaz de comparar elementos que não estão em posições adjacentes, o que acelera sua convergência.",
+    "IV. O Insertion Sort apresenta pior caso O(n²), semelhante ao Bubble e ao Selection Sort."
+  ],
+  options: [
+    "I, II e III, apenas",
+    "I, II e IV, apenas",
+    "II, III e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 1,
+  feedback: "A afirmativa III está incorreta: o **Bubble Sort compara exclusivamente elementos vizinhos**, nunca posições distantes. As demais afirmativas refletem corretamente as características dos algoritmos."
+},
+
+// 63 - Comportamento do Selection Sort (Asserção + Justificativa)
+{
+  aula: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+  tipo: "Asserção + Justificativa",
+  texto: "Um professor de Estrutura de Dados propôs aos alunos que comparassem o número de comparações realizadas pelo Selection Sort em uma lista já ordenada e em uma lista completamente desordenada, ambas de mesmo tamanho.",
+  question: "Avalie as afirmações a seguir e a relação proposta entre elas.",
+  assertions: [
+    "I. O Selection Sort realiza exatamente o mesmo número de comparações, independentemente de a lista já estar ordenada ou não.",
+    "PORQUE",
+    "II. Em cada passagem, o algoritmo sempre percorre toda a parte não ordenada restante em busca do menor elemento, mesmo que ela já esteja em ordem."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 0,
+  feedback: "Diferentemente do Insertion Sort, o **Selection Sort não possui melhor caso mais rápido**: ele sempre varre toda a parte não ordenada para encontrar o menor elemento, o que explica seu número constante de comparações."
+},
+
+// 64 - Ordenação de grande volume de dados (Análise Aplicada)
+{
+  aula: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+  tipo: "Análise Aplicada",
+  texto: "Uma empresa de análise de dados processa diariamente um arquivo com mais de um milhão de registros financeiros que chegam em ordem completamente aleatória. A equipe de engenharia precisa garantir que o tempo de ordenação seja previsível, mesmo no cenário mais desfavorável possível.",
+  question: "Considerando a exigência de desempenho previsível no pior caso para um grande volume de dados desordenados, qual dos algoritmos estudados seria a escolha mais adequada?",
+  options: [
+    "Insertion Sort, pois seu melhor caso O(n) garante velocidade em qualquer situação",
+    "Bubble Sort, por ser o algoritmo mais simples de implementar e depurar",
+    "Selection Sort, pois realiza poucas trocas em relação ao número de comparações",
+    "Merge Sort, pois mantém complexidade O(n log n) tanto no melhor quanto no pior caso"
+  ],
+  answer: 3,
+  feedback: "Como os dados chegam totalmente desordenados, o **melhor caso do Insertion Sort não se aplica**, e apenas o Merge Sort garante desempenho previsível (O(n log n)) independentemente da ordem inicial dos dados."
+},
+
+// 65 - Diferença estrutural entre Bubble e Merge Sort (Conceitual Contextualizada)
+{
+  aula: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+  tipo: "Conceitual Contextualizada",
+  texto: "Durante uma aula prática, um estudante afirmou que todos os algoritmos de ordenação funcionam basicamente do mesmo jeito: percorrendo a lista repetidamente e comparando elementos vizinhos até que ela fique ordenada.",
+  question: "Assinale a alternativa que aponta corretamente por que essa afirmação está incorreta em relação ao Merge Sort.",
+  options: [
+    "Porque o Merge Sort não realiza nenhuma comparação entre elementos durante sua execução",
+    "Porque o Merge Sort primeiro divide a lista repetidamente ao meio, e só depois compara elementos durante a fase de mesclagem",
+    "Porque o Merge Sort compara apenas o primeiro e o último elemento da lista original",
+    "Porque o Merge Sort é implementado exclusivamente de forma iterativa, sem recursão"
+  ],
+  answer: 1,
+  feedback: "O **Merge Sort segue a estratégia de dividir para conquistar**: primeiro fragmenta a lista em partes menores, e só na etapa de mesclagem é que as comparações efetivamente ocorrem — diferente de Bubble, Selection e Insertion, que comparam desde o início."
+},
+
+// 66 - Características gerais dos algoritmos (Múltiplas Afirmativas)
+{
+  aula: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Em uma prova de Estrutura de Dados, os alunos precisam identificar corretamente as características de cada algoritmo de ordenação estudado, sem confundir seus comportamentos.",
+  question: "Analise as afirmativas a seguir sobre os algoritmos de ordenação estudados:",
+  assertions: [
+    "I. O Insertion Sort é o único, entre os quatro estudados, cujo melhor caso é O(n).",
+    "II. O Bubble Sort pode realizar mais de uma troca dentro de uma mesma passagem pela lista.",
+    "III. O Merge Sort não consome memória adicional além da lista original.",
+    "IV. O Selection Sort divide a lista mentalmente em uma parte ordenada e uma não ordenada."
+  ],
+  options: [
+    "I e II, apenas",
+    "I, II e IV, apenas",
+    "II, III e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 1,
+  feedback: "A afirmativa III está incorreta: o **Merge Sort precisa de listas temporárias durante a mesclagem**, consumindo memória extra — justamente uma de suas principais desvantagens frente aos outros três algoritmos."
+},
+
+// 67 - Merge Sort não é sempre a melhor escolha (Asserção + Justificativa)
+{
+  aula: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+  tipo: "Asserção + Justificativa",
+  texto: "Um desenvolvedor, ao estudar complexidade de algoritmos, concluiu que deveria sempre utilizar o Merge Sort em seus projetos, independentemente do contexto de aplicação.",
+  question: "Avalie as afirmações a seguir e a relação proposta entre elas.",
+  assertions: [
+    "I. O Merge Sort é sempre a melhor escolha de algoritmo de ordenação, em qualquer cenário de desenvolvimento.",
+    "PORQUE",
+    "II. Ele garante complexidade O(n log n) tanto no melhor quanto no pior caso, superando a complexidade de Bubble, Selection e Insertion Sort no pior caso."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 3,
+  feedback: "A afirmativa I é falsa: em sistemas com **memória muito restrita**, o consumo extra do Merge Sort pode torná-lo inadequado, mesmo sendo verdade (II) que sua complexidade é mais estável que a dos demais."
+},
+
+// 68 - Restrição de memória em sistema embarcado (Análise Aplicada)
+{
+  aula: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+  tipo: "Análise Aplicada",
+  texto: "Um sistema embarcado de baixo custo, utilizado para coletar e ordenar pequenas listas de leituras de sensores (geralmente com menos de 20 valores), possui memória RAM extremamente limitada, insuficiente para alocar estruturas temporárias de tamanho significativo.",
+  question: "Considerando as restrições de memória e o tamanho reduzido das listas, qual das opções a seguir representa a análise mais adequada para essa aplicação?",
+  options: [
+    "Evitar o Merge Sort nesse caso, pois seu uso de memória extra para mesclagem pode ser inviável em um ambiente tão restrito, sendo Insertion Sort uma alternativa mais adequada para listas pequenas",
+    "Utilizar exclusivamente o Merge Sort, pois sua complexidade O(n log n) é sempre superior às demais, independentemente do tamanho da lista",
+    "Utilizar o Selection Sort, pois ele consome mais memória que o Merge Sort e por isso é mais indicado para sistemas com folga de RAM",
+    "A restrição de memória não deve influenciar a escolha do algoritmo, já que todos os quatro algoritmos possuem exatamente o mesmo consumo de memória"
+  ],
+  answer: 0,
+  feedback: "Para **listas pequenas em ambientes com memória restrita**, o custo das estruturas temporárias do Merge Sort pode pesar mais do que seu ganho teórico de complexidade, tornando algoritmos sem memória extra, como o Insertion Sort, mais adequados."
+},
+
+// 69 - Mesmo Big O, comportamentos diferentes (Conceitual Contextualizada)
+{
+  aula: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+  tipo: "Conceitual Contextualizada",
+  texto: "Ao comparar Bubble Sort e Selection Sort, um aluno concluiu que, como ambos possuem complexidade O(n²) no pior caso, eles necessariamente apresentam desempenho prático idêntico em qualquer lista.",
+  question: "Assinale a alternativa que melhor explica por que essa conclusão está equivocada.",
+  options: [
+    "Porque o Selection Sort, na verdade, possui complexidade O(n log n), diferente do Bubble Sort",
+    "Porque, apesar do mesmo Big O, o Selection Sort tende a realizar menos trocas que o Bubble Sort, já que troca no máximo uma vez por passagem",
+    "Porque o Bubble Sort nunca chega a O(n²), sendo sempre mais rápido que o Selection Sort",
+    "Porque Big O mede exatamente o tempo de execução em segundos, e não o crescimento assintótico"
+  ],
+  answer: 1,
+  feedback: "**Big O descreve o crescimento assintótico**, não o número exato de operações — por isso dois algoritmos com o mesmo Big O, como Bubble e Selection Sort, podem se comportar de forma diferente na prática, especialmente quanto ao número de trocas."
+},
+
+// 70 - Identificação de algoritmo por comportamento (Análise Aplicada)
+{
+  aula: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+  tipo: "Análise Aplicada",
+  texto: "Durante a depuração de um algoritmo de ordenação, um estagiário observou que, a cada passagem completa pela lista, o algoritmo comparava apenas pares de elementos em posições consecutivas, trocando-os quando necessário, e que o maior valor ainda não posicionado sempre terminava na última posição livre ao final de cada passagem.",
+  question: "Com base apenas nesse comportamento observado, qual dos quatro algoritmos estudados está sendo executado?",
+  options: [
+    "Merge Sort, pois ele sempre posiciona o maior elemento por último",
+    "Bubble Sort, pois ele compara exclusivamente elementos adjacentes e desloca o maior valor até o final a cada passagem",
+    "Selection Sort, pois ele também finaliza cada passagem com o maior elemento posicionado corretamente",
+    "Insertion Sort, pois ele desloca elementos maiores para a direita durante sua execução"
+  ],
+  answer: 1,
+  feedback: "O comportamento descrito — **comparações restritas a pares adjacentes** e o maior elemento \"borbulhando\" até o final a cada passagem — é característica exclusiva do Bubble Sort entre os quatro algoritmos estudados."
+},
+
+// 71 - Redução de complexidade via cache (Conceitual Contextualizada)
+{
+  aula: "Capítulo 8 — Memoização",
+  tipo: "Conceitual Contextualizada",
+  texto: "Um sistema acadêmico precisa calcular o n-ésimo termo da sequência de Fibonacci diversas vezes ao longo de sua execução, usando a implementação recursiva simples vista anteriormente, sem qualquer otimização.",
+  question: "Assinale a alternativa que descreve corretamente o impacto de aplicar memoização nesse cálculo.",
+  options: [
+    "A complexidade permanece O(2ⁿ), pois memoização apenas reorganiza a ordem das chamadas, sem eliminar recálculos",
+    "A complexidade é reduzida para O(log n), pois o cache elimina metade das chamadas recursivas a cada nível",
+    "A complexidade é reduzida de O(2ⁿ) para O(n), pois cada valor de n passa a ser calculado uma única vez",
+    "A complexidade aumenta para O(n²), pois o cache precisa ser percorrido inteiramente a cada nova chamada"
+  ],
+  answer: 2,
+  feedback: "Com **memoização**, cada valor de n é calculado apenas uma vez e chamadas repetidas são resolvidas em O(1) via cache, o que reduz a complexidade do Fibonacci recursivo de exponencial para linear."
+},
+
+// 72 - Características gerais da memoização (Múltiplas Afirmativas)
+{
+  aula: "Capítulo 8 — Memoização",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Um grupo de estudantes está revisando os conceitos de memoização para uma avaliação, comparando a implementação manual com dicionário e o uso do decorador @lru_cache.",
+  question: "Analise as afirmativas a seguir sobre memoização:",
+  assertions: [
+    "I. O cache associa cada entrada já calculada ao seu respectivo resultado, permitindo consultas futuras instantâneas.",
+    "II. O @lru_cache automatiza o comportamento de cache, evitando que o programador precise implementar manualmente a lógica de verificação e armazenamento.",
+    "III. A memoização reduz o consumo total de memória de um programa, já que evita recálculos.",
+    "IV. A memoização não traz ganho de desempenho em funções cujos argumentos nunca se repetem durante a execução, como o fatorial."
+  ],
+  options: [
+    "I, II e III, apenas",
+    "I, II e IV, apenas",
+    "II, III e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 1,
+  feedback: "A afirmativa III está incorreta: a memoização **troca memória por tempo**, ou seja, aumenta o consumo de memória (para guardar o cache) em troca de reduzir o tempo de processamento — nunca o contrário."
+},
+
+// 73 - Justificativa da complexidade linear (Asserção + Justificativa)
+{
+  aula: "Capítulo 8 — Memoização",
+  tipo: "Asserção + Justificativa",
+  texto: "Um aluno afirmou, durante uma discussão em sala, que o Fibonacci memoizado é muito mais eficiente do que a versão recursiva simples, mas teve dificuldade em explicar exatamente por quê.",
+  question: "Avalie as afirmações a seguir e a relação proposta entre elas.",
+  assertions: [
+    "I. O Fibonacci implementado com memoização possui complexidade O(n).",
+    "PORQUE",
+    "II. Cada valor de n é calculado apenas uma vez, e todas as chamadas repetidas com o mesmo valor são resolvidas em tempo constante, diretamente do cache."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 0,
+  feedback: "A afirmativa II descreve exatamente o mecanismo que explica a afirmativa I: como **cada n é calculado uma única vez** e o restante das chamadas vem do cache em O(1), a complexidade total passa a ser linear."
+},
+
+// 74 - Reaproveitamento de cálculos em produção (Análise Aplicada)
+{
+  aula: "Capítulo 8 — Memoização",
+  tipo: "Análise Aplicada",
+  texto: "Um sistema de análise financeira precisa calcular fibonacci(40) em diferentes módulos da aplicação, sempre que um determinado relatório é gerado. Atualmente, cada módulo chama uma função recursiva simples, sem nenhum tipo de cache, o que tem tornado a geração dos relatórios perceptivelmente lenta.",
+  question: "Considerando o cenário descrito, qual seria a estratégia mais adequada para melhorar o desempenho desses cálculos sem alterar a lógica matemática do Fibonacci?",
+  options: [
+    "Reescrever a função para calcular o fatorial em vez do Fibonacci, pois o fatorial é naturalmente mais rápido",
+    "Aumentar o valor de n solicitado nos relatórios, reduzindo assim o número de chamadas recursivas necessárias",
+    "Aplicar memoização (manual ou via @lru_cache) à função, já que os mesmos valores de n tendem a ser recalculados repetidamente entre os módulos",
+    "Remover o caso base da função recursiva para simplificar o código e acelerar a execução"
+  ],
+  answer: 2,
+  feedback: "Como os **mesmos valores são recalculados repetidamente** em diferentes módulos, esse é exatamente o cenário em que a memoização traz maior ganho, evitando que o trabalho já feito seja refeito a cada chamada."
+},
+
+// 75 - Quando memoização não ajuda (Conceitual Contextualizada)
+{
+  aula: "Capítulo 8 — Memoização",
+  tipo: "Conceitual Contextualizada",
+  texto: "Um estudante decidiu aplicar memoização em todas as funções recursivas de seu projeto, incluindo uma função de fatorial, acreditando que qualquer função recursiva se beneficiaria automaticamente dessa técnica.",
+  question: "Assinale a alternativa que explica corretamente por que aplicar memoização na função de fatorial não traz ganho de desempenho.",
+  options: [
+    "Porque o fatorial não pode ser implementado de forma recursiva, apenas iterativa",
+    "Porque, no fatorial, cada chamada recursiva utiliza um valor de n diferente e único dentro da mesma execução, não havendo chamadas repetidas para serem evitadas",
+    "Porque a memoização só funciona em linguagens que não suportam recursão, como o Python",
+    "Porque o fatorial já possui complexidade O(1), tornando qualquer otimização desnecessária"
+  ],
+  answer: 1,
+  feedback: "A memoização só traz ganho quando há **chamadas repetidas com os mesmos argumentos**, como no Fibonacci. No fatorial, cada n aparece uma única vez durante a execução, então o cache nunca é reaproveitado."
+},
+
+// 76 - Implementação manual do cache (Múltiplas Afirmativas)
+{
+  aula: "Capítulo 8 — Memoização",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Uma desenvolvedora está implementando memoização manualmente em Python, usando um dicionário como parâmetro padrão de uma função recursiva, e revisando com a equipe os detalhes técnicos dessa abordagem.",
+  question: "Analise as afirmativas a seguir sobre a implementação manual de memoização com dicionário:",
+  assertions: [
+    "I. Usar um dicionário mutável como parâmetro padrão funciona nesse contexto porque ele é criado uma única vez e compartilhado entre as chamadas da função.",
+    "II. O uso do decorador @lru_cache exige obrigatoriamente que o parâmetro maxsize seja definido explicitamente, sem valor padrão.",
+    "III. O dicionário de cache associa cada entrada já processada ao seu respectivo resultado calculado.",
+    "IV. A memoização, seja manual ou via @lru_cache, representa uma troca de memória por tempo de execução."
+  ],
+  options: [
+    "I, III e IV, apenas",
+    "I, II e III, apenas",
+    "II, III e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 0,
+  feedback: "A afirmativa II está incorreta: o `@lru_cache` **não exige que `maxsize` seja definido**, podendo ser usado com seu valor padrão; as demais afirmativas descrevem corretamente características da memoização."
+},
+
+// 77 - Importância de armazenar no cache (Asserção + Justificativa)
+{
+  aula: "Capítulo 8 — Memoização",
+  tipo: "Asserção + Justificativa",
+  texto: "Ao revisar o código de um colega, um desenvolvedor percebeu que a função de memoização manual verificava corretamente se o valor já estava no cache, mas às vezes esquecia de armazenar o resultado antes de retornar.",
+  question: "Avalie as afirmações a seguir e a relação proposta entre elas.",
+  assertions: [
+    "I. Em uma implementação manual de memoização, é fundamental armazenar o resultado no cache antes de a função retornar.",
+    "PORQUE",
+    "II. Sem esse armazenamento, chamadas futuras com a mesma entrada não conseguem reaproveitar o resultado já calculado, perdendo o benefício da técnica."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 0,
+  feedback: "Se o `cache[n] = resultado` for esquecido, a **função nunca chega a economizar chamadas futuras**, já que o valor nunca fica de fato salvo — o que confirma a relação de causa e efeito entre as duas afirmativas."
+},
+
+// 78 - Função sem argumentos repetidos (Análise Aplicada)
+{
+  aula: "Capítulo 8 — Memoização",
+  tipo: "Análise Aplicada",
+  texto: "Uma função recursiva percorre uma lista de tarefas de um sistema de gerenciamento de projetos, processando cada item por meio de um índice que sempre aumenta, nunca revisitando um índice já processado dentro da mesma execução.",
+  question: "Um desenvolvedor propõe aplicar memoização a essa função para \"garantir mais desempenho\". Avaliando o comportamento descrito, essa proposta é adequada?",
+  options: [
+    "Sim, pois qualquer função recursiva se beneficia de memoização, independentemente de seus argumentos se repetirem ou não",
+    "Não, pois, como cada índice é processado uma única vez, não existem chamadas repetidas para o cache reaproveitar, tornando a memoização inútil nesse caso",
+    "Sim, mas apenas se a lista de tarefas tiver mais de mil itens, quando o cache passa a compensar",
+    "Não, pois memoização só pode ser aplicada a funções que envolvam cálculos matemáticos, como o Fibonacci"
+  ],
+  answer: 1,
+  feedback: "Assim como no fatorial, quando **não há repetição de argumentos** dentro da mesma execução, o cache nunca é reaproveitado, e a memoização não traz nenhum ganho real de desempenho."
+},
+
+// 79 - Trade-off tempo x espaço em ambiente restrito (Conceitual Contextualizada)
+{
+  aula: "Capítulo 8 — Memoização",
+  tipo: "Conceitual Contextualizada",
+  texto: "Um sistema embarcado com pouquíssima memória disponível precisa executar cálculos recursivos que envolvem muitos valores repetidos, mas a equipe de desenvolvimento está insegura sobre aplicar memoização, temendo o impacto no consumo de memória do dispositivo.",
+  question: "Assinale a alternativa que descreve corretamente o trade-off envolvido na decisão de aplicar ou não memoização nesse cenário.",
+  options: [
+    "Memoização reduz tanto o tempo de execução quanto o consumo de memória, então não há trade-off relevante a considerar",
+    "Memoização reduz o tempo de execução ao custo de aumentar o consumo de memória, exigindo uma análise cuidadosa em ambientes com pouca RAM disponível",
+    "Memoização aumenta o tempo de execução para economizar memória, sendo sempre recomendada em sistemas embarcados",
+    "Memoização não tem relação com uso de memória, apenas com a complexidade de tempo do algoritmo"
+  ],
+  answer: 1,
+  feedback: "A memoização representa um **trade-off clássico entre tempo e espaço**: ela acelera a execução evitando recálculos, mas exige memória extra para manter o cache — algo que pode pesar em sistemas com recursos limitados."
+},
+
+// 80 - Depuração de cache mal implementado (Análise Aplicada)
+{
+  aula: "Capítulo 8 — Memoização",
+  tipo: "Análise Aplicada",
+  texto: "Ao testar uma função de Fibonacci memoizada manualmente, um estudante percebeu que, mesmo após várias chamadas com valores repetidos de n, o tempo de execução continuava alto, como se o cache nunca estivesse sendo efetivamente utilizado. Ao inspecionar o código, ele viu que a verificação `if n in cache: return cache[n]` estava presente, mas a linha responsável por salvar o novo resultado no dicionário havia sido removida por engano.",
+  question: "Com base no comportamento descrito, qual é a explicação mais provável para a memoização não estar funcionando como esperado?",
+  options: [
+    "O dicionário usado como cache não suporta números inteiros como chave, apenas strings",
+    "Como o resultado nunca é armazenado no cache antes de retornar, cada chamada recalcula o valor do zero, anulando o benefício da memoização",
+    "A função está usando recursão em vez de iteração, o que impede qualquer forma de cache",
+    "O parâmetro `n` está sendo passado por valor, e não por referência, impedindo o cache de funcionar"
+  ],
+  answer: 1,
+  feedback: "Sem a linha que faz `cache[n] = resultado`, a **etapa de armazenamento nunca ocorre**, então a verificação `if n in cache` nunca encontra nada salvo, e a função continua recalculando tudo do zero em toda chamada."
+}
   ],
 
 
@@ -3426,6 +4110,341 @@ fixacao: [
   answer: 1,
   feedback: "A busca em largura (BFS) usa uma fila para garantir que os nós sejam processados na ordem em que foram descobertos (FIFO)."
 },
+
+// 61 - Definição do Bubble Sort
+{
+  aula: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+  tipo: "Direta",
+  texto: "O Bubble Sort é um dos algoritmos de ordenação mais simples de entender.",
+  question: "Qual é a principal característica do Bubble Sort?",
+  options: [
+    "Ele divide a lista pela metade repetidamente",
+    "Ele compara elementos vizinhos e os troca quando estão fora de ordem",
+    "Ele sempre insere o elemento na posição correta usando busca binária",
+    "Ele escolhe aleatoriamente pares de elementos para comparar"
+  ],
+  answer: 1,
+  feedback: "O Bubble Sort percorre a lista repetidamente comparando pares de elementos adjacentes e trocando-os quando necessário, fazendo o maior valor \"borbulhar\" até o final."
+},
+
+// 62 - Número de trocas do Selection Sort
+{
+  aula: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+  tipo: "Contexto",
+  texto: "No Selection Sort, cada passagem busca o menor elemento entre os que ainda não foram posicionados corretamente.",
+  question: "Quantas trocas, no máximo, o Selection Sort realiza em cada passagem?",
+  options: [
+    "Nenhuma, ele apenas reorganiza por comparação sem trocar",
+    "Uma, feita somente depois de encontrar o menor elemento restante",
+    "Uma para cada par de elementos comparado",
+    "Depende do tamanho da lista, sem limite fixo"
+  ],
+  answer: 1,
+  feedback: "O Selection Sort varre toda a parte não ordenada em busca do menor valor e realiza, no máximo, uma única troca por passagem para posicioná-lo corretamente."
+},
+
+// 63 - Melhor caso do Insertion Sort
+{
+  aula: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+  tipo: "Direta",
+  texto: "O Insertion Sort insere cada elemento na posição correta dentro da parte já ordenada da lista.",
+  question: "Qual é a complexidade do Insertion Sort no melhor caso, quando a lista já está ordenada?",
+  options: [
+    "O(1)",
+    "O(n)",
+    "O(n log n)",
+    "O(n²)"
+  ],
+  answer: 1,
+  feedback: "Quando a lista já está ordenada, o Insertion Sort não precisa deslocar elementos, percorrendo-a apenas uma vez — o que resulta em complexidade O(n)."
+},
+
+// 64 - Estratégia do Merge Sort
+{
+  aula: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+  tipo: "Contexto",
+  texto: "O Merge Sort segue a estratégia de dividir para conquistar, quebrando o problema original em partes menores.",
+  question: "Como o Merge Sort organiza a lista antes de começar a comparar elementos?",
+  options: [
+    "Ele percorre a lista trocando elementos vizinhos repetidamente",
+    "Ele divide a lista repetidamente ao meio até restarem listas de um único elemento",
+    "Ele seleciona o menor elemento da lista inteira a cada rodada",
+    "Ele mantém a lista original intacta e cria apenas uma cópia ordenada"
+  ],
+  answer: 1,
+  feedback: "Antes de comparar qualquer elemento, o Merge Sort divide a lista repetidamente ao meio, até chegar a listas de um único elemento, para só então mesclá-las em ordem."
+},
+
+// 65 - Complexidade do Merge Sort
+{
+  aula: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+  tipo: "Direta",
+  texto: "Diferente dos outros três algoritmos estudados, o Merge Sort mantém a mesma complexidade em qualquer cenário.",
+  question: "Qual é a complexidade do Merge Sort tanto no melhor quanto no pior caso?",
+  options: [
+    "O(n)",
+    "O(n²)",
+    "O(n log n)",
+    "O(2ⁿ)"
+  ],
+  answer: 2,
+  feedback: "Graças à divisão pela metade (log n) combinada com o custo de mesclar as partes (n), o Merge Sort mantém O(n log n) tanto no melhor quanto no pior caso."
+},
+
+// 66 - Aplicação: escolha para dados aleatórios grandes
+{
+  aula: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+  tipo: "Aplicação",
+  texto: "Um sistema precisa ordenar centenas de milhares de registros que chegam em ordem totalmente aleatória, sem nenhuma organização prévia.",
+  question: "Entre os algoritmos estudados, qual tende a apresentar o desempenho mais previsível nesse cenário?",
+  options: [
+    "Bubble Sort, por ser o mais simples de implementar",
+    "Insertion Sort, pois seu melhor caso é O(n)",
+    "Merge Sort, pois garante O(n log n) mesmo no pior caso",
+    "Selection Sort, pois realiza poucas trocas"
+  ],
+  answer: 2,
+  feedback: "Como os dados não têm nenhuma ordem prévia, o melhor caso do Insertion Sort não se aplica, e o Merge Sort é o único que garante desempenho previsível (O(n log n)) independentemente da ordem inicial."
+},
+
+// 67 - Aplicação: lista quase ordenada
+{
+  aula: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+  tipo: "Aplicação",
+  texto: "Uma planilha de notas é atualizada diariamente, mas costuma ter apenas um ou dois valores fora de posição em relação ao dia anterior.",
+  question: "Nesse cenário de lista quase ordenada, qual algoritmo tende a ser mais eficiente?",
+  options: [
+    "Bubble Sort, pois sempre percorre a lista inteira, independentemente da ordem",
+    "Selection Sort, pois busca o menor elemento em cada passagem",
+    "Insertion Sort, pois se aproxima do seu melhor caso O(n) quando a lista já está quase ordenada",
+    "Merge Sort, pois divide a lista pela metade em qualquer situação"
+  ],
+  answer: 2,
+  feedback: "O Insertion Sort é o único dos quatro cujo melhor caso é O(n), e isso ocorre justamente quando a lista já está (quase) ordenada, exigindo poucos deslocamentos."
+},
+
+// 68 - Desvantagem do Merge Sort
+{
+  aula: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+  tipo: "Contexto",
+  texto: "Apesar de eficiente em tempo de execução, o Merge Sort não é a escolha ideal em todos os cenários.",
+  question: "Qual é a principal desvantagem do Merge Sort em relação aos outros três algoritmos estudados?",
+  options: [
+    "Ele tem complexidade pior no pior caso",
+    "Ele precisa de memória extra para as listas temporárias criadas durante a mesclagem",
+    "Ele não funciona corretamente em listas com números repetidos",
+    "Ele exige que a lista já esteja parcialmente ordenada"
+  ],
+  answer: 1,
+  feedback: "O Merge Sort precisa criar listas temporárias durante a fase de mesclagem, o que aumenta o consumo de memória — um trade-off importante frente aos outros algoritmos, que não usam memória extra."
+},
+
+// 69 - Diferença entre Bubble e Selection Sort
+{
+  aula: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+  tipo: "Direta",
+  texto: "Bubble Sort e Selection Sort têm a mesma complexidade O(n²), mas se comportam de formas diferentes.",
+  question: "Qual é a principal diferença prática entre o Bubble Sort e o Selection Sort?",
+  options: [
+    "O Selection Sort nunca faz trocas, apenas comparações",
+    "O Bubble Sort pode realizar várias trocas em uma única passagem, enquanto o Selection Sort faz no máximo uma",
+    "O Bubble Sort é mais rápido em qualquer cenário, independentemente do tamanho da lista",
+    "O Selection Sort compara apenas o primeiro e o último elemento da lista"
+  ],
+  answer: 1,
+  feedback: "Mesmo com o mesmo Big O, o Bubble Sort troca pares de vizinhos sempre que estão fora de ordem, enquanto o Selection Sort só troca uma vez por passagem, depois de encontrar o menor elemento restante."
+},
+
+// 70 - Comparações do Bubble Sort
+{
+  aula: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+  tipo: "Direta",
+  texto: "Uma dúvida comum é sobre quais elementos o Bubble Sort de fato compara durante sua execução.",
+  question: "Em cada comparação realizada pelo Bubble Sort, quais elementos são analisados?",
+  options: [
+    "Sempre o primeiro e o último elemento da lista",
+    "Elementos escolhidos aleatoriamente entre a lista",
+    "Apenas elementos em posições adjacentes (vizinhas)",
+    "O menor e o maior elemento encontrados até o momento"
+  ],
+  answer: 2,
+  feedback: "O Bubble Sort compara exclusivamente elementos em posições vizinhas, nunca elementos distantes entre si, avançando pela lista uma comparação por vez."
+},
+
+// 71 - Definição de memoização
+{
+  aula: "Capítulo 8 — Memoização",
+  tipo: "Direta",
+  texto: "Memoização é uma técnica usada para tornar funções recursivas mais eficientes.",
+  question: "O que é memoização?",
+  options: [
+    "Uma técnica que transforma qualquer função recursiva em iterativa",
+    "Uma técnica que guarda resultados já calculados para evitar recálculos futuros",
+    "Uma técnica que reduz o número de parâmetros de uma função",
+    "Uma técnica exclusiva para ordenação de listas"
+  ],
+  answer: 1,
+  feedback: "Memoização consiste em cachear (guardar) o resultado de chamadas já calculadas, retornando o valor salvo em vez de recalcular quando a mesma entrada aparece novamente."
+},
+
+// 72 - Complexidade do Fibonacci sem memoização
+{
+  aula: "Capítulo 8 — Memoização",
+  tipo: "Contexto",
+  texto: "A versão recursiva simples do Fibonacci recalcula os mesmos valores diversas vezes durante sua execução.",
+  question: "Qual é a complexidade do Fibonacci recursivo simples, sem memoização?",
+  options: [
+    "O(n)",
+    "O(n log n)",
+    "O(n²)",
+    "O(2ⁿ)"
+  ],
+  answer: 3,
+  feedback: "Sem memoização, a árvore de chamadas do Fibonacci cresce exponencialmente, já que os mesmos valores são recalculados repetidamente — resultando em complexidade O(2ⁿ)."
+},
+
+// 73 - Código: cache manual do Fibonacci
+{
+  aula: "Capítulo 8 — Memoização",
+  tipo: "Código",
+  texto: "Observe a implementação manual de memoização abaixo, usando um dicionário como cache.",
+  question: "O que a linha `if n in cache: return cache[n]` faz nessa função?",
+  code: `def fibonacci_memo(n, cache={}):
+    if n in cache:
+        return cache[n]
+    if n <= 1:
+        return n
+    resultado = fibonacci_memo(n - 1, cache) + fibonacci_memo(n - 2, cache)
+    cache[n] = resultado
+    return resultado`,
+  options: [
+    "Verifica se n é menor que zero e interrompe a execução",
+    "Verifica se o resultado para aquele n já foi calculado antes e, se sim, o retorna direto do cache",
+    "Adiciona um novo valor ao cache antes de qualquer cálculo",
+    "Reinicia o cache sempre que a função é chamada"
+  ],
+  answer: 1,
+  feedback: "Essa verificação evita recálculos: se o valor de n já estiver no dicionário cache, a função retorna o resultado salvo imediatamente, sem fazer novas chamadas recursivas."
+},
+
+// 74 - lru_cache
+{
+  aula: "Capítulo 8 — Memoização",
+  tipo: "Direta",
+  texto: "Python oferece um decorador pronto para aplicar memoização sem precisar criar um dicionário manualmente.",
+  question: "Qual é o nome do decorador do módulo functools usado para aplicar memoização automática?",
+  options: [
+    "@cache_memo",
+    "@auto_cache",
+    "@lru_cache",
+    "@fast_cache"
+  ],
+  answer: 2,
+  feedback: "O decorador @lru_cache, do módulo functools, adiciona automaticamente o comportamento de cache a uma função, sem precisar implementar a lógica manualmente."
+},
+
+// 75 - Aplicação: sistema que recalcula Fibonacci repetidamente
+{
+  aula: "Capítulo 8 — Memoização",
+  tipo: "Aplicação",
+  texto: "Um sistema chama a função fibonacci(35) diversas vezes durante sua execução, em módulos diferentes, sem nenhum tipo de cache implementado.",
+  question: "Qual seria a melhor estratégia para melhorar o desempenho desse sistema?",
+  options: [
+    "Substituir o Fibonacci pelo cálculo do fatorial",
+    "Aplicar memoização à função, já que os mesmos valores de n são recalculados repetidamente",
+    "Remover o caso base da função para simplificar o código",
+    "Aumentar o valor de n para reduzir o número de chamadas"
+  ],
+  answer: 1,
+  feedback: "Como os mesmos valores de n são recalculados repetidamente entre os módulos, aplicar memoização evita que o trabalho já feito seja refeito, reduzindo bastante o tempo de execução."
+},
+
+// 76 - Fatorial e memoização
+{
+  aula: "Capítulo 8 — Memoização",
+  tipo: "Contexto",
+  texto: "No cálculo do fatorial(n), cada chamada recursiva utiliza um valor de n diferente, que nunca se repete dentro da mesma execução.",
+  question: "Por que aplicar memoização ao fatorial não traz ganho de desempenho?",
+  options: [
+    "Porque o fatorial não pode ser implementado de forma recursiva",
+    "Porque não há chamadas repetidas com o mesmo argumento para o cache reaproveitar",
+    "Porque o Python não permite usar dicionários em funções recursivas",
+    "Porque o fatorial já tem complexidade O(1)"
+  ],
+  answer: 1,
+  feedback: "Memoização só traz ganho quando há chamadas repetidas com os mesmos argumentos. Como cada n do fatorial aparece uma única vez, o cache nunca é reaproveitado."
+},
+
+// 77 - Impacto na complexidade
+{
+  aula: "Capítulo 8 — Memoização",
+  tipo: "Direta",
+  texto: "A memoização muda significativamente a complexidade do Fibonacci recursivo.",
+  question: "Qual é a complexidade do Fibonacci recursivo depois de aplicar memoização?",
+  options: [
+    "O(1)",
+    "O(n)",
+    "O(n²)",
+    "O(2ⁿ)"
+  ],
+  answer: 1,
+  feedback: "Com memoização, cada valor de n é calculado apenas uma vez, e as chamadas repetidas são resolvidas em O(1) via cache, resultando em complexidade total O(n)."
+},
+
+// 78 - Código: esquecer de salvar no cache
+{
+  aula: "Capítulo 8 — Memoização",
+  tipo: "Código",
+  texto: "Veja a função abaixo, onde a linha responsável por salvar o resultado no cache foi removida por engano.",
+  question: "Qual será o efeito prático dessa função em relação à memoização?",
+  code: `def fibonacci_memo(n, cache={}):
+    if n in cache:
+        return cache[n]
+    if n <= 1:
+        return n
+    resultado = fibonacci_memo(n - 1, cache) + fibonacci_memo(n - 2, cache)
+    return resultado`,
+  options: [
+    "A função continuará funcionando normalmente, pois o cache é preenchido automaticamente",
+    "A função vai gerar um erro de execução por causa da linha ausente",
+    "A função nunca vai armazenar resultados no cache, então continuará recalculando tudo a cada chamada",
+    "A função vai retornar resultados incorretos para valores pares de n"
+  ],
+  answer: 2,
+  feedback: "Sem a linha `cache[n] = resultado`, nenhum valor é salvo no dicionário, então a verificação `if n in cache` nunca encontra nada — a função perde totalmente o benefício da memoização."
+},
+
+// 79 - Trade-off da memoização
+{
+  aula: "Capítulo 8 — Memoização",
+  tipo: "Contexto",
+  texto: "A memoização traz ganhos de desempenho, mas não é uma otimização totalmente gratuita.",
+  question: "Qual é o principal custo (trade-off) de aplicar memoização em uma função?",
+  options: [
+    "Perda de precisão nos resultados calculados",
+    "Aumento no consumo de memória, usada para armazenar o cache",
+    "Impossibilidade de usar a função de forma recursiva",
+    "Redução da legibilidade do código, sem nenhum outro impacto"
+  ],
+  answer: 1,
+  feedback: "A memoização troca tempo de processamento por memória extra: o algoritmo fica mais rápido, mas passa a consumir mais espaço para guardar os resultados já calculados."
+},
+
+// 80 - Aplicação: função sem repetição de argumentos
+{
+  aula: "Capítulo 8 — Memoização",
+  tipo: "Aplicação",
+  texto: "Uma função recursiva percorre uma lista de pedidos de um sistema de e-commerce, processando cada item por meio de um índice que sempre aumenta, nunca revisitando um índice já processado.",
+  question: "Faz sentido aplicar memoização a essa função?",
+  options: [
+    "Sim, pois toda função recursiva se beneficia automaticamente de memoização",
+    "Não, pois como cada índice é processado uma única vez, não há chamadas repetidas para o cache aproveitar",
+    "Sim, mas apenas se a lista tiver mais de mil pedidos",
+    "Não, pois memoização só pode ser usada em cálculos matemáticos"
+  ],
+  answer: 1,
+  feedback: "Assim como no fatorial, quando não há repetição de argumentos dentro da mesma execução, o cache nunca é reaproveitado, e a memoização não traz nenhum ganho real de desempenho."
+}
 ],
 
 

@@ -424,6 +424,137 @@ window.__nexusConteudo = {
         { tipo: "exemplo", titulo: "Exercício 5", texto: "Qual estrutura você usaria para implementar a funcionalidade \"Desfazer\" (Ctrl+Z) de um editor de texto? Justifique.", detalhe: "Pilha, porque a última ação realizada deve ser a primeira a ser desfeita — isso é exatamente o comportamento LIFO." }
       ]
     },
+    
+    {
+      id: "ordenacao",
+      titulo: "Capítulo 7 — Algoritmos de Ordenação (Parte 1)",
+      blocos: [
+        { tipo: "subtitulo", texto: "Por que estudar algoritmos de ordenação?" },
+        { tipo: "texto", texto: "Ordenar dados é uma das operações mais comuns em programação. Python já tem sorted() e .sort() prontos (vistos no Capítulo 1), mas entender como um algoritmo de ordenação funciona por dentro é importante porque:" },
+        { tipo: "lista", itens: [
+          "Ajuda a entender complexidade na prática (Capítulo 5)",
+          "É um dos assuntos clássicos de prova de Estrutura de Dados",
+          "Mostra trade-offs entre simplicidade de código e eficiência"
+        ]},
+        { tipo: "texto", texto: "Nesta primeira parte, vemos a ideia conceitual de quatro algoritmos: Bubble Sort, Selection Sort, Insertion Sort e Merge Sort — o \"como funciona\" de cada um, sem entrar ainda em pseudocódigo linha a linha (isso normalmente fica pra Parte 2, se a aula continuar)." },
+
+        { tipo: "subtitulo", texto: "Bubble Sort (Ordenação por Bolha)" },
+
+        { tipo: "topico", titulo: "A ideia", texto: "O Bubble Sort percorre a lista repetidamente, comparando pares de elementos vizinhos e trocando de lugar quando estão na ordem errada. A cada passagem completa pela lista, o maior elemento \"borbulha\" até o final — daí o nome. Pense em bolhas de ar subindo na água: a cada rodada, o elemento \"mais pesado\" (maior) vai afundando pro fundo (final da lista), enquanto os \"mais leves\" sobem aos poucos." },
+        { tipo: "exemplo", titulo: "Como funciona, passo a passo — Bubble Sort", texto: "Lista inicial: [5, 3, 8, 1].\n\n1ª passagem (compara vizinhos, troca se estiver fora de ordem):\n- Compara 5 e 3 → troca → [3, 5, 8, 1]\n- Compara 5 e 8 → já em ordem → [3, 5, 8, 1]\n- Compara 8 e 1 → troca → [3, 5, 1, 8]\n\nRepare que o 8 (maior elemento) já foi parar no final — isso sempre acontece na primeira passagem completa.\n\n2ª passagem:\n- Compara 3 e 5 → já em ordem\n- Compara 5 e 1 → troca → [3, 1, 5, 8]\n\n3ª passagem:\n- Compara 3 e 1 → troca → [1, 3, 5, 8]\n\nLista ordenada!", detalhe: "Cada passagem completa reduz em 1 o número de elementos ainda não garantidamente ordenados, pois o maior de cada rodada já vai parar na posição final correta." },
+        { tipo: "topico", titulo: "Características principais", lista: [
+          "A cada passagem completa, o maior elemento \"restante\" vai para sua posição final",
+          "É o algoritmo mais simples de entender e implementar, mas também um dos menos eficientes",
+          "Complexidade: O(n²) no pior caso e no caso médio (dois \"laços\" — uma passagem dentro da outra)"
+        ]},
+        { tipo: "destaque", texto: "Bubble Sort troca elementos vizinhos (posições adjacentes). Ele nunca compara elementos que não estão lado a lado numa mesma comparação." },
+
+        { tipo: "subtitulo", texto: "Selection Sort (Ordenação por Seleção)" },
+
+        { tipo: "topico", titulo: "A ideia", texto: "O Selection Sort divide a lista mentalmente em duas partes: a parte já ordenada (no início) e a parte não ordenada (no resto). A cada passagem, ele procura o menor elemento de toda a parte não ordenada e o coloca na primeira posição livre da parte ordenada. É como organizar cartas na mão: você olha todas as cartas que ainda não organizou, escolhe a menor, e coloca ela na próxima posição da fileira já organizada." },
+        { tipo: "exemplo", titulo: "Como funciona, passo a passo — Selection Sort", texto: "Lista inicial: [5, 3, 8, 1].\n\n1ª passagem: procura o menor de [5, 3, 8, 1] → é o 1 → troca com a primeira posição → [1, 3, 8, 5]\n\n2ª passagem: procura o menor de [3, 8, 5] (ignorando o 1, que já está no lugar certo) → é o 3 → já está na posição certa → [1, 3, 8, 5]\n\n3ª passagem: procura o menor de [8, 5] → é o 5 → troca → [1, 3, 5, 8]\n\nLista ordenada!" },
+        { tipo: "topico", titulo: "Características principais", lista: [
+          "Ao contrário do Bubble Sort (que troca vizinhos várias vezes), o Selection Sort faz no máximo uma troca por passagem — ele só troca depois de encontrar o menor elemento de toda a parte não ordenada",
+          "Complexidade: O(n²) — para cada posição, é preciso varrer o restante da lista procurando o menor",
+          "É geralmente mais eficiente que o Bubble Sort na prática (menos trocas), mesmo tendo a mesma complexidade Big O"
+        ]},
+        { tipo: "destaque", texto: "O Selection Sort sempre percorre todo o restante da lista pra achar o menor elemento, mesmo que a lista já esteja quase ordenada — por isso ele não tem \"melhor caso\" mais rápido, é sempre O(n²)." },
+
+        { tipo: "subtitulo", texto: "Insertion Sort (Ordenação por Inserção)" },
+
+        { tipo: "topico", titulo: "A ideia", texto: "O Insertion Sort também divide a lista em uma parte ordenada (início) e uma não ordenada (resto), mas o funcionamento é diferente do Selection Sort: ele pega o primeiro elemento da parte não ordenada e o insere na posição correta dentro da parte já ordenada, empurrando os elementos maiores para a direita se necessário. É exatamente como organizar cartas de baralho na mão, uma a uma: você pega a próxima carta do monte e a encaixa na posição certa entre as cartas que já estão organizadas na sua mão." },
+        { tipo: "exemplo", titulo: "Como funciona, passo a passo — Insertion Sort", texto: "Lista inicial: [5, 3, 8, 1].\n\nConsidera-se [5] como parte já \"ordenada\" (um único elemento sempre está ordenado sozinho).\n\nPasso 1: pega o 3 → compara com o 5 → 3 é menor, então insere antes → [3, 5, 8, 1]\n\nPasso 2: pega o 8 → compara com o 5 → 8 é maior, fica onde está → [3, 5, 8, 1]\n\nPasso 3: pega o 1 → compara com o 8 → menor, desloca; compara com o 5 → menor, desloca; compara com o 3 → menor, desloca; insere no início → [1, 3, 5, 8]\n\nLista ordenada!" },
+        { tipo: "topico", titulo: "Características principais", lista: [
+          "Muito eficiente quando a lista já está quase ordenada (no melhor caso, é O(n))",
+          "Complexidade: O(n²) no pior caso (lista em ordem inversa), mas O(n) no melhor caso (lista já ordenada)",
+          "É o algoritmo geralmente usado como base de comparação, por ser simples e ter bom desempenho em listas pequenas ou quase ordenadas"
+        ]},
+        { tipo: "destaque", texto: "Diferente do Bubble e do Selection Sort, o Insertion Sort é o único dos três que tem melhor caso O(n) — isso costuma ser cobrado como \"qual desses algoritmos é mais rápido se a lista já estiver quase ordenada?\"." },
+
+        { tipo: "subtitulo", texto: "Merge Sort (Ordenação por Intercalação)" },
+
+        { tipo: "topico", titulo: "A ideia", texto: "O Merge Sort usa a estratégia de dividir para conquistar (divide and conquer): ele divide a lista repetidamente ao meio até sobrar só listas de 1 elemento (que, por definição, já estão \"ordenadas\"), e depois vai juntando (mesclando) essas listinhas de volta, sempre em ordem, até reconstruir a lista completa ordenada. Esse é o mesmo tipo de raciocínio \"dividir o problema em partes menores\" que vimos na Recursão (Capítulo 3) — o Merge Sort é, inclusive, normalmente implementado de forma recursiva." },
+        { tipo: "exemplo", titulo: "Como funciona, conceitualmente — Merge Sort", texto: "Lista inicial: [5, 3, 8, 1].\n\nFase de divisão (quebra ao meio repetidamente):\n[5, 3, 8, 1]\n  /        \\\n[5, 3]    [8, 1]\n /  \\      /  \\\n[5] [3]  [8] [1]\n\nFase de intercalação (junta de volta em ordem):\n[5] e [3] → mescla → [3, 5]\n[8] e [1] → mescla → [1, 8]\n\n[3, 5] e [1, 8] → mescla → [1, 3, 5, 8]\n\nLista ordenada!", detalhe: "O \"mesclar\" funciona comparando o primeiro elemento de cada metade e sempre colocando o menor primeiro na lista resultado — repetindo isso até esgotar as duas metades." },
+        { tipo: "topico", titulo: "Características principais", lista: [
+          "Sempre O(n log n), tanto no melhor quanto no pior caso — é isso que o torna mais confiável e eficiente que Bubble, Selection e Insertion Sort para listas grandes",
+          "O \"log n\" vem da divisão pela metade repetida (igual à busca binária, vista no Capítulo 5); o \"n\" vem do trabalho de mesclar as partes",
+          "Usa mais memória que os outros três, porque precisa criar listas temporárias durante a mesclagem"
+        ]},
+        { tipo: "destaque", texto: "Merge Sort não compara elementos vizinhos da lista original como o Bubble Sort — ele primeiro divide a lista inteira, e só depois faz as comparações durante a mesclagem das partes." },
+
+        { tipo: "subtitulo", texto: "Comparação entre os quatro algoritmos" },
+
+        { tipo: "tabela", titulo: "Comparação entre Bubble, Selection, Insertion e Merge Sort", colunas: ["Algoritmo", "Ideia central", "Melhor caso", "Pior caso", "Trocas/Memória extra"], linhas: [
+          ["Bubble Sort", "Troca vizinhos repetidamente", "O(n²)*", "O(n²)", "Muitas trocas, sem memória extra"],
+          ["Selection Sort", "Busca o menor e posiciona", "O(n²)", "O(n²)", "Poucas trocas, sem memória extra"],
+          ["Insertion Sort", "Insere cada elemento na posição certa", "O(n)", "O(n²)", "Depende, sem memória extra"],
+          ["Merge Sort", "Divide ao meio e mescla", "O(n log n)", "O(n log n)", "Usa memória extra (listas temporárias)"]
+        ]},
+        { tipo: "texto", texto: "*Algumas implementações de Bubble Sort conseguem detectar se a lista já está ordenada e parar mais cedo, chegando a O(n) no melhor caso — mas a versão \"clássica\" simples costuma ser tratada como O(n²) em qualquer caso." },
+        { tipo: "lista", titulo: "Erros comuns e pegadinhas de prova — Algoritmos de Ordenação", itens: [
+          "Achar que Bubble Sort e Selection Sort funcionam do mesmo jeito — Bubble troca vizinhos várias vezes por passagem; Selection troca no máximo uma vez por passagem (só depois de achar o menor).",
+          "Achar que todo algoritmo O(n²) tem o mesmo desempenho na prática — Insertion Sort costuma ser mais rápido que Bubble Sort em listas quase ordenadas, mesmo tendo o mesmo Big O no pior caso.",
+          "Esquecer que o Merge Sort precisa de memória extra para as listas temporárias da mesclagem — isso é frequentemente perguntado como desvantagem dele frente aos outros.",
+          "Confundir \"dividir pela metade\" (Merge Sort) com \"percorrer a lista repetidamente\" (Bubble, Selection, Insertion) — são estratégias bem diferentes.",
+          "Achar que Merge Sort é sempre a melhor escolha — para listas muito pequenas, o overhead de dividir e mesclar pode não compensar frente a um Insertion Sort simples."
+        ]}
+      ]
+    },
+    {
+      id: "memoizacao",
+      titulo: "Capítulo 8 — Memoização",
+      blocos: [
+        { tipo: "subtitulo", texto: "O problema da recursão que recalcula tudo" },
+
+        { tipo: "texto", texto: "Lembra do Fibonacci recursivo do Capítulo 3?" },
+        { tipo: "exemplo", titulo: "Fibonacci recursivo simples (sem memoização)", texto: "`def fibonacci(n):`\n`    if n <= 1:`\n`        return n`\n`    return fibonacci(n - 1) + fibonacci(n - 2)`", detalhe: "Vimos que essa versão é O(2ⁿ) — extremamente ineficiente para valores grandes de n. O motivo é que ela recalcula os mesmos valores várias vezes. Por exemplo, para calcular fibonacci(5), a função acaba calculando fibonacci(3) duas vezes, fibonacci(2) três vezes, e assim por diante — um desperdício enorme de trabalho repetido." },
+        { tipo: "exemplo", titulo: "Árvore de chamadas de fibonacci(5)", texto: "fibonacci(5)\n├── fibonacci(4)\n│   ├── fibonacci(3)\n│   │   ├── fibonacci(2)\n│   │   └── fibonacci(1)\n│   └── fibonacci(2) <- calculado de novo!\n└── fibonacci(3) <- calculado de novo, com toda a sua sub-árvore!" },
+
+        { tipo: "subtitulo", texto: "O que é memoização?" },
+
+        { tipo: "texto", texto: "Memoização é uma técnica de otimização que consiste em guardar (cachear) o resultado de chamadas de função já calculadas, para que, se a mesma entrada aparecer de novo, a função simplesmente retorne o valor guardado em vez de recalcular tudo. O nome vem de \"memorandum\" (um lembrete) — a função \"anota\" os resultados que já calculou para não ter que refazer o trabalho." },
+        { tipo: "destaque", texto: "Não confundir com \"memorização\" no sentido comum — memoização é o termo técnico correto em Ciência da Computação para essa técnica específica de cache de resultados de função." },
+
+        { tipo: "subtitulo", texto: "Como implementar memoização (na mão, com dicionário)" },
+
+        { tipo: "texto", texto: "A forma mais comum de implementar memoização manualmente é usando um dicionário para guardar os resultados já calculados, usando o parâmetro de entrada como chave:" },
+        { tipo: "exemplo", titulo: "Fibonacci com memoização manual (dicionário)", texto: "`def fibonacci_memo(n, cache={}):`\n`    if n in cache:                 # já calculamos esse valor antes?`\n`        return cache[n]             # se sim, retorna direto do cache`\n`    if n <= 1:                     # caso base`\n`        return n`\n`    resultado = fibonacci_memo(n - 1, cache) + fibonacci_memo(n - 2, cache)`\n`    cache[n] = resultado            # guarda o resultado antes de retornar`\n`    return resultado`\n\n`print(fibonacci_memo(10))   # 55`" },
+        { tipo: "topico", titulo: "O que mudou em relação à versão original", lista: [
+          "Existe um cache (dicionário) que guarda pares n: resultado_de_fibonacci(n)",
+          "Antes de calcular, a função verifica se aquele valor já foi calculado (if n in cache)",
+          "Se já foi, retorna o valor guardado imediatamente — sem fazer nenhuma chamada recursiva nova",
+          "Se não foi, calcula normalmente e guarda o resultado no cache antes de retornar, para que futuras chamadas com o mesmo n sejam instantâneas"
+        ]},
+        { tipo: "destaque", texto: "Usar um dicionário mutável (cache={}) como valor padrão de parâmetro é uma prática que funciona aqui, mas normalmente é desencorajada em Python fora desse contexto específico, porque o dicionário é criado uma única vez e compartilhado entre chamadas — é justamente esse comportamento \"estranho\" que a memoização está aproveitando de propósito." },
+
+        { tipo: "subtitulo", texto: "Uma alternativa pronta: functools.lru_cache" },
+
+        { tipo: "texto", texto: "Python tem um decorador pronto que faz memoização automaticamente, sem precisar criar o dicionário na mão:" },
+        { tipo: "exemplo", titulo: "Fibonacci com @lru_cache", texto: "`from functools import lru_cache`\n\n`@lru_cache(maxsize=None)`\n`def fibonacci_lru(n):`\n`    if n <= 1:`\n`        return n`\n`    return fibonacci_lru(n - 1) + fibonacci_lru(n - 2)`\n\n`print(fibonacci_lru(10))   # 55`" },
+        { tipo: "lista", itens: [
+          "@lru_cache é um decorador — ele \"envolve\" a função, adicionando o comportamento de cache automaticamente",
+          "maxsize=None significa que o cache pode crescer sem limite (guarda todos os resultados já calculados)",
+          "Por baixo dos panos, o lru_cache funciona de um jeito parecido com o dicionário manual visto acima"
+        ]},
+
+        { tipo: "subtitulo", texto: "Impacto da memoização na complexidade" },
+
+        { tipo: "texto", texto: "Sem memoização, fibonacci(n) é O(2ⁿ) — cada chamada gera duas novas chamadas, formando uma árvore que cresce exponencialmente. Com memoização, fibonacci(n) passa a ser O(n) — porque cada valor de n só é calculado uma única vez; todas as chamadas repetidas são resolvidas em O(1) direto do cache." },
+        { tipo: "destaque", texto: "Essa é uma das demonstrações mais cobradas em prova: \"como a memoização muda a complexidade do Fibonacci recursivo?\" — a resposta é que ela reduz de exponencial (O(2ⁿ)) para linear (O(n)), ao custo de gastar memória extra para guardar o cache (trade-off clássico entre tempo e espaço)." },
+
+        { tipo: "subtitulo", texto: "Memoização não serve para qualquer recursão" },
+
+        { tipo: "texto", texto: "Memoização só ajuda quando a função é chamada repetidamente com os mesmos argumentos — se cada chamada recursiva sempre recebe um valor de entrada diferente (como no fatorial(n), onde cada chamada usa um n que nunca se repete durante uma mesma execução), não há nada repetido para \"economizar\", então a memoização não traz ganho de desempenho nesse caso." },
+        { tipo: "exemplo", titulo: "Fatorial — caso onde memoização não ajuda", texto: "`def fatorial(n):`\n`    if n == 0:`\n`        return 1`\n`    return n * fatorial(n - 1)`", detalhe: "Aqui, fatorial(3) chama fatorial(2), que chama fatorial(1), que chama fatorial(0) — nenhum valor de n se repete dentro dessa execução, então não há chamadas redundantes para evitar." },
+        { tipo: "lista", titulo: "Erros comuns e pegadinhas de prova — Memoização", itens: [
+          "Achar que memoização e recursão são a mesma coisa — memoização é uma técnica de otimização que pode ser aplicada sobre uma função recursiva (ou até iterativa), não é um tipo de recursão.",
+          "Achar que toda função recursiva se beneficia de memoização — só funções que recalculam os mesmos valores repetidamente ganham vantagem (como Fibonacci); funções como o fatorial não ganham nada, porque nunca repetem uma entrada.",
+          "Esquecer de guardar o resultado no cache antes de retornar — se você esquecer o cache[n] = resultado, a função nunca vai de fato economizar chamadas futuras.",
+          "Confundir o cache com uma simples variável — o cache precisa guardar múltiplos resultados (por isso é um dicionário, associando entrada → resultado), não um único valor.",
+          "Achar que memoização reduz o uso de memória — na verdade é o contrário: ela gasta mais memória (para guardar o cache) em troca de economizar tempo de processamento. É um trade-off tempo × espaço."
+        ]}
+      ]
+    },
     {
       id: "revisao-final",
       titulo: "Revisão Final para a Prova",
@@ -469,11 +600,24 @@ window.__nexusConteudo = {
           "Pilha (LIFO): push/pop no topo (final da lista em Python). Ideal para desfazer ações, chamadas de função.",
           "Fila (FIFO): enqueue no final, dequeue no início. Use collections.deque para eficiência (popleft() é O(1), enquanto list.pop(0) é O(n)).",
           "Pilha de execução de funções é o mecanismo por trás da recursão."
+        ]},
+        { tipo: "topico", titulo: "Algoritmos de Ordenação", lista: [
+          "Bubble Sort: troca vizinhos repetidamente; maior elemento \"borbulha\" até o final a cada passagem; O(n²).",
+          "Selection Sort: busca o menor elemento restante e posiciona; no máximo uma troca por passagem; O(n²) sempre (mesmo em lista quase ordenada).",
+          "Insertion Sort: insere cada elemento na posição correta da parte já ordenada; O(n²) no pior caso, mas O(n) no melhor caso (lista quase ordenada).",
+          "Merge Sort: divide a lista ao meio recursivamente e depois mescla em ordem; sempre O(n log n); usa memória extra."
+        ]},
+        { tipo: "topico", titulo: "Memoização", lista: [
+          "Técnica que guarda (cacheia) resultados já calculados de uma função, evitando recálculo.",
+          "Implementação manual: dicionário associando entrada → resultado.",
+          "Implementação pronta: decorador @lru_cache de functools.",
+          "Transforma o Fibonacci recursivo de O(2ⁿ) para O(n).",
+          "Só é útil quando há chamadas repetidas com os mesmos argumentos (não ajuda em funções como o fatorial).",
+          "Trade-off: economiza tempo de processamento, mas gasta mais memória (cache)."
         ]}
       ]
-    },
-
+    }
   ]
-}
+  }
 
   ]};
