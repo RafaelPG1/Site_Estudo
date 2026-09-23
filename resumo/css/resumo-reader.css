@@ -581,12 +581,12 @@
 }
 .reader__hero-number {
   font-family: var(--font-display);
-  font-size: clamp(4rem, 10vw, 7rem);
+  font-size: clamp(3rem, 7vw, 5rem);
   font-weight: 300;
   line-height: 1;
-  color: rgba(var(--disc-tema-rgb), 0.08);
+  color: rgba(var(--disc-tema-rgb), 0.06);
   letter-spacing: -0.03em;
-  margin-bottom: -1.5rem;
+  margin-bottom: -1.1rem;
   user-select: none;
 }
 .reader__hero-eyebrow {
@@ -684,7 +684,7 @@
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: var(--disc-tema);
+  color: var(--text-3);
   margin-bottom: 0.5rem;
 }
 .rm-topico__texto {
@@ -727,10 +727,9 @@
   content: '';
   width: 5px; height: 5px;
   border-radius: 50%;
-  background: var(--disc-tema);
+  background: var(--text-2);
   flex-shrink: 0;
-  margin-top: 0.55rem;
-  opacity: 0.7;
+  margin-top: 0.62rem;
 }
 .rm-lista-titulo {
   font-size: 0.9rem;
@@ -739,49 +738,43 @@
   margin-bottom: 0.4rem;
 }
 
- .rm-subtitulo {
-   display: flex;
-   align-items: center;
-   gap: 0.7rem;
-   font-family: var(--font-display);
-   font-size: 1.25rem;
-   font-weight: 400;
-   color: var(--text-1);
-   margin: var(--space-1) 0 0.25rem;
-   max-width: var(--text-measure);
- }
- .rm-subtitulo::before {
-   content: '';
-   width: 7px;
-   height: 7px;
-   border-radius: 50%;
-   background: linear-gradient(90deg, var(--disc-tema), rgba(var(--disc-tema-rgb), 0.70) 85%);
-   box-shadow: 0 0 6px rgba(var(--disc-tema-rgb), 0.4);
-   flex-shrink: 0;
- }
+/* Subtítulo = cabeçalho de nível 2 dentro da seção. Mesmo tratamento
+   do PDF: texto em negrito, sem troca de família tipográfica nem
+   decoração — a hierarquia vem do peso e do tamanho, não de um
+   elemento gráfico extra competindo com o texto. */
+.rm-subtitulo {
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: -0.005em;
+  margin: var(--space-4) 0 0.4rem;
+  max-width: var(--text-measure);
+}
 
-/* Exemplo = nota de margem/caso aplicado. Tratada como um "aside"
-   anexado ao texto — rótulo em coluna própria, não mais um box
-   genérico tingido de âmbar. */
+/* Exemplo = caso aplicado/nota de margem. Mesma lógica do "exemplo"
+   do pdfmake: caixa com moldura fina e fundo neutro (não mais borda
+   tracejada, que lia como "provisório"), com o rótulo em versais no
+   TOPO da caixa — igual ao PDF, onde o rótulo sempre vem antes do
+   texto. O `order` reposiciona sem depender da ordem no HTML. */
 .rm-exemplo {
   display: flex;
   flex-direction: column;
   padding: var(--space-2) var(--space-3);
-  background: rgba(232,184,109,0.04);
-  border: 1px dashed rgba(232,184,109,0.28);
+  background: var(--bg-hover);
+  border: 1px solid var(--border-2);
   border-radius: var(--r-md);
   max-width: var(--text-measure);
 }
 .rm-exemplo__titulo {
-  margin-top: 0.75rem;
-  padding-top: 0.6rem;
-  border-top: 1px dashed rgba(232,184,109,0.25);
+  order: -1;
+  margin-bottom: 0.5rem;
   font-size: 0.66rem;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--amber);
-  line-height: 1.5;
+  line-height: 1.4;
 }
 .rm-exemplo__texto {
   font-size: 0.96rem;
@@ -796,61 +789,43 @@
   font-style: italic;
 }
 
-/* Destaque = citação editorial. Sem caixa colorida: aspas grandes
-   decorativas + serifa itálica, como uma epígrafe de livro — cria
-   uma pausa visual real na leitura em vez de mais um card tingido. */
+/* Destaque = informação importante marcada pelo material. Mesma
+   lógica do "destaque" do PDF: caixa com fundo suave + barra lateral
+   na cor de apoio (âmbar), sem aspas decorativas — o contorno da
+   caixa já cria a pausa visual, a tipografia continua a mesma do
+   resto do texto. */
 .rm-destaque {
-  padding: 0.25rem 0;
-  margin: var(--space-1) 0;
-  font-family: var(--font-display);
-  font-size: 1.3rem;
-  font-weight: 400;
+  padding: var(--space-2) var(--space-3);
+  margin: var(--space-2) 0;
+  background: rgba(232,184,109,0.08);
+  border-left: 3px solid var(--amber);
+  border-radius: 0 var(--r-md) var(--r-md) 0;
+  font-size: 1.02rem;
+  font-weight: 500;
   color: var(--text-1);
-  line-height: 1.5;
-  font-style: italic;
+  line-height: 1.6;
   max-width: var(--text-measure);
 }
-.rm-destaque::before,
-.rm-destaque::after {
-  font-family: var(--font-display);
-  font-style: normal;
-  font-size: 2em;
-  line-height: 0;
-  color: rgba(var(--disc-tema-rgb), 0.55);
-  vertical-align: -0.28em;
-}
-.rm-destaque::before { content: '“'; margin-right: 0.15rem; }
-.rm-destaque::after  { content: '”'; margin-left: 0.1rem; }
 
 /* Citação = trecho literal transcrito de uma fonte (autor, obra,
-   depoimento no material). Mesmo tratamento editorial do destaque
-   (aspas grandes decorativas + serifa itálica), mas com tom mais
-   neutro/acinzentado — quem marca "isso é importante" é o
-   .rm-destaque; quem diz "isso foi dito, literalmente, por alguém"
-   é o .rm-citacao. A linha de atribuição (autor/fonte) é o que
-   distingue semanticamente os dois blocos. */
+   depoimento no material). Mesma lógica do "citacao" do PDF: barra
+   lateral fina + itálica serifada, sem fundo — quem marca "isso é
+   importante" é o .rm-destaque (caixa com fundo); quem diz "isso foi
+   dito, literalmente, por alguém" é o .rm-citacao (só a barra). A
+   linha de atribuição (autor/fonte) reforça essa diferença. */
 .rm-citacao {
-  padding: 0.25rem 0;
-  margin: var(--space-1) 0;
+  padding: 0.15rem 0 0.15rem 1rem;
+  margin: var(--space-2) 0;
+  border-left: 2px solid var(--border-3);
   font-family: var(--font-display);
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 400;
   color: var(--text-2);
   line-height: 1.55;
   font-style: italic;
   max-width: var(--text-measure);
 }
-.rm-citacao__texto::before,
-.rm-citacao__texto::after {
-  font-family: var(--font-display);
-  font-style: normal;
-  font-size: 2em;
-  line-height: 0;
-  color: rgba(255,255,255,0.32);
-  vertical-align: -0.28em;
-}
-.rm-citacao__texto::before { content: '“'; margin-right: 0.15rem; }
-.rm-citacao__texto::after  { content: '”'; margin-left: 0.1rem; }
+.rm-citacao__texto { display: block; }
 .rm-citacao__autor {
   display: block;
   margin-top: 0.5rem;
@@ -880,9 +855,9 @@
 }
 .rm-tabela th {
   padding: 0.65rem 0.9rem;
-  background: rgba(var(--disc-tema-rgb), 0.07);
-  color: var(--disc-tema);
-  font-weight: 600;
+  background: var(--bg-hover);
+  color: var(--text-1);
+  font-weight: 700;
   font-size: 0.74rem;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -903,7 +878,7 @@
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 700;
-  color: var(--disc-tema);
+  color: var(--amber);
   font-size: 0.65rem;
   text-transform: uppercase;
   letter-spacing: 0.07em;
@@ -1081,8 +1056,7 @@
 .reader--light .reader__toc-rail                { background: rgba(238,230,210,0.65); }
 .reader--light .rm-toc__link:hover              { background: rgba(20,15,8,0.04); }
 .reader--light .reader__hero-chip               { background: rgba(20,15,8,0.04); }
-.reader--light .rm-citacao__texto::before,
-.reader--light .rm-citacao__texto::after        { color: rgba(20,15,8,0.3); }
+.reader--light .rm-citacao        { border-left-color: var(--border-3); }
 .reader--light .rm-tabela tr:nth-child(even) td { background: rgba(20,15,8,0.025); }
 .reader--light .rm-codigo                       { background: rgba(20,15,8,0.04); }
 
@@ -1157,9 +1131,3 @@
   border-left: 3px solid var(--disc-tema);
   border-radius: var(--r-md);
 }
-
-/* Citação/destaque editorial: aspas decorativas na cor de destaque
-   ficavam claras demais sobre papel; ganham a mesma tinta escura
-   suave usada nos demais acentos neutros. */
-.reader--light .rm-destaque::before,
-.reader--light .rm-destaque::after { color: rgba(20,15,8,0.28); }
