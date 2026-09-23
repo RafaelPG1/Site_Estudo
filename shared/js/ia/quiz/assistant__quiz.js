@@ -1,5 +1,5 @@
 /**
- * NEXUS — quiz/js/assistant.js  v2.7
+ * NEXUS — shared/js/ia/quiz/js/assistant_quiz.js  v2.7
  *
  * Quiz-Assistant: tutor de IA dentro do ambiente de quiz.
  *
@@ -157,7 +157,7 @@
      ÁRVORE DE CONVERSA (sistema de versões)
      ──────────────────────────────────────────────────────────
      Ver cabeçalho do arquivo (v2.6) para a descrição completa.
-     Estrutura idêntica à usada em shared/js/ia/resumo/assistant.js,
+     Estrutura idêntica à usada em shared/js/ia/resumo/assistant_resumo.js,
      por mensagem editável (msg.tree):
 
        msg.tree = {
@@ -1008,8 +1008,9 @@
         if (!q) {
           var total = _getSnapshot().length;
           _renderBot(
-            'Questão ' + numQ + ' não encontrada.' +
-            (total > 0 ? ' O quiz atual tem ' + total + ' questões.' : '')
+            total === 0
+              ? 'As questões ainda estão carregando. Tente novamente em alguns instantes.'
+              : 'Questão ' + numQ + ' não encontrada. O quiz atual tem ' + total + ' questões.'
           );
           return;
         }

@@ -80,15 +80,15 @@ function _carregarIA() {
   const deps = [
     BASE + 'core/context.js',    // lê __NEXUS_CONTEXT__ → expõe NexusContext
     BASE + 'core/text-utils.js',
-    BASE + 'core/history.js',    // histórico isolado por contexto — requerido por resumo/assistant.js
+    BASE + 'core/history.js',    // histórico isolado por contexto — requerido por resumo/assistant_resumo.js
     BASE + 'core/loader.js',
     BASE + 'core/worker.js',
     BASE + 'core/ui.js',
-    BASE + 'resumo/search.js',
+    BASE + 'resumo/search_resumo.js',
   ];
 
   Promise.all(deps.map(_loadScript))
-    .then(() => _loadScript(BASE + 'resumo/assistant.js'))
+    .then(() => _loadScript(BASE + 'resumo/assistant_resumo.js'))
     .then(() => _loadScript(BASE + 'init.js'))
     .catch(err => console.error(err));
 }

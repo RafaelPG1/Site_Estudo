@@ -8,7 +8,7 @@
  *
  * ── v1.1 — PERSISTÊNCIA REAL NO F5 ───────────────────────────
  *   Antes usava sessionStorage. sessionStorage por si só já sobrevive
- *   a F5, mas o quiz/js/assistant.js limpava o domínio inteiro no
+ *   a F5, mas o quiz/js/assistant_quiz.js limpava o domínio inteiro no
  *   evento 'pagehide' — e 'pagehide' também dispara em reload, não
  *   apenas ao fechar a aba. Resultado: o histórico era apagado bem
  *   antes do reload terminar, parecendo "resetar no F5".

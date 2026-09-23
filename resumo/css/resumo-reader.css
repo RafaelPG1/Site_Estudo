@@ -312,6 +312,13 @@
   color: var(--disc-tema);
   padding: 0.12em 0.4em;
   border-radius: 4px;
+  /* `código` inline aparece dentro do texto de qualquer bloco
+     (inclusive .rm-destaque/.rm-exemplo/.rm-citacao, via
+     parseInline) — sem isso, um trecho técnico sem espaço vaza pela
+     lateral da caixa em vez de quebrar linha junto com o resto do
+     texto. */
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .reader__content ul, .reader__content ol {
   padding-left: 1.4rem;
@@ -782,6 +789,22 @@
   border: 1px solid var(--border-2);
   border-radius: var(--r-md);
   max-width: var(--text-measure);
+  /* Dentro de .rm-collapse__body-content (flex column), um item flex
+     tem min-width:auto por padrão — o que impede o navegador de
+     encolher a caixa abaixo da largura "natural" do seu conteúdo.
+     Zerando isso, a caixa sempre respeita a largura do card/tela,
+     mesmo com texto que teria, sozinho, uma largura maior. */
+  min-width: 0;
+  /* Causa real do vazamento em mobile: sem isso, uma palavra, termo
+     técnico ou trecho de código sem espaço (ex.: dentro de um
+     `código`) não tem onde quebrar e quando muito longo. O
+     navegador não redimensiona a caixa: o texto simplesmente
+     ultrapassa a borda direita. overflow-wrap resolve quebrando
+     SÓ quando necessário (palavras normais continuam quebrando só
+     no espaço); word-break é o fallback para navegadores mais
+     antigos/WebKit que não reconhecem "anywhere". */
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .rm-exemplo__titulo {
   order: -1;
@@ -822,6 +845,13 @@
   color: var(--text-1);
   line-height: 1.6;
   max-width: var(--text-measure);
+  /* Mesma causa e mesma correção do .rm-exemplo acima: item de um
+     flex container (.rm-collapse__body-content) pode "vazar" pra
+     fora da tela em mobile quando o texto tem uma palavra/trecho sem
+     espaço maior que a largura disponível. */
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 /* Citação = trecho literal transcrito de uma fonte (autor, obra,
@@ -841,6 +871,12 @@
   line-height: 1.55;
   font-style: italic;
   max-width: var(--text-measure);
+  /* Mesma causa e mesma correção do .rm-destaque/.rm-exemplo — a
+     citação usa a mesma estrutura de caixa (borda lateral + texto),
+     então sofre do mesmo vazamento em mobile sem isso. */
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .rm-citacao__texto { display: block; }
 .rm-citacao__autor {

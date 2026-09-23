@@ -1,7 +1,7 @@
 /**
  * NEXUS — shared/js/ia/core/text-utils.js
  *
- * Utilitários de texto compartilhados entre resumo/search.js e quiz/search.js.
+ * Utilitários de texto compartilhados entre resumo/search_resumo.js e quiz/search.js.
  *
  * Responsabilidades:
  *   - Normalização de texto (acentos, caixa, pontuação)
@@ -972,7 +972,7 @@
    *
    * Retorna um objeto com flags booleanas para cada intenção detectada.
    * Múltiplas flags podem ser true ao mesmo tempo — a prioridade é do
-   * consumidor (quiz/assistant.js, resumo/assistant.js).
+   * consumidor (quiz/assistant_quiz.js, resumo/assistant_resumo.js).
    *
    * @param {string} textoNorm — texto já normalizado via normalizarTexto()
    * @returns {{

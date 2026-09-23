@@ -33,7 +33,7 @@
  *
  * ── NOTA (não-alteração) ─────────────────────────────────────
  * Este histórico (_historico) é independente da árvore de versões
- * mantida em resumo/assistant.js e quiz/js/assistant.js. A API
+ * mantida em resumo/assistant_resumo.js e quiz/js/assistant.js. A API
  * pública já suportava sincronização (limparHistorico +
  * restaurarHistorico); o bug de vazamento de contexto entre ramos
  * estava na ausência da CHAMADA a essas funções nos assistants ao
@@ -64,7 +64,7 @@
      CONFIGURAÇÃO
   ══════════════════════════════════════════════════════════ */
 
-  var WORKER_URL     = 'https://restless-flower-1924.rafaelpeixoto475.workers.dev/';
+  var WORKER_URL     = 'https://site-estudo.rafaelpeixoto475.workers.dev/';
   var MAX_TURNS      = 5;
   var SESSION_TTL_MS = 2 * 60 * 60 * 1000;
   var CONTEXTO_MAX   = 3000;
@@ -214,7 +214,7 @@
    * Ponto de entrada principal.
    * Serializa os resultados passados e envia ao worker remoto.
    *
-   * Quem chama (resumo/assistant.js, quiz/assistant.js) é responsável
+   * Quem chama (resumo/assistant_resumo.js, quiz/assistant_quiz.js) é responsável
    * por passar apenas os resultados adequados ao seu próprio contexto
    * e por classificar tipoContexto. Este módulo não filtra por domínio
    * nem decide se a pergunta é um pedido de gabarito — isso é

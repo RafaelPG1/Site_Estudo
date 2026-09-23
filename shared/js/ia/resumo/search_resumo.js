@@ -1,5 +1,5 @@
 /**
- * NEXUS — shared/js/ia/resumo/search.js
+ * NEXUS — shared/js/ia/resumo/search_resumo.js
  *
  * Motor de busca exclusivo para conteúdo de resumo.
  *
@@ -53,7 +53,7 @@
    * Suporta tipos: texto, destaque, subtitulo, topico, lista, exemplo.
    *
    * CONTRATO — duplicação intencional com _extrairTextosBloco()
-   * (resumo/assistant.js):
+   * (resumo/assistant_resumo.js):
    *   Esta versão alimenta o ÍNDICE PERSISTENTE e ponderado
    *   (NexusResumoSearch.indexarConteudo → NexusTextUtils.prepararEntrada),
    *   usado pelo motor de busca local de UMA disciplina por vez.

@@ -1,5 +1,5 @@
 /**
- * NEXUS — shared/js/ia/quiz/search.js
+ * NEXUS — shared/js/ia/quiz/search_quiz.js
  *
  * Motor de busca exclusivo para questões de quiz.
  *
@@ -24,7 +24,7 @@
  *   de qualquer indexação de questões.
  *   O token é gerado uma vez por sessão de quiz e armazenado em
  *   window.__NEXUS_QUIZ_TOKEN__.
- *   Ao sair do quiz, template_init ou quiz/assistant.js chama
+ *   Ao sair do quiz, template_init ou quiz/assistant_quiz.js chama
  *   NexusQuizSearch.revogarQuiz() para zerar token e índice.
  *
  * API pública: window.NexusQuizSearch
@@ -99,7 +99,7 @@
 
   /**
    * Invalida o token e zera imediatamente o índice de quiz.
-   * Chamado por template_init.js ou quiz/assistant.js em beforeunload / pagehide.
+   * Chamado por template_init.js ou quiz/assistant_quiz.js em beforeunload / pagehide.
    * Após este ponto qualquer acesso ao índice retorna resultado vazio.
    */
   function revogarQuiz() {
@@ -220,7 +220,7 @@
 
   /**
    * API pública de indexação — exige token válido.
-   * Chamado por quiz/assistant.js > _garantirConteudo() quando
+   * Chamado por quiz/assistant_quiz.js > _garantirConteudo() quando
    * window.__NEXUS_QUIZ_MODO__ está definido.
    *
    * @param {object} questoes
@@ -378,12 +378,12 @@
 
   // Mescla as funções de quiz em window.NexusSearch para compatibilidade
   // com código existente que chama NexusSearch.buscarQuiz(), etc.
-  // resumo/search.js já cria NexusSearch com as funções de resumo;
+  // resumo/search_resumo.js já cria NexusSearch com as funções de resumo;
   // aqui adicionamos as de quiz sem sobrescrever as existentes.
   if (typeof window.NexusSearch !== 'undefined') {
     Object.assign(window.NexusSearch, api);
   } else {
-    // Fallback: se carregado antes de resumo/search.js
+    // Fallback: se carregado antes de resumo/search_resumo.js
     window.NexusSearch = api;
   }
 

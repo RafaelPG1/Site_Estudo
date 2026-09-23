@@ -92,7 +92,7 @@
    MUDANÇAS v7.0 — REMOÇÃO DO ASSISTENTE NEXUS IA:
      - Removido por completo o bootstrap do assistente de chat
        (ctx.js, context.js, text-utils.js, loader.js, worker.js,
-       ui.js, resumo/search.js, resumo/assistant.js, init.js).
+       ui.js, resumo/search_resumo.js, resumo/assistant_resumo.js, init.js).
      - Removida a declaração de contexto em sessionStorage
        (nexus_ctx / nexus_ctx_dirty), que existia exclusivamente
        para o assistente restaurar/descartar histórico de chat.
@@ -615,12 +615,12 @@ document.addEventListener('DOMContentLoaded', function () {
     BASE + 'core/loader.js',
     BASE + 'core/worker.js',
     BASE + 'core/ui.js',
-    BASE + 'resumo/search.js',
+    BASE + 'resumo/search_resumo.js',
   ];
 
   document.addEventListener('DOMContentLoaded', function () {
     Promise.all(deps.map(_loadScript))
-      .then(function () { return _loadScript(BASE + 'resumo/assistant.js'); })
+      .then(function () { return _loadScript(BASE + 'resumo/assistant_resumo.js'); })
       .then(function () {
         if (window.NexusAssistant) {
           window.NexusAssistant.initUI();

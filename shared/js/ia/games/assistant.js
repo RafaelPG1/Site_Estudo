@@ -265,7 +265,7 @@
   /**
    * Tenta tratar a mensagem no contexto do jogo ativo.
    *
-   * Chamado por resumo/assistant.js dentro de _executarBuscaNaDisc()
+   * Chamado por resumo/assistant_resumo.js dentro de _executarBuscaNaDisc()
    * antes das verificações de resumo.
    *
    * @param {string}   pergunta

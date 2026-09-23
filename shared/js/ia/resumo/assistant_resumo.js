@@ -1,5 +1,5 @@
 /**
- * NEXUS — shared/js/ia/resumo/assistant.js  v3.7
+ * NEXUS — shared/js/ia/resumo/assistant_resumo.js  v3.7
  *
  * Orquestrador do sistema de IA para Resumos.
  *
@@ -162,7 +162,7 @@
  * Depende de:
  *   - core/ctx.js, core/context.js, core/history.js, core/ui.js
  *   - core/loader.js, core/worker.js, core/text-utils.js
- *   - resumo/search.js, window.__nexusCtx
+ *   - resumo/search_resumo.js, window.__nexusCtx
  *
  * API pública: window.NexusAssistant
  */
