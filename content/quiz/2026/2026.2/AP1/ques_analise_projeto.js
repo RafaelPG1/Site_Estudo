@@ -722,7 +722,8 @@ questoes: [
     ],
     answer: 1,
     feedback: "Um bom processo de elicitação e análise reduz retrabalho e custos, pois evita o desenvolvimento de funcionalidades desnecessárias ou que não atendem às expectativas reais dos usuários."
-  },  {
+  },  
+  {
     aula: "Aula 5 — Análise de Requisitos",
     tipo: "Explicativa",
     texto: "Antes de começar a construir qualquer sistema, é preciso descobrir o que ele realmente precisa fazer. Esse processo de descobrir, ouvir e entender as necessidades de todos os interessados — usuários, clientes, gestores — é chamado de elicitação. É como conversar com as pessoas para captar seus 'sonhos' sobre o que o software deve resolver, usando técnicas como entrevistas, questionários e workshops.",
@@ -1169,6 +1170,147 @@ questoes: [
     answer: 1,
     feedback: "A criação e difusão da POO não eliminou outros paradigmas, como o Imperativo ou o Funcional — ela apenas agregou uma nova forma de construir sistemas, convivendo com as abordagens já existentes."
   },
+
+  {
+  aula: "Aula 08 — Rational Unified Process (RUP)",
+  tipo: "Explicativa",
+  texto: "O RUP nasceu nos anos 1990, na Rational Software Corporation, hoje parte da IBM. Naquela época os sistemas ficavam cada vez mais complexos e os prazos, mais apertados. A resposta foi um processo ==def==iterativo e incremental==: o projeto é dividido em ciclos curtos e cada ciclo entrega uma parte funcional do produto, em vez de deixar tudo para o final.",
+  question: "Qual é a principal vantagem de dividir o desenvolvimento em iterações, como propõe o RUP?",
+  options: [
+    "Eliminar a necessidade de documentação durante o projeto",
+    "Identificar e corrigir problemas mais cedo, ajustando o processo ao longo do caminho",
+    "Garantir que os requisitos nunca mudem depois de definidos",
+    "Permitir que o sistema seja entregue apenas uma vez, no fim do projeto"
+  ],
+  answer: 1,
+  feedback: "Cada iteração gera um incremento que pode ser avaliado. Assim, falhas e mal-entendidos aparecem cedo, quando ainda são baratos de corrigir."
+},
+{
+  aula: "Aula 08 — Rational Unified Process (RUP)",
+  tipo: "Explicativa",
+  texto: "O RUP se apoia em três características. Ele é iterativo e incremental, é dirigido por casos de uso e tem foco em arquitetura. Um caso de uso descreve como um usuário interage com o sistema para atingir um objetivo, e por isso captura os requisitos funcionais. Ele também serve de base para os modelos UML que mostram o comportamento e a estrutura do sistema.",
+  question: "Qual é o papel dos casos de uso no RUP?",
+  options: [
+    "Substituir completamente o código-fonte do sistema",
+    "Definir apenas o cronograma e o orçamento do projeto",
+    "Capturar os requisitos funcionais e guiar o desenvolvimento, servindo de base para modelos UML",
+    "Descrever somente a infraestrutura de servidores usada em produção"
+  ],
+  answer: 2,
+  feedback: "Dizer que o RUP é dirigido por casos de uso significa que os requisitos funcionais, expressos como interações usuário-sistema, orientam todo o desenvolvimento."
+},
+{
+  aula: "Aula 08 — Rational Unified Process (RUP)",
+  tipo: "Explicativa",
+  texto: "O ciclo de vida do RUP tem quatro fases, sempre nesta ordem: Iniciação, Elaboração, Construção e Transição. Na Iniciação define-se o escopo e alinham-se as expectativas. Na Elaboração refinam-se os requisitos e desenha-se a arquitetura. Na Construção o sistema é implementado, e na Transição ele é entregue ao ambiente de produção e os usuários são preparados.",
+  question: "Em qual fase do RUP os requisitos principais são refinados e a arquitetura do sistema é definida?",
+  options: [
+    "Elaboração",
+    "Iniciação",
+    "Construção",
+    "Transição"
+  ],
+  answer: 0,
+  feedback: "A Elaboração é a fase de refinar requisitos e definir a estrutura técnica, com artefatos como o Modelo de Casos de Uso e o Documento de Arquitetura."
+},
+{
+  aula: "Aula 08 — Rational Unified Process (RUP)",
+  tipo: "Explicativa",
+  texto: "Além das fases, o RUP organiza o trabalho em nove disciplinas, que são conjuntos de atividades relacionadas, como Requisitos, Implementação e Testes. O gráfico conhecido como RUP Hump cruza as disciplinas (eixo vertical) com as fases e iterações (eixo horizontal). Cada disciplina aparece como uma curva, uma espécie de corcunda, e a altura da curva mostra quanto esforço ela recebe em cada momento.",
+  question: "No gráfico RUP Hump, o que a altura da curva de uma disciplina representa em determinado ponto do tempo?",
+  options: [
+    "O custo financeiro total da disciplina",
+    "O número de pessoas contratadas para o projeto",
+    "A quantidade de linhas de código produzidas",
+    "A intensidade do esforço dedicado àquela disciplina naquela fase ou iteração"
+  ],
+  answer: 3,
+  feedback: "O RUP Hump mostra que as disciplinas não acontecem em blocos isolados. Requisitos pesam mais no início, por exemplo, e Implementação e Testes se intensificam na Construção."
+},
+{
+  aula: "Aula 08 — Rational Unified Process (RUP)",
+  tipo: "Contextualizada",
+  texto: "Em um projeto de software há analistas, desenvolvedores, gerentes e clientes, e cada um enxerga o sistema de um jeito. Para que todos se entendam, o RUP adota a UML, uma linguagem visual padronizada para modelar sistemas. Ela é usada principalmente na fase de Elaboração, quando se representam casos de uso, atores, classes e suas relações. Assim se define a concepção arquitetural antes de escrever o código.",
+  question: "Por que o RUP depende da UML, e em qual fase ela é mais usada?",
+  options: [
+    "Porque a UML gera o código-fonte automaticamente; é mais usada na Transição",
+    "Porque a UML dá à equipe uma linguagem comum para comunicar e documentar o sistema; é mais usada na Elaboração",
+    "Porque a UML substitui o Documento de Visão; é mais usada na Iniciação",
+    "Porque a UML é exigida por lei em projetos de software; é mais usada na Construção"
+  ],
+  answer: 1,
+  feedback: "A UML padroniza a comunicação entre os envolvidos. Como a Elaboração trata de requisitos e arquitetura, é nela que os diagramas aparecem com mais força."
+},
+{
+  aula: "Aula 08 — Rational Unified Process (RUP)",
+  tipo: "Contextualizada",
+  texto: "O RUP pode ser estudado por três perspectivas complementares. A ==term==perspectiva dinâmica== olha para o tempo e trata das fases do processo. A perspectiva estática olha para a estrutura do trabalho e trata das disciplinas. A perspectiva prática reúne os seis princípios e boas práticas que orientam a aplicação do processo, como desenvolvimento iterativo e modelagem com UML.",
+  question: "Qual das associações abaixo entre perspectiva e conteúdo do RUP está correta?",
+  options: [
+    "Dinâmica: as disciplinas; Estática: as fases; Prática: os softwares de apoio",
+    "Dinâmica: os artefatos; Estática: as fases; Prática: as disciplinas",
+    "Dinâmica: as fases; Estática: as disciplinas; Prática: os seis princípios e boas práticas",
+    "Dinâmica: os princípios; Estática: os softwares; Prática: as fases"
+  ],
+  answer: 2,
+  feedback: "Dinâmica é o fluxo das fases ao longo do tempo, estática é a organização em disciplinas e prática são os princípios de aplicação do RUP."
+},
+{
+  aula: "Aula 08 — Rational Unified Process (RUP)",
+  tipo: "Contextualizada",
+  texto: "Cada fase do RUP gera artefatos próprios. Na Construção, o resultado central é o código-fonte, acompanhado da documentação técnica, que explica a implementação e facilita a manutenção futura. Essa documentação pode ser gerada automaticamente a partir de comentários no código, com ferramentas como Doxygen, Javadoc, JSDoc ou Pydoc. Já na Transição, o foco é colocar o sistema em uso, e por isso são produzidos o Guia do Usuário e o Plano de Implantação.",
+  question: "Qual alternativa relaciona corretamente as fases aos seus artefatos típicos?",
+  options: [
+    "Construção: código-fonte e documentação técnica; Transição: Guia do Usuário e Plano de Implantação",
+    "Construção: Guia do Usuário e Plano de Implantação; Transição: código-fonte e documentação técnica",
+    "Construção: Documento de Visão e Plano de Projeto; Transição: Documento de Arquitetura",
+    "Construção: Modelo de Casos de Uso; Transição: Documento de Visão"
+  ],
+  answer: 0,
+  feedback: "Construção produz o sistema e sua documentação técnica. Transição produz o material para instalar e operar o sistema em produção."
+},
+{
+  aula: "Aula 08 — Rational Unified Process (RUP)",
+  tipo: "Aplicação",
+  texto: "O Documento de Visão é o principal artefato da Iniciação e funciona como uma bússola para a equipe. Ele é dividido em seções: Introdução, Posição, Descrição Geral, Recursos e Restrições, Funcionalidades, Requisitos Não Funcionais, Riscos e Contingências e Aprovações. Na seção de Recursos e Restrições ficam os requisitos técnicos do sistema e as limitações do projeto, como orçamento e prazo.",
+  question: "Uma equipe está escrevendo o Documento de Visão de um sistema de controle de verbas de viagem. O contrato fixa um orçamento máximo e um prazo de seis meses para a entrega. Em qual seção essas informações devem ser registradas?",
+  options: [
+    "Aprovações",
+    "Definições, Acrônimos e Abreviações",
+    "Riscos e Contingências, apenas",
+    "Recursos e Restrições"
+  ],
+  answer: 3,
+  feedback: "Orçamento e prazo são limitações do projeto, então pertencem à seção de Recursos e Restrições. Se houver risco de estourá-los, ele pode ser registrado também em Riscos e Contingências."
+},
+{
+  aula: "Aula 08 — Rational Unified Process (RUP)",
+  tipo: "Aplicação",
+  texto: "Entre os seis princípios do RUP está a configuração e o gerenciamento de mudança: as alterações no projeto devem ser rastreáveis, controladas e implementadas de forma ordenada. Isso evita que uma modificação feita às pressas quebre partes que já funcionavam. Outros princípios são o desenvolvimento iterativo, o gerenciamento de requisitos, a arquitetura baseada em componentes, a modelagem com UML e a melhoria contínua.",
+  question: "No meio do projeto, o cliente pede uma alteração em uma funcionalidade já implementada. A equipe registra o pedido, avalia o impacto, aprova a mudança e atualiza as versões dos artefatos afetados. Qual princípio do RUP está sendo aplicado?",
+  options: [
+    "Arquitetura baseada em componentes",
+    "Configuração e gerenciamento de mudança",
+    "Modelagem utilizando a UML como ferramenta",
+    "Melhoria contínua, exclusivamente"
+  ],
+  answer: 1,
+  feedback: "Registrar, avaliar, aprovar e versionar uma mudança é exatamente o controle ordenado que esse princípio pede. Ele mantém a integridade do projeto."
+},
+{
+  aula: "Aula 08 — Rational Unified Process (RUP)",
+  tipo: "Aplicação",
+  texto: "Uma das nove disciplinas do RUP é a Modelagem de Negócios, que busca entender o contexto em que o sistema será usado, alinhando o desenvolvimento aos objetivos e processos da organização. Ela é muito útil no início do projeto, quando é preciso mapear os processos críticos que o sistema deverá suportar. A disciplina de Requisitos vem em seguida para transformar esse entendimento em necessidades funcionais e não funcionais.",
+  question: "No início de um projeto, uma equipe precisa mapear como a empresa hoje libera e controla verbas de viagem, para depois definir o que o sistema deverá automatizar. Qual disciplina do RUP é a mais indicada para essa atividade?",
+  options: [
+    "Implantação",
+    "Testes",
+    "Modelagem de Negócios",
+    "Gerenciamento de Configuração e Mudança"
+  ],
+  answer: 2,
+  feedback: "Entender os processos e o contexto da organização é o objetivo da Modelagem de Negócios. Implantação e Testes são atividades de fases posteriores."
+},
 ],
 
 
@@ -2482,6 +2624,170 @@ public class Gato extends Mamifero {
   feedback: "O material afirma que **structs** armazenam apenas dados, sem comportamento (I), enquanto **classes** encapsulam dados e métodos (II), e que a necessidade de declarar objetos semelhantes sem reescrever código motivou a criação do conceito de **Classe** (III). A afirmativa IV é falsa, pois o material trata structs e objetos como conceitos distintos, sendo a struct um antecessor histórico do objeto, e não um sinônimo dele."
 },
 
+{
+  aula: "Aula 08 — Rational Unified Process (RUP)",
+  tipo: "Asserção + Justificativa",
+  texto: "Uma software house adotou o RUP em um projeto cujo cliente ainda não tem clareza sobre todas as funcionalidades desejadas. Em vez de entregar o sistema completo apenas ao final, a equipe divide o trabalho em ciclos curtos e apresenta, ao término de cada um, uma parte funcional do produto para avaliação dos stakeholders.",
+  question: "Analise as asserções a seguir e a relação proposta entre elas.",
+  assertions: [
+    "Nesse cenário, o desenvolvimento ==def==iterativo e incremental== favorece a identificação precoce de falhas de compreensão sobre as funcionalidades.",
+    "PORQUE cada iteração produz um incremento do produto que pode ser avaliado, gerando feedback para ajustar o processo ao longo do projeto."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 0,
+  feedback: "O feedback obtido a cada **incremento** permite corrigir rumos cedo, quando o custo de ajuste ainda é baixo. Por isso a justificativa explica a afirmativa."
+},
+{
+  aula: "Aula 08 — Rational Unified Process (RUP)",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Durante uma reunião de alinhamento, o gerente de projetos apresenta à nova equipe os artefatos gerados em cada fase do RUP no desenvolvimento de um sistema de controle de estoque.",
+  question: "Avalie as afirmações a seguir sobre as fases do RUP e seus artefatos e assinale a alternativa correta.",
+  assertions: [
+    "Na Iniciação, o Documento de Visão delineia metas, funcionalidades esperadas e restrições, orientando a equipe como uma bússola.",
+    "Na Elaboração, o Modelo de Casos de Uso captura as interações entre usuários e sistema, enquanto o Documento de Arquitetura especifica a estrutura técnica.",
+    "Na Construção, o Guia do Usuário é o artefato central, pois ensina a operar o sistema antes de o código ser finalizado.",
+    "Na Transição, o Plano de Implantação descreve etapas como instalação, configuração, migração de dados e treinamento."
+  ],
+  options: [
+    "I e II, apenas",
+    "I, II e IV, apenas",
+    "II, III e IV, apenas",
+    "I, III e IV, apenas"
+  ],
+  answer: 1,
+  feedback: "A afirmativa III é falsa. O **Guia do Usuário** pertence à Transição, quando o sistema é entregue e os usuários são preparados. O artefato central da Construção é o código-fonte, com a documentação técnica."
+},
+{
+  aula: "Aula 08 — Rational Unified Process (RUP)",
+  tipo: "Conceitual Contextualizada",
+  texto: "Ao analisar o gráfico conhecido como RUP Hump em uma reunião de planejamento, um gerente nota que as curvas de Modelagem de Negócios e Requisitos são mais altas nas primeiras iterações, que a de Implementação cresce na Construção e que a de Testes aparece com alguma intensidade em quase todas as fases. Um colega sugere interpretar o gráfico como uma sequência rígida de etapas, em que cada disciplina termina antes de a próxima começar.",
+  question: "Qual interpretação do ==mark==RUP Hump== é a mais adequada ao modelo do RUP?",
+  options: [
+    "As disciplinas ocorrem em sequência rígida, e cada uma só se inicia quando a anterior é totalmente concluída.",
+    "A altura de cada curva indica o custo financeiro acumulado da disciplina em cada iteração.",
+    "Cada disciplina fica restrita a uma única fase, de modo que Testes ocorre somente na Transição.",
+    "As disciplinas se sobrepõem ao longo das iterações e variam de intensidade, de modo que atividades como Testes acompanham o projeto e ganham peso conforme o produto avança."
+  ],
+  answer: 3,
+  feedback: "A altura da curva mostra a **intensidade do esforço** de cada disciplina em cada momento. Como as disciplinas se sobrepõem, o gráfico não representa um processo em cascata."
+},
+{
+  aula: "Aula 08 — Rational Unified Process (RUP)",
+  tipo: "Análise Aplicada",
+  texto: "Uma empresa de tecnologia desenvolve um sistema de gestão de RH conforme o RUP. A equipe já concluiu os módulos de cadastro de funcionários, cálculo de folha de pagamento e geração de relatórios. O gerente quer que a lógica de cada módulo fique registrada para orientar manutenções e expansões futuras, sem que os desenvolvedores escrevam um documento separado do zero. Um dos desenvolvedores lembra que os comentários já escritos no código poderiam alimentar essa documentação.",
+  question: "Considerando o cenário, assinale a alternativa que identifica corretamente a fase em que o projeto se encontra e a estratégia adequada para produzir a documentação.",
+  options: [
+    "Construção; gerar a documentação técnica automaticamente a partir dos comentários do código, com ferramentas como Javadoc ou Doxygen.",
+    "Elaboração; produzir manualmente o Documento de Arquitetura, pois comentários de código não podem originar documentação.",
+    "Transição; gerar o Guia do Usuário a partir dos comentários do código com o Swagger.",
+    "Construção; dispensar a documentação técnica, pois os testes unitários já descrevem toda a lógica dos módulos."
+  ],
+  answer: 0,
+  feedback: "A implementação dos módulos caracteriza a Construção, cujos artefatos incluem o código-fonte e a **documentação técnica**. Ela pode ser gerada a partir de comentários com ferramentas como Doxygen, JSDoc, Javadoc e Pydoc."
+},
+{
+  aula: "Aula 08 — Rational Unified Process (RUP)",
+  tipo: "Asserção + Justificativa",
+  texto: "A equipe de TI de uma prefeitura vai desenvolver um sistema para controle de protocolos municipais. No início do projeto, o líder técnico precisa deixar claro à equipe e aos stakeholders o que o sistema deve fazer, quais metas se espera alcançar e quais restrições existem, antes de qualquer decisão sobre a estrutura técnica da solução.",
+  question: "Analise as asserções a seguir e a relação proposta entre elas.",
+  assertions: [
+    "O ==def==Documento de Visão== é o principal artefato da fase de Iniciação, pois alinha as expectativas dos stakeholders quanto ao escopo e aos objetivos.",
+    "PORQUE o Documento de Visão detalha a estrutura técnica do sistema, definindo a divisão entre frontend, backend e banco de dados."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 2,
+  feedback: "Detalhar a estrutura técnica é papel do **Documento de Arquitetura**, na Elaboração. O Documento de Visão trata de metas, funcionalidades esperadas e restrições."
+},
+{
+  aula: "Aula 08 — Rational Unified Process (RUP)",
+  tipo: "Asserção + Justificativa",
+  texto: "Em um projeto de sistema de reservas, o gerente propõe que todos os requisitos sejam congelados ao fim da Iniciação. Ele argumenta que, como o RUP é iterativo, cada ciclo deve apenas implementar o que foi fechado no começo. Um analista discorda e recorre às boas práticas do processo.",
+  question: "Analise as asserções a seguir e a relação proposta entre elas.",
+  assertions: [
+    "Por adotar o desenvolvimento iterativo, o RUP exige que os requisitos sejam integralmente definidos na Iniciação e impede sua revisão nas fases seguintes.",
+    "PORQUE o ==rule==gerenciamento de requisitos== é uma boa prática do RUP e deve ocorrer ao longo de todo o ciclo de vida do projeto."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 3,
+  feedback: "No RUP, os requisitos são capturados, analisados e **gerenciados continuamente**. O desenvolvimento iterativo se apoia justamente no feedback para ajustar o que foi entendido, e por isso a afirmativa I é falsa."
+},
+{
+  aula: "Aula 08 — Rational Unified Process (RUP)",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Uma consultoria foi contratada para avaliar se uma equipe compreende corretamente as disciplinas do RUP. Para isso, elaborou um conjunto de afirmações sobre o papel de cada disciplina no desenvolvimento do software.",
+  question: "Avalie as afirmações a seguir e assinale a alternativa que reúne todas as que estão corretas.",
+  assertions: [
+    "A disciplina de Modelagem de Negócios é responsável pela criação da arquitetura do sistema e pelo design detalhado da solução.",
+    "A disciplina de Gerenciamento de Configuração e Mudança trata do controle de versões e da gestão das mudanças ao longo do ciclo de vida do software.",
+    "A disciplina de Ambiente fornece as ferramentas e os processos de suporte ao desenvolvimento, como a configuração do ambiente e a integração contínua.",
+    "A disciplina de Testes abrange a validação da qualidade do sistema, incluindo testes unitários, de integração e de aceitação."
+  ],
+  options: [
+    "I, II e III, apenas",
+    "I e IV, apenas",
+    "II, III e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 2,
+  feedback: "A afirmativa I descreve **Análise e Design**, e não a Modelagem de Negócios. Esta última busca entender o contexto da organização, alinhando o desenvolvimento aos seus objetivos e processos."
+},
+{
+  aula: "Aula 08 — Rational Unified Process (RUP)",
+  tipo: "Conceitual Contextualizada",
+  texto: "Uma empresa de comércio eletrônico deseja que os módulos de pagamento, carrinho de compras e inventário possam ser mantidos e evoluídos de forma independente, e que partes já prontas sejam reaproveitadas em outros produtos da empresa. A equipe decide estruturar o sistema com esse objetivo.",
+  question: "Qual boa prática do RUP fundamenta diretamente a decisão da equipe?",
+  options: [
+    "Desenvolvimento iterativo, pois o sistema é entregue em ciclos curtos com feedback constante do cliente.",
+    "Arquitetura baseada em componentes, pois construir a partir de componentes reutilizáveis facilita a modularidade, a manutenção e a evolução do sistema.",
+    "Gerenciamento de requisitos, pois garante que as necessidades dos stakeholders sejam capturadas durante todo o projeto.",
+    "Configuração e gerenciamento de mudança, pois torna rastreáveis e controladas as modificações feitas no projeto."
+  ],
+  answer: 1,
+  feedback: "Manutenção independente e reaproveitamento são os benefícios centrais da **arquitetura baseada em componentes**. As demais práticas são importantes, mas tratam de outros aspectos do processo."
+},
+{
+  aula: "Aula 08 — Rational Unified Process (RUP)",
+  tipo: "Análise Aplicada",
+  texto: "Uma empresa quer automatizar a liberação, o monitoramento e o controle de verbas de viagens de negócio de seu corpo técnico. Ao redigir o Documento de Visão, a equipe reúne três informações: (1) a exigência de autenticação de dois fatores para usuários administrativos; (2) o receio de que a integração com o ERP existente não funcione adequadamente, com previsão de testes de integração extensivos antes do lançamento; (3) a indicação do Gerente de Projeto e do Patrocinador como responsáveis por validar o documento antes de o projeto avançar.",
+  question: "Assinale a alternativa que aloca corretamente cada informação na seção adequada do Documento de Visão.",
+  options: [
+    "(1) Funcionalidades; (2) Riscos e Contingências; (3) Aprovações",
+    "(1) Requisitos Não Funcionais; (2) Recursos e Restrições; (3) Aprovações",
+    "(1) Requisitos Não Funcionais; (2) Riscos e Contingências; (3) Aprovações",
+    "(1) Requisitos Não Funcionais; (2) Riscos e Contingências; (3) Referências"
+  ],
+  answer: 2,
+  feedback: "Segurança, como a autenticação de dois fatores, entra em **Requisitos Não Funcionais**. Riscos e a estratégia de mitigação ficam em Riscos e Contingências, e os responsáveis pela validação do documento ficam em Aprovações."
+},
+{
+  aula: "Aula 08 — Rational Unified Process (RUP)",
+  tipo: "Conceitual Contextualizada",
+  texto: "Em um projeto conduzido segundo o RUP, o gerente acompanha o andamento observando apenas em que ponto do ciclo a equipe se encontra. No momento, o projeto está na Elaboração, com o Modelo de Casos de Uso pronto e a Construção como próxima etapa. Ele monitora o progresso pela sequência temporal do processo.",
+  question: "Qual das ==term==perspectivas== de abordagem do RUP corresponde a esse acompanhamento, e qual é o seu foco?",
+  options: [
+    "Estática, cujo foco são as disciplinas e a organização das atividades.",
+    "Dinâmica, cujo foco são as fases do processo de software ao longo do tempo.",
+    "Prática, cujo foco são os seis princípios e boas práticas adotados pelo RUP.",
+    "Dinâmica, cujo foco são os artefatos e as ferramentas de apoio ao processo."
+  ],
+  answer: 1,
+  feedback: "A perspectiva **dinâmica** trata das fases, isto é, da evolução do projeto no tempo. A estática trata das disciplinas e a prática trata dos princípios e boas práticas."
+},
   ],
 
 
@@ -3619,7 +3925,147 @@ cachorro.mover();`,
     ],
     answer: 2,
     feedback: "Flask é citado como framework para desenvolvimento de aplicações web em Python, similar ao Express, que cumpre esse papel em JavaScript/Node.js."
-  }
+  },
+  {
+  aula: "Aula 08 — Rational Unified Process (RUP)",
+  tipo: "Direta",
+  texto: "O RUP surgiu nos anos 1990 como resposta à crescente complexidade dos sistemas de software.",
+  question: "Qual empresa criou o RUP e a quem ele pertence atualmente?",
+  options: [
+    "Rational Software Corporation; hoje pertence à Microsoft",
+    "Rational Software Corporation; hoje pertence à IBM",
+    "IBM; hoje pertence à Rational Software Corporation",
+    "Sun Microsystems; hoje pertence à Oracle"
+  ],
+  answer: 1,
+  feedback: "O RUP foi criado pela Rational Software Corporation e hoje pertence à IBM, que adquiriu a empresa."
+},
+{
+  aula: "Aula 08 — Rational Unified Process (RUP)",
+  tipo: "Direta",
+  texto: "O RUP se destaca de outras metodologias por três características centrais que orientam todo o processo.",
+  question: "Qual alternativa apresenta corretamente as três características principais do RUP?",
+  options: [
+    "Cascata, dirigido por requisitos e focado em documentação",
+    "Iterativo e incremental, dirigido por testes e focado em arquitetura",
+    "Iterativo e incremental, dirigido por casos de uso e focado em interface",
+    "Iterativo e incremental, dirigido por casos de uso e focado em arquitetura"
+  ],
+  answer: 3,
+  feedback: "As três características são: iterativo e incremental, dirigido por casos de uso e focado em arquitetura, tratada como a espinha dorsal do desenvolvimento."
+},
+{
+  aula: "Aula 08 — Rational Unified Process (RUP)",
+  tipo: "Direta",
+  texto: "O ciclo de vida do RUP é dividido em quatro fases, que se sucedem ao longo do projeto.",
+  question: "Qual alternativa apresenta as fases do RUP na ordem correta?",
+  options: [
+    "Iniciação, Elaboração, Construção e Transição",
+    "Elaboração, Iniciação, Construção e Transição",
+    "Iniciação, Construção, Elaboração e Transição",
+    "Iniciação, Elaboração, Transição e Construção"
+  ],
+  answer: 0,
+  feedback: "A ordem é Iniciação, Elaboração, Construção e Transição: primeiro se define o escopo, depois a arquitetura, em seguida se implementa e, por fim, se entrega."
+},
+{
+  aula: "Aula 08 — Rational Unified Process (RUP)",
+  tipo: "Contexto",
+  texto: "No começo de um projeto, a equipe precisa registrar as metas, as funcionalidades esperadas e as restrições do sistema, para que todos os stakeholders tenham as mesmas expectativas.",
+  question: "Qual artefato cumpre esse papel, funcionando como uma bússola para a equipe?",
+  options: [
+    "Documento de Arquitetura",
+    "Guia do Usuário",
+    "Documento de Visão",
+    "Plano de Implantação"
+  ],
+  answer: 2,
+  feedback: "O Documento de Visão é o principal artefato da Iniciação. Ele delineia metas, funcionalidades esperadas e restrições, alinhando as expectativas dos stakeholders."
+},
+{
+  aula: "Aula 08 — Rational Unified Process (RUP)",
+  tipo: "Aplicação",
+  texto: "Uma equipe está projetando um aplicativo de comércio eletrônico. Antes de programar, ela precisa definir como ficarão divididos o frontend, o backend e o banco de dados, e como essas partes vão interagir para suportar carrinho, pagamentos e inventário.",
+  question: "Qual artefato da fase de Elaboração formaliza essa definição?",
+  options: [
+    "Documento de Visão",
+    "Guia do Usuário",
+    "Documento de Arquitetura",
+    "Repositório do código-fonte"
+  ],
+  answer: 2,
+  feedback: "O Documento de Arquitetura especifica a estrutura técnica do sistema e a forma como suas partes se comunicam. É o artefato central da Elaboração."
+},
+{
+  aula: "Aula 08 — Rational Unified Process (RUP)",
+  tipo: "Contexto",
+  texto: "Em um projeto de RUP, analistas, desenvolvedores e clientes precisam se entender ao discutir o sistema. Por isso a equipe adota uma linguagem visual padronizada para representar casos de uso, atores, classes e suas relações.",
+  question: "Qual é essa linguagem e em qual fase ela é mais utilizada?",
+  options: [
+    "UML, principalmente na Elaboração",
+    "UML, principalmente na Transição",
+    "BPMN, principalmente na Iniciação",
+    "SQL, principalmente na Construção"
+  ],
+  answer: 0,
+  feedback: "A UML dá à equipe uma linguagem comum e é usada sobretudo na Elaboração, quando se definem os requisitos e a arquitetura."
+},
+{
+  aula: "Aula 08 — Rational Unified Process (RUP)",
+  tipo: "Aplicação",
+  texto: "Um sistema de controle de estoque acaba de ser concluído e será instalado no ambiente do cliente. A equipe precisa preparar tutoriais sobre o registro de entradas e saídas de produtos e detalhar a configuração do banco de dados e dos servidores.",
+  question: "Quais artefatos da Transição atendem a essas duas necessidades, respectivamente?",
+  options: [
+    "Documento de Visão e Modelo de Casos de Uso",
+    "Documento de Arquitetura e código-fonte",
+    "Documentação técnica e testes unitários",
+    "Guia do Usuário e Plano de Implantação"
+  ],
+  answer: 3,
+  feedback: "O Guia do Usuário ensina a operar o sistema. O Plano de Implantação descreve instalação, configuração, migração de dados e treinamento no ambiente de produção."
+},
+{
+  aula: "Aula 08 — Rational Unified Process (RUP)",
+  tipo: "Contexto",
+  texto: "O RUP organiza o trabalho em nove disciplinas, que são conjuntos de atividades relacionadas. Uma delas fornece as ferramentas e os processos de suporte ao desenvolvimento, como a configuração do ambiente e a integração contínua.",
+  question: "Qual disciplina do RUP tem essa função?",
+  options: [
+    "Gerenciamento de Projeto",
+    "Ambiente",
+    "Implantação",
+    "Implementação"
+  ],
+  answer: 1,
+  feedback: "A disciplina de Ambiente dá suporte à equipe com ferramentas, configuração do ambiente e processos. Gerenciamento de Projeto trata de cronograma, recursos e riscos."
+},
+{
+  aula: "Aula 08 — Rational Unified Process (RUP)",
+  tipo: "Aplicação",
+  texto: "Ao analisar o gráfico RUP Hump de um projeto, uma gerente percebe que a curva da disciplina de Implementação está baixa nas primeiras iterações e sobe bastante mais adiante, quando o código passa a ser escrito conforme o design já definido.",
+  question: "Em qual fase costuma estar o pico dessa curva?",
+  options: [
+    "Construção",
+    "Iniciação",
+    "Elaboração",
+    "Transição"
+  ],
+  answer: 0,
+  feedback: "A Implementação se intensifica na Construção, quando o sistema é desenvolvido com base na arquitetura definida na Elaboração."
+},
+{
+  aula: "Aula 08 — Rational Unified Process (RUP)",
+  tipo: "Aplicação",
+  texto: "Ao final de cada iteração, uma equipe se reúne para avaliar o que funcionou e o que não funcionou. Com base no feedback recebido e nas lições aprendidas, ela ajusta tanto a forma de trabalhar quanto o produto que está construindo.",
+  question: "Qual boa prática do RUP a equipe está aplicando?",
+  options: [
+    "Arquitetura baseada em componentes reutilizáveis",
+    "Modelagem visual utilizando a UML",
+    "Melhoria contínua de processos e produtos",
+    "Gerenciamento de requisitos ao longo do projeto"
+  ],
+  answer: 2,
+  feedback: "A melhoria contínua consiste em avaliar constantemente processos e produtos, usando feedbacks e lições aprendidas para otimizar o desenvolvimento."
+},
 
 ],
 

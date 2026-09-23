@@ -604,15 +604,9 @@ function _inicializarAssistant() {
 }
 
 function _aguardarSnapshotEIniciar() {
-  var TIMEOUT_MS  = 12000;
-  var finalizado  = false;
-  var inicio      = (window.performance && performance.now)
-    ? performance.now()
-    : Date.now();
-
-  function _agora() {
-    return (window.performance && performance.now) ? performance.now() : Date.now();
-  }
+  var TIMEOUT_MS = 12000;
+  var finalizado = false;
+  var timer      = null;
 
   function _snapshotPronto() {
     var visuais = window.__NEXUS_QUESTOES_VISUAIS__;
@@ -623,39 +617,28 @@ function _aguardarSnapshotEIniciar() {
   function _iniciar() {
     if (finalizado) return;
     finalizado = true;
-    window.removeEventListener('nexus:quizPronto', _onEvento);
+    clearTimeout(timer);
+    window.removeEventListener('nexus:quizPronto', _iniciar);
+    window.removeEventListener('nexus:quizCarregando', _armarTimeout);
     window.NexusQuizAssistant.init();
   }
 
-  function _onEvento() {
-    _iniciar();
+  /* Só começa a contar quando o engine começou a ser carregado. */
+  function _armarTimeout() {
+    if (finalizado || timer) return;
+    timer = setTimeout(function () {
+      console.warn('[template_init] Quiz-Assistant: snapshot não chegou em ' +
+                   (TIMEOUT_MS / 1000) + 's após o carregamento — iniciando sem mapa visual.');
+      _iniciar();
+    }, TIMEOUT_MS);
   }
 
-  window.addEventListener('nexus:quizPronto', _onEvento);
+  window.addEventListener('nexus:quizPronto', _iniciar);
+  window.addEventListener('nexus:quizCarregando', _armarTimeout);
 
-  function _loop() {
-    if (finalizado) return;
-
-    if (_snapshotPronto()) {
-      _iniciar();
-      return;
-    }
-
-    if (_agora() - inicio >= TIMEOUT_MS) {
-      console.warn(
-        '[template_init] Quiz-Assistant: __NEXUS_QUESTOES_VISUAIS__ não disponível após ' +
-        (TIMEOUT_MS / 1000) + 's — iniciando sem mapa visual.'
-      );
-      _iniciar();
-      return;
-    }
-
-    (window.requestAnimationFrame || function (cb) { setTimeout(cb, 100); })(_loop);
-  }
-
-  _loop();
+  if (_snapshotPronto()) { _iniciar(); return; }
+  if (window.__NEXUS_QUIZ_CARREGANDO__) _armarTimeout();
 }
-
 
 /* ══════════════════════════════════════════════════════════
    EXPOSIÇÃO PARA SCRIPTS CLÁSSICOS
@@ -766,6 +749,8 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 window.__nexusCarregarQuiz = function () {
+  window.__NEXUS_QUIZ_CARREGANDO__ = true;
+  window.dispatchEvent(new CustomEvent('nexus:quizCarregando'));
   _aguardarFirebase(_params);
   _carregarQuiz(_params, _info);
 };
