@@ -5070,7 +5070,7 @@ aula: "Apresentação da disciplina, ementa e metodologia. Revisão de conceitos
 
   ],
 
-  professor: [
+professor: [
     {
 aula: "Revisão para AP1 — Redes de Computadores II",
 ideia_central: "Consolidar os principais conceitos de camada física, camada de enlace, controle de fluxo/ARQ, redes locais e sem fio, endereçamento IP, redes metropolitanas com MPLS e redes móveis para a prova AP1.",
@@ -5130,11 +5130,11 @@ itens: [
 { tipo: "texto", texto: "A imagem compara lado a lado o BSS ad hoc (estações ligadas entre si, sem nenhum ponto central) e o BSS de infraestrutura (todas as estações ligadas a um Access Point central) — o contraste visual ajuda a fixar por que o modo infraestrutura depende de um único ponto de falha (o AP) enquanto o ad hoc não tem essa dependência, mas também não tem coordenação centralizada." },
 {
 tipo: "imagem",
-id: "bss_adhoc_x_infraestrutura",
-src: "bss_adhoc_x_infraestrutura.png",
-pasta: "imagens_redes2/aula_3",
+id: "representacao_visual_bss_ad_hoc_infraestrutura",
+src: "representacao_visual_bss_ad_hoc_infraestrutura.png",
+pasta: "imagens_redes2/aula_03",
 alt: "Comparação lado a lado entre BSS ad hoc (estações interligadas sem ponto central) e BSS de infraestrutura (estações ligadas a um Access Point central)",
-num: 1
+num: 2
 },
 { tipo: "texto", texto: "A mobilidade dos usuários em redes de infraestrutura exige mecanismos de gerenciamento de conexão quando eles se deslocam entre diferentes pontos de acesso (ver Handover, seção Redes Móveis). Já o meio de transmissão sem fio (o ar) é compartilhado e está sujeito a ruído, atenuação e colisões — por isso redes sem fio não podem contar com detecção de colisão da mesma forma que redes cabeadas (ver CSMA/CA, seção WLAN)." }
 ]
@@ -5221,17 +5221,17 @@ lista: [
 tipo: "imagem",
 id: "crc_codificador",
 src: "crc_codificador.png",
-pasta: "imagens_redes2/aula_2",
+pasta: "imagens_redes2/aula_02",
 alt: "Diagrama do codificador CRC: divisão binária módulo 2 da mensagem com zeros à direita pelo polinômio gerador, via XOR, até obter o resto (CRC)",
-num: 2
+num: 7
 },
 {
 tipo: "imagem",
 id: "crc_decodificador",
 src: "crc_decodificador.png",
-pasta: "imagens_redes2/aula_2",
+pasta: "imagens_redes2/aula_02",
 alt: "Diagrama do decodificador CRC: nova divisão da mensagem recebida pelo polinômio gerador, gerando a síndrome que decide aceitação ou descarte",
-num: 3
+num: 8
 },
 { tipo: "subtitulo", texto: "Distância de Hamming e Código de Hamming" },
 { tipo: "texto", texto: "Distância de Hamming: número de posições de bits diferentes entre duas palavras binárias de mesmo tamanho. Serve para medir a diferença entre palavras de código e indicar quantos erros seriam necessários para transformar uma palavra em outra." },
@@ -5256,19 +5256,19 @@ itens: [
 { tipo: "texto", texto: "Há duas imagens complementares sobre o código de Hamming. A primeira mostra, posição por posição, qual bit de paridade cobre qual conjunto de posições (P1, P2, P4...) — essencial para entender por que essas posições específicas (potências de 2) conseguem, juntas, 'apontar' a posição exata de um bit errado (cada combinação de paridades erradas forma, em binário, o índice do bit corrompido). A segunda imagem mostra um exemplo numérico completo: a distribuição de bits de dados e de paridade lado a lado, com o cálculo de cada paridade até formar a palavra final transmitida — é o tipo de exemplo que vale refazer à mão para garantir que o cálculo das paridades ficou claro antes da prova." },
 {
 tipo: "imagem",
-id: "hamming_cobertura_bits_paridade",
-src: "hamming_cobertura_bits_paridade.png",
-pasta: "imagens_redes2/aula_2",
+id: "cobertura_bits_paridade_hamming",
+src: "cobertura_bits_paridade_hamming.png",
+pasta: "imagens_redes2/aula_02",
 alt: "Diagrama posição a posição mostrando quais posições cada bit de paridade (P1, P2, P4...) cobre em uma palavra de código de Hamming",
-num: 4
+num: 9
 },
 {
 tipo: "imagem",
-id: "hamming_exemplo_numerico",
-src: "hamming_exemplo_numerico.png",
-pasta: "imagens_redes2/aula_2",
+id: "exemplo_codigo_hamming",
+src: "exemplo_codigo_hamming.png",
+pasta: "imagens_redes2/aula_02",
 alt: "Exemplo numérico completo do código de Hamming, com a distribuição de bits de dados e paridade e o cálculo de cada paridade até a palavra final",
-num: 5
+num: 10
 },
 { tipo: "subtitulo", texto: "Comparação entre as técnicas" },
 {
@@ -5307,11 +5307,11 @@ itens: [
 { tipo: "texto", texto: "O diagrama mostra a sequência de envio de frames e confirmações lado a lado — dá para visualizar claramente o 'tempo morto' do canal entre o envio de um frame e a chegada do ACK, que é justamente a raiz da ineficiência desse protocolo." },
 {
 tipo: "imagem",
-id: "stop_and_wait_sem_erro",
-src: "stop_and_wait_sem_erro.png",
-pasta: "imagens_redes2/aula_2",
+id: "stop_and_wait_sem_ruido",
+src: "stop_and_wait_sem_ruido.png",
+pasta: "imagens_redes2/aula_02",
 alt: "Diagrama de sequência do protocolo Stop-and-Wait sem controle de erros, mostrando o tempo ocioso do canal entre envio do frame e chegada do ACK",
-num: 6
+num: 11
 },
 { tipo: "subtitulo", texto: "Protocolos ARQ para canais com ruído" },
 { tipo: "texto", texto: "Quando há possibilidade de corrupção dos dados, são necessários controle de erros e controle de fluxo, normalmente via mecanismos ARQ." },
@@ -5329,11 +5329,11 @@ lista: [
 { tipo: "texto", texto: "O diagrama detalha o ciclo completo — envio do frame, espera pela confirmação e, quando necessário, a retransmissão após o timeout. A diferença visual principal em relação ao Stop-and-Wait 'sem ruído' é a seta extra de retransmissão quando o ACK não chega a tempo." },
 {
 tipo: "imagem",
-id: "stop_and_wait_arq_retransmissao",
-src: "stop_and_wait_arq_retransmissao.png",
-pasta: "imagens_redes2/aula_2",
+id: "stop_and_wait_arq",
+src: "stop_and_wait_arq.png",
+pasta: "imagens_redes2/aula_02",
 alt: "Diagrama do ciclo completo do Stop-and-Wait ARQ, incluindo a retransmissão do frame após expiração do timeout",
-num: 7
+num: 12
 },
 {
 tipo: "topico",
@@ -5348,11 +5348,11 @@ lista: [
 { tipo: "texto", texto: "O diagrama representa a janela de transmissão se deslocando e mostra o que acontece quando um frame dentro dela chega com erro — visualmente, todos os frames à direita do erro (mesmo os corretos) ficam 'descartados' e precisam ser reenviados. É a melhor forma de fixar por que esse protocolo é menos eficiente que o Selective Repeat." },
 {
 tipo: "imagem",
-id: "go_back_n_janela_deslizante",
-src: "go_back_n_janela_deslizante.png",
-pasta: "imagens_redes2/aula_2",
+id: "go_back_n_arq",
+src: "go_back_n_arq.png",
+pasta: "imagens_redes2/aula_02",
 alt: "Diagrama da janela deslizante do Go-Back-N ARQ, mostrando o descarte de todos os frames após um erro, mesmo os corretos",
-num: 8
+num: 13
 },
 {
 tipo: "topico",
@@ -5367,11 +5367,11 @@ lista: [
 { tipo: "texto", texto: "O diagrama mostra frames sendo tratados individualmente — dá para ver que, mesmo com um frame perdido ou corrompido no meio da sequência, os frames seguintes continuam sendo aceitos e armazenados pelo receptor (janela de recebimento), em vez de descartados como no Go-Back-N." },
 {
 tipo: "imagem",
-id: "selective_repeat_frames_individuais",
-src: "selective_repeat_frames_individuais.png",
-pasta: "imagens_redes2/aula_2",
+id: "selective_repeat_arq",
+src: "selective_repeat_arq.png",
+pasta: "imagens_redes2/aula_02",
 alt: "Diagrama do Selective Repeat ARQ mostrando o tratamento individual de cada frame e o armazenamento dos frames corretos na janela de recebimento",
-num: 9
+num: 14
 },
 { tipo: "subtitulo", texto: "Tabela comparativa" },
 {
@@ -5435,11 +5435,11 @@ detalhe: "Consequência: redução da capacidade da rede devido ao aumento de co
 { tipo: "texto", texto: "O diagrama desenha os círculos de alcance de B e C, com A posicionada exatamente na região de sobreposição entre os dois círculos — visualmente fica claro que B e C não se enxergam (seus círculos não se sobrepõem entre si), mas ambos alcançam A. É esse desenho de círculos de alcance que explica de forma mais intuitiva por que o termo é 'estação oculta': B está oculta para C, e vice-versa." },
 {
 tipo: "imagem",
-id: "estacao_oculta_circulos_alcance",
-src: "estacao_oculta_circulos_alcance.png",
-pasta: "imagens_redes2/aula_3",
+id: "representacao_visual_estacao_oculta",
+src: "representacao_visual_estacao_oculta.png",
+pasta: "imagens_redes2/aula_03",
 alt: "Diagrama com os círculos de alcance de B e C sobrepostos apenas na região onde está A, ilustrando o problema da estação oculta",
-num: 10
+num: 6
 },
 { tipo: "subtitulo", texto: "Solução RTS/CTS" },
 { tipo: "texto", texto: "Handshake baseado em CSMA/CA usado para mitigar o problema da estação oculta." },
@@ -5455,11 +5455,11 @@ itens: [
 { tipo: "texto", texto: "A imagem mostra o formato do frame 802.11, com os campos FC (Frame Control), Duration, quatro campos de endereço, Sequence Control, Frame Body e FCS. O campo Duration é justamente o que carrega o valor usado para atualizar o NAV das estações vizinhas — a ligação entre esse campo do quadro e o mecanismo de reserva de canal explicado acima é um bom ponto de atenção para questões que cruzem 'estrutura do frame' com 'controle de acesso ao meio'." },
 {
 tipo: "imagem",
-id: "formato_frame_80211",
-src: "formato_frame_80211.png",
-pasta: "imagens_redes2/aula_3",
+id: "figura_14_7_formato_frame_wifi",
+src: "figura_14_7_formato_frame_wifi.png",
+pasta: "imagens_redes2/aula_03",
 alt: "Formato do frame 802.11 com os campos FC, Duration, quatro campos de endereço, Sequence Control, Frame Body e FCS",
-num: 11
+num: 5
 },
 { tipo: "subtitulo", texto: "Problema da estação exposta (exposed terminal)" },
 { tipo: "texto", texto: "Ocorre quando uma estação deixa de transmitir por perceber o canal ocupado, mesmo que sua transmissão não causasse interferência real no destinatário pretendido." },
@@ -5472,21 +5472,21 @@ detalhe: "Consequência: uso ineficiente do canal e redução da taxa de transmi
 { tipo: "texto", texto: "O diagrama posiciona A, B, C e D em sequência (A—B—C—D), com os círculos de alcance de cada um sobrepostos apenas com os vizinhos imediatos. Isso deixa visualmente evidente que C está dentro do alcance de A (por isso 'escuta' a transmissão A→B) mas D está fora do alcance de A — logo, uma transmissão C→D não afetaria A→B, embora C se abstenha por precaução." },
 {
 tipo: "imagem",
-id: "estacao_exposta_alcance_abcd",
-src: "estacao_exposta_alcance_abcd.png",
-pasta: "imagens_redes2/aula_3",
+id: "representacao_visual_estacao_exposta",
+src: "representacao_visual_estacao_exposta.png",
+pasta: "imagens_redes2/aula_03",
 alt: "Diagrama com A, B, C e D em sequência e seus círculos de alcance sobrepostos apenas com os vizinhos imediatos, ilustrando o problema da estação exposta",
-num: 12
+num: 7
 },
 { tipo: "destaque", texto: "Importante: o RTS/CTS não resolve completamente o problema da estação exposta. Situação típica: A envia RTS para B; B responde com CTS; C ouve o RTS de A, mas não ouve o CTS de B (está fora de alcance); C então envia RTS para D; como A está transmitindo, não escuta o RTS de C; D responde com CTS — mas o canal já está ocupado, gerando conflito." },
 { tipo: "texto", texto: "O diagrama mostra uma linha do tempo com os quatro dispositivos (B, A, C, D) e as trocas de RTS/CTS/dados de cada um, com o ponto exato de colisão marcado. É um bom material para treinar a leitura de diagramas de sequência temporal, formato comum em provas sobre protocolos de acesso ao meio." },
 {
 tipo: "imagem",
-id: "estacao_exposta_linha_tempo_colisao",
-src: "estacao_exposta_linha_tempo_colisao.png",
-pasta: "imagens_redes2/aula_3",
+id: "representacao_visual_rts_cts_estacao_exposta",
+src: "representacao_visual_rts_cts_estacao_exposta.png",
+pasta: "imagens_redes2/aula_03",
 alt: "Linha do tempo com B, A, C e D trocando RTS/CTS/dados, marcando o ponto de colisão mesmo com o uso de RTS/CTS",
-num: 13
+num: 8
 },
 { tipo: "subtitulo", texto: "CSMA/CD x CSMA/CA" },
 {
@@ -5561,11 +5561,11 @@ detalhe: "1. Para obter 4 sub-redes: 2² = 4 → são necessários 2 bits empres
 { tipo: "texto", texto: "A imagem apresenta as quatro sub-redes resultantes em uma tabela/diagrama, com o endereço de rede, o endereço de broadcast e a faixa de IPs válidos de cada uma lado a lado. Isso deixa claro, na prática, que cada bloco de 64 endereços 'pula' de 64 em 64 (ex.: 192.168.0.0, 192.168.0.64, 192.168.0.128, 192.168.0.192) — um padrão útil para resolver rapidamente questões de subnetting sem precisar recalcular tudo em binário." },
 {
 tipo: "imagem",
-id: "subnetting_quatro_subredes_resultantes",
-src: "subnetting_quatro_subredes_resultantes.png",
-pasta: "imagens_redes2/aula_3",
+id: "distribuicao_192_168_0_0_24_quatro_subredes_26",
+src: "distribuicao_192_168_0_0_24_quatro_subredes_26.png",
+pasta: "imagens_redes2/aula_03",
 alt: "Tabela/diagrama com as quatro sub-redes resultantes de 192.168.0.0/24 dividida em /26, mostrando endereço de rede, broadcast e faixa de IPs válidos de cada uma",
-num: 14
+num: 16
 }
 ]
 },
@@ -5601,11 +5601,11 @@ lista: [
 { tipo: "texto", texto: "O diagrama mostra um Label-Switched Path (LSP) completo, ligando a rede 192.168.0.0/24 até a rede 10.0.0.0/24 através de cinco roteadores: R1 e R5 nas pontas (Edge LSR, que adicionam/removem o rótulo) e R2, R3, R4 no meio do caminho (Intermediate LSR, que só trocam o rótulo). Cada roteador é mostrado com suas tabelas FIB e LFIB, indicando o rótulo de entrada, o rótulo de saída e a próxima rota — é a melhor forma de visualizar o que significa 'Label Swapping' na prática: o rótulo muda a cada salto, mas o pacote nunca precisa ser reanalisado pelo IP de destino no meio do caminho." },
 {
 tipo: "imagem",
-id: "mpls_lsp_roteadores_fib_lfib",
-src: "mpls_lsp_roteadores_fib_lfib.png",
-pasta: "imagens_redes2/aula_4",
+id: "figura_mpls_label_switched_path_lsp",
+src: "mpls_label_switched_path_lsp.png",
+pasta: "imagens_redes2/aula_04",
 alt: "Diagrama de um Label-Switched Path ligando 192.168.0.0/24 a 10.0.0.0/24 através de R1 a R5, com as tabelas FIB e LFIB de cada roteador",
-num: 15
+num: 1
 },
 {
 tipo: "topico",
@@ -5665,11 +5665,11 @@ blocos: [
 { tipo: "texto", texto: "O material organiza o gerenciamento de redes móveis em quatro colunas: Gestão da Mobilidade (Paging, Roaming, Atualização da Localização), Gerenciamento de Recursos (controle de congestionamento, controle de energia, alocação de taxa, planejamento de células, precificação), Gerenciamento de Segurança (propriedades de segurança, tipos de ataques) e Gerenciamento de Identidades (SIM, AuC). Vale notar que o Handover/Handoff não aparece nessa coluna específica — ele é tratado à parte, como parte da continuidade da comunicação durante o deslocamento, e não como um item de 'localização' propriamente dito. Isso ajuda a diferenciar: Paging/Roaming/Atualização de localização = saber onde o usuário está; Handover = manter a chamada ativa enquanto ele se move." },
 {
 tipo: "imagem",
-id: "gerenciamento_mobilidade_quatro_colunas",
-src: "gerenciamento_mobilidade_quatro_colunas.png",
-pasta: "imagens_redes2/aula_5",
+id: "diagrama_gerenciamento_redes_moveis",
+src: "diagrama_gerenciamento_redes_moveis.png",
+pasta: "imagens_redes2/aula_05",
 alt: "Diagrama em quatro colunas: Gestão da Mobilidade, Gerenciamento de Recursos, Gerenciamento de Segurança e Gerenciamento de Identidades, com seus respectivos itens",
-num: 16
+num: 3
 },
 {
 tipo: "topico",
@@ -5747,7 +5747,6 @@ itens: [
 ]
     }
   ]
-
 
 
 
