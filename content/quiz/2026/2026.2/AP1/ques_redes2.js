@@ -3058,5 +3058,264 @@ window.questoes = {
 }
   ],
 
+  ava: [
+    // aula: 
+
+// 1 - Modos de operação em redes sem fio e asserções sobre mobilidade
+{
+  aula: "Revisão da Luzia",
+  texto: "Redes sem fio podem operar em diferentes modos, como no modo infraestrutura, onde os dispositivos se comunicam através de um ponto de acesso (access point), ou o modo ad hoc, onde os dispositivos se comunicam diretamente entre si.\n\nFOROUZAN, Behrouz A. Comunicação de Dados e Redes de Computadores. 5. ed. Porto Alegre: AMGH, 2013.\n\nAvalie as asserções a seguir e a relação proposta entre elas.\n\nI. Em redes sem fio, a mobilidade dos usuários exige mecanismos de gerenciamento da conexão quando eles se deslocam entre diferentes pontos de acesso.\n\nPORQUE\n\nII. O meio de transmissão compartilhado (ar) permite que os bits sejam enviados sem qualquer risco de perda ou atenuação do sinal.",
+  question: "A respeito dessas asserções, assinale a opção correta.",
+  code: ``,
+  options: [
+    "As asserções I e II são proposições falsas.",
+    "A asserção I é verdadeira, e a II é falsa.",
+    "As asserções I e II são verdadeiras, e a II é uma justificativa correta da I.",
+    "As asserções I e II são verdadeiras, mas a II não justifica a I."
+  ],
+  answer: 1,
+  feedback: "A resposta correta é: A asserção I é verdadeira, e a II é falsa.",
+  chips: []
+},
+
+// 2 - Divisão de sub-redes IPv4
+{
+  aula: "Revisão da Luzia",
+  texto: "Uma empresa possui a rede IPv4 192.168.10.0/24 e precisa dividi-la em 4 sub-redes de mesmo tamanho, destinadas a diferentes setores da organização. Cada sub-rede deverá possuir a mesma quantidade de endereços IP.",
+  question: "Considerando a divisão da rede 192.168.10.0/24 em 4 sub-redes, assinale a alternativa que apresenta corretamente a nova máscara de sub-rede e a quantidade de endereços IP válidos para hosts em cada sub-rede.",
+  code: ``,
+  options: [
+    "Máscara /25 (255.255.255.128) e cada sub-rede contendo 126 IPs válidos.",
+    "Máscara /26 (255.255.255.192) e cada sub-rede contendo 62 IPs válidos.",
+    "Máscara /28 (255.255.255.240) e cada sub-rede contendo 14 IPs válidos.",
+    "Máscara /27 (255.255.255.224) e cada sub-rede contendo 30 IPs válidos."
+  ],
+  answer: 1,
+  feedback: "A resposta correta é: Máscara /26 (255.255.255.192) e cada sub-rede contendo 62 IPs válidos.",
+  chips: []
+},
+
+// 3 - Localização do dispositivo em rede celular
+{
+  aula: "Revisão da Luzia",
+  texto: "Um usuário possui um smartphone conectado a uma rede celular e recebe uma chamada enquanto está em deslocamento pela cidade. Para estabelecer a comunicação, a rede precisa identificar em qual área de cobertura o dispositivo está localizado, sem necessariamente conhecer sua posição exata.",
+  question: "Nesse cenário, qual operação da rede celular é responsável por localizar o dispositivo para que a chamada possa ser encaminhada?",
+  code: ``,
+  options: [
+    "Paging, que permite à rede localizar o dispositivo quando há uma chamada ou serviço a ser entregue.",
+    "Roaming, que permite ao dispositivo utilizar redes de diferentes áreas geográficas.",
+    "Handover, que consiste no cadastro permanente do dispositivo em uma nova área geográfica.",
+    "Atualização da localização, que ocorre somente quando o dispositivo estabelece uma chamada."
+  ],
+  answer: 0,
+  feedback: "A resposta correta é: Paging, que permite à rede localizar o dispositivo quando há uma chamada ou serviço a ser entregue.",
+  chips: []
+},
+
+// 4 - Capacidade de transmissão do canal
+{
+  aula: "Revisão da Luzia",
+  texto: "Uma organização pretende aumentar a capacidade de transmissão de dados de um enlace. Durante a análise, a equipe identifica que a capacidade do canal está relacionada à largura de banda disponível, aos níveis de sinal utilizados e à qualidade do canal. Também se considera a presença de ruídos durante a transmissão.",
+  question: "Com base nessas características, assinale a alternativa correta.",
+  code: ``,
+  options: [
+    "O ruído aumenta a capacidade máxima de transmissão porque adiciona informações ao sinal original.",
+    "A taxa de transmissão depende exclusivamente do tipo de cabo utilizado, independentemente da largura de banda e do ruído.",
+    "O aumento da quantidade de níveis de sinal pode permitir a transmissão de mais bits por símbolo, enquanto o aumento do ruído tende a reduzir a taxa máxima de transmissão.",
+    "A largura de banda não possui relação com a quantidade de dados que pode ser transmitida pelo canal."
+  ],
+  answer: 2,
+  feedback: "A resposta correta é: O aumento da quantidade de níveis de sinal pode permitir a transmissão de mais bits por símbolo, enquanto o aumento do ruído tende a reduzir a taxa máxima de transmissão.",
+  chips: []
+},
+
+// 5 - Funcionamento do CRC no controle de erros
+{
+  aula: "Revisão da Luzia",
+  texto: "Durante a transmissão de um quadro, alguns bits podem ser alterados em razão das imperfeições existentes no meio de comunicação. Para identificar se o quadro recebido sofreu alterações, o receptor utiliza um mecanismo de detecção de erros antes de confirmar o recebimento ao transmissor.",
+  question: "Assinale a alternativa que descreve corretamente o funcionamento do CRC no processo de controle de erros.",
+  code: ``,
+  options: [
+    "O CRC substitui os quadros de dados por sinais analógicos antes da transmissão.",
+    "O CRC corrige automaticamente todos os bits alterados sem necessidade de nova transmissão.",
+    "O CRC é utilizado para detectar possíveis erros no quadro recebido, permitindo que mecanismos de retransmissão sejam acionados quando necessário.",
+    "O CRC controla exclusivamente a velocidade com que o transmissor envia os quadros."
+  ],
+  answer: 2,
+  feedback: "A resposta correta é: O CRC é utilizado para detectar possíveis erros no quadro recebido, permitindo que mecanismos de retransmissão sejam acionados quando necessário.",
+  chips: []
+},
+
+// 6 - Finalidade do checksum na Camada de Enlace
+{
+  aula: "Revisão da Luzia",
+  texto: "Durante a transmissão de dados em uma rede de computadores, um quadro pode sofrer alterações devido a ruídos e outras interferências presentes no meio de transmissão. Para aumentar a confiabilidade da comunicação, o receptor pode utilizar mecanismos de detecção de erros para verificar se os dados recebidos correspondem aos dados enviados.",
+  question: "Considerando o mecanismo de checksum da Camada de Enlace, assinale a alternativa que descreve corretamente sua finalidade.",
+  code: ``,
+  options: [
+    "Determinar a largura de banda e a taxa máxima de transmissão do meio físico.",
+    "Dividir os dados em partes, realizar operações matemáticas sobre elas e utilizar o resultado como informação de verificação para identificar possíveis erros na transmissão.",
+    "Corrigir automaticamente qualquer bit alterado durante a transmissão, sem necessidade de retransmissão.",
+    "Controlar a quantidade de quadros que o transmissor pode enviar antes de receber uma confirmação."
+  ],
+  answer: 1,
+  feedback: "A resposta correta é: Dividir os dados em partes, realizar operações matemáticas sobre elas e utilizar o resultado como informação de verificação para identificar possíveis erros na transmissão.",
+  chips: []
+},
+
+// 7 - Diferença entre Checksum e CRC
+{
+  aula: "Revisão da Luzia",
+  texto: "Durante a transmissão de dados, podem ocorrer alterações nas informações devido a ruídos e interferências no meio físico. Para identificar possíveis erros, a camada de enlace pode utilizar mecanismos de detecção, como Checksum e CRC (Cyclic Redundancy Check).",
+  question: "Considerando as características desses dois mecanismos, assinale a alternativa que apresenta uma diferença adequada entre eles.",
+  code: ``,
+  options: [
+    "O Checksum corrige automaticamente os erros encontrados, enquanto o CRC apenas identifica a posição exata do bit incorreto.",
+    "O Checksum e o CRC são mecanismos de correção de erros e, por isso, não necessitam de retransmissão quando um erro é detectado.",
+    "O Checksum é utilizado para controle de fluxo, enquanto o CRC é utilizado para controle de congestionamento.",
+    "O Checksum utiliza operações matemáticas sobre os dados para gerar um valor de verificação, enquanto o CRC utiliza operações baseadas em divisão polinomial para gerar informações de verificação."
+  ],
+  answer: 3,
+  feedback: "A resposta correta é: O Checksum utiliza operações matemáticas sobre os dados para gerar um valor de verificação, enquanto o CRC utiliza operações baseadas em divisão polinomial para gerar informações de verificação.",
+  chips: []
+},
+
+// 8 - Diferença operacional entre Hub e Switch
+{
+  aula: "Revisão da Luzia",
+  texto: "Os equipamentos de interconexão são componentes fundamentais para estruturar a topologia de redes de computadores, permitindo a agregação física e o tráfego ordenado de informações entre estações terminais em ambientes corporativos e domésticos. Historicamente, a evolução de dispositivos de compartilhamento elétrico em barramentos compartilhados até soluções inteligentes baseadas em microprocessadores dedicados moldou a eficiência das redes locais cabeadas (LANs). Essa transição tecnológica permitiu o isolamento de domínios de colisão e maximizou a capacidade de transmissão de dados de forma simultânea sem sobrecarregar as interfaces físicas das estações adjacentes.\n\nFOROUZAN, Behrouz A.; MOSHARRAF, Firouz. Redes de computadores: uma abordagem top-down. AMGH Editora, 2013.",
+  question: "Diante do contexto e da evolução dos dispositivos de conexão, a principal diferença operacional entre um Hub e um Switch consiste no fato de que o Hub:",
+  code: ``,
+  options: [
+    "Encaminha quadros com base no endereço IP de destino.",
+    "Opera exclusivamente na camada física de dados.",
+    "Filtra e envia quadros diretamente para a porta do nó de destino.",
+    "Repete o sinal elétrico recebido para todas as suas portas."
+  ],
+  answer: 3,
+  feedback: "A resposta correta é: Repete o sinal elétrico recebido para todas as suas portas.",
+  chips: []
+},
+
+// 9 - Tamanho do espaço de endereçamento IPv4 e IPv6
+{
+  aula: "Revisão da Luzia",
+  texto: "O crescimento acelerado da Internet nas últimas décadas, impulsionado pela consolidação de tecnologias móveis e pelo surgimento da Internet das Coisas (IoT), causou um impacto direto na infraestrutura lógica global de conectividade. Esse avanço tecnológico evidenciou gargalos críticos de exaustão relacionados à quantidade de identificadores exclusivos atribuíveis a novos nós computacionais ativos em rede. Como resposta técnica definitiva para contornar essa escassez de espaço numérico e aprimorar a eficiência do processamento de pacotes por roteadores principais no núcleo da rede mundial, projetou-se uma evolução estrutural. O esgotamento dos endereços disponíveis na rede mundial motivou a concepção de uma nova versão para o protocolo IP.\n\nFOROUZAN, Behrouz A.; MOSHARRAF, Firouz. Redes de computadores: uma abordagem top-down. AMGH Editora, 2013.",
+  question: "Com relação ao tamanho do espaço de endereçamento lógico do IPv4 e do IPv6, assinale a alternativa correta.",
+  code: ``,
+  options: [
+    "O IPv4 utiliza 32 bits e o IPv6 utiliza 128 bits.",
+    "O IPv4 utiliza 16 bits e o IPv6 utiliza 32 bits.",
+    "O IPv4 utiliza 64 bits e o IPv6 utiliza 128 bits.",
+    "O IPv4 utiliza 32 bits e o IPv6 utiliza 64 bits."
+  ],
+  answer: 0,
+  feedback: "A resposta correta é: O IPv4 utiliza 32 bits e o IPv6 utiliza 128 bits.",
+  chips: []
+},
+
+// 10 - Perda de potência do sinal com a distância
+{
+  aula: "Revisão da Luzia",
+  texto: "Uma empresa identificou que os computadores de uma determinada rede apresentam perda de desempenho à medida que aumenta a distância entre o transmissor e o receptor. Em uma análise do meio físico, observou-se que o sinal chega ao destino com menor potência do que aquela apresentada na origem.",
+  question: "Considerando os fenômenos que podem ocorrer durante a transmissão, a situação descrita está diretamente relacionada à",
+  code: ``,
+  options: [
+    "modulação, pois o sinal precisa alterar sua frequência para compensar a distância.",
+    "multiplexação, pois diferentes sinais passam a compartilhar o mesmo meio físico.",
+    "atenuação, pois ocorre perda de energia do sinal durante sua propagação.",
+    "distorção, pois diferentes componentes do sinal chegam ao destino em tempos diferentes."
+  ],
+  answer: 2,
+  feedback: "A resposta correta é: atenuação, pois ocorre perda de energia do sinal durante sua propagação.",
+  chips: []
+},
+
+// 11 - Mecanismo de detecção de erro em quadro Ethernet
+{
+  aula: "Revisão da Luzia",
+  texto: "Durante a transmissão de um quadro Ethernet, o receptor utiliza um mecanismo baseado em um polinômio gerador previamente definido. O transmissor acrescenta bits ao final da mensagem e realiza uma divisão binária utilizando a operação XOR. No receptor, a mesma divisão é realizada novamente.",
+  question: "Nesse contexto, o mecanismo descrito corresponde ao",
+  code: ``,
+  options: [
+    "Código de Hamming.",
+    "CRC.",
+    "checksum.",
+    "bit de paridade."
+  ],
+  answer: 1,
+  feedback: "A resposta correta é: CRC.",
+  chips: []
+},
+
+// 12 - Protocolo de retransmissão com quadros corrompidos
+{
+  aula: "Revisão da Luzia",
+  texto: "Uma aplicação utiliza uma rede na qual determinados quadros podem ser corrompidos durante a transmissão. O protocolo empregado permite transmitir vários quadros antes da chegada das confirmações. Quando um quadro é identificado como incorreto, os quadros posteriores também são retransmitidos, mesmo que tenham chegado corretamente ao receptor.",
+  question: "Considerando o comportamento descrito, o protocolo utilizado é o",
+  code: ``,
+  options: [
+    "Go-Back-N ARQ.",
+    "Selective Repeat ARQ.",
+    "protocolo mais simples possível.",
+    "Stop-and-Wait ARQ."
+  ],
+  answer: 0,
+  feedback: "A resposta correta é: Go-Back-N ARQ.",
+  chips: []
+},
+
+// 13 - Tecnologias de redes sem fio WLAN e WMAN
+{
+  aula: "Revisão da Luzia",
+  texto: "Uma instituição pretende ampliar sua infraestrutura de comunicação sem fio para atender a duas necessidades distintas. A primeira é oferecer conectividade sem fio em uma área local, como salas de aula, laboratórios e setores administrativos. A segunda é estabelecer uma rede sem fio com cobertura mais ampla, capaz de atender uma região metropolitana.",
+  question: "Considerando as classificações de redes sem fio e os padrões IEEE associados, assinale a alternativa que apresenta corretamente as tecnologias correspondentes às duas necessidades, respectivamente.",
+  code: ``,
+  options: [
+    "WMAN, baseada no IEEE 802.11, e WLAN, associada ao IEEE 802.16.",
+    "WLAN, baseada no IEEE 802.11, e WMAN, associada ao IEEE 802.16.",
+    "WLAN, baseada no IEEE 802.16, e WMAN, associada ao IEEE 802.11.",
+    "WMAN, baseada no IEEE 802.3, e WLAN, associada ao IEEE 802.15."
+  ],
+  answer: 1,
+  feedback: "A resposta correta é: WLAN, baseada no IEEE 802.11, e WMAN, associada ao IEEE 802.16.",
+  chips: []
+},
+
+// 14 - Mecanismo do IEEE 802.11 para reduzir colisões (estações ocultas)
+{
+  aula: "Revisão da Luzia",
+  texto: "Em uma rede Wi-Fi de uma instituição de ensino, duas estações estão posicionadas de modo que não conseguem detectar diretamente as transmissões uma da outra. Ambas, entretanto, conseguem se comunicar com o mesmo roteador. Em determinado momento, as duas iniciam transmissões simultaneamente, provocando uma colisão.",
+  question: "Para reduzir esse problema, o mecanismo estudado no IEEE 802.11 que pode ser utilizado é o",
+  code: ``,
+  options: [
+    "CRC associado ao endereço IP.",
+    "full-duplex associado ao endereço MAC.",
+    "CSMA/CD associado ao uso de hubs.",
+    "RTS/CTS associado ao CSMA/CA."
+  ],
+  answer: 3,
+  feedback: "A resposta correta é: RTS/CTS associado ao CSMA/CA.",
+  chips: []
+},
+
+// 15 - Uso do MPLS em infraestrutura metropolitana
+{
+  aula: "Revisão da Luzia",
+  texto: "Uma operadora de telecomunicações possui diversas empresas clientes conectadas por uma infraestrutura metropolitana. Embora os clientes utilizem Ethernet, a operadora precisa transportar o tráfego de milhares de clientes pelo seu backbone, mantendo isolamento lógico entre diferentes redes.",
+  question: "Nesse cenário, o uso do MPLS permite à operadora",
+  code: ``,
+  options: [
+    "substituir todos os endereços IP dos clientes por endereços MAC.",
+    "eliminar a necessidade de qualquer equipamento de camada de enlace.",
+    "encaminhar os pacotes utilizando rótulos e estabelecer caminhos diferenciados dentro da infraestrutura da operadora.",
+    "transformar automaticamente uma rede MAN em uma rede LAN sem fio."
+  ],
+  answer: 2,
+  feedback: "A resposta correta é: encaminhar os pacotes utilizando rótulos e estabelecer caminhos diferenciados dentro da infraestrutura da operadora.",
+  chips: []
+},
+  ]
+
 
 };
