@@ -1,5 +1,5 @@
 /* ============================================================
-   NEXUS STUDY — quiz/js/quiz_starter_modal.js  v8.1
+   NEXUS STUDY — quiz/js/quiz_starter_modal.js  v8.2
 
    REGRA ÚNICA:
      Tem progresso salvo (≥ 1 resposta)? → entra direto no quiz.
@@ -48,6 +48,16 @@
      qualquer interação do usuário ocorre. O modal chama apenas:
        NexusFilter.open()
      Sem polling. Sem espera. Sem dependência circular.
+
+   QUIZ COM UMA ÚNICA AULA — v8.2:
+     Se o conteúdo tem menos de 2 aulas, não há o que filtrar:
+     o modal mostra apenas um botão "Iniciar quiz" (sem "Todas as
+     aulas" / "Filtrar aulas" e sem a nota do rodapé sobre filtro).
+     Para saber a contagem, o modal aguarda __nexusPreCarregarConteudo()
+     antes de montar — o mesmo carregamento que o engine reutiliza,
+     então não há custo extra. Se NexusFilter.contarAulas não existir
+     ou o conteúdo falhar de um jeito inesperado, cai no comportamento
+     anterior (duas opções).
 
    CONTEXTO VISUAL (Disciplina / Modo) — v8.1:
      O modal agora exibe, entre o título e o subtítulo, dois
@@ -469,6 +479,27 @@
       '.nsm-option__arrow{flex-shrink:0;color:rgba(255,255,255,.2);transition:color .2s,transform .2s;}',
       '.nsm-option:hover .nsm-option__arrow{color:var(--accent,#7aa8e8);transform:translateX(3px);}',
 
+      /* ── Botão único "Iniciar quiz" (quiz com uma só aula) ── */
+      '#nsm-tela1-btns.nsm-tela1-btns--unico{padding-bottom:1.6rem;}',
+      '.nsm-start{',
+        'display:flex;align-items:center;justify-content:center;gap:.65rem;',
+        'width:100%;padding:1.05rem 1.2rem;',
+        'background:linear-gradient(135deg,rgba(var(--accent-rgb,122,168,232),.34) 0%,rgba(var(--accent-rgb,122,168,232),.14) 100%);',
+        'border:1px solid rgba(var(--accent-rgb,122,168,232),.5);',
+        'border-radius:14px;cursor:pointer;',
+        'color:var(--text-1,#f0ede6);font-size:.98rem;font-weight:700;letter-spacing:.01em;',
+        'transition:background .2s,border-color .2s,transform .18s,box-shadow .2s;',
+        'touch-action:manipulation;',
+      '}',
+      '.nsm-start svg{width:18px;height:18px;display:block;flex-shrink:0;color:var(--accent,#7aa8e8);transition:transform .2s;}',
+      '.nsm-start:hover{',
+        'border-color:rgba(var(--accent-rgb,122,168,232),.75);',
+        'transform:translateY(-1px);',
+        'box-shadow:0 8px 24px rgba(0,0,0,.35),0 0 0 1px rgba(var(--accent-rgb,122,168,232),.18) inset;',
+      '}',
+      '.nsm-start:hover svg{transform:translateX(2px);}',
+      '.nsm-start:active{transform:translateY(0) scale(.99);}',
+
       '#nsm-tela1-footer{padding:.5rem 1.6rem 1.4rem;text-align:center;}',
       '#nsm-tela1-footer p{font-size:.7rem;color:var(--text-2,#6e6a62);line-height:1.5;margin:0;}',
       '#nsm-tela1-footer i{color:rgba(var(--accent-rgb,122,168,232),.5);}',
@@ -513,7 +544,7 @@
      CONSTRUIR MODAL (somente tela 1)
   ══════════════════════════════════════════════════════════ */
 
-  function _construirModal() {
+  function _construirModal(multiplasAulas) {
     var bd = _el('div', { id: 'nsm-backdrop' });
     var card = _el('div', { id: 'nsm-card' });
 
@@ -521,7 +552,8 @@
     var eyebrow   = _el('div', { id: 'nsm-eyebrow' });
     eyebrow.innerHTML = '<i class="fas fa-rocket" aria-hidden="true"></i> Preparar Quiz';
     var titulo    = _el('h2', { id: 'nsm-titulo'    }, 'Iniciar Quiz');
-    var subtitulo = _el('p',  { id: 'nsm-subtitulo' }, 'Escolha como deseja iniciar');
+    var subtitulo = _el('p',  { id: 'nsm-subtitulo' },
+      multiplasAulas ? 'Escolha como deseja iniciar' : 'Tudo pronto para começar');
 
     head.appendChild(eyebrow);
     head.appendChild(titulo);
@@ -538,45 +570,64 @@
     var tela1  = _el('div', { id: 'nsm-tela1', class: 'nsm-tela nsm-tela--entrando' });
     var t1Btns = _el('div', { id: 'nsm-tela1-btns' });
 
-    var btnContinuar = _el('button', { type: 'button', class: 'nsm-option' });
-    btnContinuar.innerHTML =
-      '<div class="nsm-option__icon">' +
-        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
-        'stroke-linecap="round" stroke-linejoin="round">' +
-          '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>' +
-          '<path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>' +
+    var btnContinuar, btnFiltrar;
+
+    if (!multiplasAulas) {
+      /* Uma única aula: nada para filtrar — só um botão de iniciar. */
+      t1Btns.classList.add('nsm-tela1-btns--unico');
+
+      btnContinuar = _el('button', { type: 'button', class: 'nsm-start' });
+      btnContinuar.innerHTML =
+        '<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" ' +
+        'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+          '<polygon points="6 4 20 12 6 20 6 4"/>' +
         '</svg>' +
-      '</div>' +
-      '<div class="nsm-option__body">' +
-        '<span class="nsm-option__label">Todas as aulas</span>' +
-        '<span class="nsm-option__desc">Iniciar com todas as aulas disponíveis.</span>' +
-      '</div>' + _SETA;
+        '<span>Iniciar quiz</span>';
 
-    var btnFiltrar = _el('button', { type: 'button', class: 'nsm-option' });
-    btnFiltrar.innerHTML =
-      '<div class="nsm-option__icon">' +
-        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
-        'stroke-linecap="round" stroke-linejoin="round">' +
-          '<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>' +
-        '</svg>' +
-      '</div>' +
-      '<div class="nsm-option__body">' +
-        '<span class="nsm-option__label">Filtrar aulas</span>' +
-        '<span class="nsm-option__desc">Selecionar apenas algumas aulas antes de iniciar.</span>' +
-      '</div>' + _SETA;
+      t1Btns.appendChild(btnContinuar);
+      tela1.appendChild(t1Btns);
+      card.appendChild(tela1);
+    } else {
+      btnContinuar = _el('button', { type: 'button', class: 'nsm-option' });
+      btnContinuar.innerHTML =
+        '<div class="nsm-option__icon">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+          'stroke-linecap="round" stroke-linejoin="round">' +
+            '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>' +
+            '<path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>' +
+          '</svg>' +
+        '</div>' +
+        '<div class="nsm-option__body">' +
+          '<span class="nsm-option__label">Todas as aulas</span>' +
+          '<span class="nsm-option__desc">Iniciar com todas as aulas disponíveis.</span>' +
+        '</div>' + _SETA;
 
-    t1Btns.appendChild(btnContinuar);
-    t1Btns.appendChild(btnFiltrar);
-    tela1.appendChild(t1Btns);
+      btnFiltrar = _el('button', { type: 'button', class: 'nsm-option' });
+      btnFiltrar.innerHTML =
+        '<div class="nsm-option__icon">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+          'stroke-linecap="round" stroke-linejoin="round">' +
+            '<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>' +
+          '</svg>' +
+        '</div>' +
+        '<div class="nsm-option__body">' +
+          '<span class="nsm-option__label">Filtrar aulas</span>' +
+          '<span class="nsm-option__desc">Selecionar apenas algumas aulas antes de iniciar.</span>' +
+        '</div>' + _SETA;
 
-    var t1Footer = _el('div', { id: 'nsm-tela1-footer' });
-    t1Footer.innerHTML =
-      '<p>' +
-        '<i class="fas fa-circle-info"></i>' +
-        ' Você pode alterar as aulas a qualquer momento pelo botão <strong>Filtrar aulas</strong>.' +
-      '</p>';
-    tela1.appendChild(t1Footer);
-    card.appendChild(tela1);
+      t1Btns.appendChild(btnContinuar);
+      t1Btns.appendChild(btnFiltrar);
+      tela1.appendChild(t1Btns);
+
+      var t1Footer = _el('div', { id: 'nsm-tela1-footer' });
+      t1Footer.innerHTML =
+        '<p>' +
+          '<i class="fas fa-circle-info"></i>' +
+          ' Você pode alterar as aulas a qualquer momento pelo botão <strong>Filtrar aulas</strong>.' +
+        '</p>';
+      tela1.appendChild(t1Footer);
+      card.appendChild(tela1);
+    }
 
     bd.appendChild(card);
     document.body.appendChild(bd);
@@ -590,21 +641,45 @@
       });
     });
 
-    return { bd: bd, btnContinuar: btnContinuar, btnFiltrar: btnFiltrar };
+    return { bd: bd, btnContinuar: btnContinuar, btnFiltrar: btnFiltrar || null };
   }
 
   /* ══════════════════════════════════════════════════════════
      EXIBIR MODAL
   ══════════════════════════════════════════════════════════ */
 
-  function _exibirModal() {
-    var ui = _construirModal();
+  /* Quantas aulas distintas o quiz atual tem. Só é confiável depois
+     que o conteúdo (window.questoes) foi carregado. Sem a API do
+     filtro, assume "várias" (comportamento anterior). */
+  function _temMultiplasAulas() {
+    try {
+      var NF = window.NexusFilter;
+      if (NF && typeof NF.contarAulas === 'function') return NF.contarAulas() >= 2;
+    } catch (e) {}
+    return true;
+  }
 
-    /* "Todas as aulas" — remove qualquer filtro ativo e conclui */
+  function _exibirModal() {
+    var pronto = (typeof window.__nexusPreCarregarConteudo === 'function')
+      ? window.__nexusPreCarregarConteudo()
+      : Promise.resolve();
+
+    pronto.then(function () {
+      _montarEVincularModal(_temMultiplasAulas());
+    });
+  }
+
+  function _montarEVincularModal(multiplasAulas) {
+    var ui = _construirModal(multiplasAulas);
+
+    /* "Todas as aulas" / "Iniciar quiz" — remove qualquer filtro ativo e conclui */
     ui.btnContinuar.addEventListener('click', function () {
-      window.NexusFilter.clear();
+      if (window.NexusFilter) window.NexusFilter.clear();
       _concluir(ui.bd);
     });
+
+    /* Uma única aula: não há botão de filtro. */
+    if (!ui.btnFiltrar) return;
 
     /* "Filtrar aulas" — NexusFilter já existe (filter.js carregado antes).
        Escuta nexus:filtroAlterado (disparado quando o usuário aplica o filtro)

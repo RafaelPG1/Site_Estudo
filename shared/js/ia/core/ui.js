@@ -400,6 +400,7 @@ function _iconPin() {
           ' aria-label="Mensagem para o assistente"' +
           ' autocomplete="off"' +
           ' spellcheck="false"' +
+          ' maxlength="500"' +
           '></textarea>' +
           '<button id="nexus-send" type="button" aria-label="Enviar mensagem">' +
             _iconSend() +
@@ -868,6 +869,9 @@ function _iconPin() {
   ══════════════════════════════════════════════════════════ */
 
   function _bindScrollIsolado(panel) {
+    if (panel.dataset.nexusScrollBound) return;
+    panel.dataset.nexusScrollBound = '1';
+
     panel.addEventListener('wheel', function (e) {
       var messages = document.getElementById('nexus-messages');
       if (!messages) return;
@@ -911,6 +915,8 @@ function _iconPin() {
     var input   = document.getElementById('nexus-input');
     var sendBtn = document.getElementById('nexus-send');
     if (!input || !sendBtn) return;
+    if (input.dataset.nexusInputBound) return;
+    input.dataset.nexusInputBound = '1';
 
     input.addEventListener('input', function () {
       this.style.height = 'auto';
@@ -944,7 +950,8 @@ function _iconPin() {
 
   function _bindReset() {
     var btn = document.getElementById('nexus-reset');
-    if (!btn) return;
+    if (!btn || btn.dataset.nexusResetBound) return;
+    btn.dataset.nexusResetBound = '1';
     btn.addEventListener('click', function () {
       if (typeof _playSound === 'function') _playSound('click', 'inicial');
       if (typeof _onReset === 'function') _onReset();
@@ -1217,7 +1224,12 @@ function _iconPin() {
      painel ou no próprio FAB.
   ══════════════════════════════════════════════════════════ */
 
+  var _fecharForaBound = false; /* listener de document registrado apenas uma vez */
+
   function _bindFecharFora() {
+    if (_fecharForaBound) return;
+    _fecharForaBound = true;
+
     document.addEventListener('mousedown', function (e) {
       if (_pinAtivo) return;
 
@@ -1241,7 +1253,12 @@ function _iconPin() {
      de texto externo ao painel (não interfere com outros atalhos).
   ══════════════════════════════════════════════════════════ */
 
+var _escBound = false; /* listener de document registrado apenas uma vez */
+
 function _bindESC() {
+  if (_escBound) return;
+  _escBound = true;
+
   document.addEventListener('keydown', function (e) {
     if (e.key !== 'Escape') return;
 

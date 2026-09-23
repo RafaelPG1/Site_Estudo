@@ -195,6 +195,172 @@ function _montarVisual(params, info, modoConfig) {
    PASSO 5 — Injetar nav-float
    ══════════════════════════════════════════════════════════ */
 
+/* ── SPEED DIAL (somente tablet/celular, ≤ 768px) ───────────
+   Não cria nem move nenhum botão: a própria <nav.nav-float>, com
+   todos os botões que já existem nela (os 8 nativos + música,
+   efeitos e IA que são movidos para dentro dela), passa a ficar
+   recolhida e é aberta por UM botão principal (+ / ×), fixo no
+   centro da lateral direita.
+
+   - Fechado: a nav fica transparente e "inert" (não recebe clique
+     nem foco). "inert" é necessário porque os botões de áudio e IA
+     têm `pointer-events:auto !important` no template.css, o que
+     faria eles continuarem clicáveis mesmo com a nav invisível.
+   - O botão principal é uma ABA lateral (handle de gaveta): colada
+     na borda direita da tela, pequena, com cantos arredondados só
+     do lado de dentro e centralizada apenas na vertical.
+   - Aberto: a coluna de botões aparece encostada na aba, junto à
+     borda direita, centralizada verticalmente na mesma altura dela.
+   - Acima de 768px nada muda: o botão principal fica oculto, a nav
+     continua exatamente como era e `inert` é removido.
+   ────────────────────────────────────────────────────────── */
+
+function _injetarEstiloSpeedDial() {
+  if (document.getElementById('nexus-speed-dial-css')) return;
+  var style = document.createElement('style');
+  style.id = 'nexus-speed-dial-css';
+  style.textContent = [
+    '.nav-speed-dial-toggle{display:none;}',
+
+    '@media (max-width:768px){',
+      ':root{--sd-tab-w:22px;--sd-tab-h:56px;--sd-gap:8px;--sd-hit:6px;}',
+
+      /* Aba lateral (handle): colada na borda direita, sem folga. */
+      '.nav-speed-dial-toggle{',
+        'display:flex;align-items:center;justify-content:center;',
+        'position:fixed;right:0;top:50%;transform:translateY(-50%);',
+        'transform-origin:right center;',
+        'width:var(--sd-tab-w);height:var(--sd-tab-h);z-index:51;',
+        'padding:0;font-size:.68rem;cursor:pointer;',
+        /* cantos arredondados só do lado de dentro; borda direita some */
+        'border-radius:12px 0 0 12px;',
+        'background:rgba(var(--accent-rgb),.16);',
+        'border:1px solid rgba(var(--accent-rgb),.42);border-right:0;',
+        'color:var(--accent);',
+        '-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);',
+        'box-shadow:-3px 0 14px rgba(0,0,0,.35);',
+        'transition:background .22s ease,border-color .22s ease,box-shadow .22s ease;',
+        'touch-action:manipulation;-webkit-tap-highlight-color:transparent;',
+      '}',
+      /* Área de toque maior que a aba visível (a aba é fina). */
+      '.nav-speed-dial-toggle::before{',
+        'content:"";position:absolute;',
+        'top:calc(var(--sd-hit) * -1);bottom:calc(var(--sd-hit) * -1);',
+        'left:calc(var(--sd-hit) * -1);right:0;',
+      '}',
+      '.nav-speed-dial-toggle i{transition:transform .28s cubic-bezier(.22,1,.36,1);}',
+      '.nav-speed-dial-toggle.sd-open{',
+        'background:rgba(var(--accent-rgb),.26);',
+        'border-color:rgba(var(--accent-rgb),.6);',
+      '}',
+      /* seta: > fechado, < aberto */
+      '.nav-speed-dial-toggle.sd-open i{transform:rotate(180deg);}',
+      '.nav-speed-dial-toggle:active{transform:translateY(-50%) scale(.95);}',
+
+      /* Nav-float vira a lista do speed dial — encostada na aba */
+      'nav.nav-float{',
+        'right:calc(var(--sd-tab-w) + var(--sd-gap));',
+        'top:50%;',
+        'transform:translateY(-50%) translateX(0) scale(1);',
+        'transform-origin:right center;',
+        'opacity:1;',
+        'transition:opacity .22s ease,transform .28s cubic-bezier(.22,1,.36,1);',
+        /* Fundo sólido de "gaveta": os botões têm fundo quase transparente
+           e, sobre o texto das questões, ficavam ilegíveis no mobile. */
+        'align-items:center;padding:8px 6px;',
+        'background:rgba(8,12,22,.98);',
+        'border:1px solid rgba(255,255,255,.12);border-radius:14px;',
+        '-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);',
+        'box-shadow:0 8px 28px rgba(0,0,0,.55);',
+      '}',
+      /* Ícones mais legíveis. Exclui hover, modo (.btn-toggle-modo) e filtro
+         ativo, que já têm cor própria de destaque. */
+      'nav.nav-float .nav-btn:not(:hover):not(.btn-toggle-modo):not(.filtro-ativo){',
+        'color:rgba(255,255,255,.8);',
+        'background:rgba(255,255,255,.07);',
+        'border-color:rgba(255,255,255,.16);',
+      '}',
+      /* .btn-legenda usa !important no quiz_ui.js com cor a 50%. */
+      'nav.nav-float .btn-legenda:not(:hover){',
+        'color:rgba(var(--accent-rgb),.92)!important;',
+        'background:rgba(var(--accent-rgb),.12)!important;',
+        'border-color:rgba(var(--accent-rgb),.34)!important;',
+      '}',
+      'nav.nav-float:not(.sd-open){',
+        'opacity:0;',
+        'transform:translateY(-50%) translateX(12px) scale(.94);',
+        'pointer-events:none;',
+      '}',
+      /* Fallback para navegadores sem suporte a `inert`. */
+      'nav.nav-float:not(.sd-open) #nexus-fab,',
+      'nav.nav-float:not(.sd-open) #music-btn-global,',
+      'nav.nav-float:not(.sd-open) .abtn{pointer-events:none!important;}',
+    '}',
+
+    '@media (max-width:428px){',
+      ':root{--sd-tab-w:20px;--sd-tab-h:52px;--sd-gap:6px;--sd-hit:5px;}',
+    '}',
+
+    /* Telas baixas (celular na horizontal, etc.): compacta a lista. */
+    '@media (max-width:768px) and (max-height:600px){',
+      'nav.nav-float{gap:2px;}',
+      'nav.nav-float .nav-btn{width:28px;height:28px;min-width:28px;min-height:28px;}',
+      'nav.nav-float #nexus-fab,nav.nav-float #music-btn-global,nav.nav-float .abtn{',
+        'width:30px!important;height:30px!important;',
+      '}',
+    '}',
+
+    '@media (prefers-reduced-motion:reduce){',
+      'nav.nav-float,.nav-speed-dial-toggle i{transition:none;}',
+    '}',
+  ].join('');
+  document.head.appendChild(style);
+}
+
+function _montarSpeedDial(nav) {
+  if (document.getElementById('nav-speed-dial-toggle')) return;
+
+  _injetarEstiloSpeedDial();
+
+  nav.id = nav.id || 'nexus-nav-float';
+
+  var toggle = document.createElement('button');
+  toggle.id        = 'nav-speed-dial-toggle';
+  toggle.className = 'nav-speed-dial-toggle';
+  toggle.type      = 'button';
+  toggle.setAttribute('aria-controls', nav.id);
+  toggle.innerHTML = '<i class="fas fa-chevron-right" aria-hidden="true"></i>';
+  document.body.appendChild(toggle);
+
+  var mq     = window.matchMedia ? window.matchMedia('(max-width: 768px)') : null;
+  var aberto = false;
+
+  function _aplicar() {
+    var mobile = !!(mq && mq.matches);
+
+    nav.classList.toggle('sd-open', aberto);
+    toggle.classList.toggle('sd-open', aberto);
+    toggle.setAttribute('aria-expanded', aberto ? 'true' : 'false');
+    toggle.setAttribute('aria-label', aberto ? 'Fechar atalhos' : 'Abrir atalhos');
+
+    /* Recolhido só no mobile/tablet; no desktop a nav segue normal. */
+    if (mobile && !aberto) nav.setAttribute('inert', '');
+    else                   nav.removeAttribute('inert');
+  }
+
+  toggle.addEventListener('click', function () {
+    aberto = !aberto;
+    _aplicar();
+  });
+
+  if (mq) {
+    if (mq.addEventListener) mq.addEventListener('change', _aplicar);
+    else if (mq.addListener) mq.addListener(_aplicar);
+  }
+
+  _aplicar();
+}
+
 function _criarBotaoNav(id, titulo, icone) {
   return '<button id="' + id + '" class="nav-btn" title="' + titulo + '" type="button">' +
          '<i class="' + icone + '" aria-hidden="true"></i></button>';
@@ -233,6 +399,8 @@ function _injetarNavFloat() {
     '<div class="nav-divider nav-divider--externo" aria-hidden="true"></div>';
 
   document.body.appendChild(nav);
+
+  _montarSpeedDial(nav);
 
   var moved = { music: false, sfx: false, ia: false };
 

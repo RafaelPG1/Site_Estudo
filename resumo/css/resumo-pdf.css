@@ -163,6 +163,21 @@
   font-size: 0.78rem; color: var(--text-3); font-style: italic;
 }
 
+/* Subcabeçalho de TIPO dentro de um grupo de disciplina — só aparece
+   quando mais de um "Tipo de conteúdo" está selecionado ao mesmo
+   tempo (ver _renderAulas em js/resumo-pdf.js); com um único tipo
+   ativo essa marcação nem é renderizada, preservando o visual
+   original (disciplina → lista de aulas, sem esse nível extra). */
+.pdf-aula-subgrupo__titulo {
+  padding: 0.55rem 0.75rem 0.3rem;
+  font-size: 0.66rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.05em; color: var(--text-2);
+}
+.pdf-aula-grupo__loading + .pdf-aula-subgrupo__titulo,
+.pdf-aula-grupo__titulo + .pdf-aula-subgrupo__titulo {
+  padding-top: 0.4rem;
+}
+
 /* ══════════════════════════════════════════════
    TIPO DE CONTEÚDO
 ══════════════════════════════════════════════ */

@@ -1,5 +1,5 @@
 /* ============================================================
-   NEXUS STUDY — quiz/js/filter.js  v2.2
+   NEXUS STUDY — quiz/js/filter.js  v2.3
 
    Sistema de filtro de aulas — única fonte de verdade.
 
@@ -13,7 +13,18 @@
      .hasFilter()          — true se existe filtro ativo
      .getSelectedLessons() — Set de aulas selecionadas ou null
      .clear()              — remove o filtro (todas as aulas)
+     .contarAulas()        — nº de aulas distintas do modo atual
+                             (requer window.questoes carregado)
+     .atualizarVisibilidade() — esconde/mostra o botão de filtro da
+                             nav conforme haja 2+ aulas
      .store                — acesso direto ao FilterStore
+
+   v2.3 — QUIZ COM UMA ÚNICA AULA:
+     Filtrar não faz sentido com 0 ou 1 aula. Quando o conteúdo
+     carrega e há menos de 2 aulas, o botão de filtro da nav (e o
+     divisor que o precede) é escondido via a classe
+     html.nexus-sem-filtro. O modal inicial usa contarAulas() para
+     decidir se mostra as duas opções ou apenas "Iniciar quiz".
 
    COMUNICAÇÃO COM O ENGINE:
      FilterStore nunca chama funções do Engine diretamente.
@@ -565,6 +576,38 @@
   window.addEventListener('nexus:filtroAlterado', _atualizarBadge);
 
   /* ══════════════════════════════════════════════════════════
+     VISIBILIDADE DO BOTÃO DE FILTRO (v2.3)
+     Só existe o que filtrar se houver 2+ aulas. Usa uma classe
+     em <html> + CSS, em vez de mexer no botão diretamente,
+     porque o botão é criado depois por template_init.js —
+     a classe vale independentemente da ordem de criação.
+     O divisor que precede o botão é escondido junto (:has),
+     para não sobrarem dois divisores seguidos na nav.
+  ══════════════════════════════════════════════════════════ */
+
+  function _contarAulas() {
+    return _extrairAulas().length;
+  }
+
+  function _injetarCssVisibilidade() {
+    if (document.getElementById('nexus-filter-vis-css')) return;
+    var st = document.createElement('style');
+    st.id = 'nexus-filter-vis-css';
+    st.textContent =
+      'html.nexus-sem-filtro #btn-filtro-aulas,' +
+      'html.nexus-sem-filtro .nav-divider:has(+ #btn-filtro-aulas)' +
+      '{display:none!important;}';
+    document.head.appendChild(st);
+  }
+
+  /* Chamar somente com window.questoes já carregado — antes disso
+     a contagem seria 0 e o botão sumiria indevidamente. */
+  function _atualizarVisibilidadeBotao() {
+    _injetarCssVisibilidade();
+    document.documentElement.classList.toggle('nexus-sem-filtro', _contarAulas() < 2);
+  }
+
+  /* ══════════════════════════════════════════════════════════
      BOTÃO DA NAV
 
      Ver bloco de comentário no topo do arquivo (v2.2) para a
@@ -606,6 +649,10 @@
     getSelectedLessons: function () { return FilterStore.getSelectedLessons(); },
     clear:              function () { FilterStore.clear(); },
 
+    /* Aulas (v2.3) */
+    contarAulas:           _contarAulas,
+    atualizarVisibilidade: _atualizarVisibilidadeBotao,
+
   };
 
   /* ══════════════════════════════════════════════════════════
@@ -616,6 +663,17 @@
     FilterStore.load();
     _atualizarBadge();
     _vincularBotaoNav();
+
+    /* Esconde o botão de filtro se o quiz tiver menos de 2 aulas.
+       __nexusPreCarregarConteudo é idempotente (devolve a mesma
+       promise que o modal/engine usam) e só resolve com
+       window.questoes disponível. */
+    if (typeof window.__nexusPreCarregarConteudo === 'function') {
+      try {
+        window.__nexusPreCarregarConteudo().then(_atualizarVisibilidadeBotao);
+      } catch (e) {}
+    }
+
     console.log('[filter] pronto — filtro ativo:', FilterStore.hasFilter(),
                 '| aulas:', FilterStore.count());
   }

@@ -149,8 +149,25 @@
   color: var(--disc-tema);
   border: 1px solid rgba(var(--disc-tema-rgb),0.22);
   white-space: nowrap;
-  max-width: 120px;
+  /* Espaço suficiente para o maior rótulo existente ("Nota do
+     Professor" em caixa alta, ~150px com letter-spacing) + folga —
+     o badge sempre assume a largura do próprio texto (é inline-block
+     com largura automática), este valor só define o TETO. Antes era
+     120px, menor que o próprio texto, e cortava "Nota do Professor"
+     no meio da palavra. */
+  max-width: 210px;
   overflow: hidden;
+  /* Salvaguarda apenas para um rótulo hipotético ainda maior no
+     futuro — com o teto acima, nenhum rótulo atual chega a precisar
+     disto; nunca deve cortar sem indicar (...) que há mais texto. */
+  text-overflow: ellipsis;
+  /* Sem isso, o container flex (.reader__bar-actions) pode encolher
+     o badge para MENOS que a largura do seu próprio texto (já que
+     overflow:hidden zera o "min-width" automático do item flex) —
+     era essa a segunda causa do corte, além do max-width baixo.
+     flex-shrink:0 garante que o badge nunca fique menor que o
+     necessário para mostrar o texto inteiro. */
+  flex-shrink: 0;
   transition: max-width var(--dur-base) var(--ease), opacity var(--dur-base), padding var(--dur-base), margin var(--dur-base);
 }
 /* No estado compacto, o distintivo de tipo cede espaço para a seção

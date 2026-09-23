@@ -225,7 +225,6 @@
    *   resultados:            { score, texto, aula, secao }[],
    *   disciplina:            string,
    *   tipoContexto:          string,
-   *   semContexto?:          boolean,
    *   registrarNoHistorico?: boolean,
    * }} opcoes
    *
@@ -245,6 +244,7 @@
     var disciplina           = opcoes.disciplina;
     var tipoContexto         = opcoes.tipoContexto;
     var registrarNoHistorico = opcoes.registrarNoHistorico;
+    var ehQuestao            = opcoes.ehQuestao;
 
     if (!pergunta || !pergunta.trim()) return null;
 
@@ -264,7 +264,7 @@
       historico:    historico,
       disciplina:   disciplina || '',
       tipoContexto: tipoContexto || 'conteudo',
-      ehQuestao:    false,
+      ehQuestao:    !!ehQuestao,
     });
 
     if (!resultado) {

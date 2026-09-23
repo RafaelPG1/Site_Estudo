@@ -387,8 +387,9 @@
 
   <!-- ═══════════════════════════════════════════
        MODAL — GERAR PDF
-       Seleção de disciplina(s), tipo de conteúdo
-       (Resumo/Resumão/Síntese) e aula(s). Toda a
+       Seleção de disciplina(s), tipo(s) de conteúdo
+       (dinâmico, conforme o que existe nas disciplinas
+       marcadas — seleção múltipla) e aula(s). Toda a
        lógica (carregar conteúdo, montar e imprimir o
        documento) vive em js/resumo-pdf.js — este bloco
        só fornece os containers que o módulo preenche.
@@ -425,24 +426,12 @@
           <div class="pdf-section__head">
             <span class="pdf-section__label">2 · Tipo de conteúdo</span>
           </div>
-          <div class="pdf-tipo-list" id="pdf-tipo-list">
-            <button class="pdf-tipo-btn pdf-tipo-btn--active" data-tipo="resumo" type="button">
-              <span class="pdf-tipo-btn__nome">Resumo</span>
-              <span class="pdf-tipo-btn__desc">Conteúdo completo e detalhado da aula.</span>
-            </button>
-            <button class="pdf-tipo-btn" data-tipo="resumao" type="button">
-              <span class="pdf-tipo-btn__nome">Resumão</span>
-              <span class="pdf-tipo-btn__desc">Várias aulas em uma revisão geral.</span>
-            </button>
-            <button class="pdf-tipo-btn" data-tipo="sintese" type="button">
-              <span class="pdf-tipo-btn__nome">Síntese</span>
-              <span class="pdf-tipo-btn__desc">Uma aula em tópicos rápidos.</span>
-            </button>
-            <button class="pdf-tipo-btn" data-tipo="professor" type="button">
-              <span class="pdf-tipo-btn__nome">Nota do Professor</span>
-              <span class="pdf-tipo-btn__desc">Resumo escrito pelo professor da disciplina.</span>
-            </button>
-          </div>
+          <!-- Preenchido dinamicamente por _renderTipos() (js/resumo-pdf.js),
+               a partir dos tipos que realmente existem nas disciplinas
+               marcadas em "1 · Disciplinas" — mesmo padrão de #pdf-disc-list
+               logo acima, que também nasce vazio e é montado via JS.
+               Seleção múltipla: cada clique alterna (toggle) o botão. -->
+          <div class="pdf-tipo-list" id="pdf-tipo-list"></div>
         </section>
 
         <section class="pdf-section pdf-section--aulas">

@@ -685,6 +685,16 @@
   ══════════════════════════════════════════════════════════ */
 
   var _INSTRUCOES_IA = {
+    explicacao: (
+      'INSTRUÇÃO PARA O TUTOR: O aluno quer entender o conteúdo desta questão e o raciocínio por trás dela, ' +
+      'NÃO pediu a resposta correta. ' +
+      'Explique os conceitos envolvidos, ajude o aluno a construir o raciocínio, analise as alternativas do ' +
+      'ponto de vista conceitual. ' +
+      'NÃO revele, direta ou indiretamente, qual alternativa é a correta — isso inclui não reformular a resposta ' +
+      'de um jeito que deixe a alternativa correta óbvia ou identificável. ' +
+      'Se o aluno quiser o gabarito, ele pedirá explicitamente. ' +
+      'Pergunta do aluno: '
+    ),
     conteudo: (
       'INSTRUÇÃO PARA O TUTOR: O aluno quer entender o conteúdo desta questão, ' +
       'NÃO quer saber a resposta correta. ' +
@@ -725,7 +735,7 @@
      COMUNICAÇÃO COM A IA (NexusWorker)
   ══════════════════════════════════════════════════════════ */
 
-  async function _perguntarIA(pergunta, resultados, tipoContexto) {
+  async function _perguntarIA(pergunta, resultados, tipoContexto, ehQuestao) {
     if (typeof window.NexusWorker === 'undefined') return null;
     var instrucao = _INSTRUCOES_IA[tipoContexto] || '';
     var perguntaComInstrucao = instrucao ? instrucao + pergunta : pergunta;
@@ -735,7 +745,7 @@
         resultados:   resultados || [],
         disciplina:   _getDisc() || '',
         tipoContexto: tipoContexto || 'conteudo',
-        semContexto:  !resultados || !resultados.length,
+        ehQuestao:    !!ehQuestao,
       });
     } catch (e) {
       console.warn('[NexusQuizAssistant] NexusWorker.perguntar erro:', e);
@@ -756,7 +766,7 @@
       ? _serializarQuestaoComGabarito(numeroVisual, q)
       : _serializarQuestaoSemGabarito(numeroVisual, q);
     var resultados = [{ score: 100, texto: ctxTexto, aula: q.aula || '', secao: 'Quiz' }];
-    var resp = await _perguntarIA(pergunta, resultados, intencao);
+    var resp = await _perguntarIA(pergunta, resultados, intencao, true);
     if (resp) {
       _renderBot(resp.texto, _montarRodape(resp, 'questão ' + numeroVisual));
       return;

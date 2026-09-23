@@ -39,19 +39,33 @@ import { State, esc } from './resumo-utils.js';
    ESTADO DO MODAL DE PDF (local a este módulo)
 ══════════════════════════════════════════════ */
 const PdfState = {
-  discIds:         new Set(),  // disciplinas selecionadas (por id)
-  tipo:            'resumo',   // 'resumo' | 'resumao' | 'sintese' | 'professor'
-  tipoInicializado: false,
-  aulaSel:         new Set(),  // chaves `${discId}::${idx}` selecionadas
-  knownKeys:       new Set(),  // chaves já vistas (para aplicar default = selecionado só 1x)
-  cache:           new Map(),  // discId -> { aulas, simplificado, resumao, professor }
-  pending:         new Map(),  // discId -> Promise (carregamento em curso)
-  loading:         new Set(),  // discIds carregando agora (para UI)
+  discIds:          new Set(),  // disciplinas selecionadas (por id)
+  tipos:            new Set(),  // tipos de conteúdo selecionados — agora múltiplos: subconjunto de 'resumo' | 'resumao' | 'sintese' | 'professor'
+  tiposInicializados: false,
+  aulaSel:          new Set(),  // chaves `${discId}::${tipo}::${idx}` selecionadas
+  knownKeys:        new Set(),  // chaves já vistas (para aplicar default = selecionado só 1x)
+  cache:            new Map(),  // discId -> { aulas, simplificado, resumao, professor }
+  pending:          new Map(),  // discId -> Promise (carregamento em curso)
+  loading:          new Set(),  // discIds carregando agora (para UI)
 };
 
-function _key(discId, idx) { return `${discId}::${idx}`; }
+// A chave agora inclui o tipo: com seleção múltipla, a MESMA aula (mesmo
+// idx) pode estar incluída simultaneamente em mais de um tipo (ex.: Resumo
+// + Síntese da Aula 02) — sem o tipo na chave, marcar/desmarcar uma delas
+// afetaria a outra por engano.
+function _key(discId, tipo, idx) { return `${discId}::${tipo}::${idx}`; }
 
 const TIPO_LABEL = { resumo: 'Resumo', resumao: 'Resumão', sintese: 'Síntese', professor: 'Nota do Professor' };
+const TIPO_DESC = {
+  resumo:    'Conteúdo completo e detalhado da aula.',
+  resumao:   'Várias aulas em uma revisão geral.',
+  sintese:   'Uma aula em tópicos rápidos.',
+  professor: 'Resumo escrito pelo professor da disciplina.',
+};
+// Fonte única de verdade para a ORDEM dos tipos (usada na lista de
+// seleção, no sumário do PDF e no corpo do PDF) — deriva das chaves de
+// TIPO_LABEL em vez de duplicar a lista em outra constante.
+const ALL_TIPOS = Object.keys(TIPO_LABEL);
 
 /* ══════════════════════════════════════════════
    CARREGAMENTO DE CONTEÚDO POR DISCIPLINA
@@ -102,10 +116,10 @@ function _carregarConteudoDisciplina(disc) {
    resumo-ui.js::renderGrid, para o PDF nunca listar
    uma aula/síntese/resumão vazia.
 ══════════════════════════════════════════════ */
-function _getItens(discId, dados) {
+function _getItens(discId, dados, tipo) {
   if (!dados) return [];
 
-  if (PdfState.tipo === 'sintese') {
+  if (tipo === 'sintese') {
     return dados.aulas
       .map((aula, idx) => {
         const s = dados.simplificado[idx] ?? null;
@@ -115,7 +129,7 @@ function _getItens(discId, dados) {
       .filter(Boolean);
   }
 
-  if (PdfState.tipo === 'resumao') {
+  if (tipo === 'resumao') {
     return dados.resumao
       .map((r, idx) => {
         const tem = !!(r && (r.ideia_central || (r.secoes ?? []).length > 0));
@@ -124,7 +138,7 @@ function _getItens(discId, dados) {
       .filter(Boolean);
   }
 
-  if (PdfState.tipo === 'professor') {
+  if (tipo === 'professor') {
     return dados.professor
       .map((p, idx) => {
         const tem = !!(p && (p.ideia_central || (p.secoes ?? []).length > 0));
@@ -135,6 +149,33 @@ function _getItens(discId, dados) {
 
   // 'resumo' — conteúdo completo
   return dados.aulas.map((aula, idx) => ({ idx, item: aula }));
+}
+
+/* ══════════════════════════════════════════════
+   TIPOS DE CONTEÚDO DISPONÍVEIS — dinâmico
+   Calculado a partir dos dados REAIS já carregados das
+   disciplinas marcadas em "1 · Disciplinas" (mesma fonte
+   que _getItens usa para montar a lista de aulas) — nunca
+   uma segunda lista fixa/manual. Um tipo só aparece se
+   pelo menos uma disciplina selecionada tiver conteúdo
+   real desse tipo.
+══════════════════════════════════════════════ */
+function _tiposDisponiveis() {
+  const discs = State.disciplinas.filter(d => PdfState.discIds.has(d.id));
+  const disponiveis = new Set();
+  discs.forEach(d => {
+    const dados = PdfState.cache.get(d.id);
+    if (!dados) return; // ainda carregando — não conta nem contra nem a favor
+    ALL_TIPOS.forEach(tipo => {
+      if (disponiveis.has(tipo)) return;
+      if (_getItens(d.id, dados, tipo).length > 0) disponiveis.add(tipo);
+    });
+  });
+  return ALL_TIPOS.filter(t => disponiveis.has(t));
+}
+
+function _tiposCarregando() {
+  return [...PdfState.discIds].some(id => PdfState.loading.has(id));
 }
 
 function _splitTitulo(str) {
@@ -196,20 +237,77 @@ function _updateDiscAllLabel() {
 }
 
 /* ══════════════════════════════════════════════
-   RENDER — TIPO DE CONTEÚDO
+   RENDER — TIPO DE CONTEÚDO (dinâmico + seleção múltipla)
+   A lista de botões é reconstruída a cada mudança de
+   disciplina(s) selecionada(s) ou de carregamento, sempre
+   a partir de _tiposDisponiveis() — nunca um HTML fixo.
+   Clique simplesmente alterna (toggle) o tipo no Set
+   PdfState.tipos; vários podem ficar marcados ao mesmo
+   tempo, sem checkbox nem botão "todos/nenhum" (o próprio
+   botão do tipo já é o controle).
 ══════════════════════════════════════════════ */
-function _setTipo(tipo) {
-  if (PdfState.tipo === tipo) return;
+function _limparSelecaoDoTipo(tipo) {
+  // Remove só as entradas daquele tipo (chave `${discId}::${tipo}::${idx}`)
+  // — ao reaparecer, o tipo volta a nascer com o default "selecionado".
+  [...PdfState.aulaSel].forEach(k => { if (k.split('::')[1] === tipo) PdfState.aulaSel.delete(k); });
+  [...PdfState.knownKeys].forEach(k => { if (k.split('::')[1] === tipo) PdfState.knownKeys.delete(k); });
+}
+
+function _toggleTipo(tipo) {
   playSound('select', 'resumos');
-  PdfState.tipo = tipo;
+  if (PdfState.tipos.has(tipo)) {
+    PdfState.tipos.delete(tipo);
+    _limparSelecaoDoTipo(tipo);
+  } else {
+    PdfState.tipos.add(tipo);
+  }
   document.querySelectorAll('#pdf-tipo-list [data-tipo]').forEach(b => {
-    b.classList.toggle('pdf-tipo-btn--active', b.dataset.tipo === tipo);
+    b.classList.toggle('pdf-tipo-btn--active', PdfState.tipos.has(b.dataset.tipo));
   });
-  // O tipo muda o significado do índice de cada item — zera o
-  // rastreio de seleção para os defaults recalcularem certo.
-  PdfState.knownKeys.clear();
-  PdfState.aulaSel.clear();
-  _refreshAulas();
+  _renderAulas();
+}
+
+function _renderTipos() {
+  const wrap = document.getElementById('pdf-tipo-list');
+  if (!wrap) return;
+
+  if (!PdfState.discIds.size) {
+    wrap.innerHTML = `<div class="pdf-aulas-empty">Selecione ao menos uma disciplina.</div>`;
+    return;
+  }
+
+  const disponiveis = _tiposDisponiveis();
+  const carregando  = _tiposCarregando();
+
+  if (!disponiveis.length) {
+    wrap.innerHTML = carregando
+      ? `<div class="pdf-aulas-empty">Carregando tipos de conteúdo…</div>`
+      : `<div class="pdf-aulas-empty">Nenhum conteúdo disponível para a(s) disciplina(s) selecionada(s).</div>`;
+    return;
+  }
+
+  // Poda tipos que deixaram de existir para a seleção atual de
+  // disciplinas — só quando já temos certeza (nada pendente de
+  // carregar), para não desmarcar um tipo válido só porque seus
+  // dados ainda não chegaram.
+  if (!carregando) {
+    [...PdfState.tipos].forEach(t => {
+      if (!disponiveis.includes(t)) {
+        PdfState.tipos.delete(t);
+        _limparSelecaoDoTipo(t);
+      }
+    });
+  }
+
+  wrap.innerHTML = disponiveis.map(tipo => `
+    <button class="pdf-tipo-btn${PdfState.tipos.has(tipo) ? ' pdf-tipo-btn--active' : ''}" data-tipo="${esc(tipo)}" type="button">
+      <span class="pdf-tipo-btn__nome">${esc(TIPO_LABEL[tipo])}</span>
+      <span class="pdf-tipo-btn__desc">${esc(TIPO_DESC[tipo])}</span>
+    </button>`).join('');
+
+  wrap.querySelectorAll('[data-tipo]').forEach(btn => {
+    btn.addEventListener('click', () => _toggleTipo(btn.dataset.tipo));
+  });
 }
 
 /* ══════════════════════════════════════════════
@@ -220,7 +318,9 @@ function _visiveisAulaKeys() {
   State.disciplinas.filter(d => PdfState.discIds.has(d.id)).forEach(disc => {
     const dados = PdfState.cache.get(disc.id);
     if (!dados) return;
-    _getItens(disc.id, dados).forEach(it => keys.push(_key(disc.id, it.idx)));
+    PdfState.tipos.forEach(tipo => {
+      _getItens(disc.id, dados, tipo).forEach(it => keys.push(_key(disc.id, tipo, it.idx)));
+    });
   });
   return keys;
 }
@@ -237,6 +337,20 @@ function _renderAulas() {
     return;
   }
 
+  if (!PdfState.tipos.size) {
+    wrap.innerHTML = `<div class="pdf-aulas-empty">Selecione ao menos um tipo de conteúdo.</div>`;
+    _updateFooter();
+    _updateAulasAllLabel();
+    return;
+  }
+
+  // Ordem estável (mesma de ALL_TIPOS), independente da ordem de clique.
+  const tiposAtivos = ALL_TIPOS.filter(t => PdfState.tipos.has(t));
+  // Com só 1 tipo ativo, mantém o visual exato de antes (sem
+  // subcabeçalho de tipo) — o subcabeçalho só aparece quando é
+  // realmente preciso diferenciar mais de um tipo na mesma disciplina.
+  const multiTipo = tiposAtivos.length > 1;
+
   let html = '';
   selecionadas.forEach(disc => {
     if (PdfState.loading.has(disc.id)) {
@@ -249,41 +363,54 @@ function _renderAulas() {
     }
 
     const dados = PdfState.cache.get(disc.id);
-    const itens = _getItens(disc.id, dados);
 
-    // Default: item novo nasce selecionado.
-    itens.forEach(it => {
-      const key = _key(disc.id, it.idx);
-      if (!PdfState.knownKeys.has(key)) {
-        PdfState.knownKeys.add(key);
-        PdfState.aulaSel.add(key);
-      }
+    const blocosTipo = tiposAtivos.map(tipo => {
+      const itens = _getItens(disc.id, dados, tipo);
+      // Default: item novo nasce selecionado (por disciplina + tipo).
+      itens.forEach(it => {
+        const key = _key(disc.id, tipo, it.idx);
+        if (!PdfState.knownKeys.has(key)) {
+          PdfState.knownKeys.add(key);
+          PdfState.aulaSel.add(key);
+        }
+      });
+      return { tipo, itens };
     });
 
-    if (!itens.length) {
+    const temAlgumItem = blocosTipo.some(b => b.itens.length > 0);
+    if (!temAlgumItem) {
       html += `
         <div class="pdf-aula-grupo">
           <div class="pdf-aula-grupo__titulo">${esc(disc.apelido ?? disc.nome)}</div>
-          <div class="pdf-aula-grupo__vazio">Nenhum conteúdo de "${esc(TIPO_LABEL[PdfState.tipo])}" disponível.</div>
+          <div class="pdf-aula-grupo__vazio">Nenhum conteúdo do${tiposAtivos.length !== 1 ? 's tipos selecionados' : ` tipo "${esc(TIPO_LABEL[tiposAtivos[0]])}"`} disponível.</div>
         </div>`;
       return;
     }
 
-    html += `
-      <div class="pdf-aula-grupo">
-        <div class="pdf-aula-grupo__titulo">${esc(disc.apelido ?? disc.nome)}</div>
-        ${itens.map((it, i) => {
-          const key = _key(disc.id, it.idx);
-          const checked = PdfState.aulaSel.has(key);
-          const { titulo } = _splitTitulo(it.item.aula);
-          const label = `Aula ${i + 1} - ${titulo || it.item.aula || ''}`;
-          return `
-            <label class="pdf-aula-item">
-              <input type="checkbox" data-key="${esc(key)}" ${checked ? 'checked' : ''}>
-              <span>${esc(label)}</span>
-            </label>`;
-        }).join('')}
-      </div>`;
+    html += `<div class="pdf-aula-grupo"><div class="pdf-aula-grupo__titulo">${esc(disc.apelido ?? disc.nome)}</div>`;
+
+    blocosTipo.forEach(({ tipo, itens }) => {
+      if (multiTipo) html += `<div class="pdf-aula-subgrupo__titulo">${esc(TIPO_LABEL[tipo])}</div>`;
+
+      if (!itens.length) {
+        html += `<div class="pdf-aula-grupo__vazio">Nenhum conteúdo de "${esc(TIPO_LABEL[tipo])}" disponível.</div>`;
+        return;
+      }
+
+      html += itens.map((it, i) => {
+        const key = _key(disc.id, tipo, it.idx);
+        const checked = PdfState.aulaSel.has(key);
+        const { titulo } = _splitTitulo(it.item.aula);
+        const label = `Aula ${i + 1} - ${titulo || it.item.aula || ''}`;
+        return `
+          <label class="pdf-aula-item">
+            <input type="checkbox" data-key="${esc(key)}" ${checked ? 'checked' : ''}>
+            <span>${esc(label)}</span>
+          </label>`;
+      }).join('');
+    });
+
+    html += `</div>`;
   });
 
   wrap.innerHTML = html;
@@ -304,11 +431,13 @@ function _renderAulas() {
 async function _refreshAulas() {
   const pendentes = State.disciplinas.filter(d => PdfState.discIds.has(d.id) && !PdfState.cache.has(d.id));
   pendentes.forEach(d => PdfState.loading.add(d.id));
+  _renderTipos();
   _renderAulas();
 
   for (const disc of pendentes) {
     await _carregarConteudoDisciplina(disc);
     PdfState.loading.delete(disc.id);
+    _renderTipos();
     _renderAulas();
   }
 }
@@ -339,8 +468,10 @@ function _contarSelecionadas() {
   State.disciplinas.filter(d => PdfState.discIds.has(d.id)).forEach(disc => {
     const dados = PdfState.cache.get(disc.id);
     if (!dados) return;
-    _getItens(disc.id, dados).forEach(it => {
-      if (PdfState.aulaSel.has(_key(disc.id, it.idx))) total++;
+    PdfState.tipos.forEach(tipo => {
+      _getItens(disc.id, dados, tipo).forEach(it => {
+        if (PdfState.aulaSel.has(_key(disc.id, tipo, it.idx))) total++;
+      });
     });
   });
   return total;
@@ -358,15 +489,55 @@ function _updateFooter() {
   if (genBtn) genBtn.disabled = total === 0;
 }
 
+/* Agrupa por AULA (idx) apenas os tipos que realmente DESCREVEM a
+   mesma aula em formatos diferentes: resumo completo e síntese — os
+   dois são indexados em cima de `dados.aulas` (mesmo idx = mesma
+   aula). "Nota do professor" (tipo 'professor') NÃO é indexada por
+   aula: `dados.professor` é uma lista própria e independente, então
+   seu `idx` é só a posição dentro DESSA lista — nunca deve ser
+   confundido com o idx de uma aula, mesmo quando os números
+   coincidem por acaso. Por isso 'professor' fica de fora deste
+   agrupamento.
+
+   Resumão é conceitualmente a mesma coisa: é a JUNÇÃO de várias aulas
+   num documento só, não "a aula X". Resumão e Revisão do professor
+   são portanto os "OUTROS CONTEÚDOS" da disciplina — conteúdo
+   independente, sem número de aula — e cada entrada vira seu próprio
+   item em `outros`, nunca agrupada dentro dos marcadores de uma aula
+   específica. É essa mesma separação (itensPorAula / outros) que
+   alimenta tanto o corpo do PDF quanto o sumário da capa, então os
+   dois nunca podem divergir sobre o que foi realmente incluído. */
 function _disciplinasSelecionadasOrdenadas() {
   return State.disciplinas
     .filter(d => PdfState.discIds.has(d.id))
     .map(disc => {
       const dados = PdfState.cache.get(disc.id);
-      const itens = _getItens(disc.id, dados).filter(it => PdfState.aulaSel.has(_key(disc.id, it.idx)));
-      return { disc, itens };
+
+      const porIdx = new Map();
+      ['resumo', 'sintese'].forEach(tipo => {
+        if (!PdfState.tipos.has(tipo)) return;
+        _getItens(disc.id, dados, tipo).forEach(it => {
+          if (!PdfState.aulaSel.has(_key(disc.id, tipo, it.idx))) return;
+          if (!porIdx.has(it.idx)) porIdx.set(it.idx, { idx: it.idx, tipos: [] });
+          porIdx.get(it.idx).tipos.push({ tipo, item: it.item });
+        });
+      });
+      const itensPorAula = [...porIdx.values()].sort((a, b) => a.idx - b.idx);
+
+      // "Outros conteúdos" da disciplina: Resumão e Revisão do
+      // professor, nesta ordem (mesma ordem de ALL_TIPOS). Cada item
+      // guarda seu próprio `tipo`, já que a seção mistura os dois.
+      const outros = ALL_TIPOS
+        .filter(tipo => (tipo === 'resumao' || tipo === 'professor') && PdfState.tipos.has(tipo))
+        .flatMap(tipo =>
+          _getItens(disc.id, dados, tipo)
+            .filter(it => PdfState.aulaSel.has(_key(disc.id, tipo, it.idx)))
+            .map(it => ({ tipo, idx: it.idx, item: it.item }))
+        );
+
+      return { disc, itensPorAula, outros };
     })
-    .filter(g => g.itens.length > 0);
+    .filter(g => g.itensPorAula.length > 0 || g.outros.length > 0);
 }
 
 /* ══════════════════════════════════════════════
@@ -667,17 +838,27 @@ async function _buildItemPdfMake(item, discArquivo, sem, tipoLabel) {
   return content;
 }
 
+function _itensDaDisciplina(g) {
+  return g.itensPorAula.reduce((n, a) => n + a.tipos.length, 0) + g.outros.length;
+}
+
 function _buildCapaPdfMake(grupos, tipoLabel) {
-  const totalItens = grupos.reduce((n, g) => n + g.itens.length, 0);
+  const totalItens = grupos.reduce((n, g) => n + _itensDaDisciplina(g), 0);
   const dataGeracao = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
 
-  const linhas = grupos.map(g => ([
-    { text: g.disc.nome, bold: true, margin: [0, 6, 0, 6] },
-    { text: `${g.itens.length} ite${g.itens.length !== 1 ? 'ns' : 'm'}`, color: PDF_COLORS.ink3, alignment: 'right', margin: [0, 6, 0, 6] },
-  ]));
+  const linhas = grupos.map(g => {
+    const n = _itensDaDisciplina(g);
+    return [
+      { text: g.disc.nome, bold: true, margin: [0, 6, 0, 6] },
+      { text: `${n} ite${n !== 1 ? 'ns' : 'm'}`, color: PDF_COLORS.ink3, alignment: 'right', margin: [0, 6, 0, 6] },
+    ];
+  });
 
-  return {
-    pageBreak: 'after',
+  const capa = {
+    // Layout original preservado à risca — a margem grande no topo
+    // (220) é o que dá o respiro de "capa" antes do título; nenhum
+    // elemento existente foi tocado. A quebra para a página das
+    // disciplinas não é forçada aqui (ver _buildDisciplinaPdfMake).
     margin: [0, 220, 0, 0],
     stack: [
       { text: 'NEXUS STUDY', color: PDF_COLORS.accent, bold: true, fontSize: 10, characterSpacing: 2, alignment: 'center', margin: [0, 0, 0, 10] },
@@ -698,40 +879,191 @@ function _buildCapaPdfMake(grupos, tipoLabel) {
       { text: `Gerado em ${dataGeracao}`, color: PDF_COLORS.ink3, fontSize: 8, alignment: 'center', margin: [0, 40, 0, 0] },
     ],
   };
+
+  const sumario = _buildSumarioPdfMake(grupos);
+
+  // A quebra de página deixa de ser forçada AQUI (no fim do sumário) —
+  // anexá-la a um nó "unbreakable" perto do fim da página é o que
+  // gerava uma página em branco extra no pdfmake. Em vez disso, quem
+  // força a quebra agora é o próprio bloco de cada disciplina (ver
+  // _buildDisciplinaPdfMake: todo bloco de disciplina, incluindo o
+  // primeiro, nasce com pageBreak:'before') — capa e sumário só
+  // fluem normalmente, sem nenhuma marcação de quebra própria.
+  return [capa, ...sumario];
 }
 
-async function _buildDisciplinaPdfMake(g, sem, tipoLabel, isFirst) {
+/* ══════════════════════════════════════════════
+   SUMÁRIO — gerado automaticamente a partir dos MESMOS
+   grupos (disciplina → aula → tipos) usados para montar
+   o corpo do PDF. Nunca lista aula nem tipo que não
+   tenham sido realmente incluídos — é a mesma estrutura,
+   só formatada como índice.
+
+   Hierarquia (ver State/disciplinas → itensPorAula/outros
+   em _disciplinasSelecionadasOrdenadas):
+     DISCIPLINA
+       ├── 01. Aula
+       │     • Resumo / Síntese   (recuados, sem número próprio)
+       │     ...
+       └── OUTROS CONTEÚDOS        (sem número de aula)
+             • Resumão / Revisão do professor
+
+   A numeração de aula (01, 02, 03…) reinicia a cada
+   disciplina — nunca continua a contagem da disciplina
+   anterior. Com mais de uma disciplina selecionada, cada
+   bloco ganha também seu próprio número de disciplina
+   (1., 2., 3.) para deixar a separação óbvia.
+══════════════════════════════════════════════ */
+function _buildSumarioPdfMake(grupos) {
+  const nodes = [];
+  nodes.push({ text: 'SUMÁRIO', bold: true, fontSize: 11, color: PDF_COLORS.accent2, characterSpacing: 1.5, margin: [0, 0, 0, 16] });
+
+  const multiDisc = grupos.length > 1;
+
+  // Entrada de AULA — numerada (01, 02...), com Resumo/Síntese
+  // recuados logo abaixo, como subitens dela.
+  const pushAula = (n, aulaStr, tiposLabels) => {
+    const { num, titulo } = _splitTitulo(aulaStr ?? '');
+    const label = titulo || aulaStr || '';
+    nodes.push({
+      unbreakable: true,
+      margin: [0, 0, 0, 9],
+      stack: [
+        {
+          columns: [
+            { text: `${String(n).padStart(2, '0')}.`, width: 22, bold: true, fontSize: 9.5, color: PDF_COLORS.accent },
+            {
+              text: [
+                ...(num ? [{ text: `${num} — `, color: PDF_COLORS.ink3 }] : []),
+                { text: label, bold: true, fontSize: 9.5 },
+              ],
+            },
+          ],
+        },
+        { ul: tiposLabels, margin: [22, 3, 0, 0], fontSize: 8.5, color: PDF_COLORS.ink2 },
+      ],
+    });
+  };
+
+  // Entrada de "OUTRO CONTEÚDO" (Resumão / Revisão do professor) —
+  // NUNCA numerada como aula (não é "a aula X"): marcador simples +
+  // rótulo do tipo, com o título próprio do conteúdo quando houver.
+  const pushOutro = (tipoLabel, tituloProprio) => {
+    nodes.push({
+      margin: [0, 0, 0, 6],
+      columns: [
+        { text: '—', width: 16, bold: true, fontSize: 9.5, color: PDF_COLORS.accent2 },
+        {
+          text: tituloProprio
+            ? [{ text: `${tipoLabel}`, bold: true, fontSize: 9.5 }, { text: `  ·  ${tituloProprio}`, fontSize: 9.5, color: PDF_COLORS.ink2 }]
+            : [{ text: tipoLabel, bold: true, fontSize: 9.5 }],
+        },
+      ],
+    });
+  };
+
+  grupos.forEach((g, gi) => {
+    if (multiDisc) {
+      nodes.push({
+        text: `${gi + 1}. ${g.disc.nome}`,
+        bold: true, fontSize: 11.5, color: PDF_COLORS.ink1,
+        margin: [0, gi === 0 ? 0 : 18, 0, 8],
+      });
+    }
+
+    // Reinicia a numeração de aula a cada disciplina — cada bloco é
+    // independente, nunca uma sequência única entre disciplinas.
+    let n = 1;
+    g.itensPorAula.forEach(aula => {
+      const ref = aula.tipos[0]?.item ?? null;
+      pushAula(n, ref?.aula, aula.tipos.map(t => TIPO_LABEL[t.tipo]));
+      n++;
+    });
+
+    // Resumão e Revisão do professor nunca são "a aula X" — são
+    // conteúdo independente da disciplina — por isso ganham uma seção
+    // própria, sem numeração de aula, separada visualmente das aulas
+    // acima.
+    if (g.outros.length) {
+      nodes.push({
+        text: 'OUTROS CONTEÚDOS',
+        bold: true, fontSize: 8, color: PDF_COLORS.ink3, characterSpacing: 1,
+        margin: [0, g.itensPorAula.length ? 4 : 0, 0, 8],
+      });
+      g.outros.forEach(o => {
+        const { titulo } = _splitTitulo(o.item?.aula ?? '');
+        pushOutro(TIPO_LABEL[o.tipo], titulo || o.item?.aula || '');
+      });
+    }
+  });
+
+  return nodes;
+}
+
+async function _buildDisciplinaPdfMake(g, sem, headerLabel) {
   const content = [{
-    pageBreak: isFirst ? undefined : 'before',
+    // Todo bloco de disciplina força sua própria quebra de página —
+    // inclusive o primeiro. É essa quebra (não mais uma marcação no
+    // fim do sumário) que garante que o conteúdo das disciplinas
+    // sempre comece em página nova, depois da capa + sumário.
+    pageBreak: 'before',
     margin: [0, 0, 0, 24],
     stack: [
-      { text: `NEXUS STUDY · ${tipoLabel.toUpperCase()}`, color: PDF_COLORS.accent2, bold: true, fontSize: 8, characterSpacing: 1.5 },
+      { text: `NEXUS STUDY · ${headerLabel.toUpperCase()}`, color: PDF_COLORS.accent2, bold: true, fontSize: 8, characterSpacing: 1.5 },
       { text: g.disc.nome, bold: true, fontSize: 22, margin: [0, 4, 0, 10] },
       { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 495, y2: 0, lineWidth: 1.2, lineColor: PDF_COLORS.ink1 }] },
     ],
   }];
 
-  for (const { item } of g.itens) {
-    const nodes = await _buildItemPdfMake(item, g.disc.arquivo, sem, tipoLabel);
-    content.push(...nodes);
+  // Uma entrada por aula, e dentro dela um bloco por tipo selecionado
+  // (na mesma ordem estável de ALL_TIPOS) — mantém as aulas com mais
+  // de um tipo selecionado juntas no corpo do PDF, na mesma ordem em
+  // que aparecem no sumário da capa.
+  for (const aula of g.itensPorAula) {
+    for (const { tipo, item } of aula.tipos) {
+      const nodes = await _buildItemPdfMake(item, g.disc.arquivo, sem, TIPO_LABEL[tipo]);
+      content.push(...nodes);
+    }
+  }
+
+  // Resumão e Revisão do professor entram DEPOIS, como bloco à parte
+  // — não são "mais um tipo da aula X" (ver comentário em
+  // _disciplinasSelecionadasOrdenadas), então nunca são intercalados
+  // dentro do loop de aulas acima.
+  if (g.outros.length) {
+    if (g.itensPorAula.length) {
+      content.push({ text: 'OUTROS CONTEÚDOS', bold: true, fontSize: 10, color: PDF_COLORS.accent2, characterSpacing: 1.2, margin: [0, 4, 0, 14] });
+    }
+    for (const o of g.outros) {
+      const nodes = await _buildItemPdfMake(o.item, g.disc.arquivo, sem, TIPO_LABEL[o.tipo]);
+      content.push(...nodes);
+    }
   }
 
   return content;
 }
 
-async function _buildDocDefinition(grupos, tipoLabel) {
+async function _buildDocDefinition(grupos) {
   const { ano, periodo, ap } = parseSemestre(State.semestre ?? '2026.1');
   const sem = { ano, periodo, apPath: ap ? `/${ap}` : '' };
 
-  const content = [_buildCapaPdfMake(grupos, tipoLabel)];
+  // Com 1 tipo só ativo, título = exatamente o rótulo daquele tipo
+  // (comportamento idêntico ao anterior). Com mais de um tipo
+  // selecionado, "Resumo"/"Síntese"/etc. sozinho não descreveria o
+  // conteúdo misto — usa um título genérico; o sumário logo abaixo
+  // já mostra exatamente quais tipos entraram em cada aula.
+  const tiposAtivos = ALL_TIPOS.filter(t => PdfState.tipos.has(t));
+  const tituloGeral = tiposAtivos.length === 1 ? TIPO_LABEL[tiposAtivos[0]] : 'Resumos';
+
+  const content = [..._buildCapaPdfMake(grupos, tituloGeral)];
 
   for (let gi = 0; gi < grupos.length; gi++) {
-    const nodes = await _buildDisciplinaPdfMake(grupos[gi], sem, tipoLabel, gi === 0);
+    const nodes = await _buildDisciplinaPdfMake(grupos[gi], sem, tituloGeral);
     content.push(...nodes);
   }
 
   return {
-    info: { title: `Resumos — ${tipoLabel} · Nexus Study` },
+    info: { title: `Resumos — ${tituloGeral} · Nexus Study` },
     pageSize: 'A4',
     pageMargins: [51, 57, 51, 57], // ~18mm / 20mm, igual ao @page anterior
     defaultStyle: { fontSize: 10.5, color: PDF_COLORS.ink1, lineHeight: 1.35 },
@@ -837,11 +1169,11 @@ async function _onGenerate() {
   try {
     await _carregarPdfMake();
 
-    const tipoLabel = TIPO_LABEL[PdfState.tipo];
-    const docDefinition = await _buildDocDefinition(grupos, tipoLabel);
+    const docDefinition = await _buildDocDefinition(grupos);
 
+    const tiposSlug = ALL_TIPOS.filter(t => PdfState.tipos.has(t)).join('-') || 'resumo';
     const semSlug = String(State.semestre ?? '').replace(/[^\w.-]+/g, '').replace(/\./g, '-');
-    const nomeArquivo = `nexus-study-${PdfState.tipo}${semSlug ? `-${semSlug}` : ''}.pdf`;
+    const nomeArquivo = `nexus-study-${tiposSlug}${semSlug ? `-${semSlug}` : ''}.pdf`;
 
     const blob = await new Promise(resolve => window.pdfMake.createPdf(docDefinition).getBlob(resolve));
     const blobUrl = URL.createObjectURL(blob);
@@ -878,17 +1210,16 @@ function _abrirModalPdf() {
     PdfState.discIds.add(State.disciplina.id);
   }
 
-  if (!PdfState.tipoInicializado) {
+  if (!PdfState.tiposInicializados) {
+    // Default = comportamento anterior: nasce com só o tipo
+    // correspondente ao modo de leitura atual da página, já marcado.
     const map = { completo: 'resumo', sintese: 'sintese', resumao: 'resumao', professor: 'professor' };
-    PdfState.tipo = map[State.modo] ?? 'resumo';
-    PdfState.tipoInicializado = true;
-    document.querySelectorAll('#pdf-tipo-list [data-tipo]').forEach(b => {
-      b.classList.toggle('pdf-tipo-btn--active', b.dataset.tipo === PdfState.tipo);
-    });
+    PdfState.tipos = new Set([map[State.modo] ?? 'resumo']);
+    PdfState.tiposInicializados = true;
   }
 
   _renderDisciplinas();
-  _refreshAulas();
+  _refreshAulas(); // também chama _renderTipos() internamente, conforme os dados chegam
 
   document.getElementById('pdf-modal')?.classList.add('pdf-modal--open');
   document.body.style.overflow = 'hidden';
@@ -915,9 +1246,10 @@ export function initPdfModal() {
   document.getElementById('pdf-disc-all')?.addEventListener('click', _onDiscAllClick);
   document.getElementById('pdf-aulas-all')?.addEventListener('click', _onAulasAllClick);
 
-  document.querySelectorAll('#pdf-tipo-list [data-tipo]').forEach(btn => {
-    btn.addEventListener('click', () => _setTipo(btn.dataset.tipo));
-  });
+  // Os botões de "2 · Tipo de conteúdo" são renderizados
+  // dinamicamente por _renderTipos() (chamada por _refreshAulas()),
+  // que já liga o listener de clique em cada botão que cria — não há
+  // mais um conjunto fixo de botões para ligar aqui.
 
   document.getElementById('pdf-generate-btn')?.addEventListener('click', _onGenerate);
 }
