@@ -782,3 +782,46 @@ export function bindCopyButton() {
     }, 2200);
   });
 }
+
+/* ══════════════════════════════════════════════
+   MODO CLARO — alterna a classe ".reader--light" no
+   próprio #read-modal (cores em resumo-reader.css).
+   Afeta só a área de leitura: nenhum outro elemento
+   do site recebe essa classe, então nada fora do
+   reader muda. Preferência persistida em
+   localStorage (mesmo padrão já usado para o estado
+   do accordion, ver _lerEstadoAccordion acima) e
+   restaurada assim que o binding roda — não precisa
+   esperar o reader abrir pela primeira vez.
+══════════════════════════════════════════════ */
+const READER_THEME_KEY = 'nexus:resumo:reader-theme';
+
+function _lerTemaClaro() {
+  try { return localStorage.getItem(READER_THEME_KEY) === 'light'; }
+  catch (_) { return false; }
+}
+
+function _aplicarTemaLeitura(claro) {
+  const modal = document.getElementById('read-modal');
+  const btn   = document.getElementById('rm-theme-toggle');
+  if (!modal) return;
+  modal.classList.toggle('reader--light', claro);
+  if (btn) {
+    btn.setAttribute('aria-pressed', String(claro));
+    btn.title = claro ? 'Mudar para modo escuro' : 'Mudar para modo claro';
+  }
+}
+
+export function bindThemeToggle() {
+  _aplicarTemaLeitura(_lerTemaClaro());
+
+  const btn = document.getElementById('rm-theme-toggle');
+  if (!btn) return;
+
+  btn.addEventListener('click', () => {
+    playSound('click', 'resumos');
+    const claro = !document.getElementById('read-modal')?.classList.contains('reader--light');
+    _aplicarTemaLeitura(claro);
+    try { localStorage.setItem(READER_THEME_KEY, claro ? 'light' : 'dark'); } catch (_) {}
+  });
+}

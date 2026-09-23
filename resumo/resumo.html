@@ -301,6 +301,21 @@
 
         <div class="reader__bar-actions">
           <span class="reader__bar-badge" id="rm-tipo-badge"></span>
+          <!-- Modo claro/escuro — afeta só esta área de leitura (ver
+               .reader--light em css/resumo-reader.css e
+               bindThemeToggle() em js/resumo-reader.js). Ícone-only:
+               lua = está no escuro (clique vai para o claro), sol =
+               está no claro (clique volta pro escuro). -->
+          <button class="reader__theme-toggle" id="rm-theme-toggle" type="button"
+            aria-label="Alternar modo claro" aria-pressed="false" title="Mudar para modo claro">
+            <svg class="icon-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/>
+            </svg>
+            <svg class="icon-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="4"/>
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+            </svg>
+          </button>
           <button class="reader__copy-btn" id="rm-copy-btn" aria-label="Copiar conteúdo da aula">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="9" y="9" width="13" height="13" rx="2"/>

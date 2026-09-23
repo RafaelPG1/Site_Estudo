@@ -26,7 +26,7 @@ import '../src/session-tracker.js';
 
 import { State, carregarIA, resolverContexto, renderSemestreBadge } from './js/resumo-utils.js';
 import { renderHeader, renderSidebar, carregarConteudo, setModo, setProfessorFiltro } from './js/resumo-ui.js';
-import { bindModal, bindTocChrome, bindCopyButton } from './js/resumo-reader.js';
+import { bindModal, bindTocChrome, bindCopyButton, bindThemeToggle } from './js/resumo-reader.js';
 import { initPdfModal } from './js/resumo-pdf.js';
 
 injetarLogo('#header-logo-wrap');
@@ -100,6 +100,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   bindModal();
   bindTocChrome();
   bindCopyButton();
+  bindThemeToggle();
   initPdfModal();
   _initProgressBar();
   carregarConteudo();

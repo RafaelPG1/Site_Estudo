@@ -992,3 +992,174 @@
   .reader__bar-disc { max-width: 30%; }
   .reader__toc-trigger span { display: none; } /* só o ícone */
 }
+
+/* ══════════════════════════════════════════════
+   BOTÃO — ALTERNAR MODO CLARO/ESCURO
+   Mesmo padrão visual dos outros botões do
+   .reader__bar-actions (reader__copy-btn/
+   reader__toc-trigger) — ícone-only, sem rótulo.
+   O clique só alterna a classe .reader--light no
+   próprio #read-modal (ver bindThemeToggle() em
+   js/resumo-reader.js); não mexe em mais nada.
+══════════════════════════════════════════════ */
+.reader__theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border-2);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-2);
+  transition: color var(--dur-base), border-color var(--dur-base), background var(--dur-base);
+}
+.reader__theme-toggle:hover { color: var(--text-1); border-color: var(--border-3); }
+.reader__theme-toggle:active { transform: scale(0.97); transition-duration: var(--dur-fast); }
+.reader__theme-toggle:focus-visible { box-shadow: var(--focus-ring); }
+/* Lua = tema atual é escuro (ação: ir pro claro). Sol = tema atual é
+   claro (ação: voltar pro escuro). Só um ícone visível por vez. */
+.reader__theme-toggle .icon-sun  { display: none; }
+.reader__theme-toggle .icon-moon { display: inline-flex; }
+.reader--light .reader__theme-toggle .icon-sun  { display: inline-flex; }
+.reader--light .reader__theme-toggle .icon-moon { display: none; }
+
+/* ══════════════════════════════════════════════
+   MODO CLARO — escopado ao próprio #read-modal
+   Sobrescreve aqui, só dentro de ".reader--light",
+   as MESMAS variáveis de cor definidas em :root
+   (resumo.css). Como nenhum outro elemento do site
+   ganha essa classe, e a variável nunca é redefinida
+   em :root nem em nenhum outro seletor global, o
+   resto do site (outras páginas, sidebar, header,
+   cards da listagem) permanece exatamente como está
+   — só a subárvore do #read-modal enxerga os novos
+   valores. Estrutura, conteúdo e comportamento do
+   reader não mudam: é puramente reskin de cor.
+══════════════════════════════════════════════ */
+.reader--light {
+  /* Tom "papel" único para toda a leitura — o cartão (--bg-surface)
+     fica só um pouco mais claro que a página (--bg-base), não branco
+     puro contra um fundo cru. É isso que tira o "flash" de branco
+     forte: a transição de página → cartão vira um degradê suave de
+     papel, não um salto de contraste. */
+  --bg-base:    #f2ede1;
+  --bg-mid:     #ece5d4;
+  --bg-surface: #f8f5ec;
+  --bg-raised:  #eee6d2;
+  --bg-hover:   #e6dcc4;
+
+  /* Bordas um pouco mais presentes que no primeiro rascunho — num
+     fundo mais escuro que branco puro, uma borda muito fraca some
+     e as seções deixam de se separar visualmente umas das outras. */
+  --border-1: rgba(35,27,13,0.09);
+  --border-2: rgba(35,27,13,0.15);
+  --border-3: rgba(35,27,13,0.24);
+
+  --text-1: #201b10;
+  --text-2: #4a4334;
+  --text-3: #6c6350;
+
+  --shadow-sm: 0 1px 4px rgba(60,45,20,0.09);
+  --shadow-md: 0 4px 20px rgba(60,45,20,0.12);
+  --shadow-lg: 0 12px 48px rgba(60,45,20,0.16);
+}
+
+/* Alguns fundos do reader são "overlays" hardcoded pensados pro
+   escuro (branco translúcido, pra clarear uma superfície escura).
+   No claro o raciocínio inverte — precisam escurecer uma superfície
+   clara. Mesmos seletores do restante do arquivo, só prefixados com
+   ".reader--light" (maior especificidade, então vencem sem depender
+   de ordem no arquivo). Nada aqui cria elemento/estrutura nova. */
+.reader--light .reader__bar                     { background: rgba(242,237,225,0.94); }
+.reader--light .reader__back                    { background: rgba(20,15,8,0.05); }
+.reader--light .reader__back:hover               { background: rgba(20,15,8,0.09); }
+.reader--light .reader__copy-btn                { background: rgba(20,15,8,0.04); }
+.reader--light .reader__toc-trigger             { background: rgba(20,15,8,0.04); }
+.reader--light .reader__theme-toggle            { background: rgba(20,15,8,0.04); }
+.reader--light .rm-collapse__trigger:hover      { background: rgba(20,15,8,0.035); }
+.reader--light .tópico-item                     { background: rgba(20,15,8,0.03); }
+.reader--light .reader__toc-rail                { background: rgba(238,230,210,0.65); }
+.reader--light .rm-toc__link:hover              { background: rgba(20,15,8,0.04); }
+.reader--light .reader__hero-chip               { background: rgba(20,15,8,0.04); }
+.reader--light .rm-citacao__texto::before,
+.reader--light .rm-citacao__texto::after        { color: rgba(20,15,8,0.3); }
+.reader--light .rm-tabela tr:nth-child(even) td { background: rgba(20,15,8,0.025); }
+.reader--light .rm-codigo                       { background: rgba(20,15,8,0.04); }
+
+/* ── HIERARQUIA: elementos secundários perdem força visual ──
+   Breadcrumb, selo de tipo de conteúdo e o "olho" da disciplina no
+   herói usavam a cor de destaque da disciplina como TEXTO — num
+   fundo claro isso lê como texto pálido/pouco legível competindo
+   com o título. Eles são informação de contexto, não o conteúdo
+   em si, então passam a usar tinta neutra (--text-2/3): continuam
+   ali, mas em segundo plano. Quem carrega a cor de destaque agora
+   é só o essencial: a seção atual no índice e pequenos toques de
+   fundo/borda — nunca texto corrido. */
+.reader--light .reader__bar-disc      { color: var(--text-2); }
+.reader--light .reader__hero-eyebrow  { color: var(--text-3); opacity: 1; }
+.reader--light .reader__bar-badge,
+.reader--light .badge--conceito,
+.reader--light .badge--resumao,
+.reader--light .badge--professor {
+  background: var(--bg-hover);
+  color: var(--text-2);
+  border-color: var(--border-2);
+}
+
+/* Chip "Aula N" do herói: mesmo raciocínio — era texto na cor de
+   destaque sobre um fundo quase transparente (baixo contraste).
+   Ganha tinta escura (garante legibilidade com qualquer cor de
+   disciplina) e um contorno mais nítido para não se perder no
+   fundo papel. */
+.reader--light .reader__hero-chip--num {
+  color: var(--text-1);
+  background: rgba(var(--disc-tema-rgb), 0.14);
+  border-color: rgba(var(--disc-tema-rgb), 0.32);
+}
+
+/* ── NUMERAÇÃO DAS SEÇÕES — referência: os chips numerados do PDF ──
+   No PDF cada seção tem um selo numerado com contraste real (fundo
+   sólido + texto claro), não um número solto colorido. Aqui o fundo
+   sólido por disciplina teria contraste imprevisível com texto
+   branco, então o ajuste equivalente é: tinta escura (sempre
+   legível) sobre um tom da cor da disciplina mais forte que antes,
+   com contorno — o número vira uma "marca" reconhecível em vez de
+   texto colorido flutuando sobre o branco. */
+.reader--light .rm-collapse__icon {
+  background: rgba(var(--disc-tema-rgb), 0.16);
+  border: 1px solid rgba(var(--disc-tema-rgb), 0.34);
+  color: var(--text-1);
+  font-weight: 700;
+}
+.reader--light .rm-toc__item--active .rm-toc__num { color: var(--text-1); }
+
+/* ── SEPARAÇÃO ENTRE SEÇÕES — cartões com borda/sombra mais nítidas
+   No PDF, cada item de seção é claramente delimitado por uma linha.
+   Aqui o cartão (.rm-collapse) já cumpre esse papel, mas com a
+   borda quase invisível do modo escuro ele se misturava ao fundo
+   papel. Uma borda mais presente + sombra bem discreta devolve a
+   separação nítida entre seções, sem caixas pesadas. */
+.reader--light .rm-collapse {
+  border-color: var(--border-2);
+  box-shadow: var(--shadow-sm);
+}
+.reader--light .rm-collapse--current { border-left-color: var(--disc-tema); }
+
+/* ── CAIXA "IDEIA CENTRAL" — barra de destaque lateral ──
+   Trocado o box com moldura colorida inteira (tom + borda na cor
+   da disciplina ao redor) pela mesma solução do PDF: fundo neutro
+   do "papel" + uma única barra de cor na lateral esquerda. Menos
+   uma caixa colorida competindo por atenção, mesma função de
+   destacar a ideia central. */
+.reader--light .reader__ideia {
+  background: var(--bg-hover);
+  border: 1px solid var(--border-1);
+  border-left: 3px solid var(--disc-tema);
+  border-radius: var(--r-md);
+}
+
+/* Citação/destaque editorial: aspas decorativas na cor de destaque
+   ficavam claras demais sobre papel; ganham a mesma tinta escura
+   suave usada nos demais acentos neutros. */
+.reader--light .rm-destaque::before,
+.reader--light .rm-destaque::after { color: rgba(20,15,8,0.28); }
