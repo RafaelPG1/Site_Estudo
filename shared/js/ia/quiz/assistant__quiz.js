@@ -125,6 +125,11 @@
   'use strict';
 
   var REPLY_DELAY_MS = 900;
+  var MENSAGEM_MAX_CHARS = 500; // alinhado ao limite real aceito pelo Worker (core/worker.js Cloudflare)
+
+  function _mensagemExcedeLimite(texto) {
+    return typeof texto === 'string' && texto.length > MENSAGEM_MAX_CHARS;
+  }
 
   /* ══════════════════════════════════════════════════════════
      ESTADO INTERNO
@@ -544,6 +549,7 @@
       state.chaveHistorico = _montarChaveHistorico(discAtual, modoAtual, _getSemestre());
       _salvarUltimoContexto(discAtual, modoAtual, _getSemestre());
       _versaoEditando = null;
+      _ultimaQuestaoVisual = null;
       if (typeof window.NexusWorker !== 'undefined') {
         window.NexusWorker.limparHistorico();
       }
@@ -832,8 +838,12 @@
   function _onUserSend(text) {
     if (state.processando) return;
     if (!text || !text.trim()) return;
-    if (state.typingTimer) clearTimeout(state.typingTimer);
     if (typeof window.NexusUI === 'undefined') return;
+    if (_mensagemExcedeLimite(text)) {
+      window.NexusUI.renderMessage({ role: 'system', text: 'Mensagem muito grande. Resuma sua pergunta e tente novamente.', time: _getTime() });
+      return;
+    }
+    if (state.typingTimer) clearTimeout(state.typingTimer);
     var msgUser = _push({ role: 'user', text: text, time: _getTime() });
     msgUser.__idx = state.messages.length - 1;
     window.NexusUI.renderMessage(msgUser);
@@ -863,6 +873,10 @@
   function _onEditarMensagem(msgIndex, novoTexto) {
     if (state.processando) return;
     if (typeof window.NexusUI === 'undefined') return;
+    if (_mensagemExcedeLimite(novoTexto)) {
+      window.NexusUI.renderMessage({ role: 'system', text: 'Mensagem muito grande. Resuma sua pergunta e tente novamente.', time: _getTime() });
+      return;
+    }
 
     var msg = state.messages[msgIndex];
     if (!msg || msg.role !== 'user') return;

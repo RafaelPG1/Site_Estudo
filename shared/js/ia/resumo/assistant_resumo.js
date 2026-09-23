@@ -174,7 +174,7 @@
   var TOP_K              = 8;
   var MIN_SCORE          = 15;
   var SESSION_DISC_KEY   = 'nexus_resumo_disc_ativa';
-  var MENSAGEM_MAX_CHARS = 4000;
+  var MENSAGEM_MAX_CHARS = 500; // alinhado ao limite real aceito pelo Worker (core/worker.js Cloudflare)
 
   var APS_POR_PERIODO = {
     '2026.1': ['AP1', 'AP2'],
@@ -1394,7 +1394,7 @@
     if (respostaIA) {
       _renderBot(respostaIA.texto, (respostaIA.fonte || respostaIA.modelo) ? {
         linha1: ['IA: ' + (respostaIA.fonte || ''), respostaIA.modelo || ''].filter(Boolean).join(' · '),
-        linha2: 'fonte: conhecimento próprio',
+        linha2: (respostaIA.turnosAoEnviar > 0) ? 'fonte: histórico da conversa' : 'fonte: conhecimento próprio',
       } : null);
     } else {
       _renderBot('Não consegui processar sua pergunta. Tente novamente.');
@@ -1418,7 +1418,7 @@
         if (respostaIA) {
           _renderBot(respostaIA.texto, (respostaIA.fonte || respostaIA.modelo) ? {
             linha1: ['IA: ' + (respostaIA.fonte || ''), respostaIA.modelo || ''].filter(Boolean).join(' · '),
-            linha2: 'fonte: conhecimento próprio',
+            linha2: (respostaIA.turnosAoEnviar > 0) ? 'fonte: histórico da conversa' : 'fonte: conhecimento próprio',
           } : null);
         } else {
           _renderBot('Não consegui processar sua pergunta. Tente novamente.');
@@ -1480,7 +1480,7 @@
     }
 
     if (typeof window.NexusWorker !== 'undefined') {
-      var temCtx = tipoContexto === 'conteudo' ? (resultados && resultados.length > 0) : true;
+      var temCtx = !!(resultados && resultados.length > 0);
       var respostaIA = null;
       try {
         respostaIA = await NexusWorker.perguntar({

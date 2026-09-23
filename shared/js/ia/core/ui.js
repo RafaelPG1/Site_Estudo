@@ -549,6 +549,7 @@ function _iconPin() {
 
     var ta = document.createElement('textarea');
     ta.className = 'nexus-edit-inline';
+    ta.maxLength = 500;
     ta.value = textoOriginal;
     bubble.replaceWith(ta);
     ta.focus();
@@ -1005,8 +1006,16 @@ function _iconPin() {
 
   function _clampPos(top, left, panel) {
     var margem = 8;
+    var header = document.getElementById('nexus-header');
+    // Verticalmente, só exigimos que o CABEÇALHO (alça de arrastar) continue
+    // visível/alcançável — não o painel inteiro. Antes, maxTop exigia que
+    // panel.offsetHeight inteiro coubesse na tela, o que travava o arraste
+    // bem antes do fundo da tela em painéis altos (na prática, perto da
+    // metade). Horizontalmente mantemos a exigência do painel inteiro
+    // visível, pois não há esse mesmo problema relatado no eixo X.
+    var alturaHeader = header ? header.offsetHeight : 48;
     var maxLeft = window.innerWidth  - panel.offsetWidth  - margem;
-    var maxTop  = window.innerHeight - panel.offsetHeight - margem;
+    var maxTop  = window.innerHeight - alturaHeader - margem;
     left = Math.min(Math.max(left, margem), Math.max(maxLeft, margem));
     top  = Math.min(Math.max(top,  margem), Math.max(maxTop,  margem));
     return { top: top, left: left };
@@ -1082,6 +1091,11 @@ function _iconPin() {
     _dragState.arrastando = true;
     _dragState.offsetX = clientX - rect.left;
     _dragState.offsetY = clientY - rect.top;
+    // Zera qualquer transition de CSS (ex.: animação de abrir/fechar o
+    // painel) enquanto o arraste está ativo — sem isso, cada mousemove
+    // dispara uma pequena animação em vez de mover instantaneamente,
+    // dando a sensação de movimento "pesado"/atrasado em relação ao cursor.
+    panel.style.transition = 'none';
     panel.classList.add('nexus-dragging');
   }
 
@@ -1102,6 +1116,7 @@ function _iconPin() {
     var panel = document.getElementById('nexus-panel');
     if (!panel) return;
     panel.classList.remove('nexus-dragging');
+    panel.style.transition = ''; // devolve o controle da transition ao CSS normal
     var top  = parseFloat(panel.style.top)  || 0;
     var left = parseFloat(panel.style.left) || 0;
     _salvarDragPos(top, left);
