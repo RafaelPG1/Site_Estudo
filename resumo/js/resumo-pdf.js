@@ -6,7 +6,7 @@
    Não duplica dado nenhum: reaproveita exatamente a
    mesma fonte que resumo-ui.js usa (script
    `res_{arquivo}.js`, que define
-   window.__nexusConteudo = {aulas, simplificado, resumao}),
+   window.__nexusConteudo = {aulas, simplificado, resumao, professor}),
    só que carregando disciplina por disciplina sob
    demanda (o carregamento normal só busca a
    disciplina ativa) e mantendo um cache local para
@@ -40,18 +40,18 @@ import { State, esc } from './resumo-utils.js';
 ══════════════════════════════════════════════ */
 const PdfState = {
   discIds:         new Set(),  // disciplinas selecionadas (por id)
-  tipo:            'resumo',   // 'resumo' | 'resumao' | 'sintese'
+  tipo:            'resumo',   // 'resumo' | 'resumao' | 'sintese' | 'professor'
   tipoInicializado: false,
   aulaSel:         new Set(),  // chaves `${discId}::${idx}` selecionadas
   knownKeys:       new Set(),  // chaves já vistas (para aplicar default = selecionado só 1x)
-  cache:           new Map(),  // discId -> { aulas, simplificado, resumao }
+  cache:           new Map(),  // discId -> { aulas, simplificado, resumao, professor }
   pending:         new Map(),  // discId -> Promise (carregamento em curso)
   loading:         new Set(),  // discIds carregando agora (para UI)
 };
 
 function _key(discId, idx) { return `${discId}::${idx}`; }
 
-const TIPO_LABEL = { resumo: 'Resumo', resumao: 'Resumão', sintese: 'Síntese' };
+const TIPO_LABEL = { resumo: 'Resumo', resumao: 'Resumão', sintese: 'Síntese', professor: 'Nota do Professor' };
 
 /* ══════════════════════════════════════════════
    CARREGAMENTO DE CONTEÚDO POR DISCIPLINA
@@ -78,6 +78,7 @@ function _carregarConteudoDisciplina(disc) {
         aulas:        Array.isArray(raw?.aulas)        ? raw.aulas        : [],
         simplificado: Array.isArray(raw?.simplificado) ? raw.simplificado : [],
         resumao:      Array.isArray(raw?.resumao)       ? raw.resumao      : [],
+        professor:    Array.isArray(raw?.professor)     ? raw.professor    : [],
       };
       window.__nexusConteudo = null;
       script.remove();
@@ -119,6 +120,15 @@ function _getItens(discId, dados) {
       .map((r, idx) => {
         const tem = !!(r && (r.ideia_central || (r.secoes ?? []).length > 0));
         return tem ? { idx, item: r } : null;
+      })
+      .filter(Boolean);
+  }
+
+  if (PdfState.tipo === 'professor') {
+    return dados.professor
+      .map((p, idx) => {
+        const tem = !!(p && (p.ideia_central || (p.secoes ?? []).length > 0));
+        return tem ? { idx, item: p } : null;
       })
       .filter(Boolean);
   }
@@ -869,7 +879,7 @@ function _abrirModalPdf() {
   }
 
   if (!PdfState.tipoInicializado) {
-    const map = { completo: 'resumo', sintese: 'sintese', resumao: 'resumao' };
+    const map = { completo: 'resumo', sintese: 'sintese', resumao: 'resumao', professor: 'professor' };
     PdfState.tipo = map[State.modo] ?? 'resumo';
     PdfState.tipoInicializado = true;
     document.querySelectorAll('#pdf-tipo-list [data-tipo]').forEach(b => {

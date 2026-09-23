@@ -10,7 +10,7 @@
 import { resolveIcone, parseSemestre } from '../../src/global.js';
 import { playSound } from '../../shared/js/audio/audio-api.js';
 import { State, esc, parseInline } from './resumo-utils.js';
-import { abrirModal, abrirModalResumao } from './resumo-reader.js';
+import { abrirModal, abrirModalResumao, abrirModalProfessor } from './resumo-reader.js';
 
 /* ══════════════════════════════════════════════
    HEADER
@@ -236,9 +236,10 @@ export function mostrarEstadoSemConteudo() {
 ══════════════════════════════════════════════ */
 function _temSimplificado() { return State.simplificado.length > 0; }
 function _temResumao()      { return State.resumao.length > 0; }
+function _temProfessor()    { return State.professor.length > 0; }
 
 function _buildToggleHtml() {
-  if (!_temSimplificado() && !_temResumao()) return '';
+  if (!_temSimplificado() && !_temResumao() && !_temProfessor()) return '';
 
   const btnCompleto = `<button class="mode-btn${State.modo === 'completo' ? ' mode-btn--active' : ''}" data-modo="completo">Resumo completo</button>`;
   const btnSintese  = _temSimplificado()
@@ -247,8 +248,15 @@ function _buildToggleHtml() {
   const btnResumao  = _temResumao()
     ? `<button class="mode-btn${State.modo === 'resumao'  ? ' mode-btn--active' : ''}" data-modo="resumao">Resumão</button>`
     : '';
+  // Rótulo "Revisão do Professor" (não "Professor") de propósito: a
+  // sidebar já tem uma seção "Professor" que filtra por quem deu a
+  // aula (aula.professor) — usar o mesmo nome aqui confundiria um
+  // modo de conteúdo com um filtro.
+  const btnProfessor = _temProfessor()
+    ? `<button class="mode-btn${State.modo === 'professor' ? ' mode-btn--active' : ''}" data-modo="professor">Revisão do Professor</button>`
+    : '';
 
-  return `<div class="mode-toggle" id="mode-toggle">${btnCompleto}${btnSintese}${btnResumao}</div>`;
+  return `<div class="mode-toggle" id="mode-toggle">${btnCompleto}${btnSintese}${btnResumao}${btnProfessor}</div>`;
 }
 
 export function setModo(modo) {
@@ -259,7 +267,109 @@ export function setModo(modo) {
     btn.classList.toggle('mode-btn--active', btn.dataset.modo === modo);
   });
   renderGrid();
-  mostrarEstado('grid');
+}
+
+/* ══════════════════════════════════════════════
+   SIDEBAR — Tipo de Conteúdo (Resumo/Resumão/Síntese)
+   Mesmo critério de disponibilidade do toggle do topo
+   (_temSimplificado/_temResumao): some o botão de um
+   modo que a disciplina não tem, e some a seção inteira
+   quando sobra só 1 modo (nada para alternar).
+══════════════════════════════════════════════ */
+function _atualizarModoSidebar() {
+  const nav    = document.getElementById('modo-list');
+  const header = document.getElementById('modo-header');
+  if (!nav || !header) return;
+
+  const disponibilidade = {
+    completo:  State.aulas.length > 0,
+    resumao:   _temResumao(),
+    sintese:   _temSimplificado(),
+    professor: _temProfessor(),
+  };
+
+  let visiveis = 0;
+  nav.querySelectorAll('[data-modo]').forEach(btn => {
+    const ok = !!disponibilidade[btn.dataset.modo];
+    btn.classList.toggle('disc-item--hidden', !ok);
+    if (ok) visiveis++;
+  });
+
+  const mostrarSecao = visiveis > 1;
+  header.style.display = mostrarSecao ? '' : 'none';
+  nav.style.display    = mostrarSecao ? '' : 'none';
+}
+
+/* ══════════════════════════════════════════════
+   SIDEBAR — Professor
+   Mesma estrutura visual do "Tipo de Conteúdo"
+   (.disc-list--modo), só que montada dinamicamente: os
+   botões são os professores distintos encontrados em
+   State.aulas (campo aula.professor — mesmo campo já
+   usado no chip do card, ver _profChip). Some a seção
+   inteira quando a disciplina tem só um professor (ou
+   nenhum), mesma lógica do "só 1 modo" acima.
+══════════════════════════════════════════════ */
+const _PROF_ICONES = { Bruno: '🧑‍🏫', Wagner: '👨‍💻', Raul: '📐' };
+
+function _professoresDisponiveis() {
+  return [...new Set(State.aulas.map(a => a.professor).filter(Boolean))];
+}
+
+export function renderProfessorSidebar() {
+  const nav    = document.getElementById('professor-list');
+  const header = document.getElementById('professor-header');
+  if (!nav || !header) return;
+
+  const professores = _professoresDisponiveis();
+
+  if (professores.length <= 1) {
+    header.style.display  = 'none';
+    nav.style.display     = 'none';
+    nav.innerHTML          = '';
+    State.professorFiltro = null;
+    return;
+  }
+
+  header.style.display = '';
+  nav.style.display    = '';
+
+  const btnTodos = `
+    <button class="disc-item${State.professorFiltro === null ? ' mode-btn--active' : ''}" data-professor="" type="button">
+      <span class="disc-item__emoji">👥</span>
+      <span class="disc-item__info">
+        <span class="disc-item__nome">Todos</span>
+      </span>
+    </button>`;
+
+  const btnsProf = professores.map(nome => {
+    const ativo = State.professorFiltro === nome;
+    const icone = _PROF_ICONES[nome] ?? '👤';
+    return `
+      <button class="disc-item${ativo ? ' mode-btn--active' : ''}" data-professor="${esc(nome)}" type="button">
+        <span class="disc-item__emoji">${icone}</span>
+        <span class="disc-item__info">
+          <span class="disc-item__nome">${esc(nome)}</span>
+        </span>
+      </button>`;
+  }).join('');
+
+  nav.innerHTML = btnTodos + btnsProf;
+
+  nav.querySelectorAll('[data-professor]').forEach(btn => {
+    btn.addEventListener('mouseenter', () => playSound('hover', 'resumos'));
+  });
+}
+
+export function setProfessorFiltro(nome) {
+  const valor = nome || null;
+  if (State.professorFiltro === valor) return;
+  playSound('select', 'resumos');
+  State.professorFiltro = valor;
+  document.querySelectorAll('#professor-list [data-professor]').forEach(btn => {
+    btn.classList.toggle('mode-btn--active', (btn.dataset.professor || null) === valor);
+  });
+  renderGrid();
 }
 
 export function renderHeroStats(total) {
@@ -407,6 +517,12 @@ function _criarCardSintese(aula, idx) {
   const numSec  = (sint?.secoes ?? []).length;
   const numPad  = String(idx + 1).padStart(2, '0');
 
+  // Título real do card; a etiqueta "Aula N · Síntese" só aparece
+  // quando traz informação distinta do título — evita repetir o
+  // mesmo texto duas vezes quando não há prefixo "Aula N —".
+  const tituloCard    = aulaTit || aulaStr;
+  const aulaLabelCard = (aulaNum && aulaNum !== tituloCard) ? `${aulaNum} · Síntese` : null;
+
   const card = document.createElement('article');
   card.className = 'resumo-card';
   card.dataset.tipo = 'sintese';
@@ -418,8 +534,8 @@ function _criarCardSintese(aula, idx) {
     <div class="resumo-card__body">
       ${_buildCardTitleRow(
         numPad,
-        `<div class="resumo-card__aula">${aulaNum} · Síntese</div>`,
-        `<div class="resumo-card__titulo">${aulaTit || aulaStr}</div>`
+        aulaLabelCard ? `<div class="resumo-card__aula">${aulaLabelCard}</div>` : '',
+        `<div class="resumo-card__titulo${aulaLabelCard ? '' : ' resumo-card__titulo--identity'}">${tituloCard}</div>`
       )}
       ${preview
         ? `<div class="resumo-card__desc">${parseInline(preview)}</div>`
@@ -449,6 +565,9 @@ function _criarCardResumao(res, idx) {
   const numSec  = (res.secoes ?? []).length;
   const numPad  = String(idx + 1).padStart(2, '0');
 
+  const tituloCard    = aulaTit || aulaStr;
+  const aulaLabelCard = (aulaNum && aulaNum !== tituloCard) ? `${aulaNum} · Resumão` : null;
+
   const card = document.createElement('article');
   card.className = 'resumo-card';
   card.dataset.tipo = 'resumao';
@@ -460,8 +579,8 @@ function _criarCardResumao(res, idx) {
     <div class="resumo-card__body">
       ${_buildCardTitleRow(
         numPad,
-        `<div class="resumo-card__aula">${aulaNum} · Resumão</div>`,
-        `<div class="resumo-card__titulo">${aulaTit || aulaStr}</div>`
+        aulaLabelCard ? `<div class="resumo-card__aula">${aulaLabelCard}</div>` : '',
+        `<div class="resumo-card__titulo${aulaLabelCard ? '' : ' resumo-card__titulo--identity'}">${tituloCard}</div>`
       )}
       ${preview
         ? `<div class="resumo-card__desc">${parseInline(preview)}</div>`
@@ -482,13 +601,67 @@ function _criarCardResumao(res, idx) {
   return card;
 }
 
+function _criarCardProfessor(prof, idx) {
+  const aulaStr = esc(prof.aula ?? '');
+  const m       = aulaStr.match(/^(Aula\s*[\d\/]+)\s*[—–-]\s*(.+)$/i);
+  const aulaNum = m ? m[1] : aulaStr;
+  const aulaTit = m ? m[2] : '';
+  const preview = prof.ideia_central ?? null;
+  const numSec  = (prof.secoes ?? []).length;
+  const numPad  = String(idx + 1).padStart(2, '0');
+
+  const tituloCard    = aulaTit || aulaStr;
+  const aulaLabelCard = (aulaNum && aulaNum !== tituloCard) ? `${aulaNum} · Revisão do Professor` : null;
+
+  const card = document.createElement('article');
+  card.className = 'resumo-card';
+  card.dataset.tipo = 'professor';
+  card.setAttribute('tabindex', '0');
+  card.setAttribute('role', 'button');
+  card.setAttribute('aria-label', `Revisão do Professor: ${prof.aula}`);
+  card.innerHTML = `
+    <div class="resumo-card__stripe"></div>
+    <div class="resumo-card__body">
+      ${_buildCardTitleRow(
+        numPad,
+        aulaLabelCard ? `<div class="resumo-card__aula">${aulaLabelCard}</div>` : '',
+        `<div class="resumo-card__titulo${aulaLabelCard ? '' : ' resumo-card__titulo--identity'}">${tituloCard}</div>`
+      )}
+      ${preview
+        ? `<div class="resumo-card__desc">${parseInline(preview)}</div>`
+        : `<div class="resumo-card__desc" style="font-style:italic;opacity:0.5">Revisão do Professor não disponível ainda.</div>`}
+      <div class="resumo-card__meta">
+        <span class="resumo-card__tag">
+          <span class="resumo-card__tag-dot"></span>
+          ${numSec} seç${numSec !== 1 ? 'ões' : 'ão'}
+        </span>
+      </div>
+    </div>`;
+
+  _bindCardHover(card);
+  card.addEventListener('click', () => abrirModalProfessor(prof, idx));
+  card.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abrirModalProfessor(prof, idx); }
+  });
+  return card;
+}
+
 export function renderGrid() {
   const grid = document.getElementById('resumos-grid');
   if (!grid) return;
   grid.innerHTML = '';
 
+  // Filtro de professor: aplicado pelo índice da aula em State.aulas —
+  // válido nos 4 modos, já que State.simplificado/State.resumao/
+  // State.professor são arrays alinhados por índice com State.aulas
+  // (ver _criarCardSintese/_criarCardResumao/_criarCardProfessor, que
+  // já usam esse mesmo idx).
+  const passaFiltroProfessor = idx =>
+    !State.professorFiltro || State.aulas[idx]?.professor === State.professorFiltro;
+
   if (State.modo === 'sintese') {
     State.aulas.forEach((aula, idx) => {
+      if (!passaFiltroProfessor(idx)) return;
       const sint = State.simplificado[idx] ?? null;
       const temSint = !!(sint && (sint.ideia_central || (sint.secoes ?? []).length > 0));
       if (!temSint) return;
@@ -497,17 +670,33 @@ export function renderGrid() {
     });
   } else if (State.modo === 'resumao') {
     State.resumao.forEach((res, idx) => {
+      if (!passaFiltroProfessor(idx)) return;
       if (!res) return;
       const temRes = !!(res.ideia_central || (res.secoes ?? []).length > 0);
       if (!temRes) return;
       const card = _criarCardResumao(res, idx);
       grid.appendChild(card);
     });
+  } else if (State.modo === 'professor') {
+    State.professor.forEach((prof, idx) => {
+      if (!passaFiltroProfessor(idx)) return;
+      if (!prof) return;
+      const temProf = !!(prof.ideia_central || (prof.secoes ?? []).length > 0);
+      if (!temProf) return;
+      const card = _criarCardProfessor(prof, idx);
+      grid.appendChild(card);
+    });
   } else {
     State.aulas.forEach((aula, idx) => {
+      if (!passaFiltroProfessor(idx)) return;
       grid.appendChild(_criarCard(aula, idx));
     });
   }
+
+  // Grid vazio só por causa do filtro de professor (havia conteúdo,
+  // o filtro que zerou) → reaproveita o estado "sem resultado" que já
+  // existe para busca/filtro, em vez de um grid em branco.
+  mostrarEstado(grid.children.length ? 'grid' : 'empty');
 }
 
 /* ══════════════════════════════════════════════
@@ -533,6 +722,7 @@ function _lerDados() {
     aulas:        Array.isArray(raw.aulas)        ? raw.aulas        : [],
     simplificado: Array.isArray(raw.simplificado) ? raw.simplificado : [],
     resumao:      Array.isArray(raw.resumao)       ? raw.resumao      : [],
+    professor:    Array.isArray(raw.professor)     ? raw.professor    : [],
   };
 }
 
@@ -543,6 +733,7 @@ export function carregarConteudo() {
   State.aulas        = [];
   State.simplificado = [];
   State.resumao      = [];
+  State.professor    = [];
   atualizarStatusBadge();
   _removerScriptAnterior();
   window.__nexusConteudo = null;
@@ -553,6 +744,8 @@ export function carregarConteudo() {
     atualizarStatusBadge();
     renderHeroStats(0);
     mostrarEstadoSemConteudo();
+    _atualizarModoSidebar();
+    renderProfessorSidebar();
     return;
   }
 
@@ -572,6 +765,7 @@ export function carregarConteudo() {
     State.aulas        = dados.aulas;
     State.simplificado = dados.simplificado;
     State.resumao      = dados.resumao;
+    State.professor    = dados.professor;
     State.temConteudo  = dados.aulas.length > 0;
     State.modo         = 'completo';
 
@@ -580,12 +774,15 @@ export function carregarConteudo() {
     if (!State.temConteudo) {
       renderHeroStats(0);
       mostrarEstadoSemConteudo();
+      _atualizarModoSidebar();
+      renderProfessorSidebar();
       return;
     }
 
     renderHeroStats(dados.aulas.length);
+    _atualizarModoSidebar();
+    renderProfessorSidebar();
     renderGrid();
-    mostrarEstado('grid');
   };
 
   script.onerror = () => {
@@ -595,6 +792,8 @@ export function carregarConteudo() {
     _marcarStatusConteudo(disc.id, false);
     renderHeroStats(0);
     mostrarEstadoSemConteudo();
+    _atualizarModoSidebar();
+    renderProfessorSidebar();
   };
 
   document.head.appendChild(script);

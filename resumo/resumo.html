@@ -104,7 +104,7 @@
            reaproveita _setModo() (resumo.js), a MESMA função já usada
            pelo toggle no topo da página — nenhuma lógica nova de
            troca de conteúdo foi criada aqui, só um novo gatilho. -->
-      <div class="sidebar__header">
+      <div class="sidebar__header" id="modo-header">
         <span class="sidebar__title">Tipo de Conteúdo</span>
       </div>
       <nav class="disc-list disc-list--modo" id="modo-list" aria-label="Tipo de conteúdo">
@@ -126,7 +126,25 @@
             <span class="disc-item__desc">Uma aula em tópicos rápidos.</span>
           </span>
         </button>
+        <button class="disc-item" data-modo="professor" type="button">
+          <span class="disc-item__info">
+            <span class="disc-item__nome">Revisão do Professor</span>
+            <span class="disc-item__desc">Resumo escrito pelo professor da disciplina.</span>
+          </span>
+        </button>
       </nav>
+
+      <!-- Professor — mesma estrutura do "Tipo de Conteúdo" acima
+           (.disc-list--modo). Nasce vazia e escondida: quem monta os
+           botões (um por professor distinto encontrado nas aulas da
+           disciplina atual) e decide se a seção aparece é
+           _renderProfessorSidebar() (resumo-ui.js) — some inteira
+           quando a disciplina tem só um professor (ou nenhum),
+           mesmo critério usado para os modos. -->
+      <div class="sidebar__header" id="professor-header" style="display:none">
+        <span class="sidebar__title">Professor</span>
+      </div>
+      <nav class="disc-list disc-list--modo" id="professor-list" aria-label="Professor" style="display:none"></nav>
 
       <div class="sidebar__footer">
         <span>Nexus Study · <span id="sidebar-year"></span></span>
@@ -404,6 +422,10 @@
             <button class="pdf-tipo-btn" data-tipo="sintese" type="button">
               <span class="pdf-tipo-btn__nome">Síntese</span>
               <span class="pdf-tipo-btn__desc">Uma aula em tópicos rápidos.</span>
+            </button>
+            <button class="pdf-tipo-btn" data-tipo="professor" type="button">
+              <span class="pdf-tipo-btn__nome">Nota do Professor</span>
+              <span class="pdf-tipo-btn__desc">Resumo escrito pelo professor da disciplina.</span>
             </button>
           </div>
         </section>

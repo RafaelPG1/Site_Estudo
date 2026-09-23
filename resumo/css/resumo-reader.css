@@ -945,6 +945,11 @@
   color: var(--violet);
   border-color: rgba(164,143,224,0.22);
 }
+.badge--professor {
+  background: rgba(127,203,160,0.10);
+  color: var(--sage);
+  border-color: rgba(127,203,160,0.22);
+}
 
 /* ══════════════════════════════════════════
    RESPONSIVO — READER

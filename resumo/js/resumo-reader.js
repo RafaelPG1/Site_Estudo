@@ -565,6 +565,41 @@ export function abrirModalResumao(res, idx) {
   _readerScroll = _initReadingScrollSystem(scrollEl);
 }
 
+export function abrirModalProfessor(prof, idx) {
+  playSound('click', 'resumos');
+  playSound('openModal', 'resumos');
+
+  // Mesma lógica de abrirModal/abrirModalResumao (ver comentário lá).
+  document.body.classList.add('reader-open');
+
+  const discLabel = document.getElementById('rm-disc-label');
+  if (discLabel) discLabel.textContent = State.disciplina?.nome ?? '';
+
+  const aulaLabel = document.getElementById('rm-aula-label');
+  if (aulaLabel) aulaLabel.textContent = prof.aula ?? '';
+
+  const badge = document.getElementById('rm-tipo-badge');
+  if (badge) {
+    badge.textContent = 'Nota do Professor';
+    badge.className   = 'reader__bar-badge badge--professor';
+  }
+
+  const body = document.getElementById('rm-body');
+  if (body) body.innerHTML = _buildReaderBody(prof, idx);
+
+  const _accordionKey = _storageKeyAccordion((prof.aula ?? String(Date.now())) + '__professor');
+  _bindReaderAccordion(_accordionKey);
+  buildTOC(prof.secoes ?? []);
+
+  document.getElementById('read-modal').classList.add('read-modal--open');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('read-modal-panel')?.focus();
+
+  _readerScroll?.cleanup();
+  const scrollEl = document.getElementById('rm-body-wrapper');
+  _readerScroll = _initReadingScrollSystem(scrollEl);
+}
+
 export function bindModal() {
   document.getElementById('read-modal-close')?.addEventListener('click', () => {
     playSound('closeModal', 'resumos');

@@ -3777,7 +3777,7 @@ aula: "Apresentação da disciplina, ementa e metodologia. Revisão de conceitos
     },
     // aula 5
     {
-      aula: "Aula 6 - Introdução a redes móveis e redes ad hoc",
+      aula: "Introdução a redes móveis e redes ad hoc",
       ideia_central: "As redes sem fio se dividem em Redes Celulares Móveis, baseadas em infraestrutura hierárquica e evoluídas ao longo de gerações (1G a 5G), e Redes Ad-hoc Sem Fio, descentralizadas e compostas por diversas categorias (WPAN, WLAN, WMAN, WMN, WSN, MANET/VANET), cada uma exigindo estratégias específicas de gerenciamento de mobilidade, recursos, segurança e identidade.",
       secoes: [
         {
@@ -5068,6 +5068,684 @@ aula: "Apresentação da disciplina, ementa e metodologia. Revisão de conceitos
 
 
 
+  ],
+
+  professor: [
+    {
+aula: "Revisão para AP1 — Redes de Computadores II",
+ideia_central: "Consolidar os principais conceitos de camada física, camada de enlace, controle de fluxo/ARQ, redes locais e sem fio, endereçamento IP, redes metropolitanas com MPLS e redes móveis para a prova AP1.",
+secoes: [
+{
+id: "camada_fisica",
+titulo: "Camada Física — Sinais, Impedimentos e Capacidade de Canal",
+blocos: [
+{ tipo: "subtitulo", texto: "Impedimentos de transmissão" },
+{ tipo: "texto", texto: "Durante a transmissão de um sinal, três fenômenos podem comprometer a qualidade da comunicação." },
+{
+tipo: "lista",
+titulo: "Impedimentos de transmissão",
+itens: [
+"Atenuação: perda de energia (potência) do sinal à medida que ele se propaga pelo meio. O sinal perde parte de sua energia para 'vencer' a resistência do meio de transmissão — por isso, quanto maior a distância entre transmissor e receptor, mais fraco o sinal chega ao destino.",
+"Distorção: alteração da forma original do sinal. Em sinais compostos por várias frequências, cada componente pode se propagar com velocidade ou atraso diferente, fazendo com que cheguem ao destino em momentos distintos — isso altera a fase e, consequentemente, o formato do sinal.",
+"Ruído: qualquer sinal indesejado que se mistura ao sinal transmitido, podendo alterar ou corromper a informação (ex.: interferência eletromagnética)."
+]
+},
+{ tipo: "destaque", texto: "Não confundir: atenuação = perda de energia; distorção = mudança de forma/fase; ruído = interferência externa somada ao sinal." },
+{ tipo: "subtitulo", texto: "Decibel (dB)" },
+{ tipo: "texto", texto: "O decibel mede a variação relativa de potência entre dois pontos (não é uma medida absoluta): dB = 10 · log10(P2/P1)." },
+{
+tipo: "lista",
+itens: [
+"dB positivo → houve amplificação",
+"dB negativo → houve atenuação",
+"dB = 0 → a potência permaneceu igual"
+]
+},
+{ tipo: "subtitulo", texto: "Relação Sinal-Ruído (SNR)" },
+{ tipo: "texto", texto: "A SNR (Signal-to-Noise Ratio) mede a relação entre a potência do sinal desejado e a potência do ruído presente no canal. Quanto maior a SNR, melhor a qualidade da transmissão. SNR = P_sinal / P_ruído ; SNR_dB = 10 · log10(SNR)." },
+{ tipo: "subtitulo", texto: "Limite teórico da taxa de dados: Nyquist x Shannon" },
+{ tipo: "texto", texto: "A velocidade máxima de transmissão depende de três fatores: largura de banda do canal, número de níveis do sinal e qualidade do canal (ruído)." },
+{
+tipo: "tabela",
+titulo: "Nyquist x Shannon",
+colunas: ["Teorema", "Aplica-se a", "Fórmula", "O que considera"],
+linhas: [
+["Nyquist", "Canal ideal, sem ruído", "Taxa = 2·B·log₂L", "Largura de banda (B) e número de níveis do sinal (L)"],
+["Shannon", "Canal real, com ruído", "Capacidade = B·log₂(1+SNR)", "Largura de banda (B) e relação sinal-ruído (SNR)"]
+]
+},
+{
+tipo: "lista",
+titulo: "Pontos-chave para a prova",
+itens: [
+"Aumentar o número de níveis de sinal pode permitir transmitir mais bits por símbolo (mais capacidade) — efeito estudado por Nyquist.",
+"Aumentar o ruído sempre reduz a taxa máxima possível de transmissão — nunca aumenta a capacidade, por mais 'informação' que pareça carregar.",
+"A taxa de transmissão nunca depende de um único fator isolado (como só o tipo de cabo): ela é resultado da combinação de largura de banda, níveis de sinal e ruído."
+]
+},
+{ tipo: "subtitulo", texto: "Modos de operação em redes sem fio" },
+{ tipo: "texto", texto: "Redes sem fio (padrão IEEE 802.11) organizam sua unidade básica de comunicação — o BSS (Basic Service Set) — em dois modos." },
+{ tipo: "topico", titulo: "Modo infraestrutura", texto: "Existe um Access Point (AP) centralizando toda a comunicação; os dispositivos se conectam ao AP, e não diretamente entre si." },
+{ tipo: "topico", titulo: "Modo ad hoc", texto: "Não existe AP; os dispositivos se comunicam diretamente entre si, formando uma rede temporária e descentralizada." },
+{ tipo: "texto", texto: "A imagem compara lado a lado o BSS ad hoc (estações ligadas entre si, sem nenhum ponto central) e o BSS de infraestrutura (todas as estações ligadas a um Access Point central) — o contraste visual ajuda a fixar por que o modo infraestrutura depende de um único ponto de falha (o AP) enquanto o ad hoc não tem essa dependência, mas também não tem coordenação centralizada." },
+{
+tipo: "imagem",
+id: "bss_adhoc_x_infraestrutura",
+src: "bss_adhoc_x_infraestrutura.png",
+pasta: "imagens_redes2/aula_3",
+alt: "Comparação lado a lado entre BSS ad hoc (estações interligadas sem ponto central) e BSS de infraestrutura (estações ligadas a um Access Point central)",
+num: 1
+},
+{ tipo: "texto", texto: "A mobilidade dos usuários em redes de infraestrutura exige mecanismos de gerenciamento de conexão quando eles se deslocam entre diferentes pontos de acesso (ver Handover, seção Redes Móveis). Já o meio de transmissão sem fio (o ar) é compartilhado e está sujeito a ruído, atenuação e colisões — por isso redes sem fio não podem contar com detecção de colisão da mesma forma que redes cabeadas (ver CSMA/CA, seção WLAN)." }
+]
+},
+{
+id: "camada_enlace",
+titulo: "Camada de Enlace — Detecção e Correção de Erros",
+blocos: [
+{ tipo: "subtitulo", texto: "Funções da camada de enlace" },
+{ tipo: "texto", texto: "A camada de enlace tem cinco funções principais." },
+{
+tipo: "lista",
+itens: [
+"Framing — organiza os bits recebidos da camada física em quadros (frames).",
+"Endereçamento — identifica origem e destino dentro da rede local (endereço MAC).",
+"Controle de fluxo — evita que o receptor seja sobrecarregado quando absorve dados mais lentamente do que o emissor produz.",
+"Controle de erros — detecta e trata frames corrompidos, duplicados ou perdidos.",
+"Controle de acesso ao meio — define qual dispositivo tem o direito de transmitir quando vários compartilham o mesmo link."
+]
+},
+{ tipo: "subtitulo", texto: "Tipos de erro" },
+{
+tipo: "lista",
+itens: [
+"Erro de bit: um único bit é alterado (0 → 1 ou 1 → 0).",
+"Erro em rajada (burst error): dois ou mais bits consecutivos são corrompidos — é o tipo de erro mais frequente em redes de computadores reais, geralmente causado por ruído de curta duração."
+]
+},
+{ tipo: "subtitulo", texto: "Detecção x Correção de erros" },
+{ tipo: "texto", texto: "Para lidar com erros, o transmissor adiciona bits redundantes à mensagem original. Existem duas abordagens." },
+{ tipo: "topico", titulo: "Detecção de erros", texto: "Permite identificar que ocorreu um erro (mas não corrigi-lo sozinho) — ex.: paridade, checksum, CRC." },
+{
+tipo: "topico",
+titulo: "Correção de erros",
+texto: "Permite recuperar a informação corrompida. Pode ocorrer de duas formas:",
+lista: [
+"FEC (Forward Error Correction) — correção sem retransmissão; o próprio receptor corrige o erro (ex.: Código de Hamming).",
+"ARQ (Automatic Repeat reQuest) — correção com retransmissão; o receptor detecta o erro e solicita reenvio."
+]
+},
+{ tipo: "subtitulo", texto: "Bit de paridade" },
+{ tipo: "texto", texto: "Técnica mais simples: adiciona 1 bit extra para tornar a quantidade total de bits '1' par (paridade par) ou ímpar (paridade ímpar)." },
+{
+tipo: "exemplo",
+titulo: "Bit de paridade",
+texto: "Mensagem 1011001 → quantidade de 1's = 4 (já é par) → bit de paridade = 0 → mensagem transmitida: 10110010.",
+detalhe: "Limitação: detecta apenas erros de 1 bit (ou uma quantidade ímpar de bits alterados); falha se exatamente 2 bits errarem ao mesmo tempo, pois a paridade se mantém."
+},
+{ tipo: "subtitulo", texto: "Checksum" },
+{ tipo: "texto", texto: "Divide a mensagem em blocos de bits e soma esses blocos usando aritmética de complemento de 1 (bits invertidos: 0→1, 1→0). O resultado, após o processo de complemento, é enviado junto com a mensagem. No receptor, a soma é refeita para verificar se o resultado corresponde ao esperado — se não corresponder, há erro." },
+{
+tipo: "lista",
+itens: [
+"É usado tipicamente em camadas mais altas (ex.: cabeçalhos IP, TCP, UDP).",
+"Mais simples e com menor custo computacional que o CRC, mas também menos robusto para detectar certos padrões de erro."
+]
+},
+{ tipo: "subtitulo", texto: "CRC — Cyclic Redundancy Check" },
+{ tipo: "texto", texto: "O CRC funciona como uma 'assinatura matemática' da mensagem. Baseia-se em polinômios e utiliza um polinômio gerador G(x), conhecido tanto pelo emissor quanto pelo receptor." },
+{
+tipo: "topico",
+titulo: "No emissor",
+lista: [
+"Obtém a mensagem original em bits.",
+"Adiciona zeros à direita (quantidade de zeros = grau do polinômio gerador).",
+"Divide essa sequência pelo polinômio gerador usando divisão binária / operação XOR (divisão módulo 2, em vez das operações tradicionais de adição/subtração).",
+"O resto da divisão é o CRC.",
+"O CRC é anexado à mensagem original."
+]
+},
+{ tipo: "destaque", texto: "Quadro transmitido = mensagem original + CRC." },
+{
+tipo: "topico",
+titulo: "No receptor",
+lista: [
+"Recebe mensagem + CRC.",
+"Divide novamente pelo mesmo polinômio gerador.",
+"O resto dessa divisão é chamado de síndrome: síndrome = 0 → considera-se que não houve erro (palavra aceita); síndrome ≠ 0 → erro detectado (dados descartados)."
+]
+},
+{ tipo: "texto", texto: "O CRC é usado, por exemplo, no quadro Ethernet, no campo CRC/FCS (4 bytes), ao final do quadro, dedicado à verificação de erros." },
+{ tipo: "texto", texto: "O material traz dois diagramas complementares — um do codificador e outro do decodificador CRC. O primeiro mostra a divisão binária módulo 2 no emissor: a mensagem com zeros à direita sendo dividida pelo polinômio gerador via operações XOR sucessivas até sobrar o resto (o CRC). O segundo mostra o processo espelhado no receptor, destacando que o resultado da nova divisão é chamado de síndrome — o elemento central para decidir se a palavra é aceita (síndrome = 0) ou descartada (síndrome ≠ 0). Vale desenhar esse processo manualmente com um exemplo pequeno (mensagem de poucos bits) para fixar a mecânica do XOR." },
+{
+tipo: "imagem",
+id: "crc_codificador",
+src: "crc_codificador.png",
+pasta: "imagens_redes2/aula_2",
+alt: "Diagrama do codificador CRC: divisão binária módulo 2 da mensagem com zeros à direita pelo polinômio gerador, via XOR, até obter o resto (CRC)",
+num: 2
+},
+{
+tipo: "imagem",
+id: "crc_decodificador",
+src: "crc_decodificador.png",
+pasta: "imagens_redes2/aula_2",
+alt: "Diagrama do decodificador CRC: nova divisão da mensagem recebida pelo polinômio gerador, gerando a síndrome que decide aceitação ou descarte",
+num: 3
+},
+{ tipo: "subtitulo", texto: "Distância de Hamming e Código de Hamming" },
+{ tipo: "texto", texto: "Distância de Hamming: número de posições de bits diferentes entre duas palavras binárias de mesmo tamanho. Serve para medir a diferença entre palavras de código e indicar quantos erros seriam necessários para transformar uma palavra em outra." },
+{
+tipo: "exemplo",
+titulo: "Distância de Hamming",
+texto: "Palavra A = 1011001; Palavra B = 1010001 → apenas 1 posição diferente.",
+detalhe: "Distância de Hamming = 1."
+},
+{ tipo: "texto", texto: "Código de Hamming (criado por Richard Hamming em 1950): utiliza bits de paridade posicionados estrategicamente para aumentar a distância entre palavras válidas, permitindo não só detectar, mas corrigir erros — é um exemplo clássico de FEC." },
+{
+tipo: "lista",
+itens: [
+"O código de Hamming clássico tem distância mínima 3, o que permite corrigir 1 erro de bit e detectar até 2 erros de bits.",
+"Os bits de paridade ocupam posições que são potências de 2: posição 1, 2, 4, 8, 16... As demais posições carregam os bits de dados.",
+"P1 (posição 1) → cobre as posições 1, 3, 5, 7, 9...",
+"P2 (posição 2) → cobre as posições 2, 3, 6, 7, 10, 11...",
+"P4 (posição 4) → cobre as posições 4, 5, 6, 7, 12, 13, 14, 15...",
+"Relação entre os bits: n = 2^m − 1 e k = n − m, onde k = número de bits de dados, m (= r) = número de bits de verificação/redundância, n = número total de bits."
+]
+},
+{ tipo: "texto", texto: "Há duas imagens complementares sobre o código de Hamming. A primeira mostra, posição por posição, qual bit de paridade cobre qual conjunto de posições (P1, P2, P4...) — essencial para entender por que essas posições específicas (potências de 2) conseguem, juntas, 'apontar' a posição exata de um bit errado (cada combinação de paridades erradas forma, em binário, o índice do bit corrompido). A segunda imagem mostra um exemplo numérico completo: a distribuição de bits de dados e de paridade lado a lado, com o cálculo de cada paridade até formar a palavra final transmitida — é o tipo de exemplo que vale refazer à mão para garantir que o cálculo das paridades ficou claro antes da prova." },
+{
+tipo: "imagem",
+id: "hamming_cobertura_bits_paridade",
+src: "hamming_cobertura_bits_paridade.png",
+pasta: "imagens_redes2/aula_2",
+alt: "Diagrama posição a posição mostrando quais posições cada bit de paridade (P1, P2, P4...) cobre em uma palavra de código de Hamming",
+num: 4
+},
+{
+tipo: "imagem",
+id: "hamming_exemplo_numerico",
+src: "hamming_exemplo_numerico.png",
+pasta: "imagens_redes2/aula_2",
+alt: "Exemplo numérico completo do código de Hamming, com a distribuição de bits de dados e paridade e o cálculo de cada paridade até a palavra final",
+num: 5
+},
+{ tipo: "subtitulo", texto: "Comparação entre as técnicas" },
+{
+tipo: "tabela",
+colunas: ["Técnica", "O que faz", "Detecta ou corrige?", "Base do cálculo"],
+linhas: [
+["Paridade", "Adiciona 1 bit", "Detecta (1 bit)", "Contagem de 1's"],
+["Checksum", "Soma blocos de dados", "Detecta", "Aritmética de complemento de 1"],
+["CRC", "Divisão polinomial", "Detecta", "Divisão binária / XOR"],
+["Hamming", "Bits de paridade posicionados", "Corrige (FEC)", "Posições em potências de 2"],
+["ARQ", "Retransmissão", "Corrige (via reenvio)", "Depende de CRC/checksum + timeout"]
+]
+},
+{ tipo: "destaque", texto: "Diferença essencial CRC x Checksum: o Checksum usa operações aritméticas (soma/complemento) sobre os dados; o CRC usa divisão polinomial binária (XOR). Nenhum dos dois corrige sozinho — ambos apenas detectam, cabendo a mecanismos de retransmissão (ARQ) ou correção (FEC/Hamming) tratar o erro identificado." }
+]
+},
+{
+id: "controle_fluxo_arq",
+titulo: "Controle de Fluxo e Protocolos ARQ",
+blocos: [
+{ tipo: "subtitulo", texto: "Conceitos-base" },
+{
+tipo: "lista",
+itens: [
+"Controle de fluxo: conjunto de procedimentos para controlar quanto o emissor pode enviar antes de receber confirmação, evitando sobrecarregar o receptor.",
+"ACK (Acknowledgment): confirmação de recebimento correto.",
+"NACK (Negative Acknowledgment): confirmação negativa (indica erro).",
+"Timeout: tempo limite de espera por uma resposta; se expirar sem ACK, o emissor retransmite.",
+"Piggybacking: técnica em que informações de controle (ACKs/NAKs) 'pegam carona' nos próprios frames de dados, em vez de serem enviadas em mensagens separadas."
+]
+},
+{ tipo: "subtitulo", texto: "Protocolos para canais sem ruído" },
+{ tipo: "texto", texto: "Consideram que os bits chegam ao destino sem erros — por isso não implementam controle de erros, apenas controle de fluxo quando necessário." },
+{ tipo: "topico", titulo: "Protocolo mais simples possível", texto: "Unidirecional, sem controle de fluxo nem de erros; o emissor envia continuamente e o receptor processa imediatamente." },
+{ tipo: "topico", titulo: "Stop-and-Wait", texto: "Adiciona controle de fluxo. Funcionamento: (1) emissor envia um frame; (2) espera o ACK; (3) só então envia o próximo. Isso impede que o receptor fique sobrecarregado — mas pressupõe um canal ideal, sem erros, o que é impraticável em redes reais." },
+{ tipo: "texto", texto: "O diagrama mostra a sequência de envio de frames e confirmações lado a lado — dá para visualizar claramente o 'tempo morto' do canal entre o envio de um frame e a chegada do ACK, que é justamente a raiz da ineficiência desse protocolo." },
+{
+tipo: "imagem",
+id: "stop_and_wait_sem_erro",
+src: "stop_and_wait_sem_erro.png",
+pasta: "imagens_redes2/aula_2",
+alt: "Diagrama de sequência do protocolo Stop-and-Wait sem controle de erros, mostrando o tempo ocioso do canal entre envio do frame e chegada do ACK",
+num: 6
+},
+{ tipo: "subtitulo", texto: "Protocolos ARQ para canais com ruído" },
+{ tipo: "texto", texto: "Quando há possibilidade de corrupção dos dados, são necessários controle de erros e controle de fluxo, normalmente via mecanismos ARQ." },
+{
+tipo: "topico",
+titulo: "Stop-and-Wait ARQ",
+lista: [
+"Versão do Stop-and-Wait preparada para lidar com erros.",
+"Cada frame recebe um número de sequência, permitindo identificar frames perdidos ou duplicados.",
+"O emissor mantém uma cópia do frame, espera o ACK, usa um timer; se o timer expira sem ACK, retransmite.",
+"O próprio ACK pode ser perdido/corrompido, por isso também carrega redundância e número de sequência.",
+"Desvantagem: ineficiente, pois apenas um frame aguarda confirmação por vez — o canal fica ocioso boa parte do tempo."
+]
+},
+{ tipo: "texto", texto: "O diagrama detalha o ciclo completo — envio do frame, espera pela confirmação e, quando necessário, a retransmissão após o timeout. A diferença visual principal em relação ao Stop-and-Wait 'sem ruído' é a seta extra de retransmissão quando o ACK não chega a tempo." },
+{
+tipo: "imagem",
+id: "stop_and_wait_arq_retransmissao",
+src: "stop_and_wait_arq_retransmissao.png",
+pasta: "imagens_redes2/aula_2",
+alt: "Diagrama do ciclo completo do Stop-and-Wait ARQ, incluindo a retransmissão do frame após expiração do timeout",
+num: 7
+},
+{
+tipo: "topico",
+titulo: "Go-Back-N ARQ",
+lista: [
+"Utiliza janela deslizante: o transmissor pode enviar até N frames sem esperar ACK, mantendo-os em buffer.",
+"Usa ACKs acumulativos: o receptor informa qual é o próximo frame esperado (ex.: se recebeu corretamente até o frame 4, envia ACK = 5).",
+"Se ocorre erro no frame i: o receptor descarta esse frame e todos os seguintes, mesmo que alguns tenham chegado corretos. O transmissor então retransmite a partir do frame com erro.",
+"Ideia-chave: ocorreu erro → volta e retransmite a partir daquele frame."
+]
+},
+{ tipo: "texto", texto: "O diagrama representa a janela de transmissão se deslocando e mostra o que acontece quando um frame dentro dela chega com erro — visualmente, todos os frames à direita do erro (mesmo os corretos) ficam 'descartados' e precisam ser reenviados. É a melhor forma de fixar por que esse protocolo é menos eficiente que o Selective Repeat." },
+{
+tipo: "imagem",
+id: "go_back_n_janela_deslizante",
+src: "go_back_n_janela_deslizante.png",
+pasta: "imagens_redes2/aula_2",
+alt: "Diagrama da janela deslizante do Go-Back-N ARQ, mostrando o descarte de todos os frames após um erro, mesmo os corretos",
+num: 8
+},
+{
+tipo: "topico",
+titulo: "Selective Repeat ARQ",
+lista: [
+"Também usa janela deslizante, mas é mais eficiente que o Go-Back-N.",
+"Diferença central: somente os frames perdidos ou corrompidos são retransmitidos — os frames corretos não são descartados.",
+"O receptor possui uma janela de recebimento, pode receber frames fora de ordem, armazena temporariamente os corretos enquanto aguarda o frame faltante, e envia ACK individual para cada frame recebido corretamente.",
+"Ideia-chave: ocorreu erro → retransmite somente o frame problemático."
+]
+},
+{ tipo: "texto", texto: "O diagrama mostra frames sendo tratados individualmente — dá para ver que, mesmo com um frame perdido ou corrompido no meio da sequência, os frames seguintes continuam sendo aceitos e armazenados pelo receptor (janela de recebimento), em vez de descartados como no Go-Back-N." },
+{
+tipo: "imagem",
+id: "selective_repeat_frames_individuais",
+src: "selective_repeat_frames_individuais.png",
+pasta: "imagens_redes2/aula_2",
+alt: "Diagrama do Selective Repeat ARQ mostrando o tratamento individual de cada frame e o armazenamento dos frames corretos na janela de recebimento",
+num: 9
+},
+{ tipo: "subtitulo", texto: "Tabela comparativa" },
+{
+tipo: "tabela",
+colunas: ["Protocolo", "Frames em voo", "Comportamento após erro"],
+linhas: [
+["Protocolo mais simples", "Contínuo, sem controle", "Sem tratamento de erro"],
+["Stop-and-Wait", "1 por vez", "Sem tratamento de erro (canal ideal)"],
+["Stop-and-Wait ARQ", "1 por vez", "Retransmite o próprio frame após timeout"],
+["Go-Back-N ARQ", "Vários (janela)", "Retransmite o frame com erro e todos os posteriores"],
+["Selective Repeat ARQ", "Vários (janela)", "Retransmite somente o(s) frame(s) com problema"]
+]
+}
+]
+},
+{
+id: "redes_locais_lan",
+titulo: "Redes Locais (LAN) — Dispositivos e Ethernet",
+blocos: [
+{ tipo: "subtitulo", texto: "Dispositivos de interconexão" },
+{
+tipo: "lista",
+itens: [
+"Hub: dispositivo de camada física que opera como repetidor — recebe o sinal elétrico em uma porta e o retransmite (repete) para todas as demais portas, sem qualquer inteligência sobre endereços. Isso cria um único domínio de colisão compartilhado por todas as portas.",
+"Switch: conecta dispositivos dentro da LAN e encaminha quadros com base no endereço MAC (camada de enlace) — filtra e envia diretamente para a porta do destinatário, isolando domínios de colisão por porta.",
+"Roteador: interliga a LAN com outras redes (como a Internet), encaminhando com base no endereço IP (camada de rede).",
+"Access Point (AP): expande a rede de forma sem fio."
+]
+},
+{ tipo: "destaque", texto: "Atenção: não confundir os três níveis — Hub = camada física (repete sinal elétrico); Switch = camada de enlace (encaminha por MAC); Roteador = camada de rede (encaminha por IP)." },
+{ tipo: "subtitulo", texto: "Ethernet e CSMA/CD" },
+{ tipo: "texto", texto: "A Ethernet padrão (tecnologia mais comum de LAN, padronizada pelo IEEE 802) utiliza o CSMA/CD — Carrier Sense Multiple Access with Collision Detection, com estratégia 1-persistent. Esse método corresponde à primeira geração de Ethernet (10 Mbps) e permite que a estação detecte a colisão enquanto transmite pelo cabo — algo possível porque, em um meio cabeado, é viável monitorar o próprio sinal durante a transmissão." },
+{ tipo: "texto", texto: "Formato geral do quadro Ethernet: Preâmbulo, SFD, endereço de destino, endereço de origem, comprimento/tipo, dados e preenchimento, e CRC/FCS (4 bytes, para verificação de erros)." },
+{ tipo: "texto", texto: "Nas velocidades mais altas de Ethernet moderna, o CSMA/CD deixou de ser necessário, já que a comunicação passou a ser predominantemente full-duplex (sem disputa pelo mesmo meio compartilhado)." }
+]
+},
+{
+id: "redes_locais_sem_fio",
+titulo: "Redes Locais Sem Fio (WLAN) — IEEE 802.11",
+blocos: [
+{ tipo: "subtitulo", texto: "DCF e CSMA/CA" },
+{ tipo: "texto", texto: "A DCF (Distributed Coordination Function) é obrigatória em qualquer rede IEEE 802.11 e utiliza o CSMA/CA — Carrier Sense Multiple Access with Collision Avoidance." },
+{
+tipo: "lista",
+titulo: "Funcionamento",
+itens: [
+"A estação escuta o canal.",
+"Se o canal estiver ocupado, espera um tempo aleatório (backoff).",
+"Se estiver livre, transmite."
+]
+},
+{ tipo: "texto", texto: "O objetivo é evitar colisões, pois em Wi-Fi não é possível detectar uma colisão enquanto se transmite — diferentemente da Ethernet cabeada (CSMA/CD). Por isso o Wi-Fi trabalha na lógica de 'evitar' (CA), e não de 'detectar' (CD)." },
+{ tipo: "subtitulo", texto: "Problema da estação oculta (hidden terminal)" },
+{ tipo: "texto", texto: "Ocorre quando duas estações não conseguem se enxergar diretamente, mas ambas conseguem transmitir para a mesma estação (ex.: o mesmo AP)." },
+{
+tipo: "exemplo",
+titulo: "Estação oculta",
+texto: "B transmite para A; C também deseja transmitir para A; C não percebe que B já está transmitindo (fora do alcance de B); A recebe simultaneamente os sinais de B e C → colisão.",
+detalhe: "Consequência: redução da capacidade da rede devido ao aumento de colisões."
+},
+{ tipo: "texto", texto: "O diagrama desenha os círculos de alcance de B e C, com A posicionada exatamente na região de sobreposição entre os dois círculos — visualmente fica claro que B e C não se enxergam (seus círculos não se sobrepõem entre si), mas ambos alcançam A. É esse desenho de círculos de alcance que explica de forma mais intuitiva por que o termo é 'estação oculta': B está oculta para C, e vice-versa." },
+{
+tipo: "imagem",
+id: "estacao_oculta_circulos_alcance",
+src: "estacao_oculta_circulos_alcance.png",
+pasta: "imagens_redes2/aula_3",
+alt: "Diagrama com os círculos de alcance de B e C sobrepostos apenas na região onde está A, ilustrando o problema da estação oculta",
+num: 10
+},
+{ tipo: "subtitulo", texto: "Solução RTS/CTS" },
+{ tipo: "texto", texto: "Handshake baseado em CSMA/CA usado para mitigar o problema da estação oculta." },
+{
+tipo: "lista",
+itens: [
+"B envia RTS (Request to Send) para A.",
+"A responde com CTS (Clear to Send), que informa a duração da transmissão.",
+"C recebe o CTS e entende que o canal está ocupado, aguardando (evitando a colisão)."
+]
+},
+{ tipo: "texto", texto: "O NAV (Network Allocation Vector) é o temporizador lógico usado para indicar por quanto tempo o canal de rádio ficará reservado/ocupado — mecanismo associado ao RTS/CTS." },
+{ tipo: "texto", texto: "A imagem mostra o formato do frame 802.11, com os campos FC (Frame Control), Duration, quatro campos de endereço, Sequence Control, Frame Body e FCS. O campo Duration é justamente o que carrega o valor usado para atualizar o NAV das estações vizinhas — a ligação entre esse campo do quadro e o mecanismo de reserva de canal explicado acima é um bom ponto de atenção para questões que cruzem 'estrutura do frame' com 'controle de acesso ao meio'." },
+{
+tipo: "imagem",
+id: "formato_frame_80211",
+src: "formato_frame_80211.png",
+pasta: "imagens_redes2/aula_3",
+alt: "Formato do frame 802.11 com os campos FC, Duration, quatro campos de endereço, Sequence Control, Frame Body e FCS",
+num: 11
+},
+{ tipo: "subtitulo", texto: "Problema da estação exposta (exposed terminal)" },
+{ tipo: "texto", texto: "Ocorre quando uma estação deixa de transmitir por perceber o canal ocupado, mesmo que sua transmissão não causasse interferência real no destinatário pretendido." },
+{
+tipo: "exemplo",
+titulo: "Estação exposta",
+texto: "A transmite para B; C deseja transmitir para D; C escuta A e decide não transmitir — mas C poderia transmitir para D sem interferir em A→B.",
+detalhe: "Consequência: uso ineficiente do canal e redução da taxa de transmissão."
+},
+{ tipo: "texto", texto: "O diagrama posiciona A, B, C e D em sequência (A—B—C—D), com os círculos de alcance de cada um sobrepostos apenas com os vizinhos imediatos. Isso deixa visualmente evidente que C está dentro do alcance de A (por isso 'escuta' a transmissão A→B) mas D está fora do alcance de A — logo, uma transmissão C→D não afetaria A→B, embora C se abstenha por precaução." },
+{
+tipo: "imagem",
+id: "estacao_exposta_alcance_abcd",
+src: "estacao_exposta_alcance_abcd.png",
+pasta: "imagens_redes2/aula_3",
+alt: "Diagrama com A, B, C e D em sequência e seus círculos de alcance sobrepostos apenas com os vizinhos imediatos, ilustrando o problema da estação exposta",
+num: 12
+},
+{ tipo: "destaque", texto: "Importante: o RTS/CTS não resolve completamente o problema da estação exposta. Situação típica: A envia RTS para B; B responde com CTS; C ouve o RTS de A, mas não ouve o CTS de B (está fora de alcance); C então envia RTS para D; como A está transmitindo, não escuta o RTS de C; D responde com CTS — mas o canal já está ocupado, gerando conflito." },
+{ tipo: "texto", texto: "O diagrama mostra uma linha do tempo com os quatro dispositivos (B, A, C, D) e as trocas de RTS/CTS/dados de cada um, com o ponto exato de colisão marcado. É um bom material para treinar a leitura de diagramas de sequência temporal, formato comum em provas sobre protocolos de acesso ao meio." },
+{
+tipo: "imagem",
+id: "estacao_exposta_linha_tempo_colisao",
+src: "estacao_exposta_linha_tempo_colisao.png",
+pasta: "imagens_redes2/aula_3",
+alt: "Linha do tempo com B, A, C e D trocando RTS/CTS/dados, marcando o ponto de colisão mesmo com o uso de RTS/CTS",
+num: 13
+},
+{ tipo: "subtitulo", texto: "CSMA/CD x CSMA/CA" },
+{
+tipo: "tabela",
+colunas: ["Característica", "CSMA/CD", "CSMA/CA"],
+linhas: [
+["Tipo de rede", "Cabeada (Ethernet)", "Sem fio (Wi-Fi)"],
+["Tratamento de colisão", "Detecta depois que ocorre", "Procura evitar antes de ocorrer"],
+["Padrão IEEE associado", "802.3", "802.11"],
+["Meio", "Cabo", "Rádio (ar)"],
+["Mecanismo típico", "Monitoramento do sinal durante a transmissão", "Backoff aleatório + (opcional) RTS/CTS"]
+]
+},
+{ tipo: "destaque", texto: "Mnemônico: 802.3 → Ethernet → CSMA/CD → cabo → colisão detectada. 802.11 → Wi-Fi → CSMA/CA → rádio → colisão evitada." },
+{ tipo: "subtitulo", texto: "Classificação de redes sem fio por alcance" },
+{
+tipo: "tabela",
+colunas: ["Categoria", "Nome", "Alcance", "Exemplos/padrões"],
+linhas: [
+["WPAN", "Wireless Personal Area Network", "Curtíssimo (cm a poucos metros)", "Bluetooth, NFC, IrDA, UWB, ZigBee, Z-Wave"],
+["WLAN", "Wireless Local Area Network", "Local (dezenas de metros)", "Wi-Fi — IEEE 802.11"],
+["WMAN", "Wireless Metropolitan Area Network", "Metropolitano (km)", "WiMAX — IEEE 802.16"]
+]
+},
+{ tipo: "texto", texto: "A WLAN pode operar em modo ad hoc, mas normalmente utiliza pontos de acesso (modo infraestrutura) — ver seção Camada Física." }
+]
+},
+{
+id: "enderecamento_ip",
+titulo: "Endereçamento IP e Sub-redes",
+blocos: [
+{ tipo: "subtitulo", texto: "IPv4" },
+{
+tipo: "lista",
+itens: [
+"Endereço de 32 bits, representado em 4 octetos decimais separados por pontos (ex.: 192.168.10.1).",
+"Possui uma parte de rede (identifica a rede) e uma parte de host (identifica o dispositivo dentro daquela rede).",
+"Espaço de endereçamento: cerca de 4,3 bilhões de endereços — hoje já esgotado, o que motivou a criação do IPv6."
+]
+},
+{ tipo: "subtitulo", texto: "IPv6" },
+{
+tipo: "lista",
+itens: [
+"Endereço de 128 bits, representado em hexadecimal, separado por dois-pontos (ex.: 2001:0db8:85a3:0000:0000:8a2e:0370:7334).",
+"Criado para resolver a escassez de endereços do IPv4, oferecendo um espaço de endereçamento muito maior.",
+"Características adicionais: autoconfiguração e melhor suporte à segurança nativa (IPSec)."
+]
+},
+{ tipo: "subtitulo", texto: "Comparação IPv4 x IPv6" },
+{
+tipo: "tabela",
+colunas: ["Característica", "IPv4", "IPv6"],
+linhas: [
+["Tamanho", "32 bits", "128 bits"],
+["Representação", "Decimal", "Hexadecimal"],
+["Separador", "Pontos", "Dois-pontos"],
+["Principal motivação", "—", "Esgotamento do espaço IPv4"]
+]
+},
+{ tipo: "subtitulo", texto: "Máscara de sub-rede e CIDR" },
+{ tipo: "texto", texto: "A máscara de sub-rede (ou prefixo de rede, notação /n) determina quais bits do endereço pertencem à rede e quais pertencem ao host. Uma sub-rede (subnet) é a divisão de uma rede maior em redes menores." },
+{ tipo: "texto", texto: "Para criar sub-redes, 'toma-se emprestado' um número de bits (m) que originalmente pertenciam à parte de host: Quantidade de sub-redes = 2^m. Hosts válidos por sub-rede = 2^(bits restantes de host) − 2 (subtraem-se 2 endereços: o endereço de rede e o endereço de broadcast, que não podem ser atribuídos a hosts)." },
+{ tipo: "subtitulo", texto: "Exemplo completo de divisão em sub-redes" },
+{
+tipo: "exemplo",
+titulo: "Divisão de 192.168.0.0/24 em 4 sub-redes",
+texto: "Cenário: uma empresa possui a rede 192.168.0.0/24 (24 bits de rede, 8 bits de host) e precisa dividi-la em 4 sub-redes de mesmo tamanho, uma para cada setor (ex.: Financeiro, Comercial, RH, Jurídico).",
+detalhe: "1. Para obter 4 sub-redes: 2² = 4 → são necessários 2 bits emprestados da parte de host. 2. Nova máscara: /24 + 2 = /26 → 255.255.255.192. 3. Bits restantes para host: 8 − 2 = 6 bits. 4. Endereços totais por sub-rede: 2⁶ = 64. 5. Hosts válidos por sub-rede: 2⁶ − 2 = 62."
+},
+{ tipo: "destaque", texto: "Regra geral para qualquer questão de subnetting: identifique quantos bits (m) satisfazem 2^m ≥ número de sub-redes desejado; some m à máscara original para obter a nova máscara; hosts válidos = 2^(bits de host restantes) − 2." },
+{ tipo: "texto", texto: "A imagem apresenta as quatro sub-redes resultantes em uma tabela/diagrama, com o endereço de rede, o endereço de broadcast e a faixa de IPs válidos de cada uma lado a lado. Isso deixa claro, na prática, que cada bloco de 64 endereços 'pula' de 64 em 64 (ex.: 192.168.0.0, 192.168.0.64, 192.168.0.128, 192.168.0.192) — um padrão útil para resolver rapidamente questões de subnetting sem precisar recalcular tudo em binário." },
+{
+tipo: "imagem",
+id: "subnetting_quatro_subredes_resultantes",
+src: "subnetting_quatro_subredes_resultantes.png",
+pasta: "imagens_redes2/aula_3",
+alt: "Tabela/diagrama com as quatro sub-redes resultantes de 192.168.0.0/24 dividida em /26, mostrando endereço de rede, broadcast e faixa de IPs válidos de cada uma",
+num: 14
+}
+]
+},
+{
+id: "redes_man_mpls",
+titulo: "Redes Metropolitanas (MAN) e MPLS",
+blocos: [
+{ tipo: "subtitulo", texto: "Metro Ethernet" },
+{ tipo: "texto", texto: "Muitas operadoras oferecem serviço Ethernet ao cliente para interligar filiais dentro de uma cidade. Do ponto de vista do cliente, é simples — como 'plugar um cabo em um switch' — mas internamente a operadora precisa transportar o tráfego de milhares de clientes por uma mesma infraestrutura, mantendo isolamento lógico entre eles. É aí que entra o MPLS." },
+{ tipo: "subtitulo", texto: "MPLS — Multiprotocol Label Switching" },
+{ tipo: "texto", texto: "O MPLS é uma técnica de transporte de dados que opera entre a Camada 2 (Enlace) e a Camada 3 (Rede) do modelo OSI — por isso é frequentemente chamado de 'camada 2,5'." },
+{
+tipo: "topico",
+titulo: "Como funciona",
+lista: [
+"Adiciona um rótulo (label) curto ao pacote assim que ele entra na rede metropolitana.",
+"Os roteadores intermediários (Label Switch Routers — LSR) comutam o pacote baseando-se apenas nesse rótulo, sem precisar analisar o endereço IP a cada salto.",
+"O rótulo é trocado a cada salto — processo chamado Label Swapping.",
+"Ao chegar ao último roteador da rede MPLS, o rótulo é removido e o quadro é entregue normalmente ao destino — todo o processo é transparente para o cliente."
+]
+},
+{
+tipo: "topico",
+titulo: "Etapas do funcionamento",
+lista: [
+"Envio dos dados (quadro Ethernet do cliente).",
+"Entrada na rede da operadora.",
+"Adição do Label pelo primeiro roteador MPLS (define o caminho, ou LSP — Label Switched Path).",
+"Encaminhamento pela rede MPLS via Label Swapping.",
+"Entrega ao destino, com remoção do Label."
+]
+},
+{ tipo: "texto", texto: "O diagrama mostra um Label-Switched Path (LSP) completo, ligando a rede 192.168.0.0/24 até a rede 10.0.0.0/24 através de cinco roteadores: R1 e R5 nas pontas (Edge LSR, que adicionam/removem o rótulo) e R2, R3, R4 no meio do caminho (Intermediate LSR, que só trocam o rótulo). Cada roteador é mostrado com suas tabelas FIB e LFIB, indicando o rótulo de entrada, o rótulo de saída e a próxima rota — é a melhor forma de visualizar o que significa 'Label Swapping' na prática: o rótulo muda a cada salto, mas o pacote nunca precisa ser reanalisado pelo IP de destino no meio do caminho." },
+{
+tipo: "imagem",
+id: "mpls_lsp_roteadores_fib_lfib",
+src: "mpls_lsp_roteadores_fib_lfib.png",
+pasta: "imagens_redes2/aula_4",
+alt: "Diagrama de um Label-Switched Path ligando 192.168.0.0/24 a 10.0.0.0/24 através de R1 a R5, com as tabelas FIB e LFIB de cada roteador",
+num: 15
+},
+{
+tipo: "topico",
+titulo: "Vantagens do MPLS",
+lista: [
+"Maior eficiência: encaminhamento mais rápido, pois analisa apenas rótulos.",
+"Engenharia de tráfego: permite escolher caminhos mais adequados conforme utilização da rede, largura de banda e congestionamento.",
+"QoS (Qualidade de Serviço): prioriza aplicações sensíveis a latência, como VoIP, videoconferência e streaming.",
+"Escalabilidade: a mesma infraestrutura atende milhares de clientes sem comprometer o desempenho.",
+"VPNs MPLS: permite isolamento lógico entre diferentes empresas usando a mesma infraestrutura física."
+]
+},
+{ tipo: "subtitulo", texto: "WMAN e WiMAX" },
+{ tipo: "texto", texto: "A WMAN (Wireless Metropolitan Area Network) é a versão sem fio de uma MAN: conecta LANs distribuídas por uma cidade usando ondas de rádio em vez de fibra óptica. Surge como alternativa quando não é viável instalar fibra (alto custo, obstáculos geográficos, áreas rurais, necessidade de implantação rápida)." },
+{
+tipo: "topico",
+titulo: "Componentes de uma WMAN",
+lista: [
+"Estações-base: transmitem e recebem o sinal de rádio, cobrindo uma área da cidade.",
+"Antenas: realizam a transmissão/recepção das ondas (instaladas em torres, prédios, postes, morros).",
+"CPE (Customer Premises Equipment): equipamento no cliente, recebe o sinal da estação base e conecta à rede local.",
+"Backbone: as estações-base normalmente se conectam ao backbone da operadora."
+]
+},
+{ tipo: "texto", texto: "WiMAX (IEEE 802.16) é a tecnologia mais conhecida para implementar WMANs, oferecendo acesso em banda larga sem fio com cobertura de vários quilômetros, altas taxas de transmissão, suporte a múltiplos usuários e comunicação ponto-multiponto. Apesar de promissor, foi amplamente substituído pelo 4G LTE nas aplicações comerciais de banda larga móvel." },
+{
+tipo: "lista",
+titulo: "Vantagens da WMAN",
+itens: ["Implantação rápida", "Menor custo que fibra óptica", "Flexibilidade para expansão", "Cobertura de grandes áreas", "Ideal onde o cabeamento é inviável"]
+},
+{
+tipo: "lista",
+titulo: "Desvantagens da WMAN",
+itens: ["Menor estabilidade que a fibra", "Sujeita a interferências (obstáculos, clima)", "Menor capacidade de transmissão", "Pode exigir visada direta em certos enlaces"]
+},
+{ tipo: "subtitulo", texto: "WLAN x WMAN" },
+{
+tipo: "tabela",
+colunas: ["Aspecto", "WLAN", "WMAN"],
+linhas: [
+["Abrangência", "Local (sala, prédio)", "Metropolitana (cidade/região)"],
+["Padrão IEEE", "802.11", "802.16"],
+["Tecnologia típica", "Wi-Fi", "WiMAX"],
+["Uso típico", "Redes domésticas/corporativas", "Interligação de LANs pela cidade"]
+]
+}
+]
+},
+{
+id: "redes_moveis",
+titulo: "Redes Móveis e Celulares",
+blocos: [
+{ tipo: "subtitulo", texto: "Estrutura da rede celular" },
+{ tipo: "texto", texto: "Uma rede celular é composta por várias estações-base (células), cada uma cobrindo uma pequena área geográfica. Cada área possui um identificador de localização, e a integração das células permite ampla cobertura regional. Um conjunto de estações-base forma uma área local (área de roteamento)." },
+{ tipo: "subtitulo", texto: "Gestão da mobilidade" },
+{ tipo: "texto", texto: "O objetivo da gestão da mobilidade é manter o rastreamento e a conectividade dos usuários, garantindo acesso contínuo a serviços (voz, SMS, dados)." },
+{ tipo: "texto", texto: "O material organiza o gerenciamento de redes móveis em quatro colunas: Gestão da Mobilidade (Paging, Roaming, Atualização da Localização), Gerenciamento de Recursos (controle de congestionamento, controle de energia, alocação de taxa, planejamento de células, precificação), Gerenciamento de Segurança (propriedades de segurança, tipos de ataques) e Gerenciamento de Identidades (SIM, AuC). Vale notar que o Handover/Handoff não aparece nessa coluna específica — ele é tratado à parte, como parte da continuidade da comunicação durante o deslocamento, e não como um item de 'localização' propriamente dito. Isso ajuda a diferenciar: Paging/Roaming/Atualização de localização = saber onde o usuário está; Handover = manter a chamada ativa enquanto ele se move." },
+{
+tipo: "imagem",
+id: "gerenciamento_mobilidade_quatro_colunas",
+src: "gerenciamento_mobilidade_quatro_colunas.png",
+pasta: "imagens_redes2/aula_5",
+alt: "Diagrama em quatro colunas: Gestão da Mobilidade, Gerenciamento de Recursos, Gerenciamento de Segurança e Gerenciamento de Identidades, com seus respectivos itens",
+num: 16
+},
+{
+tipo: "topico",
+titulo: "Paging",
+lista: [
+"Processo de localizar um dispositivo móvel dentro da rede quando há uma tentativa de comunicação com ele (ex.: uma chamada recebida).",
+"Quando o celular está ocioso, ele não mantém comunicação constante com a rede. Ao chegar uma chamada, a rede envia uma mensagem de paging por várias torres na área onde o aparelho foi visto pela última vez.",
+"Assim que o telefone recebe a mensagem, responde, e a conexão é estabelecida.",
+"Ponto-chave: permite localizar o dispositivo sem precisar conhecer sua posição exata continuamente."
+]
+},
+{
+tipo: "topico",
+titulo: "Roaming",
+lista: [
+"Processo que permite ao usuário utilizar sua rede móvel fora da área de registro original (Home Network), em outras regiões ou países, mantendo o mesmo número e serviços.",
+"Ao entrar em área de uma rede parceira (Visited Network), o celular se registra automaticamente — possível graças a acordos de roaming entre operadoras, que permitem uso compartilhado de infraestrutura."
+]
+},
+{
+tipo: "topico",
+titulo: "Atualização de localização (location update)",
+lista: [
+"O dispositivo móvel detecta o código da área de cobertura; quando esse código muda em relação ao anterior, ele realiza uma atualização de localização, enviando uma requisição à rede com o último código armazenado.",
+"Esse processo ocorre independentemente de haver uma chamada ativa — é um procedimento periódico/reativo à mudança de área, não vinculado ao estabelecimento de uma chamada."
+]
+},
+{
+tipo: "topico",
+titulo: "Handover / Handoff",
+lista: [
+"Transição de uma chamada (ou transmissão de dados) em andamento de uma célula/ponto de acesso para outro, mantendo a comunicação ativa.",
+"Não é um cadastro permanente — é uma troca dinâmica que ocorre durante a comunicação, garantindo continuidade quando o usuário se desloca entre áreas de cobertura."
+]
+},
+{ tipo: "subtitulo", texto: "Identidade temporária — TMSI" },
+{ tipo: "texto", texto: "Cada usuário recebe uma TMSI (Temporary Mobile Subscriber Identity), uma identidade temporária atribuída sempre que o usuário muda de área — usada para preservar a identidade real do assinante durante a comunicação com a rede." },
+{ tipo: "subtitulo", texto: "Diferenciação rápida entre os quatro conceitos" },
+{
+tipo: "tabela",
+colunas: ["Conceito", "Quando ocorre", "Função"],
+linhas: [
+["Paging", "Ao chegar uma chamada/serviço", "Localizar o dispositivo dentro da área"],
+["Roaming", "Usuário fora da área da operadora de origem", "Permitir uso da rede em outra região/país"],
+["Atualização de localização", "Mudança de área de cobertura", "Informar à rede a nova posição, mesmo sem chamada ativa"],
+["Handover/Handoff", "Durante uma comunicação ativa", "Trocar de célula/AP sem interromper a chamada"]
+]
+}
+]
+},
+{
+id: "quadro_resumo_geral",
+titulo: "Quadro-resumo geral",
+blocos: [
+{
+tipo: "lista",
+titulo: "Quadro-resumo geral",
+itens: [
+"Atenuação = perda de energia · Distorção = mudança de forma/fase · Ruído = interferência externa.",
+"Nyquist (canal ideal) = 2B·log₂L · Shannon (canal com ruído) = B·log₂(1+SNR).",
+"Paridade → 1 bit · Checksum → soma de blocos (complemento de 1) · CRC → divisão binária/XOR · Hamming → paridade posicional + correção de 1 bit (FEC).",
+"Stop-and-Wait ARQ → 1 frame por vez · Go-Back-N → retransmite a partir do erro · Selective Repeat → retransmite só o frame com problema.",
+"Hub → camada física, repete para todas as portas · Switch → camada de enlace, encaminha por MAC · Roteador → camada de rede, encaminha por IP.",
+"CSMA/CD (Ethernet/802.3, cabo) → detecta colisão · CSMA/CA (Wi-Fi/802.11, rádio) → evita colisão via backoff e (opcionalmente) RTS/CTS.",
+"Estação oculta → duas estações não se veem, colidem no destino comum (RTS/CTS ajuda) · Estação exposta → estação deixa de transmitir sem necessidade (RTS/CTS não resolve totalmente).",
+"IPv4 = 32 bits, decimal · IPv6 = 128 bits, hexadecimal.",
+"Sub-redes: 2^m = quantidade de sub-redes · 2^(bits de host) − 2 = hosts válidos.",
+"MPLS = comutação por rótulos entre as camadas 2 e 3, usado para escalabilidade, QoS e VPNs em MANs Ethernet.",
+"WLAN (802.11/Wi-Fi, local) x WMAN (802.16/WiMAX, metropolitana).",
+"Paging localiza · Roaming permite uso fora da área de origem · Atualização de localização informa mudança de área · Handover troca de célula durante chamada ativa."
+]
+}
+]
+}
+]
+    }
   ]
 
 

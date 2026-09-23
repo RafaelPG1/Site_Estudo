@@ -25,7 +25,7 @@ import { Sound, playSound } from '../shared/js/audio/audio-api.js';
 import '../src/session-tracker.js';
 
 import { State, carregarIA, resolverContexto, renderSemestreBadge } from './js/resumo-utils.js';
-import { renderHeader, renderSidebar, carregarConteudo } from './js/resumo-ui.js';
+import { renderHeader, renderSidebar, carregarConteudo, setModo, setProfessorFiltro } from './js/resumo-ui.js';
 import { bindModal, bindTocChrome, bindCopyButton } from './js/resumo-reader.js';
 import { initPdfModal } from './js/resumo-pdf.js';
 
@@ -50,6 +50,7 @@ function trocarDisciplina(disc) {
   State.simplificado = [];
   State.resumao      = [];
   State.modo         = 'completo';
+  State.professorFiltro = null;
   setDisciplina(disc.id);
 
   sincronizarSemNaURL(State.semestre, 'push');
@@ -105,4 +106,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.getElementById('btn-back')?.addEventListener('mouseenter', () => playSound('hover', 'resumos'));
   document.getElementById('btn-back')?.addEventListener('click',      () => playSound('click', 'resumos'));
+
+  // Sidebar — "Tipo de Conteúdo" (Resumo/Resumão/Síntese). Reaproveita
+  // setModo() (resumo-ui.js), a MESMA função usada pelo toggle do topo —
+  // só um novo gatilho de clique, nenhuma lógica de troca criada aqui.
+  document.getElementById('modo-list')?.addEventListener('click', e => {
+    const btn = e.target.closest('[data-modo]');
+    if (!btn) return;
+    setModo(btn.dataset.modo);
+  });
+
+  // Sidebar — "Professor". Mesma abordagem de delegação do modo-list
+  // acima: os botões são recriados a cada troca de disciplina/aulas
+  // (ver renderProfessorSidebar() em resumo-ui.js), então o listener
+  // fica no container fixo, não nos botões.
+  document.getElementById('professor-list')?.addEventListener('click', e => {
+    const btn = e.target.closest('[data-professor]');
+    if (!btn) return;
+    setProfessorFiltro(btn.dataset.professor);
+  });
 });
