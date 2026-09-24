@@ -620,4 +620,27 @@ window.__nexusConteudo = {
   ]
   }
 
-  ]};
+  ],
+
+  extra: {
+  mapasMentais: [
+    {
+      titulo: "Revisão de Estrutura de Dados",
+      pasta: "estruturas_dados/mapa_mental",
+      src: "revisao_estruturas_dados.png"   // confirme que o arquivo existe exatamente aqui
+    }
+  ],
+  videos: [
+    {
+      titulo: "Revisão de Estrutura de Dados",
+      pasta: "estruturas_dados/video",              // era "url", troque para "pasta"
+      src: "revisao_estruturas_dados.mp4"
+    }
+  ],
+}
+
+
+
+
+
+};

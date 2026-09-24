@@ -201,6 +201,14 @@
   .reader__copy-btn span:not([id]) { display: none; } /* só o ícone no mobile */
 }
 
+/* "Copiar tudo" dentro do Reader (#rm-copy-all-btn) NUNCA aparece: é
+   markup duplicado do "Copiar tudo" real da Home (.hero-copy-btn, fora
+   do Reader — ver renderHeroStats em resumo-ui.js), sem nenhum listener
+   próprio (_bindCopyAllButton, em resumo-reader.js, liga em #hero-stats,
+   não neste botão). Dentro da leitura só existe "Copiar aula"
+   (#rm-copy-btn) — ver comentário em bindCopyButton()/_bindCopyAllButton(). */
+#rm-copy-all-btn { display: none; }
+
 /* Abre o índice em bottom-sheet — só existe como controle autônomo
    no mobile/tablet; no desktop o índice já está sempre visível. */
 .reader__toc-trigger {

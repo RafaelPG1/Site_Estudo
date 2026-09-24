@@ -1,0 +1,366 @@
+/* =============================================
+   NEXUS STUDY — resumo/css/resumo-extra.css
+   Modo Extra: central de recursos complementares (seções
+   por categoria + cards) e visualizador de mapa mental.
+   Usa só os tokens de resumo.css (--disc-tema, --border-*,
+   --text-*, --r-*, --dur-*). Depende de js/resumo-extra.js.
+   ============================================= */
+
+/* Em Extra não há "aulas" para copiar: o botão "Copiar tudo"
+   do hero copiaria o Resumo, então some enquanto o modo é Extra. */
+body.modo-extra .hero-copy-btn { display: none; }
+
+/* ══════════════════════════════════════════
+   PAINEL
+══════════════════════════════════════════ */
+.extra { max-width: 100%; }
+
+.extra__head { margin-bottom: 2rem; }
+.extra__titulo {
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  font-weight: 500;
+  line-height: 1.15;
+  color: var(--text-1);
+}
+.extra__sub {
+  margin-top: 0.3rem;
+  font-size: 0.86rem;
+  color: var(--text-2);
+}
+
+.extra-sec + .extra-sec { margin-top: 2.4rem; }
+.extra-sec__head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.extra-sec__ico { font-size: 1.05rem; letter-spacing: 0; }
+.extra-sec__count {
+  padding: 0.1rem 0.5rem;
+  border-radius: 99px;
+  border: 1px solid var(--border-2);
+  background: rgba(255,255,255,0.04);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--text-3);
+}
+
+.extra-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 340px));
+  justify-content: start;
+  align-items: stretch;
+  gap: 1.1rem;
+}
+
+/* ══════════════════════════════════════════
+   CARD
+══════════════════════════════════════════ */
+.extra-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border-2);
+  background:
+    radial-gradient(120% 100% at 0% 0%, rgba(var(--disc-tema-rgb),0.05), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,0.028), rgba(255,255,255,0.008));
+  color: var(--text-1);
+  cursor: pointer;
+  overflow: hidden;
+  text-decoration: none;
+  transition: transform var(--dur-base) var(--ease),
+              border-color var(--dur-base) var(--ease),
+              box-shadow var(--dur-base) var(--ease);
+}
+.extra-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(var(--disc-tema-rgb), 0.38);
+  box-shadow: 0 16px 36px -16px rgba(var(--disc-tema-rgb), 0.32),
+              0 6px 16px -4px rgba(0,0,0,0.35);
+}
+.extra-card:active { transform: translateY(-1px) scale(0.992); transition-duration: var(--dur-fast); }
+.extra-card:focus-visible { box-shadow: var(--focus-ring); border-radius: var(--r-lg); }
+
+.extra-card__stripe {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  z-index: 1;
+  height: 2px;
+  background: linear-gradient(90deg, var(--disc-tema), transparent 85%);
+  opacity: 0.45;
+  transition: opacity var(--dur-base);
+}
+.extra-card:hover .extra-card__stripe { opacity: 1; }
+
+.extra-card__preview {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  background: rgba(255,255,255,0.05);
+  border-bottom: 1px solid var(--border-1);
+  overflow: hidden;
+}
+.extra-card__preview img,
+.extra-card__preview video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--dur-slow) var(--ease);
+}
+.extra-card:hover .extra-card__preview img,
+.extra-card:hover .extra-card__preview video { transform: scale(1.03); }
+.extra-card__preview--erro img,
+.extra-card__preview--erro video,
+.extra-card__preview--erro .extra-card__preview-play { display: none; }
+
+/* Capa automática de vídeo local (primeiro frame do arquivo, ver
+   _previewVideoLocal em resumo-extra.js): mesmo enquadramento da capa
+   de mapa mental, só com o selo de play por cima pra deixar claro que
+   é vídeo (a imagem sozinha não entrega isso, diferente do mapa). */
+.extra-card__preview-play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.extra-card__preview-play svg {
+  width: 46px;
+  height: 46px;
+  padding: 12px;
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(10,10,18,0.46);
+  backdrop-filter: blur(2px);
+  box-shadow: 0 6px 18px -6px rgba(0,0,0,0.55);
+  transition: background var(--dur-base), transform var(--dur-base);
+}
+.extra-card:hover .extra-card__preview-play svg {
+  background: var(--disc-tema);
+  transform: scale(1.08);
+}
+
+.extra-card__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  padding: 1.25rem 1.35rem 1.3rem;
+}
+.extra-card__tipo {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--disc-tema);
+  opacity: 0.85;
+}
+.extra-card__titulo {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--text-1);
+  overflow-wrap: anywhere;
+  transition: color var(--dur-base);
+}
+.extra-card:hover .extra-card__titulo { color: var(--disc-tema); }
+.extra-card__desc {
+  margin-top: 0.5rem;
+  font-size: 0.84rem;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+.extra-card__acoes {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+.extra-card__titulo + .extra-card__acoes,
+.extra-card__desc + .extra-card__acoes { margin-top: 1.1rem; }
+
+.extra-card__acao {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.42rem 0.85rem;
+  border-radius: var(--r-md);
+  border: 1px solid rgba(var(--disc-tema-rgb), 0.28);
+  background: rgba(var(--disc-tema-rgb), 0.08);
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--disc-tema);
+  transition: background var(--dur-base), color var(--dur-base);
+}
+.extra-card:hover .extra-card__acao { background: var(--disc-tema); color: var(--bg-base); }
+
+/* Botão "Baixar" — ícone só, ação secundária, ao lado da ação
+   principal (ver .extra-card__acoes acima). Só existe em mapa mental
+   e vídeo local (arquivo do próprio site — download real). */
+.extra-card__download {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-2);
+  color: var(--text-2);
+  transition: background var(--dur-base), color var(--dur-base), border-color var(--dur-base);
+}
+.extra-card__download:hover {
+  background: rgba(255,255,255,0.08);
+  color: var(--text-1);
+  border-color: var(--border-1);
+}
+
+/* ══════════════════════════════════════════
+   VISUALIZADOR DE MAPA MENTAL
+══════════════════════════════════════════ */
+.extra-viewer {
+  --extra-viewer-img-bg: #fff;   /* fundo atrás da imagem (mapas com transparência) */
+  position: fixed;
+  inset: 0;
+  z-index: 320;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+.extra-viewer--open { display: flex; }
+.extra-viewer__backdrop {
+  position: absolute; inset: 0;
+  background: rgba(4,5,14,0.82);
+  backdrop-filter: blur(6px);
+}
+.extra-viewer__panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1400px;
+  height: 100%;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  outline: none;
+}
+.extra-viewer__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 1.1rem;
+  border-bottom: 1px solid var(--border-1);
+  flex-shrink: 0;
+}
+.extra-viewer__info { display: flex; flex-direction: column; min-width: 0; }
+.extra-viewer__titulo {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text-1);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.extra-viewer__desc {
+  font-size: 0.74rem;
+  color: var(--text-3);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.extra-viewer__tools { display: flex; align-items: center; gap: 0.3rem; flex-shrink: 0; }
+.extra-viewer__btn,
+.extra-viewer__zoom {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  border-radius: 8px;
+  color: var(--text-2);
+  transition: background var(--dur-base), color var(--dur-base);
+}
+.extra-viewer__btn { width: 32px; }
+.extra-viewer__zoom {
+  min-width: 54px;
+  padding: 0 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+.extra-viewer__btn:hover,
+.extra-viewer__zoom:hover { background: rgba(255,255,255,0.08); color: var(--text-1); }
+
+.extra-viewer__stage {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  padding: 1rem;
+  overflow: auto;
+  background: rgba(0,0,0,0.25);
+}
+.extra-viewer__img {
+  display: block;
+  margin: auto;                 /* centraliza sem cortar o início ao rolar */
+  max-width: 100%;
+  max-height: 100%;
+  background: var(--extra-viewer-img-bg);
+  border-radius: var(--r-sm);
+  cursor: zoom-in;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.extra-viewer__stage--zoom .extra-viewer__img {
+  max-width: none;
+  max-height: none;
+  height: auto;
+  flex-shrink: 0;
+  cursor: grab;
+}
+.extra-viewer__stage--arrastando .extra-viewer__img { cursor: grabbing; }
+.extra-viewer__stage:not([data-estado="pronto"]) .extra-viewer__img { visibility: hidden; }
+
+.extra-viewer__msg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.86rem;
+  color: var(--text-2);
+  pointer-events: none;
+}
+.extra-viewer__stage[data-estado="pronto"] .extra-viewer__msg { display: none; }
+
+/* ══════════════════════════════════════════
+   RESPONSIVO
+══════════════════════════════════════════ */
+@media (max-width: 600px) {
+  .extra__titulo { font-size: 1.6rem; }
+  .extra-grid { grid-template-columns: 1fr; }
+  .extra-viewer { padding: 0; }
+  .extra-viewer__panel { border-radius: 0; border: none; }
+  .extra-viewer__stage { padding: 0.5rem; }
+  .extra-viewer__btn,
+  .extra-viewer__zoom { height: 40px; }
+  .extra-viewer__btn { width: 40px; }
+}

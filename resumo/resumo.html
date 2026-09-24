@@ -42,6 +42,10 @@
        (documento impresso/PDF em si vai embutido em js/resumo-pdf.js) -->
   <link rel="stylesheet" href="css/resumo-pdf.css" />
 
+  <!-- Modo Extra — central de recursos complementares (mapas mentais,
+       vídeos, links) + visualizador de mapa mental (js/resumo-extra.js) -->
+  <link rel="stylesheet" href="css/resumo-extra.css" />
+
 
   <!-- Preload da IA -->
   <link rel="modulepreload" href="../shared/js/ia/core/context.js" />
@@ -134,6 +138,16 @@
           <span class="disc-item__info">
             <span class="disc-item__nome">Revisão do Professor</span>
             <span class="disc-item__desc">Resumo escrito pelo professor da disciplina.</span>
+          </span>
+        </button>
+        <!-- Extra: NÃO abre aula/Reader — mostra os recursos complementares
+             na própria Home (#extra-panel). Nasce oculto; _atualizarModoSidebar()
+             (resumo-ui.js) só o exibe quando a disciplina tem recursos em
+             `extra` no res_*.js. -->
+        <button class="disc-item disc-item--hidden" data-modo="extra" type="button">
+          <span class="disc-item__info">
+            <span class="disc-item__nome">Extra</span>
+            <span class="disc-item__desc">Mapas mentais, vídeos, links e outros recursos.</span>
           </span>
         </button>
       </nav>
@@ -296,6 +310,9 @@
 
         <!-- Grid de cards -->
         <div class="resumos-grid" id="resumos-grid" style="display:none"></div>
+
+        <!-- Modo Extra: central de recursos (preenchido por js/resumo-extra.js) -->
+        <section class="extra" id="extra-panel" style="display:none" aria-label="Recursos extras"></section>
 
       </main>
 

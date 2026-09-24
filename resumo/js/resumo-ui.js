@@ -11,6 +11,7 @@ import { resolveIcone, parseSemestre } from '../../src/global.js';
 import { playSound } from '../../shared/js/audio/audio-api.js';
 import { State, esc, parseInline } from './resumo-utils.js';
 import { abrirModal, abrirModalResumao, abrirModalProfessor } from './resumo-reader.js';
+import { renderExtra, temExtra } from './resumo-extra.js';
 
 /* ══════════════════════════════════════════════
    HEADER
@@ -127,10 +128,10 @@ export function renderVideosSection() {
   }
 
   const disc = State.disciplina;
-  if (!disc || !State.getVideos) { el.style.display = 'none'; return; }
+  if (!disc || !State.getVideos) { el.style.display = 'none'; el.dataset.temVideos = ''; return; }
 
   const videos = State.getVideos(State.semestre, disc.id);
-  if (!videos.length) { el.style.display = 'none'; return; }
+  if (!videos.length) { el.style.display = 'none'; el.dataset.temVideos = ''; return; }
 
   const drive = videos.filter(v => v.tipo !== 'youtube');
   const yt    = videos.filter(v => v.tipo === 'youtube');
@@ -209,7 +210,13 @@ export function renderVideosSection() {
     document.getElementById('videos-strip-wrap')?.classList.toggle('videos-strip--open');
   });
 
-  el.style.display = '';
+  el.dataset.temVideos = '1';
+  // A visibilidade real (mostrar/escoder) fica com mostrarEstado(): a
+  // strip existe ('temVideos'), mas some enquanto o modo Extra estiver
+  // ativo, pra não duplicar visualmente a categoria "Vídeos" do Extra
+  // (ver CATEGORIAS em resumo-extra.js). Fora do modo Extra, continua
+  // exatamente como antes.
+  el.style.display = State.modo === 'extra' ? 'none' : '';
 }
 
 /* ══════════════════════════════════════════════
@@ -220,6 +227,19 @@ export function mostrarEstado(estado) {
   document.getElementById('state-no-content').style.display = estado === 'no-content' ? 'flex' : 'none';
   document.getElementById('state-empty').style.display      = estado === 'empty'      ? 'flex' : 'none';
   document.getElementById('resumos-grid').style.display     = estado === 'grid'       ? 'grid' : 'none';
+  // Modo Extra: central de recursos (js/resumo-extra.js) — container próprio, fora do grid de aulas.
+  const extraEl = document.getElementById('extra-panel');
+  if (extraEl) extraEl.style.display                        = estado === 'extra'      ? ''     : 'none';
+
+  // "Vídeos das Aulas" (strip antiga, js/resumo-ui.js#renderVideosSection)
+  // fica FORA de #main-content, então não é substituída pelo grid/extra
+  // acima — sem isso ela continuaria visível por cima do modo Extra,
+  // duplicando a categoria "Vídeos" que o Extra já mostra (ver
+  // CATEGORIAS em resumo-extra.js). Some só enquanto o Extra estiver
+  // aberto; nos outros modos, volta a aparecer exatamente como antes
+  // (dataset.temVideos é setado por renderVideosSection).
+  const videosEl = document.getElementById('videos-section');
+  if (videosEl) videosEl.style.display = (estado === 'extra' || videosEl.dataset.temVideos !== '1') ? 'none' : '';
 }
 
 export function mostrarEstadoSemConteudo() {
@@ -241,13 +261,23 @@ function _temSimplificado() { return State.simplificado.length > 0; }
 function _temResumao()      { return State.resumao.length > 0; }
 function _temProfessor()    { return State.professor.length > 0; }
 
+/* Mantém a UI alinhada a State.modo: destaque do botão na sidebar e a
+   classe do <body> usada pelo CSS do modo Extra. Também é chamada ao
+   carregar uma disciplina (State.modo volta para 'completo' — sem isso o
+   botão da sidebar continuava destacado no modo anterior). */
+function _sincronizarModoUI() {
+  document.querySelectorAll('[data-modo]').forEach(btn => {
+    btn.classList.toggle('mode-btn--active', btn.dataset.modo === State.modo);
+  });
+  document.body.classList.toggle('modo-extra', State.modo === 'extra');
+}
+
 export function setModo(modo) {
   if (State.modo === modo) return;
   playSound('select', 'resumos');
   State.modo = modo;
-  document.querySelectorAll('[data-modo]').forEach(btn => {
-    btn.classList.toggle('mode-btn--active', btn.dataset.modo === modo);
-  });
+  _sincronizarModoUI();
+  renderProfessorSidebar();   // o filtro de professor não se aplica ao Extra
   renderGrid();
 }
 
@@ -268,6 +298,7 @@ function _atualizarModoSidebar() {
     resumao:   _temResumao(),
     sintese:   _temSimplificado(),
     professor: _temProfessor(),
+    extra:     temExtra(),
   };
 
   let visiveis = 0;
@@ -313,8 +344,11 @@ export function renderProfessorSidebar() {
     return;
   }
 
-  header.style.display = '';
-  nav.style.display    = '';
+  // Em "Extra" não há aulas na tela, então o filtro de professor fica
+  // oculto (sem perder o filtro escolhido — ele volta nos outros modos).
+  const oculto = State.modo === 'extra';
+  header.style.display = oculto ? 'none' : '';
+  nav.style.display    = oculto ? 'none' : '';
 
   const btnTodos = `
     <button class="disc-item${State.professorFiltro === null ? ' mode-btn--active' : ''}" data-professor="" type="button">
@@ -636,6 +670,14 @@ export function renderGrid() {
   if (!grid) return;
   grid.innerHTML = '';
 
+  // Extra NÃO é aula: renderiza a central de recursos na própria Home e
+  // nunca chama abrirModal*() (Reader).
+  if (State.modo === 'extra') {
+    renderExtra();
+    mostrarEstado('extra');
+    return;
+  }
+
   // Filtro de professor: aplicado pelo índice da aula em State.aulas —
   // válido nos 4 modos, já que State.simplificado/State.resumao/
   // State.professor são arrays alinhados por índice com State.aulas
@@ -708,6 +750,7 @@ function _lerDados() {
     simplificado: Array.isArray(raw.simplificado) ? raw.simplificado : [],
     resumao:      Array.isArray(raw.resumao)       ? raw.resumao      : [],
     professor:    Array.isArray(raw.professor)     ? raw.professor    : [],
+    extra:        (raw.extra && typeof raw.extra === 'object' && !Array.isArray(raw.extra)) ? raw.extra : {},
   };
 }
 
@@ -719,6 +762,9 @@ export function carregarConteudo() {
   State.simplificado = [];
   State.resumao      = [];
   State.professor    = [];
+  State.extra        = {};
+  State.modo         = 'completo';
+  _sincronizarModoUI();
   atualizarStatusBadge();
   _removerScriptAnterior();
   window.__nexusConteudo = null;
@@ -751,6 +797,7 @@ export function carregarConteudo() {
     State.simplificado = dados.simplificado;
     State.resumao      = dados.resumao;
     State.professor    = dados.professor;
+    State.extra        = dados.extra;
     State.temConteudo  = dados.aulas.length > 0;
     State.modo         = 'completo';
 

@@ -29,6 +29,7 @@ export const State = {
   simplificado:    [],
   resumao:         [],
   professor:       [],
+  extra:           {},   // recursos do modo Extra (ver js/resumo-extra.js)
   aulaAberta:      null,
   discVerificadas: new Set(),
   temConteudo:     null,

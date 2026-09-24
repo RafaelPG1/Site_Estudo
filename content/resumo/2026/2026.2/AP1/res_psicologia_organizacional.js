@@ -5533,9 +5533,26 @@ blocos: [
 }
 ]
 }
-]
+],
 
 
+extra: {
+  mapasMentais: [
+    {
+      titulo: "Revisão de Psicologia",
+      pasta: "psicologia_organizacional/mapa_mental",
+      src: "revisao_psicologia_organizacional.png"   // confirme que o arquivo existe exatamente aqui
+    }
+  ],
+  videos: [
+    {
+      titulo: "Revisão de Psicologia",
+      pasta: "psicologia_organizacional/videos",              // era "url", troque para "pasta"
+      src: "revisao_psicologia_organizacional.mp4"
+
+    }
+  ],
+}
 
 
 

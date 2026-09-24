@@ -5746,8 +5746,24 @@ itens: [
 }
 ]
     }
-  ]
+  ],
 
+  extra: {
+  mapasMentais: [
+    {
+      titulo: "Revisão de Redes 2",
+      pasta: "redes2/mapa_mental",
+      src: "revisao_redes_II.png"   // confirme que o arquivo existe exatamente aqui
+    }
+  ],
+  videos: [
+    {
+      titulo: "Revisão de Redes 2",
+      pasta: "redes2/video",              // era "url", troque para "pasta"
+      src: "revisao_redes_II.mp4"
+    }
+  ],
+}
 
 
 

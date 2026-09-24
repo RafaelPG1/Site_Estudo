@@ -6454,5 +6454,22 @@ secoes: [
   ]
     },
 
-  ]
+  ],
+
+extra: {
+  mapasMentais: [
+    {
+      titulo: "Revisão de APS I",
+      pasta: "analise_projeto/mapa_mental",
+      src: "revisao_analise.png"   // confirme que o arquivo existe exatamente aqui
+    }
+  ],
+  videos: [
+    {
+      titulo: "Revisão de APS I",
+      pasta: "analise_projeto/video",              // era "url", troque para "pasta"
+      src: "revisao_analise.mp4"
+    }
+  ],
+}
 };
