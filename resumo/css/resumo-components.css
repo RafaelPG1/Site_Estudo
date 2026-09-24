@@ -123,6 +123,33 @@
   background: rgba(var(--disc-tema-rgb),0.12);
   color: var(--disc-tema);
 }
+/* "Copiar tudo" — copia todas as aulas do modo ativo. Mesma altura do
+   .mode-toggle (32px de botão + 3px de padding + 1px de borda por lado)
+   para os dois alinharem lado a lado no hero. */
+.hero-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 40px;
+  padding: 0 0.95rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-md);
+  font-size: 0.74rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--text-2);
+  white-space: nowrap;
+  transition: color var(--dur-base), border-color var(--dur-base), background var(--dur-base), transform var(--dur-fast);
+}
+.hero-copy-btn:hover { color: var(--text-1); border-color: var(--border-3); background: rgba(255,255,255,0.06); }
+.hero-copy-btn:active { transform: scale(0.97); transition-duration: var(--dur-fast); }
+.hero-copy-btn--done {
+  color: var(--sage);
+  border-color: rgba(127,203,160,0.35);
+  background: rgba(127,203,160,0.08);
+}
+
 /* ── ESTADOS VAZIOS ── */
 .state-empty {
   display: flex;
@@ -531,4 +558,5 @@
   .resumos-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem; }
   /* Alvo de toque mínimo em controles compactos */
   .mode-btn { min-height: 44px; }
-} 
+  .hero-copy-btn { min-height: 44px; }
+}

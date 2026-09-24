@@ -28,6 +28,7 @@ import { State, carregarIA, resolverContexto, renderSemestreBadge } from './js/r
 import { renderHeader, renderSidebar, carregarConteudo, setModo, setProfessorFiltro } from './js/resumo-ui.js';
 import { bindModal, bindTocChrome, bindCopyButton, bindThemeToggle } from './js/resumo-reader.js';
 import { initPdfModal } from './js/resumo-pdf.js';
+import { initBusca, limparBusca, atualizarContextoBusca } from './js/resumo-busca.js';
 
 injetarLogo('#header-logo-wrap');
 
@@ -41,7 +42,12 @@ function _initProgressBar() {
   });
 }
 
-function trocarDisciplina(disc) {
+/* manterBusca: usado só pela própria busca ao abrir um resultado de outra
+   disciplina (o leitor precisa dela ativa) — o usuário deve voltar aos
+   resultados ao fechar. Qualquer outra troca (clique na sidebar) sai da
+   busca e volta à listagem de cards. */
+function trocarDisciplina(disc, { manterBusca = false } = {}) {
+  if (!manterBusca) limparBusca();
   if (disc.id === State.disciplina?.id) return;
   playSound('click', 'resumos');
   State.disciplina   = disc;
@@ -62,6 +68,7 @@ function trocarDisciplina(disc) {
   aplicarCoresDisciplina(disc.arquivo, State.DISC_CORES);
   renderSidebar(trocarDisciplina);
   carregarConteudo();
+  atualizarContextoBusca();
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -88,9 +95,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   renderSemestreBadge({
     onChange: () => {
+      limparBusca();
       renderHeader();
       renderSidebar(trocarDisciplina);
       carregarConteudo();
+      atualizarContextoBusca();
     },
   });
 
@@ -102,6 +111,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   bindCopyButton();
   bindThemeToggle();
   initPdfModal();
+  initBusca({ trocarDisciplina });
   _initProgressBar();
   carregarConteudo();
 
@@ -114,6 +124,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('modo-list')?.addEventListener('click', e => {
     const btn = e.target.closest('[data-modo]');
     if (!btn) return;
+    limparBusca();   // escolher um tipo na sidebar volta à listagem de cards
     setModo(btn.dataset.modo);
   });
 
@@ -124,6 +135,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('professor-list')?.addEventListener('click', e => {
     const btn = e.target.closest('[data-professor]');
     if (!btn) return;
+    limparBusca();
     setProfessorFiltro(btn.dataset.professor);
   });
 });

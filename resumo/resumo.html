@@ -34,6 +34,10 @@
        nos pontos de integração (.content-area/.header). -->
   <link rel="stylesheet" href="css/sidebar.css" />
 
+  <!-- Busca de conteúdo — campo, escopo e lista de resultados
+       (lógica em js/resumo-busca.js) -->
+  <link rel="stylesheet" href="css/resumo-busca.css" />
+
   <!-- Geração de PDF — botão no header + modal de seleção
        (documento impresso/PDF em si vai embutido em js/resumo-pdf.js) -->
   <link rel="stylesheet" href="css/resumo-pdf.css" />
@@ -227,6 +231,38 @@
         </div>
       </div>
 
+      <!-- ═══════════════════════════════════════════
+           BUSCA — foco da área principal. Pesquisa dentro do
+           conteúdo das aulas (não filtra os cards). Os tipos de
+           conteúdo (Resumo/Resumão/Síntese/Revisão do professor)
+           ficam SOMENTE na sidebar; a busca cobre todos eles e
+           cada resultado indica de qual veio. Tudo é preenchido
+           por js/resumo-busca.js.
+      ═══════════════════════════════════════════ -->
+      <section class="busca" id="busca" aria-label="Buscar nos resumos">
+        <div class="busca__inner" role="search">
+          <div class="busca__campo">
+            <svg class="busca__icone" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>
+            </svg>
+            <input id="busca-input" class="busca__input" type="text" inputmode="search"
+                   enterkeyhint="search" placeholder="Buscar nos resumos…"
+                   aria-label="Buscar nos resumos" autocomplete="off" autocapitalize="off" spellcheck="false" />
+            <button id="busca-limpar" class="busca__limpar" type="button" aria-label="Limpar busca" hidden>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+          <div class="busca__escopo" id="busca-escopo" role="group" aria-label="Onde buscar">
+            <button type="button" class="busca__escopo-btn busca__escopo-btn--ativo" data-escopo="disc" aria-pressed="true">Nesta disciplina</button>
+            <button type="button" class="busca__escopo-btn" data-escopo="todas" aria-pressed="false">Todas as disciplinas</button>
+          </div>
+        </div>
+        <div class="busca__status" id="busca-status" role="status" aria-live="polite"></div>
+        <div class="busca__resultados" id="busca-resultados"></div>
+      </section>
+
       <!-- Vídeos das aulas -->
       <div id="videos-section" style="display:none"></div>
 
@@ -322,6 +358,19 @@
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
             </svg>
             <span id="rm-copy-btn-label">Copiar aula</span>
+          </button>
+          <!-- Copia TODAS as aulas do modo que está sendo visualizado
+               (Resumo/Síntese/Resumão/Revisão do professor) — ver
+               _bindCopyAllButton() em js/resumo-reader.js. O rótulo não
+               tem id de propósito: no mobile a regra
+               ".reader__copy-btn span:not([id])" o esconde e fica só o ícone. -->
+          <button class="reader__copy-btn" id="rm-copy-all-btn" type="button" aria-label="Copiar todas as aulas do modo atual">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M8 6h11a2 2 0 0 1 2 2v11"/>
+              <rect x="3" y="9" width="13" height="12" rx="2"/>
+              <path d="M7 14h5M7 17.5h5"/>
+            </svg>
+            <span class="rm-copy-all-label">Copiar tudo</span>
           </button>
           <button class="reader__toc-trigger" id="rm-toc-trigger" aria-label="Abrir índice de seções" aria-expanded="false" aria-controls="rm-toc">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">

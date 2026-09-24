@@ -1,0 +1,362 @@
+/* =============================================
+   NEXUS STUDY — resumo/css/resumo-busca.css
+   Busca de conteúdo (Etapa 2): campo de busca, seletor
+   de escopo, lista de resultados e estados vazios.
+   Usa só os tokens de resumo.css (--disc-tema, --border-*,
+   --text-*, --r-*, --dur-*). Depende de js/resumo-busca.js.
+   ============================================= */
+
+.busca[hidden],
+.busca [hidden] { display: none !important; }
+
+/* Enquanto há uma busca em andamento, os resultados substituem a
+   listagem de cards e a faixa de vídeos (o hero continua visível). */
+body.busca-ativa .main,
+body.busca-ativa #videos-section { display: none !important; }
+
+.busca {
+  position: relative;
+  padding: 1.75rem 3rem 0;
+}
+body.busca-ativa .busca { padding-bottom: 4rem; }
+
+.busca__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  max-width: 760px;
+}
+
+/* ══════════════════════════════════════════
+   CAMPO
+══════════════════════════════════════════ */
+.busca__campo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 0.6rem 0 1.1rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-lg);
+  transition: border-color var(--dur-base), background var(--dur-base), box-shadow var(--dur-base);
+}
+.busca__campo:hover { border-color: var(--border-3); }
+.busca__campo:focus-within {
+  border-color: rgba(var(--disc-tema-rgb), 0.55);
+  background: rgba(255,255,255,0.055);
+  box-shadow: 0 0 0 3px rgba(var(--disc-tema-rgb), 0.14);
+}
+.busca__icone {
+  flex-shrink: 0;
+  color: var(--text-3);
+  transition: color var(--dur-base);
+}
+.busca__campo:focus-within .busca__icone { color: var(--disc-tema); }
+
+.busca__input {
+  flex: 1;
+  min-width: 0;
+  height: 54px;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text-1);
+  font-family: var(--font-body);
+  font-size: 1rem;
+}
+.busca__input::placeholder { color: var(--text-3); }
+/* o foco visível é o do próprio .busca__campo (:focus-within) */
+.busca__input:focus-visible { box-shadow: none; border-radius: 0; }
+
+.busca__limpar {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-md);
+  color: var(--text-3);
+  transition: background var(--dur-base), color var(--dur-base);
+}
+.busca__limpar:hover { background: rgba(255,255,255,0.08); color: var(--text-1); }
+
+/* ══════════════════════════════════════════
+   ESCOPO (Nesta disciplina / Todas)
+══════════════════════════════════════════ */
+.busca__escopo {
+  display: inline-flex;
+  align-self: flex-start;
+  gap: 2px;
+  padding: 3px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-md);
+}
+.busca__escopo-btn {
+  padding: 0.42rem 0.9rem;
+  min-height: 32px;
+  border-radius: calc(var(--r-md) - 2px);
+  font-size: 0.74rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--text-2);
+  transition: background var(--dur-base), color var(--dur-base);
+}
+.busca__escopo-btn:hover { color: var(--text-1); background: rgba(255,255,255,0.04); }
+.busca__escopo-btn--ativo {
+  background: rgba(var(--disc-tema-rgb), 0.12);
+  color: var(--disc-tema);
+}
+
+/* ══════════════════════════════════════════
+   STATUS + LISTA
+══════════════════════════════════════════ */
+.busca__status {
+  margin-top: 1.25rem;
+  font-size: 0.82rem;
+  color: var(--text-2);
+}
+.busca__status strong { color: var(--text-1); font-weight: 600; }
+.busca__status:empty { display: none; }
+
+.busca__resultados { max-width: 860px; }
+.busca__resultados:empty { display: none; }
+
+.busca-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.9rem;
+}
+
+/* ══════════════════════════════════════════
+   CARD DE RESULTADO
+══════════════════════════════════════════ */
+.busca-res {
+  --tipo-cor: var(--disc-tema);
+  --tipo-rgb: var(--disc-tema-rgb);
+  position: relative;
+  padding: 1.05rem 3.2rem 1.05rem 1.35rem;
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-lg);
+  background:
+    radial-gradient(120% 100% at 0% 0%, rgba(var(--tipo-rgb), 0.05), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,0.028), rgba(255,255,255,0.008));
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform var(--dur-base) var(--ease),
+              border-color var(--dur-base) var(--ease),
+              box-shadow var(--dur-base) var(--ease);
+}
+.busca-res::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--tipo-cor);
+  opacity: 0.55;
+}
+.busca-res[data-tipo="sintese"]   { --tipo-cor: var(--amber);  --tipo-rgb: 232,184,109; }
+.busca-res[data-tipo="resumao"]   { --tipo-cor: var(--violet); --tipo-rgb: 164,143,224; }
+.busca-res[data-tipo="professor"] { --tipo-cor: var(--sage);   --tipo-rgb: 127,203,160; }
+
+.busca-res:hover {
+  transform: translateY(-2px);
+  border-color: rgba(var(--tipo-rgb), 0.38);
+  box-shadow: 0 14px 32px -16px rgba(var(--tipo-rgb), 0.32),
+              0 6px 16px -4px rgba(0,0,0,0.35);
+}
+.busca-res:hover::before { opacity: 1; }
+.busca-res:active { transform: scale(0.995); transition-duration: var(--dur-fast); }
+.busca-res:focus-visible { box-shadow: var(--focus-ring); }
+
+.busca-res__topo {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.45rem;
+}
+.busca-res__disc {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--text-2);
+}
+.busca-res__disc-ico { display: inline-flex; flex-shrink: 0; }
+.busca-res__disc-ico svg { width: 15px; height: 15px; }
+.busca-res__disc-nome { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.busca-res__tipo {
+  padding: 0.14rem 0.5rem;
+  border-radius: var(--r-sm);
+  border: 1px solid rgba(var(--tipo-rgb), 0.24);
+  background: rgba(var(--tipo-rgb), 0.10);
+  color: var(--tipo-cor);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.busca-res__aula {
+  display: flex;
+  align-items: baseline;
+  gap: 0.65rem;
+  margin-bottom: 0.4rem;
+}
+.busca-res__num {
+  flex-shrink: 0;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--tipo-cor);
+}
+.busca-res__titulo {
+  min-width: 0;
+  font-family: var(--font-display);
+  font-size: 1.22rem;
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--text-1);
+}
+
+.busca-res__topico {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+.busca-res__rotulo {
+  flex-shrink: 0;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.busca-res__topico-nome { min-width: 0; color: var(--text-2); font-weight: 500; }
+
+.busca-res__trechos {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.7rem;
+}
+.busca-res__trecho {
+  padding-left: 0.8rem;
+  border-left: 2px solid var(--border-3);
+  font-size: 0.86rem;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+.busca-res__sub {
+  display: block;
+  margin-bottom: 0.1rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.busca-res__trecho--codigo .busca-res__texto {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
+.busca-res__mais {
+  margin-top: 0.55rem;
+  font-size: 0.72rem;
+  color: var(--text-3);
+}
+
+.busca-res__seta {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  width: 28px;
+  height: 28px;
+  margin-top: -14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--tipo-cor);
+  background: rgba(var(--tipo-rgb), 0.10);
+  transition: background var(--dur-base), color var(--dur-base);
+}
+.busca-res:hover .busca-res__seta { background: var(--tipo-cor); color: var(--bg-base); }
+
+/* Termo pesquisado */
+.busca-mark {
+  padding: 0 0.14em;
+  border-radius: 3px;
+  background: rgba(var(--disc-tema-rgb), 0.24);
+  color: var(--text-1);
+  font-weight: 600;
+}
+
+/* ══════════════════════════════════════════
+   MOSTRAR MAIS / VAZIO
+══════════════════════════════════════════ */
+.busca-mais-wrap { display: flex; justify-content: center; margin-top: 1.1rem; }
+.busca-mais-wrap:empty { display: none; }
+.busca-mais {
+  padding: 0.65rem 1.4rem;
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-md);
+  background: rgba(255,255,255,0.04);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-2);
+  transition: color var(--dur-base), border-color var(--dur-base), background var(--dur-base);
+}
+.busca-mais span { color: var(--text-3); font-weight: 400; }
+.busca-mais:hover { color: var(--text-1); border-color: var(--border-3); background: rgba(255,255,255,0.07); }
+
+.busca-vazio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 3rem 1rem;
+  text-align: center;
+}
+.busca-vazio__ico { font-size: 1.8rem; opacity: 0.7; }
+.busca-vazio p { color: var(--text-2); font-size: 0.92rem; }
+.busca-vazio small { color: var(--text-3); font-size: 0.78rem; max-width: 380px; line-height: 1.5; }
+.busca-vazio__btn {
+  margin-top: 0.6rem;
+  padding: 0.55rem 1.1rem;
+  border-radius: var(--r-md);
+  border: 1px solid rgba(var(--disc-tema-rgb), 0.35);
+  background: rgba(var(--disc-tema-rgb), 0.10);
+  color: var(--disc-tema);
+  font-size: 0.78rem;
+  font-weight: 600;
+  transition: background var(--dur-base);
+}
+.busca-vazio__btn:hover { background: rgba(var(--disc-tema-rgb), 0.18); }
+
+/* ══════════════════════════════════════════
+   RESPONSIVO
+══════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .busca { padding: 1.5rem 1.5rem 0; }
+}
+@media (max-width: 600px) {
+  .busca { padding: 1.25rem 1rem 0; }
+  .busca__escopo { align-self: stretch; }
+  .busca__escopo-btn { flex: 1; min-height: 44px; }
+  .busca-res { padding: 0.95rem 2.8rem 0.95rem 1.1rem; }
+  .busca-res__titulo { font-size: 1.1rem; }
+  .busca-res__seta { right: 0.7rem; }
+}

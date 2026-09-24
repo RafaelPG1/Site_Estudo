@@ -673,6 +673,29 @@ export function abrirModal(aula, idx) {
 }
 
 /* ══════════════════════════════════════════════
+   ABRIR A PARTIR DE UM RESULTADO DE BUSCA
+   Reaproveita os três abrir*() existentes (nenhuma lógica de
+   leitura nova) e acrescenta só o que a busca precisa:
+   - o selo do tipo (abrirModal decide "Síntese" olhando
+     State.modo, que aqui pode ser outro — a busca cobre os 4
+     tipos independentemente do modo da sidebar);
+   - rolar até o tópico onde o termo foi achado (secIdx >= 0),
+     via a mesma navigateTo() usada pelo índice de seções.
+══════════════════════════════════════════════ */
+export function abrirResultadoBusca({ tipo, conteudo, idx, secIdx = -1 }) {
+  if (tipo === 'resumao')        abrirModalResumao(conteudo, idx);
+  else if (tipo === 'professor') abrirModalProfessor(conteudo, idx);
+  else                           abrirModal(conteudo, idx);
+
+  if (tipo === 'completo' || tipo === 'sintese') {
+    const badge = document.getElementById('rm-tipo-badge');
+    if (badge) badge.textContent = tipo === 'sintese' ? 'Síntese' : 'Resumo';
+  }
+
+  if (secIdx >= 0) _readerScroll?.navigateTo(secIdx);
+}
+
+/* ══════════════════════════════════════════════
    COPIAR AULA INTEIRA — extrai só o texto real do
    conteúdo (#rm-body), nunca sidebar/header/índice/
    botões. Pseudo-elementos (::before/::after) nunca
@@ -687,8 +710,11 @@ function _cleanInlineText(el) {
   return clone.textContent.replace(/\s+/g, ' ').trim();
 }
 
-function _extractAulaText() {
-  const root = document.getElementById('rm-body');
+/* `root` é opcional: sem argumento, extrai a aula aberta (#rm-body) —
+   comportamento original do "Copiar aula". "Copiar tudo" passa o
+   DocumentFragment de um <template> renderizado por _buildReaderBody,
+   reaproveitando exatamente o mesmo extrator (mesmo formato de texto). */
+function _extractAulaText(root = document.getElementById('rm-body')) {
   if (!root) return '';
 
   const SELECTOR = [
@@ -758,6 +784,68 @@ async function _copiarParaClipboard(texto) {
   }
 }
 
+/* ══════════════════════════════════════════════
+   COPIAR TUDO — todas as aulas do MODO ATUAL
+   A fonte de verdade do modo é State.modo (a mesma que
+   renderGrid usa para decidir o que mostrar); cada modo tem
+   seu próprio array em State, alinhado por índice com
+   State.aulas. Um modo nunca lê o array de outro.
+   O critério "tem conteúdo" é o mesmo de renderGrid
+   (resumo-ui.js), para o texto copiado bater com os cards.
+   O filtro de professor da sidebar NÃO é aplicado: "tudo"
+   = todas as aulas do modo.
+══════════════════════════════════════════════ */
+const _MODO_LABEL = {
+  completo:  'Resumo',
+  sintese:   'Síntese',
+  resumao:   'Resumão',
+  professor: 'Revisão do professor',
+};
+
+function _temConteudoReal(c) {
+  return !!(c && (c.ideia_central || (c.secoes ?? []).length > 0));
+}
+
+function _conteudosDoModoAtual() {
+  const modo  = State.modo in _MODO_LABEL ? State.modo : 'completo';
+  const itens = [];
+  // Título de fallback: se o item do modo não traz .aula, usa o da
+  // aula correspondente (mesmo idx) — só na cópia, sem mutar o State.
+  const comTitulo = (c, idx) => c.aula ? c : { ...c, aula: State.aulas[idx]?.aula ?? '' };
+
+  if (modo === 'sintese') {
+    State.aulas.forEach((_, idx) => {
+      const c = State.simplificado[idx];
+      if (_temConteudoReal(c)) itens.push({ conteudo: comTitulo(c, idx), idx });
+    });
+  } else if (modo === 'resumao' || modo === 'professor') {
+    (modo === 'resumao' ? State.resumao : State.professor).forEach((c, idx) => {
+      if (_temConteudoReal(c)) itens.push({ conteudo: comTitulo(c, idx), idx });
+    });
+  } else {
+    State.aulas.forEach((c, idx) => itens.push({ conteudo: c, idx }));
+  }
+  return { modo, itens };
+}
+
+function _extractTudoDoModoAtual() {
+  const { modo, itens } = _conteudosDoModoAtual();
+  const blocos = itens
+    .map(({ conteudo, idx }) => {
+      // <template>: o conteúdo fica inerte (imagens não são baixadas).
+      const tpl = document.createElement('template');
+      tpl.innerHTML = _buildReaderBody(conteudo, idx);
+      return _extractAulaText(tpl.content);
+    })
+    .filter(Boolean);
+
+  if (!blocos.length) return { texto: '', total: 0, modo };
+
+  const disc = State.disciplina?.nome;
+  const cab  = `${_MODO_LABEL[modo]}${disc ? ` — ${disc}` : ''} · ${blocos.length} aula${blocos.length !== 1 ? 's' : ''}`;
+  return { texto: `${cab}\n\n---\n\n${blocos.join('\n\n---\n\n')}`, total: blocos.length, modo };
+}
+
 export function bindCopyButton() {
   const btn   = document.getElementById('rm-copy-btn');
   const label = document.getElementById('rm-copy-btn-label');
@@ -779,6 +867,57 @@ export function bindCopyButton() {
     resetTimer = setTimeout(() => {
       btn.classList.remove('reader__copy-btn--done');
       label.textContent = 'Copiar aula';
+    }, 2200);
+  });
+
+  _bindCopyAllButton();
+}
+
+/* Botão "Copiar tudo" da HOME (criado por renderHeroStats em
+   resumo-ui.js, com [data-copy-all]). Como ele é recriado a cada troca
+   de disciplina, o listener fica no container fixo #hero-stats
+   (delegação) — mesmo padrão do modo-list/professor-list em resumo.js.
+   Fica fora do leitor de propósito: dentro da leitura só existe o
+   "Copiar aula". */
+function _bindCopyAllButton() {
+  const host = document.getElementById('hero-stats');
+  if (!host) return;
+
+  const LABEL_PADRAO = 'Copiar tudo';
+  let resetTimer = null;
+
+  // Tooltip reflete o modo atual (State.modo muda sem recriar o botão).
+  const atualizarTitulo = e => {
+    const btn = e.target.closest?.('[data-copy-all]');
+    if (!btn) return;
+    const { modo, itens } = _conteudosDoModoAtual();
+    btn.title = `Copiar todas as aulas de ${_MODO_LABEL[modo]} (${itens.length})`;
+  };
+  host.addEventListener('mouseover', atualizarTitulo);
+  host.addEventListener('focusin', atualizarTitulo);
+
+  host.addEventListener('click', async e => {
+    const btn   = e.target.closest('[data-copy-all]');
+    const label = btn?.querySelector('.hero-copy-btn__label');
+    if (!btn || !label) return;
+
+    playSound('click', 'resumos');
+    const { texto, total } = _extractTudoDoModoAtual();
+    clearTimeout(resetTimer);
+
+    let ok = false;
+    let msg = 'Nada para copiar';
+    if (texto) {
+      ok  = await _copiarParaClipboard(texto);
+      msg = ok ? `✓ ${total} aula${total !== 1 ? 's' : ''} copiada${total !== 1 ? 's' : ''}` : 'Não foi possível copiar';
+    }
+
+    btn.classList.toggle('hero-copy-btn--done', ok);
+    label.textContent = msg;
+
+    resetTimer = setTimeout(() => {
+      btn.classList.remove('hero-copy-btn--done');
+      label.textContent = LABEL_PADRAO;
     }, 2200);
   });
 }

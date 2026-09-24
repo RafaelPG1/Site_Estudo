@@ -232,32 +232,14 @@ export function mostrarEstadoSemConteudo() {
 }
 
 /* ══════════════════════════════════════════════
-   MODO DE LEITURA — toggle completo/síntese/resumão
+   MODO DE LEITURA — completo/síntese/resumão/professor
+   Os modos são escolhidos SOMENTE pela sidebar ("Tipo de
+   Conteúdo"); a área principal não os exibe mais — ela é
+   dedicada à busca (ver resumo-busca.js).
 ══════════════════════════════════════════════ */
 function _temSimplificado() { return State.simplificado.length > 0; }
 function _temResumao()      { return State.resumao.length > 0; }
 function _temProfessor()    { return State.professor.length > 0; }
-
-function _buildToggleHtml() {
-  if (!_temSimplificado() && !_temResumao() && !_temProfessor()) return '';
-
-  const btnCompleto = `<button class="mode-btn${State.modo === 'completo' ? ' mode-btn--active' : ''}" data-modo="completo">Resumo completo</button>`;
-  const btnSintese  = _temSimplificado()
-    ? `<button class="mode-btn${State.modo === 'sintese'  ? ' mode-btn--active' : ''}" data-modo="sintese">Síntese rápida</button>`
-    : '';
-  const btnResumao  = _temResumao()
-    ? `<button class="mode-btn${State.modo === 'resumao'  ? ' mode-btn--active' : ''}" data-modo="resumao">Resumão</button>`
-    : '';
-  // Rótulo "Revisão do Professor" (não "Professor") de propósito: a
-  // sidebar já tem uma seção "Professor" que filtra por quem deu a
-  // aula (aula.professor) — usar o mesmo nome aqui confundiria um
-  // modo de conteúdo com um filtro.
-  const btnProfessor = _temProfessor()
-    ? `<button class="mode-btn${State.modo === 'professor' ? ' mode-btn--active' : ''}" data-modo="professor">Revisão do Professor</button>`
-    : '';
-
-  return `<div class="mode-toggle" id="mode-toggle">${btnCompleto}${btnSintese}${btnResumao}${btnProfessor}</div>`;
-}
 
 export function setModo(modo) {
   if (State.modo === modo) return;
@@ -378,18 +360,21 @@ export function renderHeroStats(total) {
   const disc = State.disciplina;
   if (!c) return;
 
-  const toggleHtml = total > 0 ? _buildToggleHtml() : '';
+  // "Copiar tudo": copia todas as aulas do modo ativo (State.modo). O
+  // clique é tratado por delegação em #hero-stats — ver
+  // _bindCopyAllButton() em resumo-reader.js.
+  const copyAllHtml = total > 0 ? `
+    <button class="hero-copy-btn" type="button" data-copy-all aria-label="Copiar todas as aulas do modo atual">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M8 6h11a2 2 0 0 1 2 2v11"/>
+        <rect x="3" y="9" width="13" height="12" rx="2"/>
+        <path d="M7 14h5M7 17.5h5"/>
+      </svg>
+      <span class="hero-copy-btn__label">Copiar tudo</span>
+    </button>` : '';
   c.innerHTML = disc
-    ? `<div class="stat-pill">${resolveIcone(disc.icone)} ${disc.nome}</div>${toggleHtml}`
+    ? `<div class="stat-pill">${resolveIcone(disc.icone)} ${disc.nome}</div>${copyAllHtml}`
     : '';
-
-  if (total > 0 && toggleHtml) {
-    document.getElementById('mode-toggle')?.addEventListener('click', e => {
-      const btn = e.target.closest('[data-modo]');
-      if (!btn) return;
-      setModo(btn.dataset.modo);
-    });
-  }
 
   if (sub) sub.textContent = total === 0
     ? `Nenhum resumo disponível para ${disc?.nome ?? 'esta disciplina'} ainda.`
