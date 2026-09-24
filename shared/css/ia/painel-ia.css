@@ -82,6 +82,12 @@
 #nexus-panel.nexus-panel--draggable {
   bottom: auto;
   right: auto;
+  /* A regra base (#nexus-panel) reserva 108px de max-width pensando no
+     FAB fixo no canto (right: 88px). Em modo arrastar o painel não está
+     mais ancorado ao FAB, então essa reserva não faz sentido e podia
+     impedir o painel de ocupar posições válidas perto da borda direita.
+     Aqui o único limite volta a ser a viewport real. */
+  max-width: calc(100vw - 16px);
 }
 
 /* ── HEADER ─────────────────────────────────────────────────── */

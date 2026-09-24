@@ -1004,6 +1004,7 @@ function _iconPin() {
     arrastando: false,
     offsetX:    0,
     offsetY:    0,
+    zoom:       1,
   };
 
   function _lerDragAtivo() {
@@ -1037,11 +1038,27 @@ function _iconPin() {
     try { localStorage.removeItem(DRAG_POS_KEY); } catch (e) {}
   }
 
+  // ── ZOOM CSS (`html { zoom: ... }`) ─────────────────────────
+  // clientX/clientY e getBoundingClientRect() vêm na escala VISUAL
+  // (já com o zoom aplicado). panel.style.top/left e offsetWidth/
+  // offsetHeight vivem na escala "de autor" (sem zoom) — o navegador
+  // aplica o zoom só na hora de pintar. Misturar os dois sem converter
+  // é o que fazia o painel "fugir" do cursor quanto mais longe da
+  // origem (0,0) o arraste ia.
+  function _zoomAtual() {
+    var z = parseFloat(getComputedStyle(document.documentElement).zoom);
+    return (z && !isNaN(z)) ? z : 1;
+  }
+
   function _clampPos(top, left, panel) {
+    var zoom = _zoomAtual();
+
     // Viewport realmente visível (exclui scrollbar, não depende da barra
     // de tarefas do SO — essa nunca faz parte da área do navegador).
-    var vw = document.documentElement.clientWidth;
-    var vh = document.documentElement.clientHeight;
+    // Convertida para a escala "de autor" (÷ zoom) para ficar no mesmo
+    // espaço de panel.offsetWidth/offsetHeight e de top/left.
+    var vw = document.documentElement.clientWidth  / zoom;
+    var vh = document.documentElement.clientHeight / zoom;
     var w  = panel.offsetWidth;
     var h  = panel.offsetHeight;
 
@@ -1097,9 +1114,16 @@ function _iconPin() {
     if (posSalva) {
       _aplicarPosicaoSalva();
     } else {
-      panel.style.top  = rectAntes.top  + 'px';
-      panel.style.left = rectAntes.left + 'px';
-      _salvarDragPos(rectAntes.top, rectAntes.left);
+      // rectAntes vem de getBoundingClientRect() → escala visual (com
+      // zoom). panel.style.top/left é escala de autor → precisa dividir
+      // pelo zoom antes de gravar, senão o painel "pula" no instante
+      // em que o modo arrastar é ativado.
+      var zoomInicial  = _zoomAtual();
+      var topInicial   = rectAntes.top  / zoomInicial;
+      var leftInicial  = rectAntes.left / zoomInicial;
+      panel.style.top  = topInicial  + 'px';
+      panel.style.left = leftInicial + 'px';
+      _salvarDragPos(topInicial, leftInicial);
     }
 
     _salvarDragAtivo(true);
@@ -1133,8 +1157,13 @@ function _iconPin() {
     if (!panel || !_dragState.ativo) return;
     var rect = panel.getBoundingClientRect();
     _dragState.arrastando = true;
-    _dragState.offsetX = clientX - rect.left;
-    _dragState.offsetY = clientY - rect.top;
+    // Zoom fixado no início do arraste (não deve mudar no meio do
+    // gesto). rect.left/top estão em escala visual; convertendo o
+    // offset para escala de autor aqui, tudo em _onDragMove fica no
+    // mesmo espaço de panel.style.left/top.
+    _dragState.zoom    = _zoomAtual();
+    _dragState.offsetX = (clientX - rect.left) / _dragState.zoom;
+    _dragState.offsetY = (clientY - rect.top)  / _dragState.zoom;
     // Zera qualquer transition de CSS (ex.: animação de abrir/fechar o
     // painel) enquanto o arraste está ativo — sem isso, cada mousemove
     // dispara uma pequena animação em vez de mover instantaneamente,
@@ -1150,10 +1179,61 @@ function _iconPin() {
     // Sem clamp aqui: o painel segue o cursor exatamente, mantendo o
     // ponto de arrasto sempre alinhado ao mouse. Clampar durante o
     // movimento é o que causava a dessincronia entre cursor e modal.
-    var novoTop  = clientY - _dragState.offsetY;
-    var novoLeft = clientX - _dragState.offsetX;
+    // clientX/clientY chegam em escala visual — convertidos para escala
+    // de autor (÷ zoom) antes de subtrair o offset (que já está nessa
+    // mesma escala, ver _onDragStart) e de gravar em style.top/left.
+    var zoom     = _dragState.zoom || 1;
+    var novoTop  = (clientY / zoom) - _dragState.offsetY;
+    var novoLeft = (clientX / zoom) - _dragState.offsetX;
     panel.style.top  = novoTop  + 'px';
     panel.style.left = novoLeft + 'px';
+  }
+
+  // ── BOTÕES FLUTUANTES FORA DO PAINEL ────────────────────────
+  // Diferente do botão "Auto" (que é INTERNO ao painel e nunca deve
+  // funcionar como limite — ver _clampPos), estes são elementos fixos
+  // da página que ficam por baixo do painel quando ele é arrastado por
+  // cima deles, bloqueando o clique. Cada seletor aqui é um botão
+  // externo conhecido; adicione outros seletores na lista se precisar.
+  var _SELETORES_BOTOES_EXTERNOS = ['#nexus-fab', '#audio-btn-global'];
+
+  function _afastarDeBotoesExternos(top, left, panel) {
+    var zoom   = _zoomAtual();
+    var pLeft  = left;
+    var pTop   = top;
+    var pRight = left + panel.offsetWidth;
+    var pBottom = top + panel.offsetHeight;
+    var margin = 8; // respiro mínimo entre o painel e o botão
+
+    for (var i = 0; i < _SELETORES_BOTOES_EXTERNOS.length; i++) {
+      var btn = document.querySelector(_SELETORES_BOTOES_EXTERNOS[i]);
+      if (!btn) continue;
+
+      var r = btn.getBoundingClientRect(); // escala visual → converte p/ escala de autor
+      var bLeft   = r.left   / zoom;
+      var bTop    = r.top    / zoom;
+      var bRight  = r.right  / zoom;
+      var bBottom = r.bottom / zoom;
+
+      var sobrepoeX = pLeft < bRight  && pRight  > bLeft;
+      var sobrepoeY = pTop  < bBottom && pBottom > bTop;
+      if (!(sobrepoeX && sobrepoeY)) continue; // não sobrepõe → não mexe em nada
+
+      // Sobrepõe: empurra pelo eixo que exigir o menor deslocamento,
+      // igual à lógica de "corrige o mínimo necessário" do clamp de tela.
+      var precisaSubir   = pBottom - (bTop - margin);
+      var precisaEsquerda = pRight  - (bLeft - margin);
+
+      if (precisaSubir <= precisaEsquerda) {
+        pTop    -= precisaSubir;
+        pBottom -= precisaSubir;
+      } else {
+        pLeft  -= precisaEsquerda;
+        pRight -= precisaEsquerda;
+      }
+    }
+
+    return { top: pTop, left: pLeft };
   }
 
   function _onDragEnd() {
@@ -1166,6 +1246,12 @@ function _iconPin() {
     var top  = parseFloat(panel.style.top)  || 0;
     var left = parseFloat(panel.style.left) || 0;
     var clamped = _clampPos(top, left, panel);
+    // Depois de garantir que está dentro da tela, garante também que
+    // não ficou por cima de um botão externo fixo (ex.: o FAB) — e
+    // reclampa pra tela de novo, caso o empurrão tenha passado de novo
+    // da borda (canto apertado entre a viewport e o botão).
+    var afastado = _afastarDeBotoesExternos(clamped.top, clamped.left, panel);
+    clamped = _clampPos(afastado.top, afastado.left, panel);
 
     if (clamped.top !== top || clamped.left !== left) {
       // Saiu da tela: reenquadra suavemente, só agora.
@@ -1503,8 +1589,12 @@ function _bindESC() {
 
   var MODELOS = [
     {
+      // detalhe estático usado só como fallback — o menu e o chip sempre
+      // chamam _detalhe(m), que para 'auto' calcula a ordem real da
+      // cascata (ver _detalheAuto()), pois ela muda entre página de
+      // questão e página de resumo (Cloudflare Worker v15.6).
       id: 'auto', nome: 'Automático', curto: 'Auto', cor: '#00c8ff',
-      detalhe: 'Groq → Gemini → OpenRouter, com fallback', icone: _iconAuto,
+      detalhe: 'Ordem com fallback', icone: _iconAuto,
     },
     {
       id: 'groq', nome: 'Groq', curto: 'Groq', cor: '#f55036',
@@ -1525,6 +1615,33 @@ function _bindESC() {
       if (MODELOS[i].id === id) return MODELOS[i];
     }
     return null;
+  }
+
+  /* ── Ordem real da cascata "Automático" ──────────────────────
+     O Cloudflare Worker (v15.6) usa uma ordem de fallback diferente
+     por tipo de conteúdo:
+       página de questão (quiz)  → OpenRouter → Gemini → Groq
+       demais páginas (resumo)   → Gemini → OpenRouter → Groq
+
+     NexusContext.temTipo('quiz') indica só quais TIPOS DE CONTEÚDO
+     a página carrega (ver core/context.js) — não é o mesmo sinal que
+     o worker usa (ehQuestao é decidido por interação, dentro de
+     assistant_quiz.js). O sinal confiável de "este painel é o
+     assistente de questões" é a própria presença do assistente:
+     páginas de quiz carregam window.NexusQuizAssistant; páginas de
+     resumo carregam window.NexusAssistant. Checar isso aqui evita
+     depender de __NEXUS_CONTEXT__ estar declarado do jeito certo.  */
+  function _detalheAuto() {
+    var ehQuiz = typeof window.NexusQuizAssistant !== 'undefined';
+
+    return ehQuiz
+      ? 'OpenRouter → Gemini → Groq, com fallback'
+      : 'Gemini → OpenRouter → Groq, com fallback';
+  }
+
+  /* Detalhe exibido para um modelo: dinâmico para 'auto', fixo para os demais. */
+  function _detalhe(m) {
+    return m.id === 'auto' ? _detalheAuto() : m.detalhe;
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -1552,7 +1669,7 @@ function _bindESC() {
 
   function lista() {
     return MODELOS.map(function (m) {
-      return { id: m.id, nome: m.nome, curto: m.curto, detalhe: m.detalhe, cor: m.cor };
+      return { id: m.id, nome: m.nome, curto: m.curto, detalhe: _detalhe(m), cor: m.cor };
     });
   }
 
@@ -1622,7 +1739,7 @@ function _bindESC() {
           ' style="--c:' + m.cor + '" aria-selected="' + (m.id === atual) + '">' +
           '<span class="nxm-ico-box">' + m.icone(20) + '</span>' +
           '<span><span class="nxm-nome">' + _esc(m.nome) + '</span>' +
-                '<span class="nxm-det">' + _esc(m.detalhe) + '</span></span>' +
+                '<span class="nxm-det">' + _esc(_detalhe(m)) + '</span></span>' +
           '<span class="nxm-check">' + _ICONE_CHECK + '</span>' +
         '</button>'
       );
@@ -1639,7 +1756,7 @@ function _bindESC() {
     btn.innerHTML =
       '<span class="nxm-ico">' + m.icone(16) + '</span>' +
       '<span class="nxm-name">' + _esc(m.curto) + '</span>' + _ICONE_CHEVRON;
-    btn.title = 'Modelo de IA: ' + m.nome + ' — ' + m.detalhe;
+    btn.title = 'Modelo de IA: ' + m.nome + ' — ' + _detalhe(m);
     btn.setAttribute('aria-label', 'Modelo de IA: ' + m.nome + '. Clique para trocar.');
   }
 
