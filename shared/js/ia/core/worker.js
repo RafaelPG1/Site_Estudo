@@ -21,7 +21,10 @@
  * e expõe window.NexusWorker.
  *
  * ── CONTRATO COM O WORKER REMOTO (Cloudflare) ────────────────
- * POST { pergunta, contexto, historico, disciplina, tipoContexto, ehQuestao }
+ * POST { pergunta, instrucao, contexto, historico, disciplina, tipoContexto, ehQuestao }
+ *   pergunta  = só o que o aluno digitou (limite de 500 no servidor)
+ *   instrucao = orientação de tutor gerada pelo assistant (limite próprio)
+ *   provedor  = 'auto' | 'groq' | 'gemini' | 'openrouter' (vem do NexusModelPicker)
  * ← { resposta: string, fonte: string, modelo: string }
  *
  * ── HISTÓRICO DE SESSÃO ──────────────────────────────────────
@@ -67,7 +70,9 @@
   var WORKER_URL     = 'https://site-estudo.rafaelpeixoto475.workers.dev/';
   var MAX_TURNS      = 5;
   var SESSION_TTL_MS = 2 * 60 * 60 * 1000;
-  var CONTEXTO_MAX   = 3000;
+  // Teto de segurança para o contexto (enunciado + alternativas de questões grandes).
+  // Precisa ser <= MAX_CONTEXTO_CHARS do Cloudflare Worker.
+  var CONTEXTO_MAX   = 20000;
 
   /* ══════════════════════════════════════════════════════════
      ESTADO INTERNO
@@ -76,6 +81,7 @@
   var _historico       = [];
   var _ultimaAtividade = 0;
   var _habilitado      = true;
+  var _controllerAtual  = null;
 
   /* ══════════════════════════════════════════════════════════
      HISTÓRICO DE SESSÃO
@@ -161,17 +167,27 @@
   ══════════════════════════════════════════════════════════ */
 
   async function _chamarWorker(payload) {
+    var controller = new AbortController();
+    _controllerAtual = controller;
+
     var res;
     try {
       res = await fetch(WORKER_URL, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify(payload),
+        signal:  controller.signal,
       });
     } catch (err) {
+      _controllerAtual = null;
+      if (err && err.name === 'AbortError') {
+        console.log('[NexusWorker] requisição cancelada pelo usuário.');
+        return { cancelado: true };
+      }
       console.warn('[NexusWorker] falha de rede ao chamar worker:', err);
       return null;
     }
+    _controllerAtual = null;
 
     if (res.status === 429) {
       return {
@@ -245,6 +261,9 @@
     var tipoContexto         = opcoes.tipoContexto;
     var registrarNoHistorico = opcoes.registrarNoHistorico;
     var ehQuestao            = opcoes.ehQuestao;
+    var instrucao            = opcoes.instrucao;
+    // Modelo escolhido no seletor (model_picker.js). 'auto' = cascata com fallback.
+    var provedor             = (window.NexusModelPicker && window.NexusModelPicker.get()) || 'auto';
 
     if (!pergunta || !pergunta.trim()) return null;
 
@@ -260,12 +279,18 @@
 
     var resultado = await _chamarWorker({
       pergunta:     pergunta.trim(),
+      instrucao:    (instrucao || '').trim(),
+      provedor:     provedor,
       contexto:     contexto,
       historico:    historico,
       disciplina:   disciplina || '',
       tipoContexto: tipoContexto || 'conteudo',
       ehQuestao:    !!ehQuestao,
     });
+
+    if (resultado && resultado.cancelado) {
+      return { cancelado: true };
+    }
 
     if (!resultado) {
       console.warn('[NexusWorker] falha no worker — fallback local ativado.');
@@ -356,6 +381,12 @@
     };
   }
 
+  function parar() {
+    if (_controllerAtual) {
+      _controllerAtual.abort();
+    }
+  }
+
   /* ══════════════════════════════════════════════════════════
      REGISTRO GLOBAL
   ══════════════════════════════════════════════════════════ */
@@ -368,8 +399,9 @@ window.NexusWorker = {
   perguntar,
   limparHistorico,
   restaurarHistorico,
-  exportarHistorico,   // ← nova linha
+  exportarHistorico,
   setHabilitado,
   status,
+  parar,
 };
 }());

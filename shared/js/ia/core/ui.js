@@ -50,6 +50,7 @@
   let _onEdit          = null;
   let _playSound       = null;
   let _onVersionSwitch = null;
+  let _onStop          = null;
 
   /* ── Referência ao módulo global de autenticação ─────────────
      Carregada de forma lazy para evitar dependência circular.
@@ -227,6 +228,14 @@
       ' stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
       '<line x1="22" y1="2" x2="11" y2="13"/>' +
       '<polygon points="22 2 15 22 11 13 2 9 22 2"/>' +
+      '</svg>'
+    );
+  }
+
+  function _iconStop() {
+    return (
+      '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' +
+      '<rect x="6" y="6" width="12" height="12" rx="2"/>' +
       '</svg>'
     );
   }
@@ -674,6 +683,22 @@ function _iconPin() {
      TYPING INDICATOR
   ══════════════════════════════════════════════════════════ */
 
+  function _setModoGerando(ativo) {
+    var sendBtn = document.getElementById('nexus-send');
+    if (!sendBtn) return;
+    if (ativo) {
+      sendBtn.dataset.modo = 'parar';
+      sendBtn.innerHTML = _iconStop();
+      sendBtn.setAttribute('aria-label', 'Parar geração');
+      sendBtn.title = 'Parar geração';
+    } else {
+      sendBtn.dataset.modo = 'enviar';
+      sendBtn.innerHTML = _iconSend();
+      sendBtn.setAttribute('aria-label', 'Enviar mensagem');
+      sendBtn.title = '';
+    }
+  }
+
   function showTyping() {
     var el = document.getElementById('nexus-typing');
     var container = document.getElementById('nexus-messages');
@@ -683,6 +708,7 @@ function _iconPin() {
       container.appendChild(el);
       _scrollToBottom(container);
     }
+    _setModoGerando(true);
   }
 
   function hideTyping() {
@@ -693,6 +719,7 @@ function _iconPin() {
     if (footer && el.parentNode !== footer) {
       footer.insertBefore(el, footer.firstChild);
     }
+    _setModoGerando(false);
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -931,7 +958,13 @@ function _iconPin() {
       }
     });
 
-    sendBtn.addEventListener('click', _enviar);
+    sendBtn.addEventListener('click', function () {
+      if (sendBtn.dataset.modo === 'parar') {
+        if (typeof _onStop === 'function') _onStop();
+        return;
+      }
+      _enviar();
+    });
   }
 
   function _enviar() {
@@ -1103,11 +1136,13 @@ function _iconPin() {
     if (!_dragState.arrastando) return;
     var panel = document.getElementById('nexus-panel');
     if (!panel) return;
+    // Sem clamp aqui: o painel segue o cursor exatamente, mantendo o
+    // ponto de arrasto sempre alinhado ao mouse. Clampar durante o
+    // movimento é o que causava a dessincronia entre cursor e modal.
     var novoTop  = clientY - _dragState.offsetY;
     var novoLeft = clientX - _dragState.offsetX;
-    var clamped  = _clampPos(novoTop, novoLeft, panel);
-    panel.style.top  = clamped.top  + 'px';
-    panel.style.left = clamped.left + 'px';
+    panel.style.top  = novoTop  + 'px';
+    panel.style.left = novoLeft + 'px';
   }
 
   function _onDragEnd() {
@@ -1116,10 +1151,25 @@ function _iconPin() {
     var panel = document.getElementById('nexus-panel');
     if (!panel) return;
     panel.classList.remove('nexus-dragging');
-    panel.style.transition = ''; // devolve o controle da transition ao CSS normal
+
     var top  = parseFloat(panel.style.top)  || 0;
     var left = parseFloat(panel.style.left) || 0;
-    _salvarDragPos(top, left);
+    var clamped = _clampPos(top, left, panel);
+
+    if (clamped.top !== top || clamped.left !== left) {
+      // Saiu da tela: reenquadra suavemente, só agora.
+      panel.style.transition = 'top .22s ease, left .22s ease';
+      panel.style.top  = clamped.top  + 'px';
+      panel.style.left = clamped.left + 'px';
+      panel.addEventListener('transitionend', function _limpar() {
+        panel.style.transition = '';
+        panel.removeEventListener('transitionend', _limpar);
+      });
+    } else {
+      panel.style.transition = '';
+    }
+
+    _salvarDragPos(clamped.top, clamped.left);
   }
 
   function _bindDrag() {
@@ -1300,6 +1350,7 @@ function _bindESC() {
     _onReset         = opts.onReset         || null;
     _onEdit          = opts.onEdit          || null;
     _onVersionSwitch = opts.onVersionSwitch || null;
+    _onStop          = opts.onStop          || null;
 
     var fab = document.getElementById('nexus-fab') || _criarFAB();
     if (!fab.parentNode) document.body.appendChild(fab);
@@ -1348,4 +1399,327 @@ function _bindESC() {
     notifyNewMessage,
   };
 
+}());
+
+
+/* ════════════════════════════════════════════════════════════════════
+   SELETOR DE MODELO DE IA  (window.NexusModelPicker)
+   ────────────────────────────────────────────────────────────────────
+   Vive dentro do ui.js para valer em TODAS as páginas que usam o painel
+   do assistente (quiz, resumo, jogos) sem alterar nenhum template.
+
+   - Injeta a barra "Modelo" logo abaixo de #nexus-disc-bar quando o
+     painel é criado por NexusUI.init() (MutationObserver, sem polling).
+   - Guarda a escolha em localStorage ('nexus_ia_provedor').
+   - core/worker.js lê NexusModelPicker.get() e envia ao Cloudflare Worker
+     no campo `provedor`: 'auto' | 'groq' | 'gemini' | 'openrouter'.
+     'auto' = cascata com fallback; os demais = só aquele modelo, sem fallback.
+   - Evento ao trocar: window 'nexus:modeloAlterado' { detail:{ provedor } }.
+   - Ícones são desenhos simples próprios (não os logotipos oficiais).
+   ════════════════════════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  var STORAGE_KEY = 'nexus_ia_provedor';
+
+  /* ══════════════════════════════════════════════════════════
+     ÍCONES (SVG 24×24, cores próprias — independem do tema)
+  ══════════════════════════════════════════════════════════ */
+
+  function _svg(inner, size) {
+    var s = size || 18;
+    return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" ' +
+           'aria-hidden="true" focusable="false">' + inner + '</svg>';
+  }
+
+  /* Automático — um ponto de origem que se ramifica (cascata / fallback) */
+  function _iconAuto(size) {
+    return _svg(
+      '<path d="M7 12C11.5 12 12 6 17 6M7 12C11.5 12 12 18 17 18" ' +
+        'stroke="#00c8ff" stroke-width="1.8" stroke-linecap="round"/>' +
+      '<circle cx="5" cy="12" r="2.6" fill="#00c8ff"/>' +
+      '<circle cx="19" cy="6" r="2.2" fill="#00c8ff" fill-opacity=".75"/>' +
+      '<circle cx="19" cy="18" r="2.2" fill="#00c8ff" fill-opacity=".45"/>',
+      size
+    );
+  }
+
+  /* Groq — raio (velocidade de inferência), laranja */
+  function _iconGroq(size) {
+    return _svg(
+      '<rect x="3" y="3" width="18" height="18" rx="6" fill="#f55036" fill-opacity=".16" ' +
+        'stroke="#f55036" stroke-width="1.5"/>' +
+      '<path d="M13.2 5.2 7 13.2h4.4l-.9 5.6 6.5-8.3h-4.5l.7-5.3Z" fill="#f55036"/>',
+      size
+    );
+  }
+
+  /* Gemini — estrela de 4 pontas em dois tons, azul */
+  function _iconGemini(size) {
+    return _svg(
+      '<path d="M12 2C12.7 8 16 11.3 22 12 16 12.7 12.7 16 12 22 11.3 16 8 12.7 2 12 8 11.3 11.3 8 12 2Z" ' +
+        'fill="#4f8cff"/>' +
+      '<path d="M12 7.2C12.4 10 14 11.6 16.8 12 14 12.4 12.4 14 12 16.8 11.6 14 10 12.4 7.2 12 10 11.6 11.6 10 12 7.2Z" ' +
+        'fill="#b9d0ff"/>',
+      size
+    );
+  }
+
+  /* OpenRouter / NVIDIA Nemotron — hexágono com núcleo, verde */
+  function _iconNemotron(size) {
+    return _svg(
+      '<path d="M12 2.6 20 7.3v9.4l-8 4.7-8-4.7V7.3l8-4.7Z" fill="#76b900" fill-opacity=".16" ' +
+        'stroke="#76b900" stroke-width="1.6" stroke-linejoin="round"/>' +
+      '<circle cx="12" cy="12" r="3.6" stroke="#76b900" stroke-width="1.6"/>' +
+      '<circle cx="12" cy="12" r="1.3" fill="#76b900"/>',
+      size
+    );
+  }
+
+  var _ICONE_CHEVRON =
+    '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+    'stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<polyline points="6 9 12 15 18 9"/></svg>';
+
+  var _ICONE_CHECK =
+    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+    'stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<polyline points="20 6 9 17 4 12"/></svg>';
+
+  /* ══════════════════════════════════════════════════════════
+     MODELOS DISPONÍVEIS
+  ══════════════════════════════════════════════════════════ */
+
+  var MODELOS = [
+    {
+      id: 'auto', nome: 'Automático', curto: 'Auto', cor: '#00c8ff',
+      detalhe: 'Groq → Gemini → OpenRouter, com fallback', icone: _iconAuto,
+    },
+    {
+      id: 'groq', nome: 'Groq', curto: 'Groq', cor: '#f55036',
+      detalhe: 'GPT-OSS 120B', icone: _iconGroq,
+    },
+    {
+      id: 'gemini', nome: 'Gemini', curto: 'Gemini', cor: '#4f8cff',
+      detalhe: 'Gemini 3.5 Flash-Lite', icone: _iconGemini,
+    },
+    {
+      id: 'openrouter', nome: 'OpenRouter', curto: 'Nemotron', cor: '#76b900',
+      detalhe: 'NVIDIA Nemotron 3 Ultra (free)', icone: _iconNemotron,
+    },
+  ];
+
+  function _achar(id) {
+    for (var i = 0; i < MODELOS.length; i++) {
+      if (MODELOS[i].id === id) return MODELOS[i];
+    }
+    return null;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     ESTADO
+  ══════════════════════════════════════════════════════════ */
+
+  function get() {
+    try {
+      var v = localStorage.getItem(STORAGE_KEY);
+      if (v && _achar(v)) return v;
+    } catch (e) { /* storage indisponível */ }
+    return 'auto';
+  }
+
+  function set(id) {
+    if (!_achar(id)) return;
+    try { localStorage.setItem(STORAGE_KEY, id); } catch (e) { /* sem persistência */ }
+    _atualizarChip();
+    _atualizarMenu();
+    try {
+      window.dispatchEvent(new CustomEvent('nexus:modeloAlterado', { detail: { provedor: id } }));
+    } catch (e) { /* CustomEvent indisponível */ }
+    console.log('[NexusModelPicker] modelo:', id);
+  }
+
+  function lista() {
+    return MODELOS.map(function (m) {
+      return { id: m.id, nome: m.nome, curto: m.curto, detalhe: m.detalhe, cor: m.cor };
+    });
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     ESTILO
+  ══════════════════════════════════════════════════════════ */
+
+  function _injetarCSS() {
+    if (document.getElementById('nexus-model-picker-css')) return;
+    var st = document.createElement('style');
+    st.id = 'nexus-model-picker-css';
+    st.textContent = [
+      '#nexus-disc-bar.nexus-disc-bar--com-modelo{display:flex;align-items:center;',
+        'justify-content:space-between;gap:8px;position:relative;}',
+      '#nexus-model-wrap{position:relative;display:inline-flex;align-items:center;flex-shrink:0;}',
+
+      '#nexus-model-btn{display:inline-flex;align-items:center;gap:6px;cursor:pointer;',
+        'padding:3px 8px 3px 6px;border-radius:999px;font:inherit;font-size:12px;',
+        'flex-shrink:0;color:rgba(255,255,255,.9);background:rgba(255,255,255,.05);',
+        'border:1px solid rgba(255,255,255,.14);transition:background .15s,border-color .15s;}',
+      '#nexus-model-btn:hover,#nexus-model-btn[aria-expanded="true"]{',
+        'background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.28);}',
+      '#nexus-model-btn .nxm-ico{display:inline-flex;}',
+
+      '#nexus-model-menu{position:absolute;right:0;left:auto;top:calc(100% + 6px);z-index:30;',
+        'min-width:260px;max-width:calc(100% - 20px);max-height:60vh;overflow-y:auto;',
+        'padding:6px;border-radius:12px;background:rgba(10,15,26,.98);',
+        'border:1px solid rgba(255,255,255,.14);',
+        'box-shadow:0 18px 40px rgba(0,0,0,.55),0 2px 10px rgba(0,0,0,.4);}',
+      '#nexus-model-menu[hidden]{display:none;}',
+
+      '.nxm-item{display:grid;grid-template-columns:30px 1fr 16px;align-items:center;gap:10px;',
+        'width:100%;padding:8px;border-radius:9px;cursor:pointer;text-align:left;font:inherit;',
+        'color:rgba(255,255,255,.92);background:transparent;border:1px solid transparent;}',
+      '.nxm-item:hover{background:rgba(255,255,255,.06);}',
+      '.nxm-item[aria-selected="true"]{',
+        'background:color-mix(in srgb,var(--c) 14%,transparent);',
+        'border-color:color-mix(in srgb,var(--c) 40%,transparent);}',
+      '.nxm-item .nxm-ico-box{display:flex;align-items:center;justify-content:center;',
+        'width:30px;height:30px;border-radius:8px;',
+        'background:color-mix(in srgb,var(--c) 14%,transparent);}',
+      '.nxm-item .nxm-nome{display:block;font-size:13px;font-weight:600;line-height:1.2;}',
+      '.nxm-item .nxm-det{display:block;margin-top:2px;font-size:11px;line-height:1.25;',
+        'color:rgba(255,255,255,.55);}',
+      '.nxm-item .nxm-check{display:flex;color:var(--c);opacity:0;}',
+      '.nxm-item[aria-selected="true"] .nxm-check{opacity:1;}',
+      '.nxm-nota{margin:4px 8px 2px;font-size:10.5px;line-height:1.3;color:rgba(255,255,255,.45);}',
+    ].join('');
+    document.head.appendChild(st);
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     DOM
+  ══════════════════════════════════════════════════════════ */
+
+  function _esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  function _htmlMenu() {
+    var atual = get();
+    var itens = MODELOS.map(function (m) {
+      return (
+        '<button type="button" class="nxm-item" role="option" data-id="' + m.id + '"' +
+          ' style="--c:' + m.cor + '" aria-selected="' + (m.id === atual) + '">' +
+          '<span class="nxm-ico-box">' + m.icone(20) + '</span>' +
+          '<span><span class="nxm-nome">' + _esc(m.nome) + '</span>' +
+                '<span class="nxm-det">' + _esc(m.detalhe) + '</span></span>' +
+          '<span class="nxm-check">' + _ICONE_CHECK + '</span>' +
+        '</button>'
+      );
+    }).join('');
+    return itens +
+      '<div class="nxm-nota">Ao escolher um modelo específico não há fallback: ' +
+      'se ele falhar, o erro aparece em vez de outro modelo responder.</div>';
+  }
+
+  function _atualizarChip() {
+    var btn = document.getElementById('nexus-model-btn');
+    if (!btn) return;
+    var m = _achar(get()) || MODELOS[0];
+    btn.innerHTML =
+      '<span class="nxm-ico">' + m.icone(16) + '</span>' +
+      '<span class="nxm-name">' + _esc(m.curto) + '</span>' + _ICONE_CHEVRON;
+    btn.title = 'Modelo de IA: ' + m.nome + ' — ' + m.detalhe;
+    btn.setAttribute('aria-label', 'Modelo de IA: ' + m.nome + '. Clique para trocar.');
+  }
+
+  function _atualizarMenu() {
+    var menu = document.getElementById('nexus-model-menu');
+    if (!menu) return;
+    menu.innerHTML = _htmlMenu();
+  }
+
+  function _abrir(aberto) {
+    var btn  = document.getElementById('nexus-model-btn');
+    var menu = document.getElementById('nexus-model-menu');
+    if (!btn || !menu) return;
+    menu.hidden = !aberto;
+    btn.setAttribute('aria-expanded', String(aberto));
+  }
+
+  function _estaAberto() {
+    var menu = document.getElementById('nexus-model-menu');
+    return !!menu && !menu.hidden;
+  }
+
+  function _montar() {
+    if (document.getElementById('nexus-model-btn')) return true;
+
+    var ancora = document.getElementById('nexus-disc-bar');
+    if (!ancora) return false;
+
+    _injetarCSS();
+    ancora.classList.add('nexus-disc-bar--com-modelo');
+
+    var wrap = document.createElement('div');
+    wrap.id = 'nexus-model-wrap';
+    wrap.innerHTML =
+      '<button id="nexus-model-btn" type="button" aria-haspopup="listbox" aria-expanded="false"></button>' +
+      '<div id="nexus-model-menu" role="listbox" hidden></div>';
+
+    ancora.appendChild(wrap);
+
+    _atualizarChip();
+    _atualizarMenu();
+
+    var btn  = document.getElementById('nexus-model-btn');
+    var menu = document.getElementById('nexus-model-menu');
+
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      _abrir(!_estaAberto());
+    });
+
+    menu.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var item = e.target.closest ? e.target.closest('.nxm-item') : null;
+      if (!item) return;
+      set(item.getAttribute('data-id'));
+      _abrir(false);
+    });
+
+    return true;
+  }
+
+  /* Fecha ao clicar fora do menu */
+  document.addEventListener('mousedown', function (e) {
+    if (!_estaAberto()) return;
+    var bar = document.getElementById('nexus-model-wrap');
+    if (bar && bar.contains(e.target)) return;
+    _abrir(false);
+  });
+
+  /* ESC fecha só o menu (captura, para o painel não fechar junto) */
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape' || !_estaAberto()) return;
+    e.stopPropagation();
+    _abrir(false);
+  }, true);
+
+  /* ══════════════════════════════════════════════════════════
+     BOOT — espera o painel ser criado por NexusUI.init()
+  ══════════════════════════════════════════════════════════ */
+
+  function _boot() {
+    if (_montar()) return;
+
+    var obs = new MutationObserver(function () {
+      if (_montar()) obs.disconnect();
+    });
+    obs.observe(document.body, { childList: true });
+  }
+
+  if (document.body) _boot();
+  else document.addEventListener('DOMContentLoaded', _boot, { once: true });
+
+  window.NexusModelPicker = { get: get, set: set, lista: lista };
 }());

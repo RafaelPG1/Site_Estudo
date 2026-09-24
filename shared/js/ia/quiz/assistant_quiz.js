@@ -525,11 +525,16 @@
   }
 
   function _setInputBloqueado(bloqueado) {
-    var input   = document.getElementById('nexus-input');
-    var sendBtn = document.getElementById('nexus-send');
-    if (input)   { input.disabled   = bloqueado; }
-    if (sendBtn) { sendBtn.disabled = bloqueado; }
-    if (input)   { input.placeholder = bloqueado ? 'Aguarde…' : 'Digite sua mensagem…'; }
+    var input = document.getElementById('nexus-input');
+    if (input) { input.disabled = bloqueado; }
+    if (input) { input.placeholder = bloqueado ? 'Aguarde…' : 'Digite sua mensagem…'; }
+
+    if (!bloqueado && input) {
+      var panel = document.getElementById('nexus-panel');
+      if (panel && panel.classList.contains('nexus-open')) {
+        input.focus({ preventScroll: true });
+      }
+    }
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -565,7 +570,7 @@
 
   var _PEDE_RESPOSTA_RE = /\b(?:qual\s+(?:e|eh|é)\s+(?:a\s+)?(?:resposta|alternativa|letra|opcao|gabarito|certa?|correta?)|qual\s+(?:resposta|alternativa|letra|opcao|gabarito)|(?:me\s+)?(?:da|fala|diz|mostra|revela|mostre)\s+(?:a\s+)?(?:resposta|alternativa|letra|opcao|gabarito|certa?|correta?)|(?:resposta|gabarito)\s*(?:correta?|certa?)?|qual\s+alternativa\s+(?:esta|e|eh|e)\s+(?:certa?|correta?)|me\s+d[aa]\s+o\s+gabarito|qual\s+(?:e\s+)?a?\s*certa|qual\s+acertei|acertei\s+ou\s+errei)\b/;
 
-  var _PEDE_EXPLICACAO_RE = /\b(?:explica(?:r)?|explicar?|por\s+que|porque|como\s+(?:funciona|resolver?|chegar)|o\s+que\s+(?:significa|e|eh|é|aborda)|entender?|entend[ae]|me\s+(?:explica|ajuda|ensina)|racioc[ií]nio|racion[aá]l|log[ií]ca|conceito|teoria)\b/;
+  var _PEDE_EXPLICACAO_RE = /\b(?:explic(?:a|ar|ue|acao)|por\s+que|porque|como\s+(?:funciona|resolver?|chegar)|o\s+que\s+(?:significa|e|eh|é|aborda)|entender?|entend[ae]|me\s+(?:explica|explique|ajuda|ensina)|racioc[ií]nio|racion[aá]l|log[ií]ca|conceito|teoria)\b/;
 
   function _classificarIntencao(textoNormalizado) {
     var pedeResposta   = _PEDE_RESPOSTA_RE.test(textoNormalizado);
@@ -588,7 +593,8 @@
     'resposta','respostas','gabarito',
     'correta','correto','certa','certo',
     'errada','errado','incorreta','incorreto',
-    'explica','explique','me','fala','diga','descreve','qual','quais',
+    'explica','explique','explicar','explicacao','me','fala','diga','descreve','qual','quais',
+    'favor','pf','pfv','pls','please','porfavor','entao','ai','agora','tambem',
   ]);
 
   function _ehPalavraNeutra(palavra) {
@@ -611,7 +617,7 @@
       /#(\d+)\b/,
       /\bnumero\s+(\d+)\b/,
       /\b(\d+)[aª]\s*quest/,
-      /\b(?:da|do|na|no|pra|pro|essa|esta|aquela)\s+(\d+)\b/,
+      /\b(?:a|o|da|do|na|no|pra|pro|essa|esta|aquela)\s+(\d+)\b/,
     ];
 
     for (var i = 0; i < padroes.length; i++) {
@@ -692,35 +698,27 @@
 
   var _INSTRUCOES_IA = {
     explicacao: (
-      'INSTRUÇÃO PARA O TUTOR: O aluno quer entender o conteúdo desta questão e o raciocínio por trás dela, ' +
-      'NÃO pediu a resposta correta. ' +
-      'Explique os conceitos envolvidos, ajude o aluno a construir o raciocínio, analise as alternativas do ' +
-      'ponto de vista conceitual. ' +
-      'NÃO revele, direta ou indiretamente, qual alternativa é a correta — isso inclui não reformular a resposta ' +
-      'de um jeito que deixe a alternativa correta óbvia ou identificável. ' +
-      'Se o aluno quiser o gabarito, ele pedirá explicitamente. ' +
-      'Pergunta do aluno: '
+      'INSTRUÇÃO PARA O TUTOR: [VEREDITO RETIDO] O aluno quer entender a questão e não pediu a resposta. ' +
+      'Explique o raciocínio como um professor resolvendo no quadro: traduza a situação do enunciado, diga o que a questão pede ' +
+      'e o que cada alternativa faz. Não diga a letra nem declare qual é a correta. ' +
+      'Se o aluno quiser o gabarito, ele pode pedir. '
     ),
     conteudo: (
-      'INSTRUÇÃO PARA O TUTOR: O aluno quer entender o conteúdo desta questão, ' +
-      'NÃO quer saber a resposta correta. ' +
-      'Explique os conceitos, contextualize o tema, analise as alternativas do ponto de vista conceitual. ' +
-      'NÃO revele qual alternativa é a correta. ' +
-      'Se o aluno quiser o gabarito, ele pedirá explicitamente. ' +
-      'Pergunta do aluno: '
+      'INSTRUÇÃO PARA O TUTOR: [VEREDITO RETIDO] O aluno quer aprender o tema por trás da questão e não pediu a resposta. ' +
+      'Ensine o tema com um pouco mais de teoria: definição simples, analogia e exemplo dos conceitos que aparecem na questão ' +
+      'e como eles se relacionam. Não diga a letra nem declare qual é a correta. '
     ),
     gabarito: (
-      'INSTRUÇÃO PARA O TUTOR: O aluno pediu explicitamente o gabarito desta questão. ' +
-      'Informe qual alternativa é a correta e explique brevemente por que está certa, ' +
-      'usando o feedback fornecido no contexto. ' +
-      'Pergunta do aluno: '
+      'INSTRUÇÃO PARA O TUTOR: [VEREDITO LIBERADO - CURTO] O aluno pediu o gabarito. ' +
+      'Comece dizendo qual alternativa é a correta e explique em linguagem simples por que ela resolve o problema do enunciado ' +
+      '(com analogia ou exemplo). Depois, em uma linha cada, diga por que as outras não servem neste caso. ' +
+      'Use a explicação oficial da questão como base, com suas próprias palavras. '
     ),
     hibrido: (
-      'INSTRUÇÃO PARA O TUTOR: O aluno quer tanto uma explicação quanto saber a resposta. ' +
-      'Estruture sua resposta assim: ' +
-      '1) Explique o conteúdo e analise as alternativas conceitualmente. ' +
-      '2) Ao final, revele a alternativa correta e por que ela está certa. ' +
-      'Pergunta do aluno: '
+      'INSTRUÇÃO PARA O TUTOR: [VEREDITO LIBERADO - COMPLETO] O aluno quer a resposta e a explicação. ' +
+      'Comece dizendo qual alternativa é a correta. Depois explique o raciocínio completo: traduza a situação, ' +
+      'diga o que a questão pede e, em cada alternativa, o que ela faz e se serve ou não para este caso. ' +
+      'Use a explicação oficial da questão como base. '
     ),
     livre: '',
   };
@@ -743,11 +741,13 @@
 
   async function _perguntarIA(pergunta, resultados, tipoContexto, ehQuestao) {
     if (typeof window.NexusWorker === 'undefined') return null;
-    var instrucao = _INSTRUCOES_IA[tipoContexto] || '';
-    var perguntaComInstrucao = instrucao ? instrucao + pergunta : pergunta;
+    // A instrução do tutor vai em campo SEPARADO: o limite de MENSAGEM_MAX_CHARS vale só
+    // para o texto digitado pelo aluno, e não para instrução + questão.
+    var instrucao = (_INSTRUCOES_IA[tipoContexto] || '').trim();
     try {
       return await window.NexusWorker.perguntar({
-        pergunta:     perguntaComInstrucao,
+        pergunta:     pergunta,
+        instrucao:    instrucao,
         resultados:   resultados || [],
         disciplina:   _getDisc() || '',
         tipoContexto: tipoContexto || 'conteudo',
@@ -773,6 +773,7 @@
       : _serializarQuestaoSemGabarito(numeroVisual, q);
     var resultados = [{ score: 100, texto: ctxTexto, aula: q.aula || '', secao: 'Quiz' }];
     var resp = await _perguntarIA(pergunta, resultados, intencao, true);
+    if (resp && resp.cancelado) return;
     if (resp) {
       _renderBot(resp.texto, _montarRodape(resp, 'questão ' + numeroVisual));
       return;
@@ -813,6 +814,7 @@
 
   async function _responderGeral(texto) {
     var resp = await _perguntarIA(texto, [], 'livre');
+    if (resp && resp.cancelado) return;
     if (resp) {
       _renderBot(resp.texto, _montarRodape(resp, 'conhecimento próprio'));
     } else {
@@ -834,6 +836,22 @@
   /* ══════════════════════════════════════════════════════════
      FLUXO DE CHAT
   ══════════════════════════════════════════════════════════ */
+
+  function _onStop() {
+    if (!state.processando) return;
+    if (state.typingTimer) {
+      clearTimeout(state.typingTimer);
+      state.typingTimer = null;
+    }
+    if (typeof window.NexusWorker !== 'undefined' &&
+        typeof window.NexusWorker.parar === 'function') {
+      window.NexusWorker.parar();
+    }
+    _versaoEditando   = null;
+    state.processando = false;
+    if (typeof window.NexusUI !== 'undefined') window.NexusUI.hideTyping();
+    _setInputBloqueado(false);
+  }
 
   function _onUserSend(text) {
     if (state.processando) return;
@@ -1110,6 +1128,7 @@
       onReset:         _resetarChat,
       onEdit:          _onEditarMensagem,
       onVersionSwitch: _onTrocarVersao,
+      onStop:          _onStop,
     });
     if (typeof window.NexusWorker !== 'undefined') {
       window.NexusWorker.limparHistorico();

@@ -194,6 +194,9 @@
     discsCacheadas:  {},
     discIndexadaId:  null,
     conteudoAtual:   null,
+    // Trechos usados na última pergunta COM tema — reaproveitados quando o aluno
+    // manda um seguimento sem tema ("não entendi", "resumidamente"). Zerado ao trocar de disciplina.
+    ultimosResultados: null,
     chaveHistorico:  null,
     // v3.8 — true quando _restaurarSessao() não conseguiu rodar por
     // falta de window.__nexusCtx no momento em que initUI() foi chamada.
@@ -527,11 +530,16 @@
   }
 
   function _setInputBloqueado(bloqueado) {
-    var input   = document.getElementById('nexus-input');
-    var sendBtn = document.getElementById('nexus-send');
-    if (input)   input.disabled   = bloqueado;
-    if (sendBtn) sendBtn.disabled = bloqueado;
+    var input = document.getElementById('nexus-input');
+    if (input) input.disabled = bloqueado;
     if (input) input.placeholder = bloqueado ? 'Aguarde…' : 'Digite sua mensagem…';
+
+    if (!bloqueado && input) {
+      var panel = document.getElementById('nexus-panel');
+      if (panel && panel.classList.contains('nexus-open')) {
+        input.focus({ preventScroll: true });
+      }
+    }
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -603,6 +611,7 @@
     state.aguardandoDisc = false;
     state.discIndexadaId = null;
     state.conteudoAtual  = null;
+    state.ultimosResultados = null;
     NexusUI.atualizarDiscAtiva(null);
     if (typeof window.NexusWorker !== 'undefined') NexusWorker.limparHistorico();
   }
@@ -1135,6 +1144,22 @@
      FLUXO DE CHAT
   ══════════════════════════════════════════════════════════ */
 
+  function _onStop() {
+    if (!state.processando) return;
+    if (state.typingTimer) {
+      clearTimeout(state.typingTimer);
+      state.typingTimer = null;
+    }
+    if (typeof window.NexusWorker !== 'undefined' &&
+        typeof window.NexusWorker.parar === 'function') {
+      window.NexusWorker.parar();
+    }
+    _versaoEditando   = null;
+    state.processando = false;
+    if (typeof window.NexusUI !== 'undefined') window.NexusUI.hideTyping();
+    _setInputBloqueado(false);
+  }
+
   function _onUserSend(text) {
     if (state.processando) return;
     if (_mensagemExcedeLimite(text)) {
@@ -1391,6 +1416,7 @@
     try {
       respostaIA = await NexusWorker.perguntar({ pergunta: texto, resultados: [], disciplina: '', tipoContexto: 'livre' });
     } catch (e) { console.warn('[NexusAssistant] _responderModoLivre erro:', e); }
+    if (respostaIA && respostaIA.cancelado) return;
     if (respostaIA) {
       _renderBot(respostaIA.texto, (respostaIA.fonte || respostaIA.modelo) ? {
         linha1: ['IA: ' + (respostaIA.fonte || ''), respostaIA.modelo || ''].filter(Boolean).join(' · '),
@@ -1415,6 +1441,7 @@
       NexusUI.showTyping();
       try {
         var respostaIA = await NexusWorker.perguntar({ pergunta: texto, resultados: [], disciplina: null, tipoContexto: 'livre' });
+        if (respostaIA && respostaIA.cancelado) { return; }
         if (respostaIA) {
           _renderBot(respostaIA.texto, (respostaIA.fonte || respostaIA.modelo) ? {
             linha1: ['IA: ' + (respostaIA.fonte || ''), respostaIA.modelo || ''].filter(Boolean).join(' · '),
@@ -1436,6 +1463,56 @@
         return { label: '/disc ' + d.id, cmd: '/disc ' + d.id, tipo: 'disc' };
       }), _onSugestaoClick);
     }
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     PERGUNTA DE SEGUIMENTO (sem tema próprio)
+
+     "me explique direitinho, pois não entendi", "resumidamente por favor",
+     "dá um exemplo", "como assim?" não têm assunto: buscar essas frases no
+     índice devolve lixo (ex.: "entendi" casa com "entendimento") ou nada.
+     Quando a mensagem só tem palavras de pedido/dúvida/enchimento E já
+     existe um tema anterior, reaproveita os trechos da última pergunta
+     com tema, em vez de buscar de novo.
+  ══════════════════════════════════════════════════════════ */
+
+  var _FILLERS_SEGUIMENTO = new Set([
+    'direitinho','direito','melhor','favor','detalhes','detalhe','simples','simplificado',
+    'facil','exemplo','exemplos','curto','curtinho','devagar','claro','clara','outra',
+    'outro','forma','jeito','maneira','mais','menos','pouco','so','apenas','vezes','vez',
+  ]);
+
+  function _ehSeguimento(texto) {
+    if (!state.ultimosResultados || !state.ultimosResultados.length) return false;
+    var U = window.NexusTextUtils;
+    if (!U || !U.detectarIntencao) return false;
+
+    var norm   = _normalizar(texto);
+    var tokens = norm.split(' ').filter(Boolean);
+    if (!tokens.length || tokens.length > 8) return false;
+
+    var conjuntos = [
+      U.STOPWORDS, U.VERBOS_INTENCAO, U.PALAVRAS_EXPLICACAO, U.PALAVRAS_RESUMO,
+      U.PALAVRAS_DUVIDA, U.PALAVRAS_CONTINUIDADE, U.PALAVRAS_URGENCIA,
+      U.EXPRESSOES_AFETIVAS, U.CONFIRMACOES, U.NEGACOES, U.ABREVIACOES_CHAT,
+    ];
+
+    // Se sobrar qualquer palavra que não seja pedido/dúvida/enchimento, a
+    // mensagem tem tema próprio → busca normal.
+    var comTema = tokens.some(function (t) {
+      if (_FILLERS_SEGUIMENTO.has(t)) return false;
+      return !conjuntos.some(function (s) { return s && s.has(t); });
+    });
+    if (comTema) return false;
+
+    // Exige um sinal real de pedido ("explique", "não entendi", "resuma"...),
+    // para que um "ok" solto não dispare uma chamada de IA.
+    var i = U.detectarIntencao(norm);
+    var temSinal = i.explicacao || i.resumo || i.duvida || i.urgencia || i.continuidade ||
+      tokens.some(function (t) {
+        return _FILLERS_SEGUIMENTO.has(t) || (U.VERBOS_INTENCAO && U.VERBOS_INTENCAO.has(t));
+      });
+    return !!temSinal;
   }
 
   async function _executarBuscaNaDisc(texto, disc) {
@@ -1469,13 +1546,22 @@
     NexusUI.atualizarDiscAtiva(disc.apelido);
 
     var tipoContexto, resultados;
+    var ehSeguimento = false;
     if (ehNavegacao)   { tipoContexto = 'estrutura'; resultados = _montarMapaDisc(conteudoDisc); }
     else if (ehGlobal) { tipoContexto = 'global';    resultados = _montarContextoGlobal(conteudoDisc); }
     else {
       tipoContexto = 'conteudo';
-      resultados = NexusResumoSearch.buscar(texto, { topK: TOP_K, minScore: MIN_SCORE });
-      if (!resultados.length && _normalizar(texto.trim()).split(' ').length <= 4) {
-        resultados = NexusResumoSearch.buscar(texto, { topK: TOP_K, minScore: 5 });
+      if (_ehSeguimento(texto)) {
+        ehSeguimento = true;
+        resultados   = state.ultimosResultados;
+        console.log('[NexusAssistant] pergunta de seguimento — reaproveitando ' +
+          resultados.length + ' trecho(s) do tema anterior (sem nova busca).');
+      } else {
+        resultados = NexusResumoSearch.buscar(texto, { topK: TOP_K, minScore: MIN_SCORE });
+        if (!resultados.length && _normalizar(texto.trim()).split(' ').length <= 4) {
+          resultados = NexusResumoSearch.buscar(texto, { topK: TOP_K, minScore: 5 });
+        }
+        if (resultados && resultados.length) state.ultimosResultados = resultados;
       }
     }
 
@@ -1488,6 +1574,7 @@
           disciplina: disc.id, tipoContexto: tipoContexto, semContexto: !temCtx,
         });
       } catch (errIA) { console.warn('[NexusAssistant] NexusWorker.perguntar() erro:', errIA); }
+      if (respostaIA && respostaIA.cancelado) { return; }
       if (respostaIA) {
         var labelFonte = temCtx
           ? 'fonte: conteúdo do site'
@@ -1501,6 +1588,12 @@
         return;
       }
     }
+    // A IA não respondeu. Em pergunta de seguimento (ou sem trechos), o fallback local
+    // só mostraria trechos soltos ou "nenhum resultado" — pior que pedir para tentar de novo.
+    if (typeof window.NexusWorker !== 'undefined' && (ehSeguimento || !(resultados && resultados.length))) {
+      _renderBot('Não consegui obter a resposta da IA agora. Envie de novo ou troque o modelo no seletor.');
+      return;
+    }
     _renderBot(_formatarResposta(texto, resultados, disc.apelido));
   }
 
@@ -1508,6 +1601,7 @@
     NexusResumoSearch.limparIndice();
     NexusLoader.limpar();
     state.discIndexadaId = null;
+    state.ultimosResultados = null;
     state.discEscolhida  = disc;
     state.aguardandoDisc = false;
     _salvarDiscAtiva();
@@ -1595,6 +1689,7 @@
     state.discEscolhida  = null;
     state.discIndexadaId = null;
     state.conteudoAtual  = null;
+    state.ultimosResultados = null;
     state.discsCacheadas = {};
     state.chaveHistorico = null;
     _versaoEditando      = null;
@@ -1672,6 +1767,7 @@
       onReset:         _resetarChat,
       onEdit:          _onEditarMensagem,
       onVersionSwitch: _onTrocarVersao,
+      onStop:          _onStop,
     });
     (function () {
       var inputEl = document.getElementById('nexus-input');
