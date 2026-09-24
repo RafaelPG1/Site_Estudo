@@ -1038,19 +1038,23 @@ function _iconPin() {
   }
 
   function _clampPos(top, left, panel) {
-    var margem = 8;
-    var header = document.getElementById('nexus-header');
-    // Verticalmente, só exigimos que o CABEÇALHO (alça de arrastar) continue
-    // visível/alcançável — não o painel inteiro. Antes, maxTop exigia que
-    // panel.offsetHeight inteiro coubesse na tela, o que travava o arraste
-    // bem antes do fundo da tela em painéis altos (na prática, perto da
-    // metade). Horizontalmente mantemos a exigência do painel inteiro
-    // visível, pois não há esse mesmo problema relatado no eixo X.
-    var alturaHeader = header ? header.offsetHeight : 48;
-    var maxLeft = window.innerWidth  - panel.offsetWidth  - margem;
-    var maxTop  = window.innerHeight - alturaHeader - margem;
-    left = Math.min(Math.max(left, margem), Math.max(maxLeft, margem));
-    top  = Math.min(Math.max(top,  margem), Math.max(maxTop,  margem));
+    // Viewport realmente visível (exclui scrollbar, não depende da barra
+    // de tarefas do SO — essa nunca faz parte da área do navegador).
+    var vw = document.documentElement.clientWidth;
+    var vh = document.documentElement.clientHeight;
+    var w  = panel.offsetWidth;
+    var h  = panel.offsetHeight;
+
+    // Exige o PAINEL INTEIRO visível nos dois eixos — antes, verticalmente
+    // só se exigia que o cabeçalho coubesse, o que deixava o resto do
+    // modal pendurado para fora da parte de baixo da tela.
+    var maxLeft = Math.max(0, vw - w);
+    var maxTop  = Math.max(0, vh - h);
+
+    // Sem margem de segurança: a posição só é corrigida o mínimo
+    // necessário para o painel voltar a caber inteiro na tela.
+    left = Math.min(Math.max(left, 0), maxLeft);
+    top  = Math.min(Math.max(top,  0), maxTop);
     return { top: top, left: left };
   }
 
@@ -1077,6 +1081,12 @@ function _iconPin() {
 
     panel.classList.add('nexus-panel--draggable');
     header.classList.add('nexus-drag-enabled');
+    // A partir daqui, top/left são a ÚNICA fonte de posição do painel.
+    // Um transform residual (ex.: centralização via left:50%/translate)
+    // deslocaria o modal renderizado em relação ao top/left que
+    // calculamos — é isso que também tirava o cursor do ponto exato
+    // onde o arraste começou.
+    panel.style.transform = 'none';
     if (toggle) {
       toggle.classList.add('nexus-drag-ativo');
       toggle.setAttribute('aria-pressed', 'true');
@@ -1103,8 +1113,9 @@ function _iconPin() {
 
     _dragState.ativo = false;
     panel.classList.remove('nexus-panel--draggable');
-    panel.style.top  = '';
-    panel.style.left = '';
+    panel.style.top       = '';
+    panel.style.left      = '';
+    panel.style.transform = '';   // ← nova linha: volta ao posicionamento padrão do CSS
     header.classList.remove('nexus-drag-enabled');
     if (toggle) {
       toggle.classList.remove('nexus-drag-ativo');
