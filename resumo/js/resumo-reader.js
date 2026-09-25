@@ -236,7 +236,7 @@ function _initReadingScrollSystem(scrollEl) {
   // clique manda IMEDIATAMENTE (a seleção muda antes mesmo do scroll
   // começar) e continua mandando até a animação terminar de verdade
   // ou ser interrompida por um input manual do usuário.
-  function navigateTo(idx) {
+  function navigateTo(idx, { scrollTarget } = {}) {
     const sections = getSections();
     const target = sections[idx];
     if (!target) return;
@@ -267,10 +267,16 @@ function _initReadingScrollSystem(scrollEl) {
       void target.offsetHeight;
     }
 
-    const targetTop = target.getBoundingClientRect().top
-      - scrollEl.getBoundingClientRect().top
-      + scrollEl.scrollTop
-      - 16;
+    // Por padrão, rola até o topo da própria seção. Quando um elemento
+    // específico dela é passado (ex.: o primeiro trecho destacado por
+    // uma busca, ver abrirResultadoBusca), centraliza nesse elemento
+    // em vez do topo — o usuário cai exatamente onde o termo está.
+    const elAlvo    = scrollTarget && target.contains(scrollTarget) ? scrollTarget : null;
+    const rectAlvo  = (elAlvo ?? target).getBoundingClientRect();
+    const rectScroll = scrollEl.getBoundingClientRect();
+    const targetTop = elAlvo
+      ? rectAlvo.top - rectScroll.top + scrollEl.scrollTop - (scrollEl.clientHeight / 2) + (rectAlvo.height / 2)
+      : rectAlvo.top - rectScroll.top + scrollEl.scrollTop - 16;
 
     const releaseControl = () => {
       programmatic = false;
@@ -673,6 +679,171 @@ export function abrirModal(aula, idx) {
 }
 
 /* ══════════════════════════════════════════════
+   BUSCA → LEITOR: isolamento de seção + highlight
+   Usados só por abrirResultadoBusca abaixo. Não
+   participam do algoritmo de busca (isso mora em
+   resumo-busca.js) — aqui só reagimos ao resultado
+   já calculado: abrir/fechar seções e marcar o texto
+   já renderizado no DOM.
+══════════════════════════════════════════════ */
+const _RE_ALNUM_BUSCA = /[\p{L}\p{N}]/u;
+
+function _normalizarBusca(str) {
+  let out = '';
+  const s = String(str ?? '');
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+    if (ch.charCodeAt(0) < 128) { out += ch.toLowerCase(); continue; }
+    const b = ch.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    out += b.length === 1 ? b : ch;
+  }
+  return out;
+}
+
+// Normaliza a lista de termos buscados (mesma função usada para
+// comparar o texto) e remove duplicados/vazios — usada tanto para
+// decidir quais seções abrir (_secoesQueContemTermos) quanto para
+// destacar o texto (_destacarTermosBusca).
+function _normalizarTermosBusca(termos) {
+  return [...new Set((termos ?? []).map(_normalizarBusca).filter(Boolean))];
+}
+
+function _secaoContemTermos(texto, termosValidos) {
+  const normalizado = _normalizarBusca(texto);
+  return termosValidos.every(t => {
+    let pos = normalizado.indexOf(t);
+    while (pos !== -1) {
+      if (pos === 0 || !_RE_ALNUM_BUSCA.test(normalizado[pos - 1])) return true;
+      pos = normalizado.indexOf(t, pos + 1);
+    }
+    return false;
+  });
+}
+
+// Varre todas as seções (.rm-collapse) já renderizadas nesta aula e
+// devolve os índices das que contêm TODOS os termos buscados — mesma
+// regra de casamento da busca (início de palavra, sem diferenciar
+// maiúsculas/acentos), aplicada ao texto inteiro do tópico (título +
+// corpo), não só ao trecho onde a busca encontrou o resultado.
+function _secoesQueContemTermos(termosValidos) {
+  const idxs = [];
+  document.querySelectorAll('.rm-collapse').forEach(sec => {
+    if (_secaoContemTermos(sec.textContent || '', termosValidos)) {
+      idxs.push(Number(sec.dataset.sec));
+    }
+  });
+  return idxs;
+}
+
+// Abre TODAS as seções em `secoesAbrir` (os tópicos que contêm o termo
+// buscado) e fecha as demais, sem transição (mesmo truque de reflow
+// síncrono que navigateTo usa, pra não deixar a animação do accordion
+// desalinhar o scroll calculado depois). A seção `secIdxClicado` — o
+// resultado exato em que o usuário clicou — recebe a classe
+// .topic-target-highlight (borda inteira, ver resumo-reader.css) pra
+// se diferenciar das outras que abriram só por também conterem o
+// termo. Não mexe no localStorage: é só o estado desta abertura vinda
+// da busca — da próxima vez que a aula for aberta normalmente, o
+// accordion volta a obedecer o estado salvo de sempre.
+function _isolarSecoesBusca(secoesAbrir, secIdxClicado) {
+  const sections = document.querySelectorAll('.rm-collapse');
+  if (!sections.length) return;
+  const abrirSet = new Set(secoesAbrir);
+
+  sections.forEach(sec => {
+    const idx = Number(sec.dataset.sec);
+    const deveAbrir = abrirSet.has(idx);
+    if (sec.classList.contains('rm-collapse--open') !== deveAbrir) {
+      sec.querySelector('.rm-collapse__body')?.classList.add('rm-collapse__body--instant');
+      sec.classList.toggle('rm-collapse--open', deveAbrir);
+      sec.querySelector('.rm-collapse__trigger')?.setAttribute('aria-expanded', String(deveAbrir));
+    }
+    sec.classList.toggle('topic-target-highlight', idx === secIdxClicado);
+  });
+
+  void document.getElementById('rm-body')?.offsetHeight;
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.rm-collapse__body--instant')
+        .forEach(b => b.classList.remove('rm-collapse__body--instant'));
+    });
+  });
+}
+
+function _limparDestaquesAnteriores(root) {
+  root.querySelectorAll('.highlight-search').forEach(span => {
+    span.replaceWith(document.createTextNode(span.textContent));
+  });
+  root.normalize();
+}
+
+// Reaproveita a MESMA regra de casamento da busca (início de palavra,
+// sem diferenciar maiúsculas/acentos — ver _ocorrencias em
+// resumo-busca.js) pra o destaque bater exatamente com o que a busca
+// achou. `termos` já chega normalizado de lá; normalizamos de novo
+// aqui só por segurança (função idempotente).
+function _destacarTermosBusca(termos) {
+  const root = document.getElementById('rm-body');
+  if (!root) return;
+  _limparDestaquesAnteriores(root);
+
+  const termosValidos = _normalizarTermosBusca(termos);
+  if (!termosValidos.length) return;
+
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      const tag = node.parentElement?.tagName;
+      if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'CODE') return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    },
+  });
+
+  const nos = [];
+  let no;
+  while ((no = walker.nextNode())) nos.push(no);
+
+  nos.forEach(n => {
+    const texto = n.nodeValue;
+    const normalizado = _normalizarBusca(texto);
+    const ocorrencias = [];
+
+    termosValidos.forEach(t => {
+      let pos = normalizado.indexOf(t);
+      while (pos !== -1) {
+        if (pos === 0 || !_RE_ALNUM_BUSCA.test(normalizado[pos - 1])) {
+          ocorrencias.push({ ini: pos, fim: pos + t.length });
+        }
+        pos = normalizado.indexOf(t, pos + 1);
+      }
+    });
+    if (!ocorrencias.length) return;
+
+    ocorrencias.sort((a, b) => a.ini - b.ini || b.fim - a.fim);
+    const mescladas = [];
+    ocorrencias.forEach(o => {
+      const ult = mescladas[mescladas.length - 1];
+      if (ult && o.ini < ult.fim) ult.fim = Math.max(ult.fim, o.fim);
+      else mescladas.push({ ...o });
+    });
+
+    const frag = document.createDocumentFragment();
+    let cursor = 0;
+    mescladas.forEach(o => {
+      if (o.ini > cursor) frag.appendChild(document.createTextNode(texto.slice(cursor, o.ini)));
+      const span = document.createElement('span');
+      span.className = 'highlight-search';
+      span.textContent = texto.slice(o.ini, o.fim);
+      frag.appendChild(span);
+      cursor = o.fim;
+    });
+    if (cursor < texto.length) frag.appendChild(document.createTextNode(texto.slice(cursor)));
+
+    n.parentNode.replaceChild(frag, n);
+  });
+}
+
+/* ══════════════════════════════════════════════
    ABRIR A PARTIR DE UM RESULTADO DE BUSCA
    Reaproveita os três abrir*() existentes (nenhuma lógica de
    leitura nova) e acrescenta só o que a busca precisa:
@@ -682,7 +853,7 @@ export function abrirModal(aula, idx) {
    - rolar até o tópico onde o termo foi achado (secIdx >= 0),
      via a mesma navigateTo() usada pelo índice de seções.
 ══════════════════════════════════════════════ */
-export function abrirResultadoBusca({ tipo, conteudo, idx, secIdx = -1 }) {
+export function abrirResultadoBusca({ tipo, conteudo, idx, secIdx = -1, termos = [] }) {
   if (tipo === 'resumao')        abrirModalResumao(conteudo, idx);
   else if (tipo === 'professor') abrirModalProfessor(conteudo, idx);
   else                           abrirModal(conteudo, idx);
@@ -692,7 +863,38 @@ export function abrirResultadoBusca({ tipo, conteudo, idx, secIdx = -1 }) {
     if (badge) badge.textContent = tipo === 'sintese' ? 'Síntese' : 'Resumo';
   }
 
-  if (secIdx >= 0) _readerScroll?.navigateTo(secIdx);
+  const termosValidos = _normalizarTermosBusca(termos);
+
+  // Isolamento: abre TODOS os tópicos desta aula que contêm o termo
+  // buscado (não só o resultado clicado) e fecha os demais. O tópico
+  // exato clicado ganha .topic-target-highlight pra se diferenciar
+  // visualmente dos outros que abriram só por também conterem o
+  // termo (ver _isolarSecoesBusca / _secoesQueContemTermos).
+  if (secIdx >= 0) {
+    const secoesComTermo = termosValidos.length ? _secoesQueContemTermos(termosValidos) : [];
+    if (!secoesComTermo.includes(secIdx)) secoesComTermo.push(secIdx);
+    _isolarSecoesBusca(secoesComTermo, secIdx);
+  }
+
+  // Highlight: destaca as ocorrências do termo pesquisado no texto já
+  // renderizado, em TODOS os tópicos que abriram (ver _destacarTermosBusca).
+  _destacarTermosBusca(termos);
+
+  // O destaque "atual" (pulso visual + alvo do scroll) é o primeiro
+  // encontrado DENTRO do tópico clicado — não o primeiro do documento,
+  // que pode estar num outro tópico que só abriu por também bater com o termo.
+  const secaoClicada  = secIdx >= 0 ? document.querySelector(`.rm-collapse[data-sec="${secIdx}"]`) : null;
+  const destaqueAlvo  = secaoClicada?.querySelector('.highlight-search')
+                      ?? document.querySelector('.highlight-search');
+  destaqueAlvo?.classList.add('highlight-search--atual');
+
+  if (secIdx >= 0) {
+    // Scroll automático: navega até a seção clicada e, havendo
+    // destaque dentro dela, centraliza nele (ver navigateTo).
+    _readerScroll?.navigateTo(secIdx, { scrollTarget: destaqueAlvo });
+  } else if (destaqueAlvo) {
+    destaqueAlvo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
 }
 
 /* ══════════════════════════════════════════════

@@ -608,15 +608,11 @@ async function _aquecer() {
 function _abrirResultado(res) {
   if (!res) return;
   const e = res.entry;
-  // Resultado de outra disciplina: troca a disciplina ativa (o leitor
-  // depende de State.disciplina) SEM limpar a busca — ao fechar o leitor,
-  // o usuário volta à lista de resultados.
   if (e.disc.id !== State.disciplina?.id) {
     Busca.trocarDisciplina?.(e.disc, { manterBusca: true });
   }
-  abrirResultadoBusca({ tipo: e.tipo, conteudo: e.conteudo, idx: e.idx, secIdx: e.secIdx });
+  abrirResultadoBusca({ tipo: e.tipo, conteudo: e.conteudo, idx: e.idx, secIdx: e.secIdx, termos: Busca.termos });
 }
-
 /* ══════════════════════════════════════════════
    API PÚBLICA
 ══════════════════════════════════════════════ */

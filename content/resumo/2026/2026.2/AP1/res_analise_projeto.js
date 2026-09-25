@@ -6467,7 +6467,7 @@ extra: {
   videos: [
     {
       titulo: "Revisão de APS I",
-      pasta: "analise_projeto/video",              // era "url", troque para "pasta"
+      pasta: "analise_projeto/videos",              // era "url", troque para "pasta"
       src: "revisao_analise.mp4"
     }
   ],

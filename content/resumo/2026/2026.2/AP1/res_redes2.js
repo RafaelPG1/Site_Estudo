@@ -5759,7 +5759,7 @@ itens: [
   videos: [
     {
       titulo: "Revisão de Redes 2",
-      pasta: "redes2/video",              // era "url", troque para "pasta"
+      pasta: "redes2/videos",              // era "url", troque para "pasta"
       src: "revisao_redes_II.mp4"
     }
   ],

@@ -5322,13 +5322,13 @@ window.__nexusConteudo = {
     }
   ],
 
-  // videos: [
-  //   {
-  //     titulo: "Revisão de Estrutura de Dados",
-  //     pasta: "estruturas_dados/video",              // era "url", troque para "pasta"
-  //     src: "revisao_estruturas_dados.mp4"
-  //   }
-  // ],
+  videos: [
+    {
+      titulo: "Revisão de Legislação",
+      pasta: "estruturas_dados/videos",              // era "url", troque para "pasta"
+      src: "revisao_estruturas_dados.mp4"
+    }
+  ],
 }
 
 

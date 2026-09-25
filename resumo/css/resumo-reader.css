@@ -360,6 +360,16 @@
 /* Reforça "onde estou" também dentro da coluna de leitura, não só
    no índice — a seção sob o scroll ganha uma régua sutil. */
 .rm-collapse--current { border-left-color: rgba(var(--disc-tema-rgb), 0.5); }
+/* Busca: diferencia, entre os tópicos abertos automaticamente (todos
+   os que contêm o termo — ver _isolarSecoesBusca em resumo-reader.js),
+   qual foi o resultado exato clicado. Borda inteira + glow, pra saltar
+   aos olhos mesmo com vários tópicos abertos ao mesmo tempo. */
+.rm-collapse.topic-target-highlight {
+  border-color: var(--disc-tema);
+  border-left-color: var(--disc-tema);
+  box-shadow: 0 0 0 3px rgba(var(--disc-tema-rgb), 0.18),
+              0 8px 24px -10px rgba(var(--disc-tema-rgb), 0.35);
+}
 .rm-collapse__trigger {
   display: flex;
   align-items: center;
@@ -1179,6 +1189,10 @@
   box-shadow: var(--shadow-sm);
 }
 .reader--light .rm-collapse--current { border-left-color: var(--disc-tema); }
+.reader--light .rm-collapse.topic-target-highlight {
+  box-shadow: 0 0 0 3px rgba(var(--disc-tema-rgb), 0.22),
+              0 8px 24px -10px rgba(var(--disc-tema-rgb), 0.28);
+}
 
 /* ── CAIXA "IDEIA CENTRAL" — barra de destaque lateral ──
    Trocado o box com moldura colorida inteira (tom + borda na cor
@@ -1191,4 +1205,48 @@
   border: 1px solid var(--border-1);
   border-left: 3px solid var(--disc-tema);
   border-radius: var(--r-md);
+}
+
+/* ══════════════════════════════════════════
+   DESTAQUE DE BUSCA — termo pesquisado, marcado
+   dinamicamente ao abrir um resultado (ver
+   abrirResultadoBusca/_destacarTermosBusca em
+   js/resumo-reader.js). Cor separada de --disc-tema
+   de propósito: precisa continuar legível e
+   reconhecível não importa a cor da disciplina aberta.
+══════════════════════════════════════════ */
+.highlight-search {
+  padding: 0.05em 0.2em;
+  border-radius: 4px;
+  background: rgba(61, 217, 194, 0.22);
+  box-shadow: 0 0 0 1px rgba(61, 217, 194, 0.35);
+  color: var(--text-1);
+  font-weight: 600;
+  scroll-margin: 30vh 0;
+}
+.highlight-search--atual {
+  background: rgba(164, 143, 224, 0.32);
+  box-shadow: 0 0 0 1px rgba(164, 143, 224, 0.55);
+}
+.rm-collapse.topic-target-highlight {
+  border-color: rgba(164, 143, 224, 0.6);
+  box-shadow: inset 0 0 0 1px rgba(164, 143, 224, 0.2);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .highlight-search--atual { animation: highlightPulse 1.6s ease-out 1; }
+}
+@keyframes highlightPulse {
+  0%   { box-shadow: 0 0 0 4px rgba(164, 143, 224, 0.35); }
+  100% { box-shadow: 0 0 0 1px rgba(164, 143, 224, 0.55); }
+}
+
+.reader--light .highlight-search {
+  background: rgba(61, 217, 194, 0.28);
+}
+.reader--light .highlight-search--atual {
+  background: rgba(164, 143, 224, 0.38);
+}
+.reader--light .rm-collapse.topic-target-highlight {
+  border-color: rgba(164, 143, 224, 0.75);
+  box-shadow: inset 0 0 0 1px rgba(164, 143, 224, 0.3), 0 0 0 1px rgba(164, 143, 224, 0.08);
 }
