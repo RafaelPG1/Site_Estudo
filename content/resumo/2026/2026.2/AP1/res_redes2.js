@@ -5761,7 +5761,7 @@ itens: [
       titulo: "Revisão de Redes 2",
       pasta: "redes2/video",              // era "url", troque para "pasta"
       src: "revisao_redes_II.mp4"
-    }redes2\video\Revisao_redes_II.mp4
+    }
   ],
 }
 
