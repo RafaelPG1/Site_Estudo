@@ -34,6 +34,7 @@
 import { resolveIcone, parseSemestre } from '../../src/global.js';
 import { playSound } from '../../shared/js/audio/audio-api.js';
 import { State, esc } from './resumo-utils.js';
+import { imgBase, imgBasePasta, encodePath } from './media-config.js';
 
 /* ══════════════════════════════════════════════
    ESTADO DO MODAL DE PDF (local a este módulo)
@@ -652,7 +653,7 @@ async function _imagemPdfNode(src, alt, num) {
    de HTML de impressão.
 ══════════════════════════════════════════════ */
 function _imgBasePdf(discArquivo, sem) {
-  return `../content/resumo/${sem.ano}/${sem.periodo}${sem.apPath}/image/imagens_${discArquivo}/`;
+  return imgBase(discArquivo, State.semestre);
 }
 
 function _codigoPdfNode(codigo) {
@@ -675,7 +676,7 @@ async function _renderBlocoPdfMake(b, discArquivo, sem) {
       if (b.titulo) stack.push({ text: b.titulo, bold: true, fontSize: 11, margin: [0, 0, 0, 4] });
       if (b.texto)  stack.push({ text: _parsePdfInline(b.texto), margin: [0, 0, 0, 8] });
       if (b.imagem) {
-        const img = await _imagemPdfNode(_imgBasePdf(discArquivo, sem) + b.imagem.src, b.imagem.alt);
+        const img = await _imagemPdfNode(_imgBasePdf(discArquivo, sem) + encodePath(b.imagem.src), b.imagem.alt);
         if (img) stack.push(img);
       }
       if (b.lista)  stack.push({ ul: b.lista.map(i => ({ text: _parsePdfInline(i) })), margin: [0, 4, 0, 4] });
@@ -685,9 +686,9 @@ async function _renderBlocoPdfMake(b, discArquivo, sem) {
 
     case 'imagem': {
       const base = b.pasta
-        ? `../content/resumo/${sem.ano}/${sem.periodo}${sem.apPath}/image/${b.pasta}/`
+        ? imgBasePasta(b.pasta, State.semestre)
         : _imgBasePdf(discArquivo, sem);
-      return _imagemPdfNode(base + b.src, b.alt, b.num);
+      return _imagemPdfNode(base + encodePath(b.src), b.alt, b.num);
     }
 
     case 'lista': {

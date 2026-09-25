@@ -2400,7 +2400,7 @@ secoes: [
           {
             tipo: "imagem",
             src: "ilustracao_equipe_colaborativa.png",
-            pasta: "imagens_analise_projeto\\aula_04",
+            pasta: "imagens_analise_projeto/aula_04",
             alt: "Ilustração de equipe trabalhando de forma colaborativa, associada ao trecho sobre comparação entre métodos ágeis e tradicionais (página 07).",
             num: 1
           },
@@ -2566,7 +2566,7 @@ secoes: [
           {
             tipo: "imagem",
             src: "diagrama_atores_chave_scrum.png",
-            pasta: "imagens_analise_projeto\\aula_04",
+            pasta: "imagens_analise_projeto/aula_04",
             alt: "Diagrama dos Atores Chave do Scrum: figura central (equipe/quadro de trabalho) conectada a quatro caixas — Product Owner, Scrum Master, Time de Desenvolvimento e Stakeholders (página 12).",
             num: 2
           },
@@ -2608,7 +2608,7 @@ secoes: [
           {
             tipo: "imagem",
             src: "figura_1_sprint_backlog_quadro_branco.png",
-            pasta: "imagens_analise_projeto\\aula_04",
+            pasta: "imagens_analise_projeto/aula_04",
             alt: "Figura 1 – Exemplo de um Sprint Backlog utilizando um quadro branco e post-its (página 13).",
             num: 3
           },
@@ -2655,7 +2655,7 @@ secoes: [
           {
             tipo: "imagem",
             src: "figura_2_burndown_chart.png",
-            pasta: "imagens_analise_projeto\\aula_04",
+            pasta: "imagens_analise_projeto/aula_04",
             alt: "Figura 2 - Exemplo de um Burndown Chart: Story Points Remaining (0 a 35) por Days in the Sprint (1 a 10), com Linha de Trabalho Restante Ideal e Linha de Trabalho Restante Real (página 14).",
             num: 4
           },
@@ -4735,7 +4735,7 @@ secoes: [
         {
           tipo: "imagem",
           src: "diagrama_atores_chave_scrum.png",
-          pasta: "imagens_analise_projeto\\aula_04",
+          pasta: "imagens_analise_projeto/aula_04",
           alt: "Diagrama dos Atores Chave do Scrum: figura central (equipe/quadro de trabalho) conectada a quatro caixas — Product Owner, Scrum Master, Time de Desenvolvimento e Stakeholders (página 12).",
           num: 2
         },
@@ -4746,7 +4746,7 @@ secoes: [
         {
           tipo: "imagem",
           src: "figura_2_burndown_chart.png",
-          pasta: "imagens_analise_projeto\\aula_04",
+          pasta: "imagens_analise_projeto/aula_04",
           alt: "Figura 2 - Exemplo de um Burndown Chart: Story Points Remaining (0 a 35) por Days in the Sprint (1 a 10), com Linha de Trabalho Restante Ideal e Linha de Trabalho Restante Real (página 14).",
           num: 4
         },

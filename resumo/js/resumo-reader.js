@@ -7,9 +7,9 @@
    modal e copiar aula para clipboard.
    ============================================= */
 
-import { parseSemestre } from '../../src/global.js';
 import { playSound } from '../../shared/js/audio/audio-api.js';
 import { State, esc, parseInline, smoothScrollTo } from './resumo-utils.js';
+import { imgBase, imgBasePasta, encodePath } from './media-config.js';
 
 /* Instância ativa do sistema de leitura (scroll-spy + navegação
    programática) — ver initReadingScrollSystem. Usada só dentro deste
@@ -452,12 +452,7 @@ function _buildReaderBody(aula, idx) {
 }
 
 function _imgBase() {
-  const { ano, periodo, ap } = parseSemestre(State.semestre ?? '2026.1');
-  const apPath = ap ? `/${ap}` : '';
-  const disc   = State.disciplina;
-  return disc
-    ? `../content/resumo/${ano}/${periodo}${apPath}/image/imagens_${disc.arquivo}/`
-    : `../content/resumo/${ano}/${periodo}${apPath}/image/`;
+  return imgBase(State.disciplina?.arquivo, State.semestre);
 }
 
 function _renderBloco(b) {
@@ -469,7 +464,7 @@ function _renderBloco(b) {
       if (b.texto)  html += `<p class="rm-topico__texto">${parseInline(b.texto)}</p>`;
       if (b.imagem) html += `
         <figure class="rm-topico__fig">
-          <img class="rm-topico__img" src="${esc(base + b.imagem.src)}" alt="${esc(b.imagem.alt)}" loading="lazy" />
+          <img class="rm-topico__img" src="${esc(base + encodePath(b.imagem.src))}" alt="${esc(b.imagem.alt)}" loading="lazy" />
           <figcaption class="rm-topico__fig-caption">${esc(b.imagem.alt)}</figcaption>
         </figure>`;
       if (b.lista)  html += `<ul class="rm-lista">${b.lista.map(i => `<li><span>${parseInline(i)}</span></li>`).join('')}</ul>`;
@@ -478,16 +473,12 @@ function _renderBloco(b) {
       return html;
     }
     case 'imagem': {
-      const { ano, periodo, ap } = parseSemestre(State.semestre ?? '2026.1');
-      const apPath = ap ? `/${ap}` : '';
-      const base = b.pasta
-        ? `../content/resumo/${ano}/${periodo}${apPath}/image/${b.pasta}/`
-        : _imgBase();
+      const base = b.pasta ? imgBasePasta(b.pasta, State.semestre) : _imgBase();
       const num  = b.num ? `<span class="rm-fig__num">Figura ${b.num}</span>` : '';
       return `
         <figure class="rm-fig">
           ${num}
-          <img class="rm-fig__img" src="${esc(base + b.src)}" alt="${esc(b.alt ?? '')}" loading="lazy" />
+          <img class="rm-fig__img" src="${esc(base + encodePath(b.src))}" alt="${esc(b.alt ?? '')}" loading="lazy" />
           <figcaption class="rm-fig__caption"><span class="rm-fig__caption-text">${esc(b.alt ?? '')}</span></figcaption>
         </figure>`;
     }

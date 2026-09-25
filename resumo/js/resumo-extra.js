@@ -66,9 +66,9 @@
      CATEGORIAS abaixo.
    ============================================= */
 
-import { parseSemestre } from '../../src/global.js';
 import { playSound } from '../../shared/js/audio/audio-api.js';
 import { State, esc, parseInline } from './resumo-utils.js';
+import { extraBase, encodePath } from './media-config.js';
 
 /* ══════════════════════════════════════════════
    CATEGORIAS — ordem = ordem na tela
@@ -154,12 +154,9 @@ export function temExtra() {
    externo usa o campo `url` (vídeo externo ou `links`), que nunca
    passa por esta função e nunca ganha botão de download. */
 function _resolverExtra(item) {
-  const src = String(item.src);
-  const { ano, periodo, ap } = parseSemestre(State.semestre ?? '2026.1');
-  const apPath = ap ? `/${ap}` : '';
-  const raiz   = `../content/resumo/${ano}/${periodo}${apPath}/extra/`;
-  const pasta  = item.pasta ? `${item.pasta}/` : '';
-  return raiz + pasta + src;
+  const src   = String(item.src);
+  const pasta = item.pasta ? `${encodePath(item.pasta)}/` : '';
+  return extraBase(State.semestre) + pasta + encodePath(src);
 }
 
 /* ══════════════════════════════════════════════
