@@ -568,7 +568,16 @@ function _carregarPdfMake() {
   if (_pdfMakeLoadPromise) return _pdfMakeLoadPromise;
 
   _pdfMakeLoadPromise = _loadScriptPdf(PDFMAKE_BASE + 'pdfmake.min.js')
-    .then(() => _loadScriptPdf(PDFMAKE_BASE + 'vfs_fonts.js'));
+    .then(() => _loadScriptPdf(PDFMAKE_BASE + 'vfs_fonts.js'))
+    .catch(err => {
+      // Sem isso, uma falha pontual de rede/CDN (ex.: ad-blocker,
+      // timeout, extensão) ficava guardada aqui pra sempre — todas as
+      // tentativas seguintes na mesma aba falhavam na hora, mesmo
+      // depois da rede voltar ao normal. Zerando o cache, a próxima
+      // chamada tenta carregar o script de novo do zero.
+      _pdfMakeLoadPromise = null;
+      throw err;
+    });
 
   return _pdfMakeLoadPromise;
 }
@@ -616,17 +625,54 @@ function _parsePdfInline(str) {
 ══════════════════════════════════════════════ */
 const _imgDataUrlCache = new Map();
 
+// pdfMake só sabe embutir JPEG e PNG nativamente — qualquer outro
+// formato (webp, avif, gif, svg...) passa batido pelo fetch/base64
+// abaixo, mas derruba a geração do PDF inteiro (sem exceção isolada)
+// na hora em que o pdfMake tenta desenhar essa imagem. Por isso,
+// blob de outro tipo é redesenhado num <canvas> e reexportado como
+// PNG antes de virar data URL.
+function _blobParaDataUrlCompativel(blob) {
+  const tipo = (blob.type || '').toLowerCase();
+  if (tipo === 'image/jpeg' || tipo === 'image/png') {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload  = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  // Formato não suportado (ou tipo vazio/desconhecido) — converte via
+  // canvas. Se nem o <img> conseguir decodificar (svg quebrado etc.),
+  // cai no catch de _imagemParaDataUrl e o bloco é omitido, como já
+  // acontecia antes para 404/CORS.
+  const blobUrl = URL.createObjectURL(blob);
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width  = img.naturalWidth  || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        canvas.getContext('2d').drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      } catch (err) {
+        reject(err);
+      } finally {
+        URL.revokeObjectURL(blobUrl);
+      }
+    };
+    img.onerror = () => { URL.revokeObjectURL(blobUrl); reject(new Error('img-decode')); };
+    img.src = blobUrl;
+  });
+}
+
 function _imagemParaDataUrl(src) {
   if (_imgDataUrlCache.has(src)) return _imgDataUrlCache.get(src);
 
   const promise = fetch(src)
     .then(r => { if (!r.ok) throw new Error('img'); return r.blob(); })
-    .then(blob => new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload  = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    }))
+    .then(_blobParaDataUrlCompativel)
     .catch(() => null);
 
   _imgDataUrlCache.set(src, promise);
@@ -1085,14 +1131,56 @@ async function _buildDocDefinition(grupos) {
 function _buildLoadingHTML() {
   return `<!DOCTYPE html>
 <html lang="pt-BR">
-<head><meta charset="UTF-8"><title>Gerando PDF…</title>
+<head>
+<meta charset="UTF-8">
+<title>Gerando PDF…</title>
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%;background:#0c0f22;color:#ada698;font-family:system-ui,sans-serif;
-    display:flex;align-items:center;justify-content:center}
-  p{font-size:.9rem;letter-spacing:.02em}
-</style></head>
-<body><p>Gerando PDF…</p></body>
+  html,body{height:100%}
+  body{
+    background:
+      radial-gradient(circle at 50% 32%, rgba(127,203,160,0.16), transparent 60%),
+      #0c0f22;
+    color:#ada698;
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:1.4rem; text-align:center; padding:1.5rem;
+  }
+  .pdf-loader{ width:60px; height:60px; position:relative; display:flex; align-items:center; justify-content:center; }
+  .pdf-loader svg{ width:30px; height:30px; color:#7fcba0; }
+  .pdf-loader__ring{
+    position:absolute; inset:0; border-radius:50%;
+    border:3px solid rgba(127,203,160,0.15);
+    border-top-color:#7fcba0;
+    animation:pdf-spin .9s linear infinite;
+  }
+  @keyframes pdf-spin{ to{ transform:rotate(360deg); } }
+  h1{ font-size:1.05rem; font-weight:700; color:#f0ead8; letter-spacing:.02em; }
+  h1 #pdf-dots{ display:inline-block; width:1.4ch; text-align:left; }
+  p{ font-size:.8rem; color:#8a8478; max-width:280px; line-height:1.5; }
+</style>
+</head>
+<body>
+  <div class="pdf-loader">
+    <div class="pdf-loader__ring"></div>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <path d="M14 2v6h6"/>
+    </svg>
+  </div>
+  <h1>Gerando PDF<span id="pdf-dots"></span></h1>
+  <p>Isso pode levar alguns segundos — não feche esta aba.</p>
+  <script>
+    (function () {
+      var el = document.getElementById('pdf-dots');
+      var i = 0;
+      setInterval(function () {
+        i = (i + 1) % 4;
+        el.textContent = '.'.repeat(i);
+      }, 400);
+    })();
+  </script>
+</body>
 </html>`;
 }
 
@@ -1105,32 +1193,13 @@ function _buildVisualizadorHTML(nomeArquivo, blobUrl) {
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%;background:#525659;font-family:system-ui,sans-serif}
-  .pdfview-bar{
-    position:fixed;top:0;left:0;right:0;height:52px;
-    display:flex;align-items:center;gap:.75rem;padding:0 1.25rem;
-    background:#1c1c1c;color:#f0ead8;
-    box-shadow:0 2px 10px rgba(0,0,0,.35);
-    z-index:10;
-  }
-  .pdfview-bar__nome{margin-right:auto;font-size:.85rem;color:#ada698;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .pdfview-bar__btn{
-    display:inline-flex;align-items:center;gap:.5rem;
-    padding:.5rem 1.1rem;border-radius:8px;border:none;
-    background:#7fcba0;color:#0c0f22;font-weight:700;font-size:.85rem;
-    text-decoration:none;cursor:pointer;
-  }
-  .pdfview-bar__btn:hover{opacity:.9}
   .pdfview-frame{
-    position:fixed;top:52px;left:0;right:0;bottom:0;
-    width:100%;height:calc(100% - 52px);border:none;background:#525659;
+    position:fixed;inset:0;
+    width:100%;height:100%;border:none;background:#525659;
   }
 </style>
 </head>
 <body>
-  <div class="pdfview-bar">
-    <span class="pdfview-bar__nome">${esc(nomeArquivo)}</span>
-    <a class="pdfview-bar__btn" href="${blobUrl}" download="${esc(nomeArquivo)}">⬇ Baixar PDF</a>
-  </div>
   <iframe class="pdfview-frame" src="${blobUrl}"></iframe>
   <script>
     // libera a memória do blob quando essa aba for fechada
