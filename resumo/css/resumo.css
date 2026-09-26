@@ -190,6 +190,14 @@ input:focus-visible {
   background: rgba(7,9,26,0.80);
   backdrop-filter: blur(24px) saturate(1.6);
   border-bottom: 1px solid var(--border-1);
+  /* position: sticky + backdrop-filter às vezes faz o Chromium
+     repintar mal um filho (ex.: o .btn-back "encolhendo" pra só o
+     ícone) até algo forçar um novo layout — sair e voltar da página
+     é exatamente isso. Forçando esta camada pro compositor com
+     transform/will-change, o navegador para de tentar reaproveitar
+     o layout antigo dela nesses casos. */
+  transform: translateZ(0);
+  will-change: transform;
 }
 .header__inner {
   height: 100%;
@@ -285,13 +293,15 @@ input:focus-visible {
   text-transform: uppercase;
   transition: color var(--dur-base), border-color var(--dur-base), background var(--dur-base), transform var(--dur-fast);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 .btn-back:hover {
   color: var(--text-1);
   border-color: var(--border-3);
   background: rgba(255,255,255,0.08);
 }
-.btn-back__label { font-weight: 600; }
+.btn-back svg { flex-shrink: 0; }
+.btn-back__label { font-weight: 600; flex-shrink: 0; }
 
 .header__sem-badge {
   justify-self: end;
