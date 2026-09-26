@@ -4447,5 +4447,227 @@ fixacao: [
 }
 ],
 
+ava: [
+  // aula:
+
+// 1 - Operações sobre listas em Python
+{
+  aula: "SIMULADO — ESTRUTURAS DE DADOS EM PYTHON",
+  texto: "",
+  question: "Considerando o comportamento das operações sobre listas em Python, o resultado produzido será:",
+  code: `dados = [10, 20, 30, 40, 50]
+dados.append(60)
+dados.insert(2, 25)
+dados.pop(4)
+print(dados)`,
+  options: [
+    "[10, 20, 30, 25, 50, 60]",
+    "[10, 20, 25, 30, 60]",
+    "[10, 20, 25, 30, 50, 60]",
+    "[10, 20, 25, 30, 60, 50]",
+    "[10, 25, 20, 30, 40, 60]"
+  ],
+  answer: 2,
+  feedback: "append(60) adiciona 60 ao final: [10,20,30,40,50,60]. insert(2,25) insere 25 no índice 2: [10,20,25,30,40,50,60]. pop(4) remove o elemento de índice 4, que é 40: [10,20,25,30,50,60].",
+  chips: []
+},
+
+// 2 - Dicionários em Python
+{
+  aula: "SIMULADO — ESTRUTURAS DE DADOS EM PYTHON",
+  texto: "Um sistema precisa armazenar o número de acessos realizados por diferentes usuários. Cada usuário é identificado por um nome único.\nUm estudante propõe:",
+  question: "Ao final da execução, qual afirmação está correta?",
+  code: `acessos = {
+    "Ana": 10,
+    "Bruno": 15,
+    "Carlos": 7
+}
+acessos["Ana"] += 1
+acessos["Daniel"] = 20`,
+  options: [
+    "A chave \"Ana\" será duplicada no dicionário.",
+    "O dicionário será convertido automaticamente em uma lista.",
+    "O valor de \"Ana\" permanecerá 10, pois valores de dicionários não podem ser modificados.",
+    "O comando acessos[\"Ana\"] += 1 provoca erro porque dicionários são imutáveis.",
+    "O valor associado a \"Ana\" será atualizado para 11 e \"Daniel\" será inserido."
+  ],
+  answer: 4,
+  feedback: "Dicionários em Python são mutáveis. acessos[\"Ana\"] += 1 atualiza o valor existente de 10 para 11, sem duplicar a chave. acessos[\"Daniel\"] = 20 cria uma nova entrada no dicionário, pois a chave \"Daniel\" ainda não existia.",
+  chips: []
+},
+
+// 3 - Estrutura de dados adequada para ordem de processamento
+{
+  aula: "SIMULADO — ESTRUTURAS DE DADOS EM PYTHON",
+  texto: "Uma aplicação recebe continuamente pedidos de atendimento. Os pedidos devem ser processados na mesma ordem em que chegaram.\nConsidere que os pedidos sejam:\nPedido A\nPedido B\nPedido C\nPedido D\nO primeiro pedido recebido deve ser necessariamente o primeiro processado.",
+  question: "Nesse cenário, a estrutura mais adequada é:",
+  code: ``,
+  options: [
+    "Dicionário, utilizando o princípio LIFO",
+    "Conjunto (set), pois mantém a ordem de inserção como requisito principal.",
+    "Árvore binária de busca, pois garante acesso sequencial aos elementos.",
+    "Pilha, utilizando o princípio LIFO.",
+    "Fila, utilizando o princípio FIFO."
+  ],
+  answer: 4,
+  feedback: "Quando o primeiro elemento a entrar deve ser o primeiro a sair, a estrutura adequada é a fila (queue), que segue o princípio FIFO (First In, First Out).",
+  chips: []
+},
+
+// 4 - Métodos e atributos em classes Python
+{
+  aula: "SIMULADO — ESTRUTURAS DE DADOS EM PYTHON",
+  texto: "Analise o código:",
+  question: "A respeito da execução, assinale a alternativa correta.",
+  code: `class Conta:
+    def __init__(self, titular, saldo):
+        self.titular = titular
+        self.saldo = saldo
+
+    def depositar(self, valor):
+        self.saldo += valor
+conta = Conta("Maria", 100)
+conta.depositar(50)
+print(conta.saldo)`,
+  options: [
+    "O programa apresentará erro porque depositar() não possui retorno.",
+    "O resultado será 150, pois o método altera o atributo saldo do objeto.",
+    "O resultado será 200, pois o valor inicial é duplicado antes do depósito.",
+    "O resultado será 100, pois atributos não podem ser modificados por métodos.",
+    "O resultado será 50, pois o método substitui o saldo."
+  ],
+  answer: 1,
+  feedback: "O método depositar() acessa e modifica diretamente o atributo self.saldo do objeto (saldo += valor). Não é necessário retorno para que a alteração tenha efeito, pois self.saldo é modificado no próprio objeto. Assim, 100 + 50 = 150.",
+  chips: []
+},
+
+// 5 - Complexidade Big-O de busca em lista
+{
+  aula: "SIMULADO — ESTRUTURAS DE DADOS EM PYTHON",
+  texto: "Considere o algoritmo:\nUma lista possui n elementos.\nNo pior caso, quando o valor procurado não está presente na lista, o algoritmo precisa verificar todos os elementos.",
+  question: "A complexidade temporal desse algoritmo, considerando a notação Big-O, é:",
+  code: `def procurar(lista, valor):
+    for elemento in lista:
+        if elemento == valor:
+            return True
+
+    return False`,
+  options: [
+    "O(n²)",
+    "O(log n)",
+    "O(1)",
+    "O(n)",
+    "O(n log n)"
+  ],
+  answer: 3,
+  feedback: "O algoritmo percorre a lista com um único laço, verificando cada elemento uma vez. No pior caso (valor ausente), todos os n elementos são visitados, resultando em complexidade linear O(n).",
+  chips: []
+},
+
+// 6 - Eficiência assintótica de algoritmos
+{
+  aula: "SIMULADO — ESTRUTURAS DE DADOS EM PYTHON",
+  texto: "Dois algoritmos realizam a mesma tarefa sobre uma entrada de tamanho n.\nAlgoritmo A: O(n)\nAlgoritmo B: O(n²)\nConsidere agora uma entrada muito grande.",
+  question: "Sobre a eficiência assintótica desses algoritmos, assinale a alternativa correta.",
+  code: ``,
+  options: [
+    "Ambos apresentam exatamente o mesmo crescimento de tempo.",
+    "O algoritmo A tende a apresentar crescimento de tempo menor que o algoritmo B à medida que n aumenta.",
+    "O algoritmo B necessariamente será mais rápido porque realiza mais operações.",
+    "A notação Big-O só pode ser utilizada para algoritmos de ordenação.",
+    "O algoritmo B possui complexidade constante."
+  ],
+  answer: 1,
+  feedback: "O(n) cresce linearmente, enquanto O(n²) cresce quadraticamente. Para valores grandes de n, o crescimento do tempo de execução do algoritmo B se torna muito maior que o do algoritmo A, tornando A mais eficiente assintoticamente.",
+  chips: []
+},
+
+// 7 - Operações em pilha (LIFO)
+{
+  aula: "SIMULADO — ESTRUTURAS DE DADOS EM PYTHON",
+  texto: "Uma pilha inicialmente vazia recebe as seguintes operações:\nSabendo que uma pilha segue o princípio LIFO (Last In, First Out)",
+  question: "Qual será o conteúdo da pilha ao final?",
+  code: `PUSH(10)
+PUSH(20)
+PUSH(30)
+POP()
+PUSH(40)
+POP()`,
+  options: [
+    "[20, 30]",
+    "[10, 20]",
+    "[10, 20, 30]",
+    "[40, 30, 20]",
+    "[10, 40]"
+  ],
+  answer: 1,
+  feedback: "PUSH(10), PUSH(20), PUSH(30) → pilha: [10,20,30]. POP() remove o topo (30) → [10,20]. PUSH(40) → [10,20,40]. POP() remove o topo (40) → [10,20].",
+  chips: []
+},
+
+// 8 - Estrutura de dados para funcionalidade Desfazer
+{
+  aula: "SIMULADO — ESTRUTURAS DE DADOS EM PYTHON",
+  texto: "Um editor de texto implementa a funcionalidade \"Desfazer\" (Undo).\nSempre que o usuário realiza uma alteração, essa operação é armazenada. Quando o usuário solicita \"Desfazer\", a alteração mais recente deve ser removida primeiro.\nPor exemplo:\nDigite A\nDigite B\nApague B\nDesfazer",
+  question: "Nesse cenário, a estrutura de dados mais apropriada é uma:",
+  code: ``,
+  options: [
+    "Árvore binária.",
+    "Pilha.",
+    "Lista circular.",
+    "Fila.",
+    "Tabela hash."
+  ],
+  answer: 1,
+  feedback: "A funcionalidade Undo precisa reverter a alteração mais recente primeiro, o que corresponde exatamente ao princípio LIFO (Last In, First Out) da pilha.",
+  chips: []
+},
+
+// 9 - Operações em fila (FIFO)
+{
+  aula: "SIMULADO — ESTRUTURAS DE DADOS EM PYTHON",
+  texto: "Considere uma fila inicialmente vazia.\nSão realizadas as operações:\nSabendo que a fila segue o princípio FIFO",
+  question: "Qual elemento estará na frente da fila ao final das operações?",
+  code: `ENQUEUE(5)
+ENQUEUE(10)
+ENQUEUE(15)
+DEQUEUE()
+ENQUEUE(20)
+DEQUEUE()`,
+  options: [
+    "10",
+    "A fila estará vazia.",
+    "15",
+    "5",
+    "20"
+  ],
+  answer: 2,
+  feedback: "ENQUEUE(5,10,15) → fila: [5,10,15]. DEQUEUE() remove o primeiro (5) → [10,15]. ENQUEUE(20) → [10,15,20]. DEQUEUE() remove o primeiro (10) → [15,20]. O elemento na frente é 15.",
+  chips: []
+},
+
+// 10 - Comportamento de pop() em listas Python
+{
+  aula: "SIMULADO — ESTRUTURAS DE DADOS EM PYTHON",
+  texto: "Um sistema precisa armazenar n elementos e realizar repetidamente operações de inserção e remoção somente no final da sequência.\nEm Python, uma implementação utilizando list pode realizar essas operações com eficiência adequada para esse cenário.\nConsidere:",
+  question: "Qual alternativa descreve corretamente o comportamento?",
+  code: `dados = []
+dados.append(10)
+dados.append(20)
+dados.append(30)
+x = dados.pop()`,
+  options: [
+    "x receberá 20, pois pop() remove o elemento intermediário.",
+    "x receberá 10, pois a lista funciona como uma fila.",
+    "x receberá 10, simulando o comportamento LIFO.",
+    "x receberá 30, simulando o comportamento de uma pilha.",
+    "O comando pop() não pode ser utilizado com listas Python."
+  ],
+  answer: 3,
+  feedback: "pop() sem argumento remove e retorna o último elemento da lista, que é 30. Isso simula o comportamento de uma pilha (LIFO), pois o último elemento inserido é o primeiro removido.",
+  chips: []
+}
+]
+
 
 };
