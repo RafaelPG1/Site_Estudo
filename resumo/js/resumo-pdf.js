@@ -48,6 +48,7 @@ const PdfState = {
   cache:            new Map(),  // discId -> { aulas, simplificado, resumao, professor }
   pending:          new Map(),  // discId -> Promise (carregamento em curso)
   loading:          new Set(),  // discIds carregando agora (para UI)
+  gerando:          false,      // true durante _onGenerate — trava a seleção (ver _setGerando)
 };
 
 // A chave agora inclui o tipo: com seleção múltipla, a MESMA aula (mesmo
@@ -1212,40 +1213,273 @@ function _buildVisualizadorHTML(nomeArquivo, blobUrl) {
 }
 
 /* ══════════════════════════════════════════════
-   GERAR PDF — gera o mesmo PDF de sempre, mas em vez
-   de baixar direto, abre uma aba de visualização com
-   um botão "Baixar PDF" fora da área do documento.
+   MOBILE — detecção + download direto
+   O fluxo de "abrir aba nova com o PDF num <iframe>"
+   (ver _buildVisualizadorHTML) depende do navegador ter
+   um visualizador de PDF nativo capaz de renderizar
+   dentro de IFRAME (não só em navegação de página
+   inteira). Isso é comum em navegador de DESKTOP
+   (Chrome/Edge/Firefox), mas não é garantido em
+   navegadores MOBILE (Android e iOS) — lá, esse mesmo
+   fluxo falha (aba em branco/erro do navegador) mesmo
+   com o PDF já gerado com sucesso em memória.
+
+   Em vez de tentar "consertar" o iframe no mobile (o que
+   dependeria de comportamento de navegador fora do nosso
+   controle), o mobile pula a etapa de visualização e vai
+   direto para o download do mesmo Blob, na mesma aba —
+   o único caminho que funciona de forma consistente em
+   qualquer navegador mobile. O desktop continua exatamente
+   como antes (nenhuma linha do fluxo de visualização foi
+   alterada).
+══════════════════════════════════════════════ */
+function _isMobileDevice() {
+  if (typeof navigator === 'undefined') return false;
+
+  // API moderna (Chromium): quando existe, é a fonte mais confiável.
+  if (navigator.userAgentData && typeof navigator.userAgentData.mobile === 'boolean') {
+    return navigator.userAgentData.mobile;
+  }
+
+  const ua = navigator.userAgent || '';
+  if (/Android|iPhone|iPod|Mobile|Windows Phone|BlackBerry|IEMobile|Opera Mini/i.test(ua)) return true;
+
+  // iPadOS moderno se identifica como "Macintosh" no userAgent — o que
+  // diferencia de um Mac de verdade é ter tela sensível ao toque.
+  if (/iPad/i.test(ua)) return true;
+  if (/Macintosh/i.test(ua) && navigator.maxTouchPoints > 1) return true;
+
+  return false;
+}
+
+function _baixarBlobDireto(blob, nomeArquivo) {
+  const blobUrl = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = blobUrl;
+  a.download = nomeArquivo;
+  a.rel = 'noopener';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  // Revoga depois de um tempo, não na hora — alguns navegadores mobile
+  // iniciam o download de forma assíncrona; revogar cedo demais
+  // derrubaria o download antes dele realmente começar.
+  setTimeout(() => URL.revokeObjectURL(blobUrl), 30000);
+}
+
+/* ══════════════════════════════════════════════
+   NOME DO ARQUIVO — curto, legível e baseado nos
+   apelidos das disciplinas (mesmo campo `apelido` que o
+   resto deste arquivo já usa, ex.: `disc.apelido ?? disc.nome`
+   em _renderDisciplinas/_renderAulas/_buildCapaPdfMake — sem
+   inventar outra fonte de apelido).
+
+   Deriva disciplinas e tipos DIRETO de `grupos` — o
+   resultado real de _disciplinasSelecionadasOrdenadas(),
+   já filtrado para só o que tem conteúdo marcado — nunca da
+   seleção bruta da UI. Assim o nome nunca promete um tipo ou
+   disciplina que na verdade não entrou no PDF (ex.: um tipo
+   marcado em "2 · Tipo de conteúdo" mas sem nenhuma aula
+   marcada em "3 · Aulas" não aparece no PDF, e por isso
+   também não aparece no nome do arquivo).
+══════════════════════════════════════════════ */
+const TIPO_SLUG = { resumo: 'RESUMO', resumao: 'RESUMAO', sintese: 'SINTESE', professor: 'PROFESSOR' };
+
+const NOME_DISC_LIMITE = 3;  // acima disso, vira "MULTIDISC"
+const NOME_DISC_MAXLEN = 30; // mesmo com poucas disciplinas, apelidos grandes demais também viram "MULTIDISC"
+
+function _sanitizarNomeArquivo(str) {
+  const limpo = String(str ?? '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove acentos (ex.: "Síntese" -> "Sintese")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, '_')                        // espaço/pontuação/qualquer coisa não-alfanumérica -> "_"
+    .replace(/^_+|_+$/g, '');                            // sem "_" sobrando nas pontas
+  return limpo || 'DISC';
+}
+
+function _buildNomeArquivo(grupos) {
+  // Disciplinas — poucas o bastante (e curtas o bastante) para
+  // aparecerem por extenso; senão, identificação curta ("MULTIDISC").
+  const discSlugs = grupos.map(g => _sanitizarNomeArquivo(g.disc.apelido ?? g.disc.nome));
+  const discJunto = discSlugs.join('_');
+  const discPart = (grupos.length <= NOME_DISC_LIMITE && discJunto.length <= NOME_DISC_MAXLEN)
+    ? discJunto
+    : 'MULTIDISC';
+
+  // Tipos realmente incluídos no PDF (ver comentário acima do bloco).
+  const tiposIncluidos = new Set();
+  grupos.forEach(g => {
+    g.itensPorAula.forEach(a => a.tipos.forEach(t => tiposIncluidos.add(t.tipo)));
+    g.outros.forEach(o => tiposIncluidos.add(o.tipo));
+  });
+  const tiposOrdenados = ALL_TIPOS.filter(t => tiposIncluidos.has(t));
+  const modoPart = (tiposOrdenados.length > 0 && tiposOrdenados.length <= 2)
+    ? tiposOrdenados.map(t => TIPO_SLUG[t]).join('_')
+    : 'MULTIMODO';
+
+  return `${discPart}_${modoPart}.pdf`;
+}
+
+/* ══════════════════════════════════════════════
+   ORIGEM INSEGURA (HTTP fora de localhost) — o aviso do
+   Chrome "Não é possível salvar o arquivo com segurança"
+   (visto no Android acessando por IP de rede local, ex.:
+   192.168.1.29:5500) é um comportamento do PRÓPRIO Chrome:
+   ele passou a exigir HTTPS para confirmar a segurança de
+   um download, e só abre exceção para `localhost`/`127.0.0.1`
+   — nunca para outro IP, mesmo dentro da rede local. Não há
+   nenhuma chamada de API (Blob, download, iframe, window.open)
+   que evite essa checagem a partir do lado do site; ela
+   acontece no navegador, depois que o download já foi
+   entregue a ele. Por isso o mesmo fluxo funciona sem aviso
+   no Windows quando acessado por `http://localhost:5500`
+   (contexto que o Chrome trata como seguro) e mostra o aviso
+   no Android quando acessado pelo IP da rede (que não tem
+   essa exceção) — e não aconteceria em produção, servido via
+   HTTPS.
+   Em vez de tentar escondê-lo ou simular que não existe,
+   avisamos o usuário UMA VEZ por carregamento de página,
+   antes de gerar, explicando o que é e o que fazer (tocar em
+   "Manter"). O download em si continua sendo disparado
+   normalmente — o aviso é só informativo.
+══════════════════════════════════════════════ */
+function _origemInsegura() {
+  if (typeof location === 'undefined') return false;
+  if (location.protocol === 'https:') return false;
+  const host = (location.hostname || '').toLowerCase();
+  if (host === 'localhost' || host === '127.0.0.1' || host === '::1' || host === '[::1]') return false;
+  return true;
+}
+
+let _avisoOrigemInseguraMostrado = false;
+function _avisarSeOrigemInsegura() {
+  if (_avisoOrigemInseguraMostrado || !_origemInsegura()) return;
+  _avisoOrigemInseguraMostrado = true;
+  alert(
+    'Este site está sendo acessado por um endereço local sem HTTPS ' +
+    `(${location.hostname}).\n\n` +
+    'Por isso, o Chrome pode mostrar o aviso dele próprio "Não é possível ' +
+    'salvar o arquivo com segurança" ao salvar o PDF — é uma proteção do ' +
+    'navegador para conexões sem HTTPS, não um erro do Nexus Study.\n\n' +
+    'Para salvar o arquivo, toque em "Manter" nesse aviso. Em produção ' +
+    '(servido via HTTPS), esse aviso não aparece.'
+  );
+}
+
+/* ══════════════════════════════════════════════
+   ESTADO "GERANDO" — trava toda a seleção do modal
+   (disciplinas, tipo, aulas, "selecionar/remover todas",
+   fechar/backdrop) enquanto o PDF está sendo montado, para
+   impedir que o usuário mude a seleção no meio da geração
+   ou clique "Gerar PDF" de novo (2º clique não inicia uma
+   2ª geração — ver guarda em _onGenerate). Chamada com
+   true no início e com false tanto no sucesso quanto no
+   catch/finally de _onGenerate, então o modal nunca fica
+   travado permanentemente.
+══════════════════════════════════════════════ */
+function _setGerando(ativo) {
+  PdfState.gerando = ativo;
+
+  document.querySelectorAll('#pdf-disc-list input[type="checkbox"], #pdf-aulas-list input[type="checkbox"]')
+    .forEach(cb => { cb.disabled = ativo; });
+  document.querySelectorAll('#pdf-tipo-list [data-tipo]').forEach(b => { b.disabled = ativo; });
+
+  if (ativo) {
+    document.getElementById('pdf-disc-all')?.setAttribute('disabled', '');
+    document.getElementById('pdf-aulas-all')?.setAttribute('disabled', '');
+    document.getElementById('pdf-modal-close')?.setAttribute('disabled', '');
+  } else {
+    document.getElementById('pdf-modal-close')?.removeAttribute('disabled');
+    // O disabled de "Selecionar/Remover todas" depende do conteúdo
+    // disponível, não é um simples liga/desliga — por isso, ao
+    // destravar, cada botão recalcula o próprio estado pelas mesmas
+    // funções que já fazem isso em qualquer outra atualização da UI,
+    // em vez de forçar `disabled = false` cegamente.
+    _updateDiscAllLabel();
+    _updateAulasAllLabel();
+  }
+
+  const backdrop = document.getElementById('pdf-modal-backdrop');
+  if (backdrop) backdrop.style.pointerEvents = ativo ? 'none' : '';
+
+  const body = document.querySelector('#pdf-modal .pdf-modal__body');
+  if (body) {
+    body.style.pointerEvents = ativo ? 'none' : '';
+    body.style.opacity = ativo ? '0.45' : '';
+    body.setAttribute('aria-busy', ativo ? 'true' : 'false');
+  }
+
+  const btn   = document.getElementById('pdf-generate-btn');
+  const label = document.getElementById('pdf-generate-btn-label');
+  if (label) label.textContent = ativo ? 'Gerando PDF…' : 'Gerar PDF';
+  if (btn) {
+    btn.classList.toggle('pdf-generate-btn--loading', ativo);
+    // Fora da geração, o botão continua seguindo a mesma regra de
+    // sempre (só habilitado com pelo menos 1 item selecionado).
+    btn.disabled = ativo || _contarSelecionadas() === 0;
+  }
+}
+
+// Gira o ícone do botão "Gerar PDF" enquanto `.pdf-generate-btn--loading`
+// estiver presente — único CSS que este módulo precisa injetar (o resto
+// do estilo do modal já vem de resumo.html); injetado uma única vez.
+function _injetarEstiloGerando() {
+  if (document.getElementById('pdf-gerando-style')) return;
+  const style = document.createElement('style');
+  style.id = 'pdf-gerando-style';
+  style.textContent = `
+    .pdf-generate-btn--loading svg { animation: pdf-gerando-spin .8s linear infinite; }
+    @keyframes pdf-gerando-spin { to { transform: rotate(360deg); } }
+  `;
+  document.head.appendChild(style);
+}
+
+/* ══════════════════════════════════════════════
+   GERAR PDF — no desktop, gera o mesmo PDF de sempre e
+   abre uma aba de visualização (ver comentário de
+   _isMobileDevice acima). No mobile, gera o mesmo PDF e
+   manda direto para download, sem aba nova.
 ══════════════════════════════════════════════ */
 async function _onGenerate() {
+  // 2º clique (ou clique duplo) enquanto já está gerando não inicia uma
+  // 2ª geração em paralelo — o próprio botão já fica `disabled` durante
+  // a geração (ver _setGerando), esta é só uma segunda trava, para o
+  // caso de o clique chegar antes do disabled ser aplicado no DOM.
+  if (PdfState.gerando) return;
+
   const grupos = _disciplinasSelecionadasOrdenadas();
   if (!grupos.length) return;
 
   playSound('click', 'resumos');
+  _setGerando(true);
+
+  const mobile = _isMobileDevice();
+  _avisarSeOrigemInsegura();
 
   // Abre a aba já no clique (síncrono), antes de qualquer await, para
   // não ser bloqueada como pop-up pelo navegador. O conteúdo final é
-  // escrito nela assim que o PDF terminar de ser montado.
-  const win = window.open('', '_blank');
+  // escrito nela assim que o PDF terminar de ser montado. No mobile,
+  // essa aba nem chega a ser aberta — ver comentário acima.
+  const win = mobile ? null : window.open('', '_blank');
   if (win) {
     win.document.write(_buildLoadingHTML());
     win.document.close();
   }
 
-  const btn   = document.getElementById('pdf-generate-btn');
-  const label = document.getElementById('pdf-generate-btn-label');
-  if (btn) btn.disabled = true;
-  if (label) label.textContent = 'Gerando…';
-
   try {
     await _carregarPdfMake();
 
     const docDefinition = await _buildDocDefinition(grupos);
-
-    const tiposSlug = ALL_TIPOS.filter(t => PdfState.tipos.has(t)).join('-') || 'resumo';
-    const semSlug = String(State.semestre ?? '').replace(/[^\w.-]+/g, '').replace(/\./g, '-');
-    const nomeArquivo = `nexus-study-${tiposSlug}${semSlug ? `-${semSlug}` : ''}.pdf`;
+    const nomeArquivo = _buildNomeArquivo(grupos);
 
     const blob = await new Promise(resolve => window.pdfMake.createPdf(docDefinition).getBlob(resolve));
+
+    if (mobile) {
+      _baixarBlobDireto(blob, nomeArquivo);
+      _fecharModalPdf();
+      return;
+    }
+
     const blobUrl = URL.createObjectURL(blob);
 
     if (!win || win.closed) {
@@ -1264,8 +1498,9 @@ async function _onGenerate() {
     if (win && !win.closed) win.close();
     alert('Não foi possível gerar o PDF. Tente novamente.');
   } finally {
-    if (btn) btn.disabled = _contarSelecionadas() === 0;
-    if (label) label.textContent = 'Gerar PDF';
+    // Sempre destrava — tanto no sucesso quanto no catch acima — para
+    // a tela nunca ficar permanentemente bloqueada.
+    _setGerando(false);
   }
 }
 
@@ -1296,12 +1531,18 @@ function _abrirModalPdf() {
 }
 
 function _fecharModalPdf() {
+  // Guarda única para close/backdrop/Escape (os 3 caminhos que chamam
+  // esta função) — nunca fecha (nem interrompe) o modal enquanto o PDF
+  // está sendo gerado.
+  if (PdfState.gerando) return;
   playSound('closeModal', 'resumos');
   document.getElementById('pdf-modal')?.classList.remove('pdf-modal--open');
   document.body.style.overflow = '';
 }
 
 export function initPdfModal() {
+  _injetarEstiloGerando();
+
   document.getElementById('btn-open-pdf')?.addEventListener('click', _abrirModalPdf);
   document.getElementById('pdf-modal-close')?.addEventListener('click', _fecharModalPdf);
   document.getElementById('pdf-modal-backdrop')?.addEventListener('click', _fecharModalPdf);
