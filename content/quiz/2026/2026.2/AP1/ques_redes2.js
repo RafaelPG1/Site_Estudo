@@ -3058,7 +3058,7 @@ window.questoes = {
 }
   ],
 
-  ava: [
+ava: [
     // aula: 
 
 // 1 - Modos de operação em redes sem fio e asserções sobre mobilidade
@@ -3074,7 +3074,7 @@ window.questoes = {
     "As asserções I e II são verdadeiras, mas a II não justifica a I."
   ],
   answer: 1,
-  feedback: "A resposta correta é: A asserção I é verdadeira, e a II é falsa.",
+  feedback: "A asserção I é verdadeira: quando o usuário se move entre pontos de acesso diferentes, a rede precisa de mecanismos como handover (transferência de conexão) para manter a comunicação sem interrupção. Já a asserção II é falsa, porque o ar, como meio compartilhado, está sujeito a atenuação, interferência, ruído e perda de sinal — é justamente por isso que redes sem fio precisam de mecanismos de detecção e correção de erro mais robustos que redes cabeadas.",
   chips: []
 },
 
@@ -3091,7 +3091,7 @@ window.questoes = {
     "Máscara /27 (255.255.255.224) e cada sub-rede contendo 30 IPs válidos."
   ],
   answer: 1,
-  feedback: "A resposta correta é: Máscara /26 (255.255.255.192) e cada sub-rede contendo 62 IPs válidos.",
+  feedback: "Para dividir a rede /24 em 4 sub-redes iguais, é preciso 'tomar emprestados' 2 bits do campo de host (pois 2² = 4 sub-redes), o que leva a máscara de /24 para /26 (255.255.255.192). Com /26 sobram 6 bits para hosts, ou seja, 2⁶ = 64 endereços por sub-rede; subtraindo o endereço de rede e o de broadcast, restam 62 IPs válidos para hosts em cada uma.",
   chips: []
 },
 
@@ -3108,7 +3108,7 @@ window.questoes = {
     "Atualização da localização, que ocorre somente quando o dispositivo estabelece uma chamada."
   ],
   answer: 0,
-  feedback: "A resposta correta é: Paging, que permite à rede localizar o dispositivo quando há uma chamada ou serviço a ser entregue.",
+  feedback: "O paging é o procedimento pelo qual a rede envia uma mensagem de busca (broadcast) em todas as células da área de localização onde o dispositivo foi registrado por último, até que ele responda, permitindo entregar a chamada sem que a rede precise conhecer sua posição exata a todo instante. Roaming trata do uso de redes de outras operadoras/áreas, e handover é a troca de célula durante uma chamada já em andamento — nenhum dos dois localiza o dispositivo para uma chamada recebida.",
   chips: []
 },
 
@@ -3125,7 +3125,7 @@ window.questoes = {
     "A largura de banda não possui relação com a quantidade de dados que pode ser transmitida pelo canal."
   ],
   answer: 2,
-  feedback: "A resposta correta é: O aumento da quantidade de níveis de sinal pode permitir a transmissão de mais bits por símbolo, enquanto o aumento do ruído tende a reduzir a taxa máxima de transmissão.",
+  feedback: "Pelo teorema de Nyquist, mais níveis de sinal permitem codificar mais bits em cada símbolo transmitido, aumentando a taxa de dados em um canal sem ruído. Já pelo teorema de Shannon (C = B·log₂(1+S/N)), quanto maior o ruído em relação ao sinal, menor a capacidade máxima do canal — o ruído degrada a informação, não a aumenta. As demais opções erram ao ignorar a largura de banda e ao tratar o ruído como algo benéfico.",
   chips: []
 },
 
@@ -3142,7 +3142,7 @@ window.questoes = {
     "O CRC controla exclusivamente a velocidade com que o transmissor envia os quadros."
   ],
   answer: 2,
-  feedback: "A resposta correta é: O CRC é utilizado para detectar possíveis erros no quadro recebido, permitindo que mecanismos de retransmissão sejam acionados quando necessário.",
+  feedback: "O CRC (Cyclic Redundancy Check) é um mecanismo de detecção, não de correção: o transmissor calcula um valor a partir da divisão do quadro por um polinômio gerador e anexa esse resto ao quadro; o receptor refaz a divisão e, se o resto não for zero, conclui que houve erro. A partir dessa detecção, protocolos de camada superior (como ARQ) é que acionam a retransmissão — o CRC sozinho não corrige nem controla velocidade de envio.",
   chips: []
 },
 
@@ -3159,7 +3159,7 @@ window.questoes = {
     "Controlar a quantidade de quadros que o transmissor pode enviar antes de receber uma confirmação."
   ],
   answer: 1,
-  feedback: "A resposta correta é: Dividir os dados em partes, realizar operações matemáticas sobre elas e utilizar o resultado como informação de verificação para identificar possíveis erros na transmissão.",
+  feedback: "O checksum funciona dividindo os dados em blocos, somando-os (geralmente em complemento de um) e enviando esse valor junto ao quadro. No destino, a mesma soma é refeita e comparada ao valor recebido: se forem diferentes, um erro é detectado. Assim como o CRC, ele apenas detecta erros — não corrige bits automaticamente nem tem relação com controle de fluxo ou de largura de banda, que são funções de outros mecanismos.",
   chips: []
 },
 
@@ -3176,7 +3176,7 @@ window.questoes = {
     "O Checksum utiliza operações matemáticas sobre os dados para gerar um valor de verificação, enquanto o CRC utiliza operações baseadas em divisão polinomial para gerar informações de verificação."
   ],
   answer: 3,
-  feedback: "A resposta correta é: O Checksum utiliza operações matemáticas sobre os dados para gerar um valor de verificação, enquanto o CRC utiliza operações baseadas em divisão polinomial para gerar informações de verificação.",
+  feedback: "A diferença central está no método de cálculo: o Checksum soma os blocos de dados (aritmética simples, geralmente em complemento de um) para gerar seu valor de verificação, enquanto o CRC trata os dados como um grande número binário e realiza uma divisão polinomial (usando XOR) por um gerador fixo, sendo o resto dessa divisão o valor de verificação. As demais opções falham porque nenhum dos dois corrige erros, ambos ainda dependem de retransmissão, e nenhum deles serve para controle de fluxo ou congestionamento.",
   chips: []
 },
 
@@ -3193,7 +3193,7 @@ window.questoes = {
     "Repete o sinal elétrico recebido para todas as suas portas."
   ],
   answer: 3,
-  feedback: "A resposta correta é: Repete o sinal elétrico recebido para todas as suas portas.",
+  feedback: "O Hub é um dispositivo de camada física (camada 1): ele simplesmente regenera e repete o sinal elétrico recebido para todas as demais portas, sem nenhuma inteligência sobre origem ou destino — por isso todas as estações compartilham o mesmo domínio de colisão. Já o Switch opera na camada de enlace (camada 2), aprendendo endereços MAC e encaminhando cada quadro apenas para a porta correta, isolando os domínios de colisão. Encaminhar por endereço IP é função do roteador (camada 3), não do Hub ou do Switch.",
   chips: []
 },
 
@@ -3210,7 +3210,7 @@ window.questoes = {
     "O IPv4 utiliza 32 bits e o IPv6 utiliza 64 bits."
   ],
   answer: 0,
-  feedback: "A resposta correta é: O IPv4 utiliza 32 bits e o IPv6 utiliza 128 bits.",
+  feedback: "O IPv4 usa endereços de 32 bits, o que gera cerca de 4,3 bilhões de combinações possíveis — quantidade insuficiente diante do crescimento de dispositivos conectados (daí a exaustão de endereços mencionada no texto). O IPv6 foi criado justamente para resolver isso, usando endereços de 128 bits, um espaço de endereçamento astronomicamente maior, suficiente para atender a expansão da IoT e da Internet por muito tempo.",
   chips: []
 },
 
@@ -3227,7 +3227,7 @@ window.questoes = {
     "distorção, pois diferentes componentes do sinal chegam ao destino em tempos diferentes."
   ],
   answer: 2,
-  feedback: "A resposta correta é: atenuação, pois ocorre perda de energia do sinal durante sua propagação.",
+  feedback: "O cenário descreve exatamente a atenuação: o sinal perde energia (potência) à medida que percorre o meio físico, e essa perda aumenta com a distância percorrida — por isso enlaces longos costumam precisar de repetidores ou amplificadores. Modulação é a técnica de codificar dados em uma onda portadora, multiplexação é o compartilhamento do meio por vários sinais, e distorção se refere a diferenças de atraso entre componentes de frequência do sinal; nenhuma dessas descreve perda de potência com a distância.",
   chips: []
 },
 
@@ -3244,7 +3244,7 @@ window.questoes = {
     "bit de paridade."
   ],
   answer: 1,
-  feedback: "A resposta correta é: CRC.",
+  feedback: "A descrição — uso de um polinômio gerador, bits extras anexados ao quadro e divisão binária feita com XOR, repetida no receptor — é exatamente como funciona o CRC (Cyclic Redundancy Check), o mecanismo padrão de detecção de erros do Ethernet. O código de Hamming e o bit de paridade detectam (e o primeiro pode corrigir) erros por outra lógica, sem divisão polinomial, e o checksum se baseia em soma aritmética, não em divisão binária com XOR.",
   chips: []
 },
 
@@ -3261,7 +3261,7 @@ window.questoes = {
     "Stop-and-Wait ARQ."
   ],
   answer: 0,
-  feedback: "A resposta correta é: Go-Back-N ARQ.",
+  feedback: "O comportamento descrito — retransmitir o quadro com erro E todos os quadros enviados depois dele, mesmo que tenham chegado corretos — é a característica que define o Go-Back-N ARQ, que usa uma janela deslizante mas descarta tudo após o primeiro erro por simplicidade de implementação. O Selective Repeat ARQ, ao contrário, retransmite apenas o quadro com erro; o Stop-and-Wait envia um quadro por vez (sem múltiplos quadros pendentes); e 'o protocolo mais simples possível' não prevê nem detecção de erro nem retransmissão.",
   chips: []
 },
 
@@ -3278,7 +3278,7 @@ window.questoes = {
     "WMAN, baseada no IEEE 802.3, e WLAN, associada ao IEEE 802.15."
   ],
   answer: 1,
-  feedback: "A resposta correta é: WLAN, baseada no IEEE 802.11, e WMAN, associada ao IEEE 802.16.",
+  feedback: "Cobertura local (salas, laboratórios, setores) é o cenário típico de uma WLAN (rede local sem fio), padronizada pelo IEEE 802.11 (Wi-Fi). Já a cobertura de uma região metropolitana caracteriza uma WMAN, padronizada pelo IEEE 802.16 (WiMAX), justamente projetada para distâncias e áreas muito maiores que uma WLAN. As demais alternativas invertem essas associações ou citam padrões incorretos (802.3 é Ethernet cabeada, 802.15 é redes pessoais como Bluetooth).",
   chips: []
 },
 
@@ -3295,7 +3295,7 @@ window.questoes = {
     "RTS/CTS associado ao CSMA/CA."
   ],
   answer: 3,
-  feedback: "A resposta correta é: RTS/CTS associado ao CSMA/CA.",
+  feedback: "Essa é a clássica situação do 'problema do terminal oculto', onde duas estações não se enxergam mas compartilham o mesmo ponto de acesso. O IEEE 802.11 resolve isso com o CSMA/CA (que evita colisões, em vez de detectá-las, já que em Wi-Fi detectar colisão durante a transmissão é inviável) combinado com o handshake RTS/CTS: a estação pede permissão (Request To Send) e o ponto de acesso confirma (Clear To Send), avisando as demais estações vizinhas para aguardarem. CSMA/CD é usado em redes cabeadas com colisão detectável, o que não se aplica aqui, e as demais opções não têm relação com esse problema.",
   chips: []
 },
 
@@ -3312,7 +3312,7 @@ window.questoes = {
     "transformar automaticamente uma rede MAN em uma rede LAN sem fio."
   ],
   answer: 2,
-  feedback: "A resposta correta é: encaminhar os pacotes utilizando rótulos e estabelecer caminhos diferenciados dentro da infraestrutura da operadora.",
+  feedback: "O MPLS (Multiprotocol Label Switching) insere um rótulo (label) entre os cabeçalhos de camada 2 e 3 dos pacotes, permitindo que os roteadores do backbone encaminhem o tráfego com base nesse rótulo — de forma mais rápida que uma busca completa na tabela de roteamento IP — e criem caminhos (LSPs) dedicados para cada cliente, garantindo isolamento lógico entre eles mesmo compartilhando a mesma infraestrutura física. Ele não substitui endereços IP por MAC, não elimina a necessidade de equipamentos de camada de enlace, e não converte o tipo de rede (MAN para LAN sem fio).",
   chips: []
 },
   ]
