@@ -1,13 +1,13 @@
 /* =============================================
-   NEXUS STUDY — res_analise_projeto.js
-   Disciplina: analise de projeto
+   NEXUS STUDY — res_estruturas_dados.js
+   Disciplina: Estrutura de dados
    ============================================= */
 
 window.__nexusConteudo = {
   aulas: [
   // tudo
   {
-  aula: "Aula 1 — Estrutura de Dados: Listas, Funções, Recursão, Classes, Complexidade, Pilhas e Filas (Material Completo para AP1)",
+  aula: "Estrutura de Dados: Listas, Funções, Recursão, Classes, Complexidade, Pilhas e Filas (Material Completo para AP1)",
   ideia_central: "Material completo de revisão para a AP1 de Estrutura de Dados, cobrindo estruturas de dados em Python (listas, tuplas, dicionários, conjuntos), funções, recursão, classes e objetos, análise de complexidade (Big O), pilhas e filas, com pegadinhas de prova, exercícios comentados e um simulado completo com gabarito.",
   secoes: [
     {
@@ -621,6 +621,439 @@ window.__nexusConteudo = {
   }
 
   ],
+
+  simplificado: [
+
+// aula: Estrutura de Dados: Listas, Funções, Recursão, Classes, Complexidade, Pilhas e Filas (Material Completo para AP1)
+
+{
+  aula: "Estrutura de Dados: Listas, Funções, Recursão, Classes, Complexidade, Pilhas e Filas (Material Completo para AP1)",
+  ideia_central: "Revisão consolidada de estruturas de dados em Python, funções, recursão, classes, complexidade Big O, pilhas/filas, algoritmos de ordenação e memoização para a AP1.",
+  secoes: [
+    {
+      id: "estruturas-funcoes-recursao",
+      titulo: "Estruturas de Dados, Funções e Recursão",
+      blocos: [
+
+        // 1 - listas
+        {
+          tipo: "topico",
+          titulo: "Listas (`list`)",
+          lista: [
+            "**Lista** → coleção ordenada e mutável, índice começa em 0",
+            "`append(x)` → adiciona no final",
+            "`insert(i, x)` → insere na posição i",
+            "`remove(x)` → remove primeira ocorrência do valor",
+            "`pop()` → remove e retorna o último elemento (O(1))",
+            "`pop(i)` → remove e retorna elemento do índice i",
+            "`sort()` → ordena in-place; `sorted(lista)` → retorna nova lista ordenada",
+            "`lista[i:j]` → slice, não inclui o índice j",
+            "`b = a` não copia lista, cria segunda referência ao mesmo objeto",
+            "Cópia real → `b = a.copy()` ou `b = a[:]`"
+          ]
+        },
+
+        // 2 - tuplas
+        {
+          tipo: "topico",
+          titulo: "Tuplas (`tuple`)",
+          lista: [
+            "**Tupla** → coleção ordenada e imutável",
+            "Não permite alteração, `append` ou atribuição por índice (`TypeError`)",
+            "Usada como chave de dicionário e para retorno múltiplo de função",
+            "Tupla de 1 elemento precisa de vírgula: `(5,)`; `(5)` é apenas `int`"
+          ]
+        },
+
+        // 3 - dicionarios
+        {
+          tipo: "topico",
+          titulo: "Dicionários (`dict`)",
+          lista: [
+            "**Dicionário** → pares `chave: valor`, acesso por chave",
+            "Acessar chave inexistente com `[]` gera `KeyError`",
+            "`.get(chave, padrao)` evita erro, retorna `None` ou valor padrão",
+            "`.keys()`, `.values()`, `.items()` → chaves, valores, pares",
+            "`for x in dic` percorre as **chaves**, não os valores",
+            "Python 3.7+ mantém ordem de inserção (mas não é indexado por posição)"
+          ]
+        },
+
+        // 4 - conjuntos
+        {
+          tipo: "topico",
+          titulo: "Conjuntos (`set`)",
+          lista: [
+            "**Conjunto** → coleção não ordenada, sem elementos repetidos",
+            "Usado para remover duplicatas: `list(set(lista))`",
+            "Operações: `|` união, `&` interseção, `-` diferença",
+            "Sem índice; só aceita elementos imutáveis (não pode conter lista)"
+          ]
+        },
+
+        // 5 - comparacao estruturas
+        {
+          tipo: "lista",
+          itens: [
+            "Lista: ordenada, mutável, permite repetição, acesso por índice",
+            "Tupla: ordenada, imutável, permite repetição, acesso por índice",
+            "Dicionário: ordenada por inserção, mutável, chaves não repetem, acesso por chave",
+            "Conjunto: não ordenado, mutável, sem repetição, sem acesso por posição"
+          ]
+        },
+
+        // 6 - pegadinhas estruturas
+        {
+          tipo: "lista",
+          itens: [
+            "`lista[1:3]` não inclui o índice 3",
+            "`b = a` (lista) não copia, gera referência compartilhada",
+            "`(5)` não é tupla; precisa de `(5,)`",
+            "`for x in dicionario` traz a chave, não o valor",
+            "Dicionário/conjunto não têm índice numérico",
+            "`set` não pode conter listas (não hashable)"
+          ]
+        },
+
+        // 7 - funcoes
+        {
+          tipo: "topico",
+          titulo: "Funções",
+          lista: [
+            "**Parâmetro** → variável definida na função; **argumento** → valor passado na chamada",
+            "Parâmetro com valor padrão: `def f(nome=\"visitante\")`",
+            "Argumento nomeado ignora ordem; posicional deve vir antes de nomeado",
+            "`return` devolve valor; sem `return`, função devolve `None`",
+            "`return` encerra a função imediatamente; código após ele não executa",
+            "`print` mostra na tela mas não devolve valor utilizável"
+          ]
+        },
+
+        // 8 - args kwargs
+        {
+          tipo: "topico",
+          titulo: "`*args` e `**kwargs`",
+          lista: [
+            "`*args` → recebe argumentos extras como **tupla**",
+            "`**kwargs` → recebe argumentos nomeados extras como **dicionário**"
+          ]
+        },
+
+        // 9 - escopo
+        {
+          tipo: "topico",
+          titulo: "Escopo de Variáveis",
+          lista: [
+            "**Variável local** → existe só dentro da função",
+            "**Variável global** → existe fora de funções, legível de qualquer lugar",
+            "Atribuir a uma variável dentro da função cria variável local nova, sem alterar a global",
+            "`global x` dentro da função permite alterar a variável global"
+          ]
+        },
+
+        // 10 - pegadinhas funcoes
+        {
+          tipo: "lista",
+          itens: [
+            "Confundir `print()` com `return`",
+            "Achar que variável local existe fora da função",
+            "Esquecer `global` ao tentar alterar variável global dentro da função",
+            "Esquecer o `return`, fazendo a função retornar `None`",
+            "Misturar argumento nomeado antes de posicional causa erro de sintaxe"
+          ]
+        },
+
+        // 11 - recursao conceitos
+        {
+          tipo: "topico",
+          titulo: "Recursão",
+          lista: [
+            "**Recursão** → função que chama a si mesma para resolver versões menores do problema",
+            "**Caso base** → condição que para a recursão sem nova chamada",
+            "**Caso recursivo** → chamada da função com problema menor, aproximando do caso base",
+            "Sem caso base (ou inalcançável) → `RecursionError: maximum recursion depth exceeded`",
+            "Execução \"desce\" até o caso base e depois \"sobe\" resolvendo cada chamada pendente (mecanismo de pilha)"
+          ]
+        },
+
+        // 12 - exemplos recursivos
+        {
+          tipo: "lista",
+          itens: [
+            "`fatorial(n)` → caso base `n==0` retorna 1; complexidade O(n)",
+            "`fibonacci(n)` → dois casos base (`n==0`, `n==1`); complexidade O(2ⁿ)",
+            "`soma_lista(lista)` → caso base lista vazia; complexidade O(n)",
+            "`potencia(base, expoente)` → caso base `expoente==0`",
+            "Esquecer `return` na chamada recursiva perde o valor calculado",
+            "Caso base que se afasta em vez de se aproximar nunca é alcançado"
+          ]
+        },
+
+        // 13 - recursao vs iteracao
+        {
+          tipo: "lista",
+          itens: [
+            "Recursão usa mais memória (pilha de execução); iteração usa menos",
+            "Recursão pode estourar a pilha (`RecursionError`); iteração não tem esse risco",
+            "Recursão costuma ser mais clara em problemas naturalmente recursivos (árvores, divisão)",
+            "Tudo que se faz com recursão pode ser feito com laço, e vice-versa"
+          ]
+        },
+
+        // 14 - pegadinhas recursao
+        {
+          tipo: "lista",
+          itens: [
+            "Esquecer o caso base causa recursão infinita",
+            "Recursão nem sempre é mais eficiente que loop (ex: Fibonacci O(2ⁿ))",
+            "Pilha de chamadas de função é o mesmo mecanismo por trás da recursão"
+          ]
+        }
+      ]
+    },
+
+    {
+      id: "classes-complexidade-lineares",
+      titulo: "Classes, Complexidade e Estruturas Lineares",
+      blocos: [
+
+        // 15 - classes objetos
+        {
+          tipo: "topico",
+          titulo: "Classes e Objetos",
+          lista: [
+            "**Classe** → molde que define atributos e métodos; **objeto** → instância concreta",
+            "`__init__` → construtor, chamado automaticamente ao criar objeto",
+            "`self` → representa o próprio objeto, sempre primeiro parâmetro dos métodos",
+            "Esquecer `self` no método causa `TypeError`",
+            "`__str__` → define representação textual do objeto no `print()`"
+          ]
+        },
+
+        // 16 - atributos
+        {
+          tipo: "topico",
+          titulo: "Atributos de Instância vs Classe",
+          lista: [
+            "**Atributo de instância** → individual de cada objeto (definido com `self.` no `__init__`)",
+            "**Atributo de classe** → compartilhado por todos os objetos da classe",
+            "Alterar atributo de classe afeta todos; alterar atributo de instância afeta só aquele objeto"
+          ]
+        },
+
+        // 17 - pegadinhas classes
+        {
+          tipo: "lista",
+          itens: [
+            "Esquecer `self.` ao acessar atributo dentro de método",
+            "Achar que `__init__` retorna o objeto (ele apenas o inicializa)",
+            "Esquecer parênteses ao instanciar: `obj = Classe` não cria objeto, `obj = Classe()` cria",
+            "Objetos da mesma classe não compartilham atributos de instância"
+          ]
+        },
+
+        // 18 - complexidade conceitos
+        {
+          tipo: "topico",
+          titulo: "Complexidade e Big O",
+          lista: [
+            "**Complexidade** → como tempo/espaço de execução cresce em função de n",
+            "**Big O** → notação que descreve complexidade focando no pior caso",
+            "Descartar constantes multiplicativas: `O(2n)` vira `O(n)`",
+            "Manter só o termo dominante: `O(n²+n)` vira `O(n²)`"
+          ]
+        },
+
+        // 19 - ordens complexidade
+        {
+          tipo: "lista",
+          itens: [
+            "`O(1)` → tempo constante (ex: acessar `lista[0]`)",
+            "`O(log n)` → divide o problema pela metade (ex: busca binária)",
+            "`O(n)` → laço simples percorrendo todos elementos",
+            "`O(n log n)` → algoritmos de ordenação eficientes (merge sort, `sorted()`)",
+            "`O(n²)` → dois laços aninhados dependentes de n",
+            "`O(n³)` → três laços aninhados dependentes de n",
+            "`O(2ⁿ)` → recursão com duas chamadas por nível sem reaproveitamento (Fibonacci)",
+            "Ordem crescente: O(1) < O(log n) < O(n) < O(n log n) < O(n²) < O(n³) < O(2ⁿ)"
+          ]
+        },
+
+        // 20 - regras big o
+        {
+          tipo: "lista",
+          itens: [
+            "Laço aninhado só é O(n²) se o laço interno também depender de n",
+            "Laços sequenciais somam complexidades; laços aninhados multiplicam",
+            "`if/else` normalmente é O(1); complexidade do bloco é a do pior ramo",
+            "`x in lista` é O(n); `x in dicionario`/`x in conjunto` é O(1) em média",
+            "Chamada de função dentro de laço multiplica complexidades",
+            "Recursão: uma chamada por nível → O(n); divide pela metade → O(log n); duas chamadas por nível → O(2ⁿ)"
+          ]
+        },
+
+        // 21 - pegadinhas complexidade
+        {
+          tipo: "lista",
+          itens: [
+            "Nem todo laço duplo é O(n²) (laço interno pode ter tamanho fixo)",
+            "Big O representa o pior caso, não o melhor",
+            "Esquecer de simplificar (ex: `O(2n+3)` deve virar `O(n)`)"
+          ]
+        },
+
+        // 22 - pilha
+        {
+          tipo: "topico",
+          titulo: "Pilha (Stack) — LIFO",
+          lista: [
+            "**LIFO** → último a entrar é o primeiro a sair",
+            "`push(x)` → insere no topo; `pop()` → remove e retorna o topo",
+            "`peek()`/`top()` → olha o topo sem remover; `is_empty()` → verifica vazio",
+            "Implementação eficiente em Python: usar final da lista como topo (`append`/`pop` são O(1))",
+            "Aplicações: desfazer (Ctrl+Z), histórico de navegação, pilha de execução de funções"
+          ]
+        },
+
+        // 23 - fila
+        {
+          tipo: "topico",
+          titulo: "Fila (Queue) — FIFO",
+          lista: [
+            "**FIFO** → primeiro a entrar é o primeiro a sair",
+            "`enqueue(x)` → insere no final; `dequeue()` → remove do início",
+            "Implementar fila com lista comum é ineficiente: `pop(0)` é O(n)",
+            "`collections.deque` → `append`/`popleft` são O(1), solução eficiente",
+            "Aplicações: fila de impressão, atendimento, busca em largura (BFS)"
+          ]
+        },
+
+        // 24 - pilha vs fila
+        {
+          tipo: "lista",
+          itens: [
+            "Pilha: LIFO, inserção/remoção no topo, implementação eficiente com lista",
+            "Fila: FIFO, inserção no final e remoção no início, implementação eficiente com `deque`",
+            "Pilha de execução de funções é o mecanismo por trás da recursão"
+          ]
+        },
+
+        // 25 - pegadinhas pilha fila
+        {
+          tipo: "lista",
+          itens: [
+            "Topo da pilha é sempre o último elemento inserido",
+            "Frente da fila é sempre o primeiro elemento inserido",
+            "Usar `pop(0)` em fila com lista é ineficiente (O(n)); usar `deque.popleft()`",
+            "`pop()` sem argumento remove o último elemento, não o primeiro",
+            "Verificar `is_empty()` antes de `pop()`/`dequeue()` evita erro"
+          ]
+        }
+      ]
+    },
+
+    {
+      id: "ordenacao-memoizacao",
+      titulo: "Algoritmos de Ordenação e Memoização",
+      blocos: [
+
+        // 26 - bubble sort
+        {
+          tipo: "topico",
+          titulo: "Bubble Sort",
+          lista: [
+            "Compara pares de elementos vizinhos e troca se estiverem fora de ordem",
+            "A cada passagem, o maior elemento \"borbulha\" até o final",
+            "Só troca elementos adjacentes",
+            "Complexidade: `O(n²)` no pior e no caso médio"
+          ]
+        },
+
+        // 27 - selection sort
+        {
+          tipo: "topico",
+          titulo: "Selection Sort",
+          lista: [
+            "Busca o menor elemento da parte não ordenada e posiciona na parte ordenada",
+            "No máximo uma troca por passagem",
+            "Sempre percorre todo o restante, mesmo se quase ordenada → sempre `O(n²)`"
+          ]
+        },
+
+        // 28 - insertion sort
+        {
+          tipo: "topico",
+          titulo: "Insertion Sort",
+          lista: [
+            "Insere cada elemento na posição correta da parte já ordenada",
+            "Único dos três (Bubble/Selection/Insertion) com melhor caso `O(n)` (lista quase ordenada)",
+            "Pior caso: `O(n²)` (lista em ordem inversa)"
+          ]
+        },
+
+        // 29 - merge sort
+        {
+          tipo: "topico",
+          titulo: "Merge Sort",
+          lista: [
+            "Estratégia **dividir para conquistar**: divide ao meio recursivamente e depois mescla",
+            "Sempre `O(n log n)`, tanto no melhor quanto no pior caso",
+            "Usa memória extra para listas temporárias da mesclagem",
+            "Normalmente implementado de forma recursiva"
+          ]
+        },
+
+        // 30 - comparacao ordenacao
+        {
+          tipo: "lista",
+          itens: [
+            "Bubble Sort: troca vizinhos repetidamente, `O(n²)`",
+            "Selection Sort: busca o menor e posiciona, `O(n²)` sempre",
+            "Insertion Sort: insere na posição certa, melhor caso `O(n)`, pior caso `O(n²)`",
+            "Merge Sort: divide e mescla, sempre `O(n log n)`, usa memória extra"
+          ]
+        },
+
+        // 31 - pegadinhas ordenacao
+        {
+          tipo: "lista",
+          itens: [
+            "Bubble troca vizinhos várias vezes por passagem; Selection troca no máximo uma vez",
+            "Insertion Sort costuma ser mais rápido que Bubble em listas quase ordenadas, mesmo com mesmo Big O",
+            "Merge Sort nem sempre é a melhor escolha (overhead em listas muito pequenas)"
+          ]
+        },
+
+        // 32 - memoizacao
+        {
+          tipo: "topico",
+          titulo: "Memoização",
+          lista: [
+            "**Memoização** → guarda (cacheia) resultados já calculados para evitar recálculo",
+            "Implementação manual: dicionário associando entrada → resultado",
+            "Implementação pronta: decorador `@lru_cache` de `functools`",
+            "Transforma Fibonacci recursivo de `O(2ⁿ)` para `O(n)`",
+            "Só é útil quando há chamadas repetidas com os mesmos argumentos (não ajuda em `fatorial`)",
+            "Trade-off: economiza tempo de processamento, mas gasta mais memória"
+          ]
+        },
+
+        // 33 - pegadinhas memoizacao
+        {
+          tipo: "lista",
+          itens: [
+            "Memoização não é um tipo de recursão, é técnica aplicada sobre ela",
+            "Nem toda função recursiva se beneficia (fatorial não repete entradas)",
+            "Esquecer de guardar o resultado no cache antes de retornar anula o ganho",
+            "Memoização gasta mais memória, não menos"
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+],
 
   extra: {
   mapasMentais: [
