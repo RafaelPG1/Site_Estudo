@@ -3064,18 +3064,21 @@ ava: [
 // 1 - Modos de operação em redes sem fio e asserções sobre mobilidade
 {
   aula: "Revisão da Luzia",
-  texto: "Redes sem fio podem operar em diferentes modos, como no modo infraestrutura, onde os dispositivos se comunicam através de um ponto de acesso (access point), ou o modo ad hoc, onde os dispositivos se comunicam diretamente entre si.\n\nFOROUZAN, Behrouz A. Comunicação de Dados e Redes de Computadores. 5. ed. Porto Alegre: AMGH, 2013.\n\nAvalie as asserções a seguir e a relação proposta entre elas.\n\nI. Em redes sem fio, a mobilidade dos usuários exige mecanismos de gerenciamento da conexão quando eles se deslocam entre diferentes pontos de acesso.\n\nPORQUE\n\nII. O meio de transmissão compartilhado (ar) permite que os bits sejam enviados sem qualquer risco de perda ou atenuação do sinal.",
-  question: "A respeito dessas asserções, assinale a opção correta.",
-  code: ``,
-  options: [
-    "As asserções I e II são proposições falsas.",
-    "A asserção I é verdadeira, e a II é falsa.",
-    "As asserções I e II são verdadeiras, e a II é uma justificativa correta da I.",
-    "As asserções I e II são verdadeiras, mas a II não justifica a I."
+  tipo: "Asserção + Justificativa",
+  texto: "Redes sem fio podem operar em diferentes modos, como no modo infraestrutura, onde os dispositivos se comunicam através de um ponto de acesso (access point), ou o modo ad hoc, onde os dispositivos se comunicam diretamente entre si.\n\nFOROUZAN, Behrouz A. Comunicação de Dados e Redes de Computadores. 5. ed. Porto Alegre: AMGH, 2013.",
+  question: "Avalie as asserções a seguir e a relação proposta entre elas.",
+  assertions: [
+    "Em redes sem fio, a mobilidade dos usuários exige ==rule==mecanismos de gerenciamento de conexão== quando eles se deslocam entre diferentes pontos de acesso.",
+    "PORQUE o meio de transmissão compartilhado (ar) permite que os bits sejam enviados sem qualquer risco de ==warn==perda ou atenuação do sinal=="
   ],
-  answer: 1,
-  feedback: "A asserção I é verdadeira: quando o usuário se move entre pontos de acesso diferentes, a rede precisa de mecanismos como handover (transferência de conexão) para manter a comunicação sem interrupção. Já a asserção II é falsa, porque o ar, como meio compartilhado, está sujeito a atenuação, interferência, ruído e perda de sinal — é justamente por isso que redes sem fio precisam de mecanismos de detecção e correção de erro mais robustos que redes cabeadas.",
-  chips: []
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 2,
+  feedback: "A asserção I é verdadeira: como o usuário se move entre pontos de acesso diferentes, a rede precisa de mecanismos como **handover** para manter a conexão sem interrupção. Já a asserção II é falsa, pois o ar, como meio compartilhado, está sujeito a ==warn==atenuação, interferência e ruído==, não sendo um meio livre de perdas."
 },
 
 // 2 - Divisão de sub-redes IPv4
