@@ -6456,6 +6456,480 @@ secoes: [
 
   ],
 
+  professor: [
+    {
+  aula: "Análise e Projeto de Sistemas I: Fundamentos, UML e Padrões de Projeto (GoF)",
+  ideia_central: "A aula apresenta os fundamentos da orientação a objetos e dos ciclos de vida de desenvolvimento de software (cascata, incremental, espiral e ágil), a engenharia de requisitos e suas técnicas de elicitação, a modelagem visual através da UML dentro do processo RUP, e os padrões de projeto GoF como soluções maduras para problemas recorrentes de projeto orientado a objetos.",
+  secoes: [
+    {
+      id: "paradigmas_ciclo_vida",
+      titulo: "Unidade 1 — Paradigmas e Ciclo de Vida",
+      blocos: [
+        {
+          tipo: "subtitulo",
+          texto: "Unidade 1"
+        },
+        {
+          tipo: "topico",
+          titulo: "Roteiro da Aula",
+          lista: [
+            "**Ciclo de Vida**: Processos fundamentais.",
+            "**Requisitos**: Levantamento estruturado.",
+            "**UML e RUP**: Modelagem visual.",
+            "**Padrões GoF**: Soluções maduras."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Conceito Base: O Paradigma OO",
+          lista: [
+            "**Modelagem:** Simula entidades reais.",
+            "**Manutenção:** Facilita extensões futuras.",
+            "**Classes:** Moldes abstratos estruturais."
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "A Força da Instanciação: **1 Molde** — Múltiplos objetos dinâmicos."
+        },
+        {
+          tipo: "topico",
+          titulo: "Pilar: Polimorfismo",
+          lista: [
+            "**Interface Única:** Uma chamada geral.",
+            "**Ações Distintas:** Respostas específicas executadas."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Evolução dos Ciclos",
+          lista: [
+            "**Anos 70 — Cascata:** Progresso linear.",
+            "**Anos 80 — Espiral:** Controle contínuo.",
+            "**Anos 00 — Ágil:** Adaptação rápida."
+          ]
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Metodologias Clássicas"
+        },
+        {
+          tipo: "topico",
+          titulo: "O Modelo Cascata",
+          lista: [
+            "**Fluxo Sequencial:** Progressão sistemática direta.",
+            "**Documentação:** Roteiro técnico claro.",
+            "**Rigidez Lógica:** Dificulta retornos complexos."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "A Ilusão da Linearidade",
+          lista: [
+            "**Expectativa:** Requisitos congelados.",
+            "**Realidade:** Incertezas naturais constantes.",
+            "**Consequência:** Adaptação inviável."
+          ]
+        },
+        {
+          tipo: "imagem",
+          id: "diagrama_waterfall_model",
+          src: "waterfall_model.png",
+          pasta: "imagens_analise_projeto/revisao",
+          alt: "Diagrama do modelo em cascata (Waterfall Model) mostrando o fluxo sequencial entre Requirement Analysis, System Design, Implementation, Testing, Deployment e Maintenance, com setas de retorno indicando o feedback entre as fases posteriores e anteriores.",
+          num: 1
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Abordagens Modernas"
+        },
+        {
+          tipo: "topico",
+          titulo: "O Modelo Incremental",
+          lista: [
+            "**Divisão Prática:** Construção fragmentada ágil.",
+            "**Entregas Precoces:** Funcionalidades operacionais imediatas.",
+            "**Mitigação Ativa:** Antecipa retornos financeiros."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "O Modelo Espiral",
+          lista: [
+            "**Voltas:** Ciclos evolutivos radiais.",
+            "**Foco:** Avaliação rigorosa constante (com foco central em **Riscos**).",
+            "**Protótipos:** Validação experimental técnica."
+          ]
+        }
+      ]
+    },
+    {
+      id: "metodologias_ageis",
+      titulo: "Unidade 1 - Parte 2 — Metodologias Ágeis",
+      blocos: [
+        {
+          tipo: "subtitulo",
+          texto: "Unidade 1 - Parte 2"
+        },
+        {
+          tipo: "citacao",
+          texto: "Software funcionando mais que documentação abrangente.",
+          autor: "Manifesto Ágil"
+        },
+        {
+          tipo: "topico",
+          titulo: "Framework Scrum",
+          lista: [
+            "1. Product Backlog",
+            "2. Sprint Planning",
+            "3. Daily Scrum"
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "Coração do Scrum: **Sprints** — Ciclos de tempo fixos entregando produto funcional."
+        },
+        {
+          tipo: "topico",
+          titulo: "Papéis Formais",
+          lista: [
+            "**Product Owner:** Define valor comercial.",
+            "**Scrum Master:** Facilita processos técnicos.",
+            "**Developers:** Construtores técnicos autogerenciados."
+          ]
+        },
+        {
+          tipo: "imagem",
+          id: "kanban_board_exemplo",
+          src: "kanban_board.png",
+          pasta: "imagens_analise_projeto/revisao",
+          alt: "Captura de tela de um quadro Kanban (ferramenta Concept Board) dividido em quatro colunas, com cartões coloridos representando tarefas em diferentes estágios do fluxo de trabalho, incluindo indicações visuais de prioridade e movimentação entre colunas.",
+          num: 2
+        },
+        {
+          tipo: "topico",
+          titulo: "Método Kanban",
+          lista: [
+            "**Visualização:** Fluxo total exposto.",
+            "**WIP:** Limites de trabalho estritos.",
+            "**Gargalos:** Identificação visual imediata."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Extreme Programming (XP)",
+          lista: [
+            "**Práticas Isoladas:** Fases longas estagnadas.",
+            "**Níveis Extremos:** Colaboração diária intensiva."
+          ]
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Práticas XP"
+        },
+        {
+          tipo: "topico",
+          titulo: "Pilares Operacionais",
+          lista: [
+            "**Programação em Pares:** Terminal compartilhado sempre.",
+            "**Refatoração:** Melhoria estrutural diária.",
+            "**Testes Iniciais:** Garantia técnica primária."
+          ]
+        }
+      ]
+    },
+    {
+      id: "engenharia_requisitos",
+      titulo: "Unidade 2 — Engenharia de Requisitos",
+      blocos: [
+        {
+          tipo: "subtitulo",
+          texto: "Unidade 2"
+        },
+        {
+          tipo: "topico",
+          titulo: "O que são Requisitos?",
+          lista: [
+            "**Acordo:** Contrato técnico estabelecido.",
+            "**Necessidade:** Problemas reais solucionados.",
+            "**Escopo:** Fronteiras claras definidas."
+          ]
+        },
+        {
+          tipo: "subtitulo",
+          texto: "Classificação"
+        },
+        {
+          tipo: "topico",
+          titulo: "Requisitos Funcionais",
+          lista: [
+            "**Ações Diretas:** Comportamentos operacionais visíveis.",
+            "**Regras Negociais:** Lógica corporativa aplicada.",
+            "**Processamento:** Transformação interna exata."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Requisitos Não Funcionais",
+          lista: [
+            "**Performance:** Limites operacionais aceitáveis.",
+            "**Segurança:** Proteção técnica exigida."
+          ]
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Caso Prático: Portal Bancário",
+          texto: "Restrição não funcional que exige um limite máximo de tempo para o retorno de consultas no sistema.",
+          detalhe: "**3 Segundos** — Limite máximo exigido para retorno de consultas (classificado como Restrição Não Funcional)."
+        },
+        {
+          tipo: "topico",
+          titulo: "Técnicas de Elicitação",
+          lista: [
+            "**Entrevistas:** Diálogo estruturado formal.",
+            "**Reuniões:** Alinhamento grupal rápido.",
+            "**Observação:** Imersão local silenciosa."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Etnografia (Abordagem Profunda)",
+          lista: [
+            "**Imersão:** Observação prolongada passiva.",
+            "**Rotinas:** Práticas tácitas reveladas.",
+            "**Informalidade:** Captura detalhes omitidos."
+          ]
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Aplicação Etnográfica: Sistema de Controle Aéreo",
+          texto: "Anotações informais e interações espontâneas revelam requisitos sociais complexos, evidenciando a força da abordagem etnográfica em ambientes operacionais críticos."
+        },
+        {
+          tipo: "topico",
+          titulo: "Mapeamento Estrutural",
+          lista: [
+            "**Linguagem Natural:** Documentos textuais descritivos.",
+            "**Modelo OO:** Blocos conceituais extraídos."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "A Heurística Textual",
+          lista: [
+            "**Substantivos:** Potenciais classes extraídas.",
+            "**Exemplo:** A entidade \"Imóvel\".",
+            "**Verbos:** Operações técnicas passíveis."
+          ]
+        },
+        {
+          tipo: "exemplo",
+          titulo: "Exemplo de Heurística Textual",
+          texto: "Na frase \"**Cadastrar** o **Cliente**\", o verbo (destacado em laranja) indica uma operação técnica passível de ser modelada como método, enquanto o substantivo (destacado em azul) indica uma potencial classe a ser extraída do texto."
+        }
+      ]
+    },
+    {
+      id: "rup_uml",
+      titulo: "Unidade 3 — RUP e UML",
+      blocos: [
+        {
+          tipo: "subtitulo",
+          texto: "Unidade 3"
+        },
+        {
+          tipo: "imagem",
+          id: "diagrama_estilos_arquitetura_software",
+          src: "software_architecture_styles.png",
+          pasta: "imagens_analise_projeto/revisao",
+          alt: "Diagrama circular colorido apresentando diversos estilos de arquitetura de software organizados ao redor de um núcleo central chamado 'Software Architecture Styles', incluindo Layered (n-tier), Microkernel, Component-Based, Service-Oriented, Distributed Systems, Space-Based, Event-Driven, Domain-Driven (DDD), Model-View-Controller, Model-View-Presenter, Model-View-ViewModel, Interpreter, Orchestration, Choreography, Pipeline/Pipe-Filter e CQRS, cada um com uma pequena ilustração esquemática ao redor do círculo.",
+          num: 3
+        },
+        {
+          tipo: "topico",
+          titulo: "O Modelo RUP (Processo Unificado)",
+          lista: [
+            "**Iterativo:** Evolução cíclica constante.",
+            "**Arquitetura:** Núcleo estrutural priorizado.",
+            "**Casos de Uso:** Direção funcional guiada."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Ciclo Sequencial RUP",
+          lista: [
+            "**Iniciação:** Escopo geral.",
+            "**Elaboração:** Redução técnica.",
+            "**Construção:** Codificação total.",
+            "**Transição:** Entrega final."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Disciplinas RUP (Eixos Verticais)",
+          lista: [
+            "**Modelagem:** Compreensão negocial inicial.",
+            "**Requisitos:** Prioridade conceitual máxima.",
+            "**Implementação:** Tradução lógica sistêmica."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Introdução à UML",
+          lista: [
+            "**Padrão:** Notação visual unificada.",
+            "**Estruturais:** Diagramas mapeando estática.",
+            "**Comportamentais:** Diagramas rastreando dinâmica."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Casos de Uso",
+          lista: [
+            "**Visão Externa:** Entidades externas operantes.",
+            "**Valor Entregue:** Grandes blocos lógicos."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Atores do Sistema",
+          lista: [
+            "**Simbologia:** Representados por pequenos bonecos.",
+            "**Interação:** Linhas retas conectando elipses."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Diagrama de Classes (Modelo Estrutural)",
+          lista: [
+            "**Estático:** Mapeia estrutura permanente.",
+            "**Atributos:** Informações armazenadas localmente.",
+            "**Operações:** Comportamentos disponíveis listados."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "A Multiplicidade (Relacionamentos)",
+          lista: [
+            "**Limites Claros:** Define fronteiras instanciáveis.",
+            "**Associações:** Conexões estáticas estruturais.",
+            "**Regra Visual:** Anotações numéricas fixadas."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Diagrama de Atividades (Modelo Comportamental)",
+          lista: [
+            "**Início:** Ponto de partida do fluxo.",
+            "**Decisão:** Ponto de ramificação condicional.",
+            "**Conclusão:** Ponto de encerramento do fluxo."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Diagrama de Sequência",
+          lista: [
+            "**Vida Útil:** Linhas pontilhadas verticais.",
+            "**Trocas:** Setas horizontais diretas.",
+            "**Tempo:** Fluxo cronológico contínuo."
+          ]
+        }
+      ]
+    },
+    {
+      id: "padroes_projeto_gof",
+      titulo: "Unidade 4 — Padrões de Projeto (GoF)",
+      blocos: [
+        {
+          tipo: "subtitulo",
+          texto: "Unidade 4"
+        },
+        {
+          tipo: "citacao",
+          texto: "Gabaritos consolidados abstratos para problemas recorrentes corporativos.",
+          autor: "Gang of Four (GoF)"
+        },
+        {
+          tipo: "topico",
+          titulo: "Padrões de Criação (Catálogo)",
+          lista: [
+            "**Instanciação:** Controle estrutural seguro.",
+            "**Blindagem:** Construtores ocultos flexíveis.",
+            "**Desacoplamento:** Criação lógica separada."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Singleton (Padrão Criacional)",
+          lista: [
+            "**Garantia:** Instância estrita única.",
+            "**Controle:** Memória global preservada.",
+            "**Uso Real:** Conexões sistêmicas críticas."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Factory Method",
+          lista: [
+            "**Problema:** Condicionais complexos centralizados.",
+            "**Solução:** Delegação instanciadora herdada."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Padrões Estruturais (Catálogo)",
+          lista: [
+            "**Composição:** Arranjos classificados hierárquicos.",
+            "**Simplificação:** Interfaces amigáveis construídas."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Facade (Padrão Estrutural)",
+          lista: [
+            "**Centralização:** Encobre subsistemas densos.",
+            "**Exemplo:** Método `cobrar()` unificado.",
+            "**Benefício:** Coesão arquitetural protegida."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Padrões Comportamentais (Catálogo)",
+          lista: [
+            "**Comunicação:** Mensagens distribuídas ativas.",
+            "**Responsabilidades:** Algoritmos delegados flexíveis.",
+            "**Notificações:** Atualizações independentes automáticas."
+          ]
+        },
+        {
+          tipo: "topico",
+          titulo: "Observer (Padrão Comportamental)",
+          lista: [
+            "**Publicadores:** Sujeitos centrais geradores.",
+            "**Assinantes:** Objetos avisados independentemente.",
+            "**Exemplo:** Cotação alertando gráficos."
+          ]
+        }
+      ]
+    },
+    {
+      id: "conclusao",
+      titulo: "Conclusão da Disciplina",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Conclusão da Disciplina: modelagem madura, ciclos iterativos ágeis e arquitetura resiliente."
+        },
+        {
+          tipo: "destaque",
+          texto: "Perguntas?"
+        }
+      ]
+    }
+  ]
+}
+  ],
+
 extra: {
   mapasMentais: [
     {
