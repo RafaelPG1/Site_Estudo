@@ -1,5 +1,5 @@
 /* ============================================================
-   NEXUS STUDY — shared/js/utils/zoom.js  (v3.0)
+   NEXUS STUDY — shared/js/utils/zoom.js  (v3.1)
    ============================================================ */
 
 // ═══ ZOOM POR ÁREA ═════════════════════════════════════════
@@ -15,6 +15,29 @@
 // side-effect ao carregar) — assim logo.js pode importar a função
 // daqui sem gerar dependência circular entre os dois arquivos.
 //
+// ─────────────────────────────────────────────────────────────
+// ÁREA 'resumos' vs ÁREA 'resumo_pdf' — são DUAS áreas distintas
+// e independentes, apesar do nome parecido:
+//
+//   'resumos'    → Resumo NORMAL do sistema (Home, leitura de
+//                  aula, conteúdo do reader). Ligada a rota via
+//                  getAreaFromPath()/_AREA_MAP, aplicada como
+//                  zoom da página inteira (document.documentElement),
+//                  exatamente como sempre funcionou.
+//
+//   'resumo_pdf' → EXCLUSIVA do visualizador de PDF gerado por
+//                  resumo/js/resumo-pdf.js (aba própria, aberta via
+//                  Blob URL). NUNCA é atingida por getAreaFromPath()
+//                  (essa aba não roda sob uma rota do site) e NUNCA
+//                  deve ser lida/gravada pelo código da área
+//                  'resumos'. Ver getZoomResumoPdf/setZoomResumoPdf
+//                  no fim deste arquivo.
+//
+// As duas vivem no mesmo objeto salvo em localStorage (mesmo padrão
+// de todas as áreas: uma chave por área, dentro do mesmo storage),
+// mas cada uma só é lida/escrita pelas suas próprias funções — nunca
+// há leitura/gravação cruzada entre elas.
+// ─────────────────────────────────────────────────────────────
 
 /* ── Zoom padrão de cada área — edite aqui para personalizar ── */
 const ZOOM_POR_AREA = {
@@ -25,14 +48,22 @@ const ZOOM_POR_AREA = {
   game:    80,
   perfil:  80,
   atlas: 80,
-  
+  // Placeholder — o valor inicial real do visualizador de PDF ainda
+  // será calibrado à parte (ver getZoomResumoPdf/setZoomResumoPdf).
+  // Esta correção só separa a área; não define o valor final.
+  resumo_pdf: 135,
 };
 
 const STORAGE_KEY = 'nexus_zoom_por_area';
 
 /* ── Identificação de área (antes vivia em logo.js) ──────────
    Mesmo mapeamento de rotas → área já usado em produção pelo
-   logo.js para o playSound por área. */
+   logo.js para o playSound por área.
+
+   IMPORTANTE: 'resumo_pdf' não entra neste mapa de propósito — o
+   visualizador de PDF não é uma rota do site (é uma aba própria,
+   aberta via Blob URL, sem module import deste arquivo), então
+   nunca deve ser resolvido a partir de window.location.pathname. */
 const _AREA_MAP = [
   { match: /\/quiz\//,      area: 'quiz'    },
   { match: /\/resumo\//,    area: 'resumos' },
@@ -91,7 +122,9 @@ function _aplicarZoomEm(elemento, valor) {
 
 /* ── Auto-aplicação ao carregar (side-effect do import) ──────
    Igual ao comportamento original — o zoom é aplicado assim que o
-   módulo é importado — mas agora usando o valor da área atual. */
+   módulo é importado — mas agora usando o valor da área atual.
+   Continua resolvendo SOMENTE áreas de rota (getAreaFromPath), então
+   'resumo_pdf' nunca é aplicada por aqui (ver comentário acima). */
 (() => {
   const area = getAreaFromPath();
   _aplicarZoom(_zoomDaArea(area));
@@ -132,4 +165,30 @@ export function aplicarZoomQuestoes(seletorOuElemento = '#quiz-container', valor
 
   const zoomFinal = valor ?? getZoomQuestoes();
   _aplicarZoomEm(elemento, zoomFinal);
+}
+
+/* ── API pública — zoom do visualizador de PDF (resumo_pdf) ──
+   Área fixa 'resumo_pdf', completamente independente da área
+   'resumos' (Resumo normal) — mesmo storage (nexus_zoom_por_area),
+   propriedade própria, nunca lida/gravada por getZoomAtual/
+   setZoomAtual nem pelo auto-apply acima.
+
+   Só get/set de valor: não existe "aplicar no documentElement" nem
+   "aplicar num elemento" aqui, porque o visualizador de PDF é um
+   DOCUMENTO SEPARADO (aba própria, aberta via Blob URL a partir de
+   resumo/js/resumo-pdf.js) — ele não roda no mesmo `document` deste
+   módulo e faz seu próprio controle de escala (re-render das páginas
+   no PDF.js), não um `style.zoom`. Por isso o visualizador guarda seus
+   ajustes de zoom escrevendo diretamente no mesmo localStorage/mesma
+   área 'resumo_pdf' (ver resumo/js/resumo-pdf-viewer.js) — este par
+   de funções é o que o restante do site (fora da aba do visualizador)
+   usa para ler/gravar esse mesmo valor, ex.: o zoom inicial calculado
+   por resumo-pdf.js antes de abrir a aba. */
+
+export function getZoomResumoPdf() {
+  return _zoomDaArea('resumo_pdf');
+}
+
+export function setZoomResumoPdf(valor) {
+  _salvar('resumo_pdf', valor);
 }

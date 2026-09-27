@@ -6,8 +6,11 @@
 
    O documento do PDF em si (tipografia de impressão,
    paginação, quebras) é montado inline dentro de
-   resumo-pdf.js — abre numa aba própria e não depende
-   deste arquivo.
+   js/resumo-pdf-document.js, e o visualizador (aba
+   própria com PDF.js) em js/resumo-pdf-viewer.js —
+   nenhum dos dois depende deste arquivo, porque são
+   documentos HTML separados, abertos via Blob URL em
+   outra aba/janela (sem acesso a este stylesheet).
    ============================================= */
 
 /* ══════════════════════════════════════════════
@@ -223,6 +226,14 @@
 .pdf-generate-btn:hover:not(:disabled) { opacity: 0.9; }
 .pdf-generate-btn:active:not(:disabled) { transform: scale(0.97); }
 .pdf-generate-btn:disabled { opacity: 0.35; cursor: default; }
+
+/* Gira o ícone do botão "Gerar PDF" enquanto a geração está em
+   andamento (ver _setGerando em js/resumo-pdf.js, que só alterna a
+   classe abaixo — antes esta regra era injetada em runtime via JS
+   (_injetarEstiloGerando); movida para cá porque é CSS de uma parte
+   fixa desta própria página, sem motivo pra passar por JS). */
+.pdf-generate-btn--loading svg { animation: pdf-gerando-spin .8s linear infinite; }
+@keyframes pdf-gerando-spin { to { transform: rotate(360deg); } }
 
 @media (max-width: 720px) {
   .pdf-modal__body { grid-template-columns: 1fr; }
