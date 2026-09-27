@@ -5325,8 +5325,8 @@ window.__nexusConteudo = {
   videos: [
     {
       titulo: "Revisão de Legislação",
-      pasta: "estruturas_dados/videos",              // era "url", troque para "pasta"
-      src: "revisao_estruturas_dados.mp4"
+      pasta: "legislacao/videos",        // era "url", troque para "pasta"
+      src: "revisao_legislacao.mp4"
     }
   ],
 }

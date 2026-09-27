@@ -258,6 +258,41 @@ export function _buildVisualizadorHTML(nomeArquivo, blobUrl, zoomInicial) {
   #pdfview-pages.draw-mode .pdfview-textlayer{ pointer-events:none; }
 
   .pdfview-msg{ color:#ada698;padding:2rem;text-align:center;max-width:420px;margin:0 auto;line-height:1.6; }
+
+  /* Barra de busca própria (Ctrl+F) — substitui a busca nativa do
+     navegador, que só enxerga texto das páginas atualmente
+     renderizadas (ver comentário grande sobre indexação, mais abaixo
+     no <script>). Fica fixa, abaixo da barra de ferramentas. */
+  .pdfview-findbar{
+    position:fixed; top:60px; right:12px; z-index:6;
+    display:flex; align-items:center; gap:.4rem;
+    background:#171a2b; border:1px solid rgba(255,255,255,0.14);
+    border-radius:8px; padding:.4rem .5rem;
+    box-shadow:0 6px 20px rgba(0,0,0,.35);
+  }
+  .pdfview-findbar[hidden]{ display:none; }
+  .pdfview-findbar__input{
+    background:#0c0f22; border:1px solid rgba(255,255,255,0.14); border-radius:5px;
+    color:#f0ead8; font-size:.8rem; padding:.35rem .5rem; width:170px;
+  }
+  .pdfview-findbar__input:focus{ outline:none; border-color:#7fcba0; }
+  .pdfview-findbar__input--empty{ border-color:#e0475c; }
+  .pdfview-findbar__count{
+    font-size:.72rem; color:#8a8478; min-width:88px; text-align:center; white-space:nowrap;
+  }
+
+  /* Marcação da ocorrência: caixa posicionada por cima da página, nas
+     coordenadas reais do texto (ver drawHighlightsForPage) — funciona
+     esteja a página renderizada há tempos ou tenha acabado de ser
+     forçada a renderizar para exibir o resultado. */
+  .pdfview-hl{
+    position:absolute; pointer-events:none; border-radius:2px;
+    background:rgba(255,224,102,.55);
+  }
+  .pdfview-hl--active{
+    background:rgba(255,150,50,.75);
+    box-shadow:0 0 0 2px rgba(255,150,50,.9);
+  }
 </style>
 </head>
 <body>
@@ -301,6 +336,14 @@ export function _buildVisualizadorHTML(nomeArquivo, blobUrl, zoomInicial) {
         </div>
       </div>
     </div>
+  </div>
+
+  <div class="pdfview-findbar" id="findbar" hidden>
+    <input type="text" class="pdfview-findbar__input" id="find-input" placeholder="Localizar no documento" autocomplete="off" spellcheck="false">
+    <span class="pdfview-findbar__count" id="find-count"></span>
+    <button class="tb-btn" id="find-prev" title="Anterior (Shift+Enter)">‹</button>
+    <button class="tb-btn" id="find-next" title="Próximo (Enter)">›</button>
+    <button class="tb-btn" id="find-close" title="Fechar (Esc)">✕</button>
   </div>
 
   <div class="pdfview-scroll" id="viewer-scroll">
@@ -352,6 +395,18 @@ export function _buildVisualizadorHTML(nomeArquivo, blobUrl, zoomInicial) {
       var strokesByPage = new Map();
       var undoStack = [], redoStack = [];
       var drawMode = false, drawing = false, currentStroke = null;
+
+      /* ── Estado da busca (Ctrl+F) — ver bloco "Busca" mais abaixo,
+         perto da Navegação/Zoom, por depender de renderPageEntry,
+         scrollToPage e pdfDoc já existirem. Declarado aqui, junto do
+         resto do estado do visualizador, só para ficar num único
+         lugar fácil de achar. */
+      var pageTextCache = [];       // pageTextCache[i] = { items, text, offsets } da página i+1 (getTextContent, independente do canvas)
+      var indexingStarted = false;
+      var indexDone = false;
+      var findState = { query: '', matches: [], current: -1 }; // matches: [{page, start, end}]
+      var activeHighlightEls = [];
+      var findDebounceTimer = null;
 
       function mostrarFallback() {
         var podeVoltar = !!(window.opener && !window.opener.closed);
@@ -462,10 +517,11 @@ export function _buildVisualizadorHTML(nomeArquivo, blobUrl, zoomInicial) {
       }, { root: viewerScroll, rootMargin: '600px 0px', threshold: 0.01 });
 
       function renderPageEntry(entry) {
-        if (entry.rendered || entry.rendering) return;
+        if (entry.rendered) return Promise.resolve();
+        if (entry.rendering) return entry.renderingPromise || Promise.resolve();
         entry.rendering = true;
         var getPagina = entry.pdfPage ? Promise.resolve(entry.pdfPage) : pdfDoc.getPage(entry.num);
-        getPagina.then(function (page) {
+        entry.renderingPromise = getPagina.then(function (page) {
           entry.pdfPage = page;
           var viewport = page.getViewport({ scale: scale });
           entry.wrapper.style.width = viewport.width + 'px';
@@ -512,11 +568,14 @@ export function _buildVisualizadorHTML(nomeArquivo, blobUrl, zoomInicial) {
         }).then(function () {
           entry.rendering = false;
           entry.rendered = true;
+          entry.renderingPromise = null;
           redrawStrokes(entry);
         }).catch(function (err) {
           entry.rendering = false;
+          entry.renderingPromise = null;
           console.error('[Resumo PDF] Falha ao renderizar página:', entry.num, err);
         });
+        return entry.renderingPromise;
       }
 
       function liberarPageEntry(entry) {
@@ -525,6 +584,15 @@ export function _buildVisualizadorHTML(nomeArquivo, blobUrl, zoomInicial) {
         if (entry.canvas) { entry.canvas.remove(); entry.canvas = null; }
         if (entry.textLayerDiv) { entry.textLayerDiv.remove(); entry.textLayerDiv = null; }
         if (entry.dcanvas) { entry.dcanvas.remove(); entry.dcanvas = null; entry.dctx = null; }
+        // Marcações de busca (ver drawHighlightsForPage) não pertencem
+        // ao ciclo de vida do canvas, mas não fazem sentido sobreviver
+        // sozinhas numa página que saiu de tela — evita resíduo visual
+        // se o usuário rolar para longe sem navegar entre ocorrências.
+        var hls = entry.wrapper.querySelectorAll('.pdfview-hl');
+        if (hls.length) {
+          hls.forEach(function (el) { el.remove(); });
+          activeHighlightEls = activeHighlightEls.filter(function (el) { return el.isConnected; });
+        }
         entry.rendered = false;
       }
 
@@ -598,6 +666,7 @@ export function _buildVisualizadorHTML(nomeArquivo, blobUrl, zoomInicial) {
           entry.wrapper.style.height = h + 'px';
           if (entry.rendered) liberarPageEntry(entry);
         });
+        clearHighlights();
         document.getElementById('zoom-label').textContent = Math.round(scale * 100) + '%';
         salvarZoomSite(Math.round(scale * 100));
         requestAnimationFrame(function () {
@@ -629,6 +698,268 @@ export function _buildVisualizadorHTML(nomeArquivo, blobUrl, zoomInicial) {
           menuDropdown.classList.remove('open');
         });
       });
+
+      /* ── Busca (Ctrl+F) ───────────────────────────────────────
+         POR QUE a busca nativa do navegador (Ctrl+F) não funcionava
+         direito aqui: o documento tem texto real e selecionável (a
+         camada de texto do PDF.js — ver .pdfview-textlayer acima —
+         monta um <span> por trecho com pdfjsLib.renderTextLayer), só
+         que essa camada só existe nas páginas ATUALMENTE renderizadas
+         (perto da tela, ver IntersectionObserver/renderPageEntry
+         acima): páginas longe da posição de rolagem são só um
+         placeholder vazio, sem nenhum texto no DOM. Como o Ctrl+F do
+         navegador só enxerga o que já está no DOM, ele só achava
+         ocorrências nas poucas páginas próximas da rolagem atual, e
+         não tinha como "ir até" uma ocorrência em outra página (nem
+         sabia que ela existia).
+
+         Por isso a solução usa o PRÓPRIO PDF.js (nenhuma lib nova),
+         mas por outro caminho: em vez de depender da camada de texto
+         renderizada, cada página tem seu texto extraído uma única vez
+         com page.getTextContent() — API leve, que não desenha nada,
+         só devolve os textos e as posições (item.transform) — e
+         guardado em pageTextCache. Isso roda em segundo plano para
+         TODAS as páginas assim que o PDF abre (indexAllPages), em
+         paralelo ao desenho normal das páginas visíveis, e é
+         bem mais barato que renderizar canvas — por isso continua
+         viável mesmo em documentos com muitas páginas (ver ponto 8 do
+         pedido). A busca em si roda sobre esse texto já em memória
+         (uma página sem cache ainda é simplesmente pulada e entra na
+         nova vez que o índice avançar — ver onIndexProgress).
+
+         Ao navegar até uma ocorrência que caiu numa página fora de
+         tela, a própria página é forçada a renderizar
+         (renderPageEntry, que agora devolve a Promise do render — ver
+         acima) antes de rolar até ela, e a marcação da ocorrência é
+         desenhada como uma caixinha posicionada nas coordenadas reais
+         do texto (via item.transform + viewport, mesmo cálculo que o
+         PDF.js usa para posicionar a camada de texto) — funciona
+         mesmo a página nunca tendo sido desenhada antes. */
+
+      function ensurePageObj(num) {
+        var entry = pages[num - 1];
+        if (entry && entry.pdfPage) return Promise.resolve(entry.pdfPage);
+        return pdfDoc.getPage(num).then(function (page) {
+          if (entry) entry.pdfPage = page;
+          return page;
+        });
+      }
+
+      function ensurePageTextCached(num) {
+        if (pageTextCache[num - 1]) return Promise.resolve(pageTextCache[num - 1]);
+        return ensurePageObj(num).then(function (page) {
+          return page.getTextContent().then(function (tc) {
+            var text = '', offsets = [];
+            tc.items.forEach(function (item, idx) {
+              if (!item.str) return;
+              offsets.push({ idx: idx, start: text.length, end: text.length + item.str.length });
+              text += item.str;
+              if (item.hasEOL) text += '\\n';
+            });
+            var cache = { items: tc.items, text: text, offsets: offsets };
+            pageTextCache[num - 1] = cache;
+            return cache;
+          });
+        });
+      }
+
+      // Indexa página por página, em ordem, sem travar a UI (cada
+      // passo só continua depois que o anterior resolve — texto é
+      // leve, mas evitamos disparar centenas de chamadas simultâneas
+      // ao worker do PDF.js de uma vez). Uma falha isolada numa
+      // página não interrompe as demais.
+      function indexAllPages() {
+        if (indexingStarted) return;
+        indexingStarted = true;
+        var n = 1;
+        (function proximo() {
+          if (n > numPages) { indexDone = true; onIndexProgress(); return; }
+          var atual = n++;
+          ensurePageTextCached(atual).then(onIndexProgress, onIndexProgress).then(proximo);
+        })();
+      }
+
+      function onIndexProgress() {
+        if (findbarEl.hidden || !findState.query) return;
+        var semResultadoAntes = findState.matches.length === 0;
+        recomputeMatches(true);
+        if (semResultadoAntes && findState.matches.length) goToMatch(0);
+      }
+
+      function normalizarBusca(s) { return (s || '').toLocaleLowerCase('pt-BR'); }
+
+      // Recalcula as ocorrências em TODAS as páginas já indexadas até
+      // agora (não só a visível). manterAtual=true tenta continuar
+      // apontando para a mesma ocorrência de antes (comparando
+      // página+posição), usado quando o índice avança em segundo
+      // plano e não deve "pular" a visão do usuário.
+      function recomputeMatches(manterAtual) {
+        var q = normalizarBusca(findState.query);
+        var matches = [];
+        if (q) {
+          for (var p = 1; p <= numPages; p++) {
+            var cache = pageTextCache[p - 1];
+            if (!cache) continue;
+            var hay = normalizarBusca(cache.text);
+            var from = 0, found;
+            while ((found = hay.indexOf(q, from)) !== -1) {
+              matches.push({ page: p, start: found, end: found + q.length });
+              from = found + q.length;
+            }
+          }
+        }
+        var anterior = manterAtual ? findState.matches[findState.current] : null;
+        findState.matches = matches;
+        if (!matches.length) {
+          findState.current = -1;
+        } else if (anterior) {
+          var idx = matches.findIndex(function (m) { return m.page === anterior.page && m.start === anterior.start; });
+          findState.current = idx !== -1 ? idx : 0;
+        } else {
+          findState.current = 0;
+        }
+        updateFindBarUI();
+      }
+
+      function updateFindBarUI() {
+        var countEl = document.getElementById('find-count');
+        var input = document.getElementById('find-input');
+        if (!findState.query) { countEl.textContent = ''; input.classList.remove('pdfview-findbar__input--empty'); return; }
+        if (!findState.matches.length) {
+          countEl.textContent = indexDone ? 'Nenhum resultado' : 'Buscando…';
+          input.classList.add('pdfview-findbar__input--empty');
+        } else {
+          countEl.textContent = (findState.current + 1) + ' de ' + findState.matches.length + (indexDone ? '' : '+');
+          input.classList.remove('pdfview-findbar__input--empty');
+        }
+      }
+
+      function clearHighlights() {
+        activeHighlightEls.forEach(function (el) { el.remove(); });
+        activeHighlightEls = [];
+      }
+
+      // Desenha a(s) caixa(s) de destaque de TODAS as ocorrências da
+      // página indicada (a atual em cor mais forte), nas coordenadas
+      // reais do texto — mesmo cálculo (viewport.transform combinado
+      // com item.transform) que o PDF.js usa para posicionar a
+      // própria camada de texto, então funciona independentemente da
+      // página já ter sido desenhada antes ou não.
+      function drawHighlightsForPage(pageNum) {
+        clearHighlights();
+        var entry = pages[pageNum - 1];
+        var cache = pageTextCache[pageNum - 1];
+        if (!entry || !entry.pdfPage || !cache) return;
+        var viewport = entry.pdfPage.getViewport({ scale: scale });
+        findState.matches.forEach(function (m, i) {
+          if (m.page !== pageNum) return;
+          var ativo = i === findState.current;
+          cache.offsets.forEach(function (o) {
+            var s = Math.max(o.start, m.start), e = Math.min(o.end, m.end);
+            if (s >= e) return;
+            var item = cache.items[o.idx];
+            if (!item || !item.str) return;
+            var tx = pdfjsLib.Util.transform(viewport.transform, item.transform);
+            var alturaPx = Math.hypot(tx[2], tx[3]);
+            // item.width vem em unidades do PDF, na MESMA escala que
+            // viewport.scale=1 (é o valor que o próprio PDF.js usa
+            // como "canvasWidth" ao montar a camada de texto — ver
+            // appendText/layout em src/display/text_layer.js). O
+            // pixel final é, portanto, item.width * viewport.scale.
+            // Usar aqui um fator tirado de tx (que já embute o
+            // tamanho da fonte, via item.transform) multiplicava a
+            // largura duas vezes e gerava destaques enormes,
+            // cobrindo bem mais que a palavra encontrada.
+            var larguraTotalPx = item.width ? item.width * viewport.scale : item.str.length * alturaPx * 0.5;
+            var tamanhoItem = item.str.length || 1;
+            var razaoIni = (s - o.start) / tamanhoItem;
+            var razaoFim = (e - o.start) / tamanhoItem;
+
+            var hl = document.createElement('div');
+            hl.className = 'pdfview-hl' + (ativo ? ' pdfview-hl--active' : '');
+            hl.style.left = (tx[4] + razaoIni * larguraTotalPx) + 'px';
+            hl.style.top = (tx[5] - alturaPx) + 'px';
+            hl.style.width = Math.max(2, (razaoFim - razaoIni) * larguraTotalPx) + 'px';
+            hl.style.height = alturaPx + 'px';
+            entry.wrapper.appendChild(hl);
+            activeHighlightEls.push(hl);
+          });
+        });
+      }
+
+      function goToMatch(index) {
+        if (!findState.matches.length) return;
+        var n = findState.matches.length;
+        findState.current = ((index % n) + n) % n;
+        updateFindBarUI();
+        var m = findState.matches[findState.current];
+        var entry = pages[m.page - 1];
+        renderPageEntry(entry).then(function () {
+          drawHighlightsForPage(m.page);
+          var ativo = entry.wrapper.querySelector('.pdfview-hl--active');
+          if (ativo) ativo.scrollIntoView({ block: 'center', inline: 'center' });
+          else scrollToPage(m.page);
+          currentPage = m.page;
+          document.getElementById('input-page').value = m.page;
+        });
+      }
+
+      function onSearchChanged() {
+        recomputeMatches(false);
+        if (findState.matches.length) goToMatch(0);
+        else { clearHighlights(); updateFindBarUI(); }
+      }
+
+      var findbarEl = document.getElementById('findbar');
+      var findInput = document.getElementById('find-input');
+
+      function abrirFindbar() {
+        findbarEl.hidden = false;
+        indexAllPages();
+        findInput.focus();
+        findInput.select();
+      }
+      function fecharFindbar() {
+        findbarEl.hidden = true;
+        clearHighlights();
+        findState.query = '';
+        findState.matches = [];
+        findState.current = -1;
+        findInput.value = '';
+        updateFindBarUI();
+      }
+
+      // Ctrl+F (ou Cmd+F no Mac) abre a busca PRÓPRIA em vez de
+      // deixar o navegador abrir a dele (que não enxergaria as
+      // páginas fora de tela — ver comentário grande acima).
+      document.addEventListener('keydown', function (e) {
+        var atalhoBusca = (e.ctrlKey || e.metaKey) && !e.altKey && (e.key === 'f' || e.key === 'F');
+        if (atalhoBusca) {
+          e.preventDefault();
+          if (findbarEl.hidden) abrirFindbar();
+          else { findInput.focus(); findInput.select(); }
+          return;
+        }
+        if (e.key === 'Escape' && !findbarEl.hidden) {
+          e.preventDefault();
+          fecharFindbar();
+        }
+      });
+
+      findInput.addEventListener('input', function () {
+        findState.query = findInput.value;
+        clearTimeout(findDebounceTimer);
+        findDebounceTimer = setTimeout(onSearchChanged, 120);
+      });
+      findInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          if (findState.matches.length) goToMatch(findState.current + (e.shiftKey ? -1 : 1));
+        }
+      });
+      document.getElementById('find-prev').addEventListener('click', function () { goToMatch(findState.current - 1); });
+      document.getElementById('find-next').addEventListener('click', function () { goToMatch(findState.current + 1); });
+      document.getElementById('find-close').addEventListener('click', fecharFindbar);
 
       // Impressão real (PDF vetorial), via iframe oculto separado —
       // não é o mesmo canvas do visualizador, é o arquivo original.
@@ -664,6 +995,8 @@ export function _buildVisualizadorHTML(nomeArquivo, blobUrl, zoomInicial) {
         pdfDoc = doc;
         numPages = doc.numPages;
         document.getElementById('total-pages').textContent = numPages;
+        // Em segundo plano, não bloqueia a primeira página aparecer.
+        indexAllPages();
         return doc.getPage(1);
       }).then(function (page1) {
         baseViewport1 = page1.getViewport({ scale: 1 });
