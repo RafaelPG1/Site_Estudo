@@ -93,11 +93,15 @@ function _montarSidebar(u) {
       <span>Admin</span>
     </div>`;
 
-  document.getElementById('btn-logout').addEventListener('click', async () => {
-    await encerrarSessao();
-    logout();
-    window.location.href = '../index.html';
-  });
+  document.getElementById('btn-logout').addEventListener('click', _fazerLogout);
+}
+
+/* Logout — usado pelo botão da sidebar e pelo atalho da topbar (mobile),
+   para que "Sair" continue acessível mesmo com o menu fechado. */
+async function _fazerLogout() {
+  await encerrarSessao();
+  logout();
+  window.location.href = '../index.html';
 }
 
 function _bindSidebar() {
@@ -125,6 +129,8 @@ function _bindTopbar() {
     _usuarios = [];
     await _navegarPara(_secaoAtual);
   });
+
+  document.getElementById('btn-logout-topbar').addEventListener('click', _fazerLogout);
 }
 
 /* ══════════════════════════════════════════════════════════

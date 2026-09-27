@@ -31,9 +31,15 @@
 
   --sidebar-w: 220px;
   --topbar-h:  58px;
+
+  /* Áreas seguras (notch / home indicator). 0px em navegadores comuns. */
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
 }
 
-html, body { height: 100%; }
+html, body { height: 100%; overflow-x: hidden; }
 
 
 a { text-decoration: none; color: inherit; }
@@ -45,6 +51,7 @@ button { cursor: pointer; font-family: var(--font-body); }
   z-index: 1;
   display: flex;
   height: 100vh;
+  height: 100dvh; /* barra de endereço/teclado móvel: evita cortar o rodapé da sidebar */
   overflow: hidden;
 }
 
@@ -131,7 +138,7 @@ button { cursor: pointer; font-family: var(--font-body); }
 
 .sidebar__bottom {
   flex-shrink: 0;
-  padding: 0.75rem 0.75rem 1rem;
+  padding: 0.75rem 0.75rem calc(1rem + var(--safe-b));
   border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
@@ -182,12 +189,13 @@ button { cursor: pointer; font-family: var(--font-body); }
 }
 
 .topbar {
-  height: var(--topbar-h);
+  height: calc(var(--topbar-h) + var(--safe-t));
   flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 0.75rem;
   padding: 0 1.5rem;
+  padding-top: var(--safe-t);
   border-bottom: 1px solid var(--border);
   background: rgba(7,11,20,0.5);
   backdrop-filter: blur(12px);
@@ -211,6 +219,10 @@ button { cursor: pointer; font-family: var(--font-body); }
   font-weight: 600;
   color: var(--text-1);
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .topbar__actions { display: flex; align-items: center; gap: 0.5rem; }
@@ -225,6 +237,20 @@ button { cursor: pointer; font-family: var(--font-body); }
   transition: color 0.2s, background 0.2s, border-color 0.2s;
 }
 .topbar__btn:hover { color: var(--teal); border-color: rgba(77,217,180,0.35); background: rgba(77,217,180,0.06); }
+
+/* Atalho de logout na topbar — só aparece no mobile (ver media query),
+   pois no desktop o botão "Sair da conta" da sidebar já fica visível. */
+.topbar__btn--logout {
+  display: none;
+  color: var(--rose);
+  border-color: rgba(232,122,154,0.22);
+  background: rgba(232,122,154,0.05);
+}
+.topbar__btn--logout:hover {
+  color: var(--rose);
+  background: rgba(232,122,154,0.14);
+  border-color: rgba(232,122,154,0.4);
+}
 
 /* ── CONTENT ── */
 .content {
@@ -561,7 +587,13 @@ button { cursor: pointer; font-family: var(--font-body); }
   border: 1px solid var(--border);
   border-radius: 10px;
   width: fit-content;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
 }
+.tabs::-webkit-scrollbar { height: 3px; }
+.tabs::-webkit-scrollbar-thumb { background: rgba(77,217,180,0.25); border-radius: 3px; }
 
 .tab {
   padding: 0.45rem 1.1rem;
@@ -570,6 +602,8 @@ button { cursor: pointer; font-family: var(--font-body); }
   background: none;
   color: var(--text-2);
   font-size: 0.8rem; font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
   transition: background 0.18s, color 0.18s;
 }
 .tab:hover { color: var(--text-2); }
@@ -667,6 +701,7 @@ button { cursor: pointer; font-family: var(--font-body); }
 
 .modal-header {
   display: flex; align-items: center; justify-content: space-between;
+  gap: 0.75rem;
   padding: 1.2rem 1.5rem 0.9rem;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
@@ -675,6 +710,10 @@ button { cursor: pointer; font-family: var(--font-body); }
   font-family: var(--font-display);
   font-size: 1.25rem; font-weight: 600;
   color: var(--text-1);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .modal-close {
   background: none; border: none;
@@ -802,6 +841,7 @@ button { cursor: pointer; font-family: var(--font-body); }
   background: rgba(7,11,20,0.7);
   backdrop-filter: blur(4px);
   opacity: 0;
+  pointer-events: none;
   transition: opacity 0.25s;
 }
 .overlay--show { opacity: 1; pointer-events: all; }
@@ -810,11 +850,27 @@ button { cursor: pointer; font-family: var(--font-body); }
 @media (max-width: 860px) {
   .sidebar {
     position: fixed; top: 0; left: 0; bottom: 0; z-index: 60;
+    width: min(var(--sidebar-w), 85vw);
+    padding-top: var(--safe-t);
     transform: translateX(-100%);
   }
   .sidebar--open { transform: translateX(0); }
   .sidebar-overlay { display: block; }
+
+  /* Controles sempre alcançáveis: hamburger abre o menu, o atalho de
+     logout na topbar funciona mesmo com o menu fechado. */
   .topbar__hamburger { display: flex; }
+  .topbar__btn--logout { display: flex; }
+
+  /* Alvos de toque maiores (mínimo ~40px) */
+  .topbar__hamburger,
+  .topbar__btn { width: 40px; height: 40px; }
+  .nav-item { padding: 0.75rem 0.9rem; font-size: 0.86rem; }
+  .tab { padding: 0.55rem 1rem; }
+  .avatar-opt { width: 44px; height: 44px; }
+  .icon-btn { padding: 0.48rem 0.75rem; font-size: 0.76rem; }
+  .action-btn { padding: 0.62rem 1.1rem; }
+
   .stat-grid { grid-template-columns: repeat(2, 1fr); }
   .content { padding: 1.25rem; }
 }
@@ -825,6 +881,14 @@ button { cursor: pointer; font-family: var(--font-body); }
   .data-table-wrap { font-size: 0.78rem; }
   .modal-box { margin: 1rem; max-width: calc(100% - 2rem); }
   .modal-header, .modal-body, .modal-footer { padding-left: 1.1rem; padding-right: 1.1rem; }
+  .modal-footer, .mini-confirm__actions { flex-wrap: wrap; }
+  .modal-footer .action-btn { flex: 1 1 auto; justify-content: center; }
+}
+
+/* Celulares muito pequenos (≤ 400px de largura) */
+@media (max-width: 400px) {
+  .stat-grid { grid-template-columns: 1fr; }
+  .section-toolbar .action-btn { width: 100%; justify-content: center; }
 }
 
 /* ══════════════════════════════════════════
