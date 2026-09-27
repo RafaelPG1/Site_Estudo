@@ -1068,7 +1068,15 @@ window.__nexusConteudo = {
       titulo: "Revisão de Estrutura de Dados",
       pasta: "estruturas_dados/videos",              // era "url", troque para "pasta"
       src: "revisao_estruturas_dados.mp4"
-    }
+    },
+    {
+      titulo: "Revisão de Estrutura de Dados",         
+      url: "https://youtu.be/TcNt1aW1OMM"
+    },
+    {
+      titulo: "Revisão de Estrutura de Dados",         
+      url: "https://www.youtube.com/watch?v=ddXb6CYXMzA"
+    },
   ],
 }
 
