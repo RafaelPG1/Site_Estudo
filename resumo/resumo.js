@@ -27,7 +27,7 @@ import '../src/session-tracker.js';
 import { State, carregarIA, resolverContexto, renderSemestreBadge } from './js/resumo-utils.js';
 import { renderHeader, renderSidebar, carregarConteudo, setModo, setProfessorFiltro } from './js/resumo-ui.js';
 import { bindModal, bindTocChrome, bindCopyButton, bindThemeToggle } from './js/resumo-reader.js';
-import { initPdfModal } from './js/resumo-pdf.js';
+import { initPdfModal } from './js/pdf/resumo-pdf.js';
 import { initBusca, limparBusca, atualizarContextoBusca } from './js/resumo-busca.js';
 
 injetarLogo('#header-logo-wrap');
