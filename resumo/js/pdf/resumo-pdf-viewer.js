@@ -116,6 +116,18 @@ export function _buildLoadingHTML() {
    garante que calibrar o zoom do visualizador de PDF nunca altera (e
    nunca é alterado por) o zoom do Resumo normal, e vice-versa.
 
+   TEXTO SELECIONÁVEL: cada página desenhada no <canvas> (só pixels)
+   ganha, por cima, uma camada de texto real feita pelo próprio PDF.js
+   (`pdfjsLib.renderTextLayer`, já disponível no pdf.min.js carregado
+   via CDN — nenhuma biblioteca nova) — um <span> transparente por
+   trecho de texto, posicionado sobre o mesmo viewport do canvas. É
+   essa camada (ver `renderPageEntry`/`liberarPageEntry`) que permite
+   selecionar com o mouse, copiar com Ctrl+C, usar "Copiar" pelo menu
+   de contexto do navegador e pesquisar com Ctrl+F — sem alterar em
+   nada o desenho do canvas (zoom, nitidez, paginação) nem o PDF
+   original. Ela nasce e morre junto com o canvas de cada página (lazy
+   render/liberação por IntersectionObserver, ver comentário abaixo).
+
    Esta aba não importa zoom.js como módulo (é um <script> solto dentro
    de um documento HTML autocontido, aberto via Blob URL) — por isso
    duplica aqui a leitura/gravação no mesmo formato de storage que
@@ -213,6 +225,38 @@ export function _buildVisualizadorHTML(nomeArquivo, blobUrl, zoomInicial) {
   .pdfview-pagewrap canvas{ display:block; }
   .draw-canvas{ position:absolute;inset:0;pointer-events:none;touch-action:none; }
   #pdfview-pages.draw-mode .draw-canvas{ pointer-events:auto; }
+
+  /* Camada de TEXTO real do PDF (PDF.js) — um <span> transparente por
+     trecho de texto, posicionado exatamente sobre o desenho já feito
+     no <canvas> (mesmo viewport dos dois — ver renderPageEntry). É
+     isso (não o canvas, que é só pixel) que permite selecionar com o
+     mouse, copiar com Ctrl+C e usar o menu de contexto do navegador;
+     a busca (Ctrl+F) do próprio navegador também passa a enxergar o
+     texto. Fica ENTRE o canvas (fundo) e o .draw-canvas (desenho, por
+     cima) na ordem do DOM — ver montagem em renderPageEntry — então o
+     desenho continua por cima de tudo, e a seleção de texto só fica
+     desativada enquanto o modo de desenho estiver ligado (ver regra
+     de .draw-mode abaixo), pra não brigar com o lápis. Zero impacto
+     visual: o texto em si é transparente, só a marcação de seleção
+     (::selection) aparece, do mesmo jeito que em qualquer leitor de
+     PDF. */
+  .pdfview-textlayer{
+    position:absolute; inset:0; overflow:hidden;
+    line-height:1; text-align:initial;
+    -webkit-user-select:text; user-select:text;
+  }
+  .pdfview-textlayer span, .pdfview-textlayer br{
+    color:transparent; position:absolute; white-space:pre;
+    cursor:text; transform-origin:0% 0%;
+  }
+  .pdfview-textlayer ::selection{ background:rgba(127,203,160,0.35); }
+  .pdfview-textlayer .endOfContent{
+    display:block; position:absolute; inset:100% 0 0; z-index:-1;
+    cursor:default; user-select:none;
+  }
+  .pdfview-textlayer .endOfContent.active{ top:0; }
+  #pdfview-pages.draw-mode .pdfview-textlayer{ pointer-events:none; }
+
   .pdfview-msg{ color:#ada698;padding:2rem;text-align:center;max-width:420px;margin:0 auto;line-height:1.6; }
 </style>
 </head>
@@ -300,7 +344,7 @@ export function _buildVisualizadorHTML(nomeArquivo, blobUrl, zoomInicial) {
 
       var pdfDoc = null, numPages = 0, scale = 1, baseViewport1 = null;
       var currentPage = 1;
-      var pages = []; // { num, wrapper, canvas, dcanvas, dctx, rendered, rendering, pdfPage }
+      var pages = []; // { num, wrapper, canvas, textLayerDiv, textLayerTask, dcanvas, dctx, rendered, rendering, pdfPage }
 
       var viewerScroll = document.getElementById('viewer-scroll');
       var pagesContainer = document.getElementById('pdfview-pages');
@@ -428,17 +472,43 @@ export function _buildVisualizadorHTML(nomeArquivo, blobUrl, zoomInicial) {
           entry.wrapper.style.height = viewport.height + 'px';
           if (!entry.canvas) {
             entry.canvas = document.createElement('canvas');
+            // Camada de texto — nasce ENTRE o canvas e o .draw-canvas
+            // (ver ordem dos appendChild abaixo), pra ficar por cima
+            // do desenho da página mas por baixo do desenho a lápis.
+            entry.textLayerDiv = document.createElement('div');
+            entry.textLayerDiv.className = 'pdfview-textlayer';
             entry.dcanvas = document.createElement('canvas');
             entry.dcanvas.className = 'draw-canvas';
             entry.wrapper.appendChild(entry.canvas);
+            entry.wrapper.appendChild(entry.textLayerDiv);
             entry.wrapper.appendChild(entry.dcanvas);
             entry.dctx = entry.dcanvas.getContext('2d');
             setupDrawEvents(entry);
           }
           entry.canvas.width = viewport.width; entry.canvas.height = viewport.height;
           entry.dcanvas.width = viewport.width; entry.dcanvas.height = viewport.height;
+          entry.textLayerDiv.style.width = viewport.width + 'px';
+          entry.textLayerDiv.style.height = viewport.height + 'px';
+          entry.textLayerDiv.innerHTML = ''; // caso o entry esteja sendo reaproveitado após um erro
           var ctx = entry.canvas.getContext('2d');
-          return page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+          // Texto real (PDF.js), no MESMO viewport do canvas — roda em
+          // paralelo ao desenho do canvas (não depende dele), e é o
+          // que torna o texto selecionável/pesquisável. Uma falha
+          // aqui (raríssima) nunca derruba o desenho da página: só a
+          // seleção de texto ficaria indisponível naquela página.
+          entry.textLayerTask = pdfjsLib.renderTextLayer({
+            textContentSource: page.streamTextContent(),
+            container: entry.textLayerDiv,
+            viewport: viewport,
+          });
+
+          return Promise.all([
+            page.render({ canvasContext: ctx, viewport: viewport }).promise,
+            entry.textLayerTask.promise.catch(function (err) {
+              console.error('[Resumo PDF] Falha ao montar camada de texto:', entry.num, err);
+            }),
+          ]);
         }).then(function () {
           entry.rendering = false;
           entry.rendered = true;
@@ -451,7 +521,9 @@ export function _buildVisualizadorHTML(nomeArquivo, blobUrl, zoomInicial) {
 
       function liberarPageEntry(entry) {
         if (!entry.rendered) return;
+        if (entry.textLayerTask) { entry.textLayerTask.cancel(); entry.textLayerTask = null; }
         if (entry.canvas) { entry.canvas.remove(); entry.canvas = null; }
+        if (entry.textLayerDiv) { entry.textLayerDiv.remove(); entry.textLayerDiv = null; }
         if (entry.dcanvas) { entry.dcanvas.remove(); entry.dcanvas = null; entry.dctx = null; }
         entry.rendered = false;
       }
@@ -475,7 +547,7 @@ export function _buildVisualizadorHTML(nomeArquivo, blobUrl, zoomInicial) {
           wrapper.style.width = w + 'px';
           wrapper.style.height = h + 'px';
           pagesContainer.appendChild(wrapper);
-          var entry = { num: i, wrapper: wrapper, canvas: null, dcanvas: null, dctx: null, rendered: false, rendering: false, pdfPage: (i === 1 ? page1 : null) };
+          var entry = { num: i, wrapper: wrapper, canvas: null, textLayerDiv: null, textLayerTask: null, dcanvas: null, dctx: null, rendered: false, rendering: false, pdfPage: (i === 1 ? page1 : null) };
           pages.push(entry);
           observer.observe(wrapper);
         }
