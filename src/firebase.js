@@ -131,13 +131,32 @@ function _quizRef(uid, semestre, modo, disc) {
   return doc(getDb(), 'usuarios', uid, 'quiz_respostas', `${semestre}_${modo}_${disc}`);
 }
 
-export async function salvarRespostasQuiz(uid, semestre, modo, disc, respostasStr, revelado, finalizado) {
+export async function salvarRespostasQuiz(uid, semestre, modo, disc, respostasStr, revelado, finalizado, shuffleMapStr) {
   try {
     await setDoc(_quizRef(uid, semestre, modo, disc), {
       respostas:  respostasStr,
       revelado:   revelado,
       finalizado: finalizado,
       savedAt:    Date.now(),
+      /* semestre/modo/disc gravados explicitamente (e não só embutidos no
+         id do documento) para que quem for LISTAR estados retomáveis em
+         lote (ex.: Home → "Continuar Estudando") não precise adivinhar
+         esses campos fazendo split() do quizId — o que seria ambíguo
+         sempre que `disc` contiver "_" no nome do arquivo. */
+      semestre:   semestre,
+      modo:       modo,
+      disc:       disc,
+      /* shuffleMap (string JSON, mesmo formato gravado em localStorage
+         por quiz_engine.js/_smapKey()) — necessário para que uma
+         tentativa restaurada a partir do Firebase (outro navegador, ou
+         localStorage expirado/limpo) reconstrua a MESMA ordem de
+         questões/alternativas usada quando as respostas foram gravadas.
+         Sem isso, `respostas[idx]` (indexado pela ordem embaralhada)
+         apontaria para questões diferentes a cada novo embaralhamento.
+         Opcional: quem não passar este argumento simplesmente não grava
+         o campo (undefined não é enviado ao Firestore), então nenhum
+         chamador existente quebra. */
+      ...(shuffleMapStr !== undefined ? { shuffleMap: shuffleMapStr } : {}),
     });
     console.log('[firebase] salvarRespostasQuiz ok →', `${semestre}_${modo}_${disc}`);
     return { ok: true };
@@ -503,6 +522,34 @@ export async function listarQuizIds(uid) {
   } catch (err) {
     console.warn('[firebase] listarQuizIds erro:', err);
     logFirestore('usuarios/{uid}/quiz_respostas (ERRO)', uid, performance.now() - t0, 0);
+    return [];
+  }
+}
+
+/* ── LISTAR ESTADOS DE RETOMADA (documentos-pai de quiz_respostas) ─────────
+   Diferente de listarPerformanceQuiz/listarQuizIds (que só leem a
+   subcoleção 'performance', o histórico imutável de resultados), esta
+   função lê o PRÓPRIO documento `usuarios/{uid}/quiz_respostas/{quizId}`
+   — que é o único lugar onde o estado realmente retomável de uma
+   tentativa vive (`respostas`, `revelado`, `finalizado`, `savedAt`).
+   Um registro em 'performance' é apenas uma fotografia histórica de uma
+   tentativa passada (gravada tanto ao concluir quanto ao abandonar) e
+   pode continuar existindo mesmo depois que o estado retomável tenha
+   sido zerado por limparRespostasQuiz() (reiniciar()) — por isso ele
+   nunca deve, sozinho, decidir se uma disciplina é "retomável".
+   ─────────────────────────────────────────────────────────────────────────*/
+export async function listarEstadosQuizUsuario(uid) {
+  if (!uid) return [];
+  const t0 = performance.now();
+  try {
+    const col  = collection(getDb(), 'usuarios', uid, 'quiz_respostas');
+    const snap = await getDocs(col);
+    const estados = snap.docs.map(d => ({ quizId: d.id, ...d.data() }));
+    logFirestore('usuarios/{uid}/quiz_respostas (estados)', uid, performance.now() - t0, estados.length);
+    return estados;
+  } catch (err) {
+    console.warn('[firebase] listarEstadosQuizUsuario erro:', err);
+    logFirestore('usuarios/{uid}/quiz_respostas (estados) (ERRO)', uid, performance.now() - t0, 0);
     return [];
   }
 }

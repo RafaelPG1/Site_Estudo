@@ -4654,4 +4654,368 @@ ava: [
   
 ],
 
+revisao: [
+
+// 1 - Polimorfismo
+{
+  aula: "Questionário de Revisão",
+  tipo: "",
+  texto: "O paradigma orientado a objetos baseia-se na criação de modelos que simulam entidades do mundo real, facilitando a manutenção e a extensibilidade de sistemas complexos. Um dos pilares desse paradigma permite que uma única interface seja utilizada para representar uma classe geral de ações, em que a ação específica executada depende da natureza exata do objeto invocado em tempo de execução. Assim, um mesmo chamado pode desencadear comportamentos variados, dependendo de quem o recebe. BOOCH, Grady; RUMBAUGH, James; JACOBSON, Ivar. UML: guia do usuário. 2. ed. Rio de Janeiro: Campus; Elsevier, 2006. (adaptado).",
+  question: "Com base no texto e nos fundamentos da orientação a objetos, interprete o pilar descrito e assinale a alternativa correta.",
+  code: ``,
+  options: [
+    "O polimorfismo permite que objetos respondam de modo distinto.",
+    "A herança impede o reaproveitamento de código no sistema.",
+    "Objetos são moldes abstratos para a criação de classes.",
+    "As classes abstratas são instanciadas diretamente."
+  ],
+  answer: 0,
+  feedback: "O texto descreve exatamente o polimorfismo: uma mesma interface/chamada pode ser usada para diferentes classes, e o comportamento executado varia conforme o objeto específico que recebe a chamada em tempo de execução. A herança, ao contrário da alternativa b, permite o reaproveitamento de código. Objetos não são moldes de classes, é o inverso: classes são os moldes usados para criar objetos. Classes abstratas não podem ser instanciadas diretamente; servem de base para outras classes que implementam seus métodos abstratos.",
+  chips: []
+},
+
+// 2 - Modelo Cascata
+{
+  aula: "Questionário de Revisão",
+  tipo: "",
+  texto: "O desenvolvimento de software frequentemente demanda metodologias que organizem o esforço humano ao longo do tempo. O ciclo de vida clássico impõe uma progressão sistemática que flui de cima para baixo, assemelhando-se à queda de água. Embora seja historicamente relevante e forneça um roteiro claro de documentação, projetos reais raramente seguem o fluxo sequencial proposto, tornando difícil acomodar as incertezas naturais dos clientes logo no início. PRESSMAN, Roger S. Engenharia de Software: uma abordagem profissional. 8. ed. Porto Alegre: AMGH, 2016. (adaptado).",
+  question: "A partir do cenário apresentado, diferencie as características do modelo cascata e assinale a alternativa correta.",
+  code: ``,
+  options: [
+    "O modelo elimina as fases de testes formais.",
+    "A fase de requisitos ocorre após a etapa de codificação.",
+    "As fases do projeto são totalmente sobrepostas.",
+    "O fluxo sequencial dificulta retornos a fases anteriores."
+  ],
+  answer: 3,
+  feedback: "Essa é a principal crítica ao modelo cascata: por seguir uma progressão linear e sequencial (requisitos, projeto, implementação, testes, manutenção), ele dificulta voltar a fases anteriores quando surgem mudanças ou incertezas. O cascata inclui uma fase formal de testes, não a elimina. No cascata, a fase de requisitos vem antes da codificação, não depois. As fases do cascata são sequenciais e distintas, não sobrepostas; sobreposição é característica de modelos como incremental ou espiral.",
+  chips: []
+},
+
+// 3 - Diagrama de Classes e Multiplicidade
+{
+  aula: "Questionário de Revisão",
+  tipo: "",
+  texto: "A modelagem de sistemas utiliza representações visuais para documentar e compreender a estrutura de uma solução antes da codificação. Dentre as ferramentas da UML, o diagrama que mapeia a estrutura estática do sistema descreve os tipos de objetos presentes no domínio e os vários tipos de relacionamentos estáticos que os conectam, evidenciando quais informações devem ser armazenadas e quais operações estarão disponíveis. FOWLER, Martin. UML essencial: um breve guia para a linguagem-padrão de modelagem de objetos. 3. ed. Porto Alegre: Bookman, 2005. (adaptado).",
+  question: "Com base no texto, identifique os componentes presentes nesse diagrama e assinale a alternativa correta.",
+  code: ``,
+  options: [
+    "A multiplicidade define o limite de instâncias na relação.",
+    "Métodos representam as características estáticas.",
+    "Associações indicam a ausência de relacionamentos.",
+    "Atributos definem o comportamento das instâncias."
+  ],
+  answer: 0,
+  feedback: "O diagrama descrito é o Diagrama de Classes, e a multiplicidade é o elemento que indica quantas instâncias de uma classe podem se relacionar com instâncias de outra (ex: 1, 0..1, 1..*), delimitando os limites mínimo e máximo dessa relação. Métodos representam o comportamento das instâncias, não características estáticas; quem representa isso são os atributos. Associações justamente indicam a presença de relacionamentos entre classes, não a ausência. Atributos definem características/dados das instâncias, não seu comportamento, que é papel dos métodos.",
+  chips: []
+},
+
+// 4 - Modelo Incremental
+{
+  aula: "Questionário de Revisão",
+  tipo: "",
+  texto: "Em projetos nos quais não é viável esperar longos períodos para obter um sistema funcional, abordagens modernas propõem a divisão da construção em partes menores. Em vez de entregar o software como um bloco massivo ao final do contrato, o cliente recebe funcionalidades operacionais precocemente. A cada ciclo, uma nova porção do sistema é adicionada à versão anterior, mitigando riscos e permitindo a antecipação do retorno financeiro. SOMMERVILLE, Ian. Engenharia de Software. 9. ed. São Paulo: Pearson Prentice Hall, 2011. (adaptado).",
+  question: "A partir do cenário exposto, interprete o funcionamento da referida abordagem e assinale a alternativa correta.",
+  code: ``,
+  options: [
+    "As partes do software são construídas e entregues em fatias.",
+    "O planejamento impede a adição de novos requisitos.",
+    "O sistema é entregue em uma única versão final.",
+    "Os incrementos dispensam a integração de código."
+  ],
+  answer: 0,
+  feedback: "O texto descreve o modelo incremental: o desenvolvimento é dividido em partes (fatias/incrementos), cada uma entregando funcionalidades operacionais que se somam às versões anteriores, mitigando riscos e antecipando retorno ao cliente. O incremental é flexível o suficiente para acomodar novos requisitos ao longo dos ciclos, diferente do cascata rígido. O software não é entregue em uma única versão final, mas em múltiplas entregas parciais. Cada incremento precisa ser integrado ao código já existente; a integração é parte essencial do processo.",
+  chips: []
+},
+
+// 5 - Scrum e Sprints
+{
+  aula: "Questionário de Revisão",
+  tipo: "",
+  texto: "O framework Scrum emergiu como uma resposta às pesadas metodologias tradicionais de gestão. Ele reestrutura o desenvolvimento em ciclos de tempo fixo chamados Sprints, nos quais uma equipe auto-organizada e multidisciplinar se compromete a entregar um incremento de produto funcional. Para sustentar esse empirismo, o framework formaliza papéis claros para a definição de valor de negócio, facilitação de processos e construção técnica. SOMMERVILLE, Ian. Engenharia de Software. 9. ed. São Paulo: Pearson Prentice Hall, 2011. (adaptado).",
+  question: "Considerando a dinâmica de funcionamento desse framework, discrimine suas regras fundamentais e assinale a alternativa correta.",
+  code: ``,
+  options: [
+    "O Kanban prescinde de limites de trabalho.",
+    "O Product Owner realiza os testes de integração.",
+    "O Scrum Master codifica sozinho os requisitos.",
+    "As Sprints possuem durações fixas e predefinidas."
+  ],
+  answer: 3,
+  feedback: "O texto confirma diretamente: o Scrum reestrutura o desenvolvimento em ciclos de tempo fixo chamados Sprints, o conceito de timebox, uma duração pré-estabelecida que não se altera durante a execução. O Kanban, ao contrário, é conhecido por trabalhar com limites de trabalho em progresso (WIP). O Product Owner define e prioriza valor de negócio, não realiza testes de integração, que é atividade técnica do time de desenvolvimento. O Scrum Master facilita o processo e remove impedimentos; ele não codifica requisitos sozinho, isso é função da equipe de desenvolvimento.",
+  chips: []
+},
+
+// 6 - Requisitos Não Funcionais
+{
+  aula: "Questionário de Revisão",
+  tipo: "",
+  texto: "Durante a engenharia de requisitos de um novo portal bancário, analistas catalogaram a seguinte declaração: \"O sistema deverá permitir que o usuário cadastre favorecidos para transferências; no entanto, nenhuma consulta ao banco de dados poderá demorar mais do que 3 segundos para retornar a tela ao cliente\". Essa dicotomia entre as funcionalidades explícitas e as qualidades impostas pela tecnologia é o núcleo do mapeamento estruturado de sistemas. PRESSMAN, Roger S. Engenharia de Software: uma abordagem profissional. 8. ed. Porto Alegre: AMGH, 2016. (adaptado).",
+  question: "Com base na teoria da engenharia de requisitos, classifique as demandas expostas e assinale a alternativa correta.",
+  code: ``,
+  options: [
+    "Requisitos não funcionais ditam o escopo de negócios.",
+    "Restrições de servidor são os requisitos funcionais.",
+    "A ação de cadastrar dados configura uma regra oculta.",
+    "O limite de tempo denota um requisito não funcional."
+  ],
+  answer: 3,
+  feedback: "A exigência de que nenhuma consulta poderá demorar mais do que 3 segundos é um requisito não funcional, uma restrição de qualidade (desempenho), e não uma funcionalidade que o sistema deve executar. Requisitos não funcionais definem qualidades e restrições técnicas, não o escopo de negócios, que é papel dos requisitos funcionais. Restrições de servidor, como tempo de resposta, são requisitos não funcionais, e não funcionais. Cadastrar favorecidos é uma ação explícita que o sistema deve realizar, configurando um requisito funcional claro, não uma regra oculta.",
+  chips: []
+},
+
+// 7 - Etnografia
+{
+  aula: "Questionário de Revisão",
+  tipo: "",
+  texto: "Para compreender o contexto operacional de um sistema de controle aéreo em operação, uma equipe de analistas decidiu não realizar entrevistas tradicionais. Em vez disso, imergiram no ambiente real de trabalho por semanas, observando a rotina dos controladores, suas anotações informais e as interações espontâneas que dificilmente seriam articuladas verbalmente em uma reunião de negócios, capturando requisitos sociais e organizacionais complexos. SOMMERVILLE, Ian. Engenharia de Software. 9. ed. São Paulo: Pearson Prentice Hall, 2011. (adaptado).",
+  question: "Considerando as técnicas de levantamento apresentadas na literatura de requisitos, reconheça a técnica descrita e assinale a alternativa correta.",
+  code: ``,
+  options: [
+    "A etnografia ajuda a revelar as práticas tácitas de trabalho.",
+    "Questionários eletrônicos limitam o alcance das coletas de dados.",
+    "Entrevistas estruturadas exigem a improvisação livre no local.",
+    "A observação impõe interrupções constantes e diárias na operação."
+  ],
+  answer: 0,
+  feedback: "O texto descreve a técnica de etnografia: imersão prolongada no ambiente real de trabalho, observando rotinas e interações espontâneas, o que permite capturar conhecimento tácito e requisitos sociais e organizacionais difíceis de obter em entrevistas tradicionais. Questionários eletrônicos tendem a ampliar o alcance da coleta, não limitá-lo, e não é a técnica descrita. Entrevistas estruturadas seguem um roteiro pré-definido, sem espaço para improvisação livre. A observação etnográfica busca ser discreta e não intrusiva, justamente para capturar a rotina natural sem interromper o trabalho.",
+  chips: []
+},
+
+// 8 - Diagrama de Casos de Uso
+{
+  aula: "Questionário de Revisão",
+  tipo: "",
+  texto: "Para apresentar a proposta de um novo sistema de gestão hospitalar a diretores sem conhecimento técnico, o arquiteto de software utilizou um diagrama simplificado. O desenho exibia pequenos \"bonecos\" do lado de fora do sistema interagindo por meio de linhas retas com elipses internas, que representavam os grandes blocos de valor do software, tais como \"Marcar Consulta\" ou \"Emitir Prontuário\". Essa abordagem centrou a discussão no que o sistema fará. COCKBURN, Alistair. Escrevendo casos de uso eficazes. Porto Alegre: Bookman, 2005. (adaptado).",
+  question: "A partir dos elementos gráficos detalhados no texto, interprete a simbologia do diagrama de Casos de Uso e assinale a alternativa correta.",
+  code: ``,
+  options: [
+    "Os fluxos de exceção são documentados diretamente nas fronteiras.",
+    "O diagrama detalha a arquitetura física e a comunicação de redes.",
+    "Atores representam entidades externas interagindo com o sistema.",
+    "As linhas de associação denotam heranças hierárquicas de sistemas."
+  ],
+  answer: 2,
+  feedback: "Os bonecos são os atores do diagrama de Casos de Uso, representações de entidades externas (pessoas, sistemas ou organizações) que interagem com o sistema sem fazer parte dele. As elipses são os casos de uso, e as linhas são as associações entre atores e casos de uso. Os fluxos de exceção são detalhados na descrição textual do caso de uso, não no diagrama gráfico. O diagrama de Casos de Uso é comportamental e de alto nível, não detalha arquitetura física nem redes, isso é papel do diagrama de implantação. As linhas de associação representam interação/comunicação, não herança, que é representada por outra notação, uma seta com ponta vazada.",
+  chips: []
+},
+
+// 9 - RUP - Fase de Elaboração
+{
+  aula: "Questionário de Revisão",
+  tipo: "",
+  texto: "O Rational Unified Process (RUP) é um processo de engenharia de software iterativo, focado na arquitetura e dirigido por casos de uso. Ao invés de usar etapas lineares de desenvolvimento, o RUP estrutura o ciclo de vida em quatro fases sequenciais que agrupam diversas disciplinas trabalhando em intensidades variadas. O principal objetivo da segunda fase, em particular, é definir a arquitetura central, mitigar os maiores riscos e traçar o plano base de construção. KRUCHTEN, Philippe. The rational unified process: an introduction. Boston: Addison-Wesley, 2000. (adaptado).",
+  question: "Recorde as fases que estruturam o ciclo de vida do Processo Unificado (RUP) e assinale a alternativa correta.",
+  code: ``,
+  options: [
+    "A fase de construção ignora os testes e foca no modelo conceitual.",
+    "A etapa inicial de transição dispensa o levantamento do escopo geral.",
+    "O processo bloqueia a sobreposição disciplinar nos novos ciclos.",
+    "A elaboração concentra-se na redução precoce de riscos técnicos."
+  ],
+  answer: 3,
+  feedback: "A segunda fase do RUP é a Elaboração, cujo objetivo é definir a arquitetura central, mitigar os maiores riscos e traçar o plano base de construção, focando em resolver riscos técnicos e arquiteturais críticos antes de investir pesado na construção. A fase de Construção é onde ocorrem grande parte do desenvolvimento e dos testes, não os ignora. A Concepção, primeira fase, é onde ocorre o levantamento do escopo geral, não a Transição, que é a última fase, focada na entrega. O RUP é caracterizado justamente pela sobreposição de disciplinas ao longo das fases, com intensidades variadas.",
+  chips: []
+},
+
+// 10 - Padrões de Projeto GoF
+{
+  aula: "Questionário de Revisão",
+  tipo: "",
+  texto: "O projeto de software voltado a objetos maduro requer não apenas boas classes, mas boas interações entre elas. Contudo, arquitetos notaram que problemas idênticos repetiam-se estruturalmente em diversos domínios distintos da indústria. Para evitar a reinvenção de soluções já consolidadas, um catálogo famoso propôs estruturas nomeadas, abstraindo a essência de arranjos que facilitam a reusabilidade, a manutenção e a coesão de códigos corporativos de alta demanda. GAMMA, Erich et al. Padrões de Projeto: soluções reutilizáveis de software orientado a objetos. Porto Alegre: Bookman, 2000. (adaptado).",
+  question: "Interprete a finalidade central da adoção desse catálogo no desenvolvimento de sistemas e assinale a alternativa correta.",
+  code: ``,
+  options: [
+    "Os padrões restringem o uso de sistemas nas linguagens compiladas.",
+    "O uso das soluções inviabiliza as reestruturações flexíveis no futuro.",
+    "Eles entregam gabaritos consolidados para problemas recorrentes.",
+    "A sua aplicação obriga a remoção completa do paradigma orientado."
+  ],
+  answer: 2,
+  feedback: "O catálogo GoF (Design Patterns) propõe soluções nomeadas e reutilizáveis para problemas estruturais recorrentes em diferentes domínios, evitando reinvenção e promovendo reusabilidade, manutenção e coesão. Os padrões são independentes de linguagem, não há restrição a linguagens compiladas. Os padrões facilitam reestruturações flexíveis, pois promovem baixo acoplamento e alta coesão, ao contrário do que afirma a alternativa. Os padrões reforçam e se baseiam nos princípios da orientação a objetos, não exigem removê-la.",
+  chips: []
+},
+
+// 11 - Padrão Singleton
+{
+  aula: "Questionário de Revisão",
+  tipo: "",
+  texto: "Em um sistema de servidor web, o objeto responsável por gerenciar a conexão física primária com o banco de dados estava sendo instanciado diversas vezes simultaneamente. A criação descontrolada de conexões causava esgotamento do pool de memória e travamento do servidor em momentos de alto pico. Para resolver o gargalo sem reestruturar todo o projeto, a equipe técnica empregou um padrão de criação clássico para blindar o construtor da classe de acesso ao banco. GAMMA, Erich et al. Padrões de Projeto: soluções reutilizáveis de software orientado a objetos. Porto Alegre: Bookman, 2000. (adaptado).",
+  question: "Utilize o conhecimento dos padrões do GoF (Gang of Four) para solucionar a restrição estrutural mencionada e assinale a alternativa correta.",
+  code: ``,
+  options: [
+    "O Singleton assegura a existência de uma única instância.",
+    "O Prototype clona milhares de cópias de performance.",
+    "O Builder separa a instância das suas visões lógicas.",
+    "O Factory Method terceiriza subclasses com alto acoplamento."
+  ],
+  answer: 0,
+  feedback: "O cenário é resolvido pelo padrão Singleton: garante que a classe tenha apenas uma única instância em todo o sistema, tornando o construtor privado e impedindo a criação descontrolada de múltiplos objetos. O Prototype é usado para clonar objetos existentes como forma de criação, não trata de limitar instâncias a uma única. O Builder separa a construção complexa de um objeto de sua representação final, não resolve o problema de instância única. O Factory Method delega a criação a subclasses, promovendo baixo acoplamento, e não alto como afirma a alternativa, além de não resolver o problema deste cenário.",
+  chips: []
+},
+
+// 12 - Diagrama de Sequência
+{
+  aula: "Questionário de Revisão",
+  tipo: "",
+  texto: "Ao desenhar a comunicação de um sistema de vendas on-line, um engenheiro estruturou os objetos na borda superior de uma tela bidimensional. Abaixo de cada objeto, desenhou linhas pontilhadas verticais representando a vida útil daquela instância durante a execução do cenário. Entre essas linhas verticais, setas horizontais maciças e tracejadas apontavam a troca de métodos, solicitações de operação e retornos ocorrendo ordenadamente em um fluxo temporal contínuo. FOWLER, Martin. UML essencial: um breve guia para a linguagem-padrão de modelagem de objetos. 3. ed. Porto Alegre: Bookman, 2005. (adaptado).",
+  question: "Diferencie as características do diagrama descrito frente aos demais modelos da UML e assinale a alternativa correta.",
+  code: ``,
+  options: [
+    "As mensagens cronológicas regem a interação temporal desenhada.",
+    "As setas de associação mapeiam apenas heranças simples.",
+    "O eixo horizontal ilustra os estados imutáveis do projeto.",
+    "O modelo agrupa pacotes em subsistemas físicos."
+  ],
+  answer: 0,
+  feedback: "O texto descreve o Diagrama de Sequência: linhas de vida verticais representam a existência da instância ao longo do tempo, e as setas indicam troca de mensagens em ordem cronológica, de cima para baixo. As setas representam mensagens/chamadas de método, não herança, que pertence ao diagrama de classes. O eixo vertical, não horizontal, representa o tempo; o diagrama trata de interações dinâmicas, não de estados imutáveis. Agrupar pacotes em subsistemas é função do Diagrama de Pacotes ou de Componentes, não do diagrama de sequência.",
+  chips: []
+},
+
+// 13 - Extreme Programming (XP)
+{
+  aula: "Questionário de Revisão",
+  tipo: "",
+  texto: "Originado na década de 1990, uma vertente ágil buscou levar as boas práticas de desenvolvimento de software a níveis extremos de aplicação. No lugar de fases isoladas para projeto de testes e de código, instituiu-se que todo código de produção deveria ser escrito por dois desenvolvedores partilhando um mesmo terminal. Mais além, postulou que melhorias no design do software não deveriam ocorrer em reuniões semestrais, mas diariamente durante a digitação. PRESSMAN, Roger S. Engenharia de Software: uma abordagem profissional. 8. ed. Porto Alegre: AMGH, 2016. (adaptado).",
+  question: "Com base nas práticas operacionais sugeridas pelo texto para o Extreme Programming (XP), interprete suas premissas e assinale a alternativa correta.",
+  code: ``,
+  options: [
+    "A refatoração contínua otimiza a qualidade diária do projeto.",
+    "O trabalho em pares aumenta radicalmente os gargalos lógicos.",
+    "O método elimina testes para acelerar a codificação da dupla.",
+    "O planejamento do projeto exige documentações prévias extensas."
+  ],
+  answer: 0,
+  feedback: "Melhorias no design ocorrendo diariamente durante a digitação descreve a refatoração contínua, prática central do XP que melhora incrementalmente o design ao longo de todo o desenvolvimento. O pair programming reduz gargalos lógicos e erros, pois um desenvolvedor codifica enquanto o outro revisa em tempo real, ao contrário do que afirma a alternativa. O XP valoriza fortemente os testes, como TDD e testes automatizados contínuos, não os elimina. O XP é ágil e prioriza software funcionando em vez de documentação extensa; o planejamento é leve e iterativo.",
+  chips: []
+},
+
+// 14 - Diagrama de Atividades
+{
+  aula: "Questionário de Revisão",
+  tipo: "",
+  texto: "Ao modelar a automação de um fluxo de aprovação de notas fiscais numa empresa de logística, o analista sentiu dificuldade de alinhar a sequência lógica com a área administrativa de forma simples. Ele então esboçou um fluxograma padronizado pela UML apresentando losangos de decisão, nós de bifurcação e sincronização (barras grossas) para apontar processos simultâneos, culminando em círculos preenchidos para demonstrar as conclusões lógicas da tarefa modelada. FOWLER, Martin. UML essencial: um breve guia para a linguagem-padrão de modelagem de objetos. 3. ed. Porto Alegre: Bookman, 2005. (adaptado).",
+  question: "Reconheça a tipologia do diagrama que foi empregado para mapear os processos organizacionais citados e assinale a alternativa correta.",
+  code: ``,
+  options: [
+    "A representação destaca componentes físicos de implantação.",
+    "O modelo demonstra a alocação temporal restrita a mensagens.",
+    "O diagrama de atividades evidencia a sequência funcional operada.",
+    "O diagrama estrutural mapeia heranças lógicas complexas."
+  ],
+  answer: 2,
+  feedback: "Losangos de decisão, bifurcações e sincronizações (barras grossas para processos paralelos) e círculos preenchidos (estados finais) são elementos característicos do Diagrama de Atividades, usado para representar o fluxo lógico de processos de negócio. Componentes físicos de implantação são representados pelo Diagrama de Implantação (Deployment). Alocação temporal de mensagens entre objetos é característica do Diagrama de Sequência. Heranças entre classes são mapeadas no Diagrama de Classes, que é estrutural; o de atividades é comportamental, focado no fluxo de ações.",
+  chips: []
+},
+
+// 15 - Padrão Facade
+{
+  aula: "Questionário de Revisão",
+  tipo: "",
+  texto: "Um gateway de pagamento digital foi integrado a uma loja. Para processar uma simples venda de livro, o software da loja precisava invocar a classe de Autorização, em seguida chamar o módulo de Criptografia, gerar o log na classe de Auditoria, instanciar a comunicação da Bandeira do Cartão e disparar e-mails. Esse alto acoplamento estava degradando a arquitetura. Foi sugerido implementar um novo objeto centralizador com um método único chamado cobrar(). GAMMA, Erich et al. Padrões de Projeto: soluções reutilizáveis de software orientado a objetos. Porto Alegre: Bookman, 2000. (adaptado).",
+  question: "Com base nos padrões de projeto estruturais do catálogo GoF, analise a solução idealizada no relato e assinale a alternativa correta.",
+  code: ``,
+  options: [
+    "A solução quebra a coesão adotando heranças múltiplas invasivas.",
+    "O Decorator adiciona atributos estáticos extras às classes nativas.",
+    "O Facade encobre o subsistema complexo com interface unificada.",
+    "O Adapter foi exigido para converter protocolos legados de rede."
+  ],
+  answer: 2,
+  feedback: "O padrão Facade cria um objeto centralizador com um método único, cobrar(), que esconde a complexidade de interagir com múltiplas classes do subsistema, oferecendo uma interface simplificada e unificada, reduzindo o alto acoplamento. A solução não envolve herança múltipla; o Facade funciona por composição, delegando chamadas às classes do subsistema. O Decorator adiciona responsabilidades dinamicamente a objetos individuais, e não atributos estáticos, e não é a solução deste cenário. O Adapter torna interfaces incompatíveis compatíveis; o cenário não menciona incompatibilidade de protocolos.",
+  chips: []
+},
+
+// 16 - Padrão Observer
+{
+  aula: "Questionário de Revisão",
+  tipo: "",
+  texto: "Durante a programação do painel financeiro de uma corretora, constatou-se que vários gráficos dependiam simultaneamente do mesmo dado sensível da cotação do dólar. Sempre que a classe central que geria a cotação recebia um valor novo do mercado, ela própria varria o sistema tentando descobrir quem precisava ser atualizado. Isso inflacionou o código fonte da cotação. Para corrigir, recomendou-se separar as entidades em Publicadores (sujeitos) e Assinantes. GAMMA, Erich et al. Padrões de Projeto: soluções reutilizáveis de software orientado a objetos. Porto Alegre: Bookman, 2000. (adaptado).",
+  question: "Utilize a taxonomia dos padrões comportamentais aplicáveis a essa dinâmica e assinale a alternativa correta.",
+  code: ``,
+  options: [
+    "O mediador restringe as assinaturas para centralizar o processamento.",
+    "O Command enfileira os registros gráficos para bloquear notificações.",
+    "O Observer permite avisar os objetos sem conhecer suas tipologias.",
+    "O padrão aumenta radicalmente o uso das verificações sequenciais."
+  ],
+  answer: 2,
+  feedback: "A separação em Publicadores e Assinantes é o padrão Observer: quando o estado do sujeito muda, todos os observadores interessados são notificados automaticamente, sem que o sujeito precise conhecer os detalhes concretos de cada um, apenas uma interface comum de notificação. O Mediator centraliza a comunicação entre objetos via intermediário, mas não resolve o problema de notificação automática de múltiplos dependentes. O Command encapsula uma solicitação como objeto, para parametrizar, enfileirar ou desfazer; não tem relação com notificação de mudanças de estado. O Observer reduz verificações manuais, automatizando a notificação via inscrição, ao contrário do que afirma a alternativa.",
+  chips: []
+},
+
+// 17 - Disciplinas do RUP
+{
+  aula: "Questionário de Revisão",
+  tipo: "",
+  texto: "Dentro da estrutura bidimensional adotada no RUP, além das fases que cortam o tempo na linha horizontal, existem as disciplinas (ou fluxos de trabalho centrais) dispostas na linha vertical. O volume de esforço humano aportado em cada disciplina varia como ondas no gráfico. Uma dessas disciplinas tem seu pico de dedicação suprema durante as fases de Iniciação e Elaboração, mas reduz substancialmente, embora nunca desapareça por completo, nas fases de Construção. KRUCHTEN, Philippe. The rational unified process: an introduction. Boston: Addison-Wesley, 2000. (adaptado).",
+  question: "Analise o comportamento dos fluxos de trabalho iterativos do modelo arquitetural RUP e assinale a alternativa correta.",
+  code: ``,
+  options: [
+    "A modelagem de negócios atinge seu auge somente na fase de transição.",
+    "A elicitação de requisitos é prioritária durante as concepções iniciais.",
+    "A disciplina de suporte anula a presença de engenharia e modelagem final.",
+    "O esforço contínuo da implantação é a disciplina predominante no início."
+  ],
+  answer: 1,
+  feedback: "A disciplina descrita é Requisitos: esforço máximo nas fases de Concepção e Elaboração, momento de definir escopo e arquitetura, reduzindo-se na Construção, mas nunca desaparecendo por completo. A Modelagem de Negócios tem maior intensidade nas fases iniciais, não na Transição, que é voltada para entrega e implantação. A disciplina de Suporte/Ambiente atua ao longo de todo o processo, mas não anula outras disciplinas; elas coexistem com intensidades variadas. A Implantação tem seu pico nas fases finais, Construção tardia e Transição, e não no início, ao contrário do que afirma a alternativa.",
+  chips: []
+},
+
+// 18 - Heurística de Análise Textual (substantivos e verbos)
+{
+  aula: "Questionário de Revisão",
+  tipo: "",
+  texto: "Após o levantamento descritivo das necessidades de uma imobiliária, a equipe iniciou a transição para a linguagem da UML. Uma das heurísticas propostas pela literatura indica que a leitura atenta da especificação textual do sistema revela potenciais blocos conceituais. Em geral, substantivos concretos ou abstratos mencionados no texto indicam potenciais classes do domínio, enquanto verbos associados a eles denotam operações ou métodos passíveis de implementação técnica. BOOCH, Grady; RUMBAUGH, James; JACOBSON, Ivar. UML: guia do usuário. 2. ed. Rio de Janeiro: Campus; Elsevier, 2006. (adaptado).",
+  question: "Use os princípios linguísticos vinculados à análise estrutural de domínio no paradigma orientado e assinale a alternativa correta.",
+  code: ``,
+  options: [
+    "O substantivo \"Imóvel\" candidata-se a ser extraído como uma classe.",
+    "Os verbos no infinitivo garantem a constituição de novos atributos.",
+    "As preposições do texto definem instâncias estáticas independentes.",
+    "A semântica textual proíbe a extração de conceitos base organizacionais."
+  ],
+  answer: 0,
+  feedback: "Pela heurística clássica de análise textual (Booch/Abbott), substantivos presentes na especificação são candidatos naturais a se tornarem classes. Imóvel é um substantivo concreto central do domínio imobiliário, sendo forte candidato a classe. Pela heurística, verbos indicam operações/métodos, não atributos; atributos vêm de substantivos qualificadores. Preposições não têm papel definido nessa heurística, que foca em substantivos para classes e verbos para métodos. A análise semântica permite a extração de conceitos, sendo essa a finalidade da heurística, ao contrário do que afirma a alternativa.",
+  chips: []
+},
+
+// 19 - Padrão Factory Method
+{
+  aula: "Questionário de Revisão",
+  tipo: "",
+  texto: "Um desenvolvedor de jogos precisava que o cenário gerasse diferentes monstros dependendo da dificuldade (Fácil ou Difícil) selecionada pelo jogador. Se codificasse o bloco condicional complexo contendo os construtores de todos os monstros diretamente dentro da classe \"Fase\", ela estaria violando os princípios estruturais coesivos. Para manter o sistema limpo, decidiu delegar a responsabilidade de instanciar o monstro específico para subclasses derivadas através de um padrão catalogado. GAMMA, Erich et al. Padrões de Projeto: soluções reutilizáveis de software orientado a objetos. Porto Alegre: Bookman, 2000. (adaptado).",
+  question: "Examine o contexto de instanciação descrito e a solução arquitetural ideal para o acoplamento excessivo e assinale a alternativa correta.",
+  code: ``,
+  options: [
+    "O padrão Memento captura a instância e a clona de modo passivo.",
+    "O Factory Method define assinaturas repassadas às descendentes.",
+    "O Composite interliga os monstros em uma estrutura plana única.",
+    "A solução Observer monitora as classes garantindo herança extra."
+  ],
+  answer: 1,
+  feedback: "O Factory Method delega a instanciação a subclasses, que implementam o método de criação conforme sua especialização, Fácil ou Difícil, reduzindo o acoplamento e mantendo a classe base Fase mais limpa e coesa. O Memento captura e restaura o estado interno de um objeto sem violar seu encapsulamento; não tem relação com delegar criação. O Composite trata objetos individuais e composições de forma uniforme, geralmente em estruturas de árvore, não em uma estrutura plana; não resolve o problema de instanciação. O Observer trata de notificação de mudanças de estado, não de criação ou instanciação de objetos.",
+  chips: []
+},
+
+// 20 - Modelo Espiral
+{
+  aula: "Questionário de Revisão",
+  tipo: "",
+  texto: "No desenvolvimento de engenharia de software para projetos governamentais robustos e orçamentos multimilionários, adotou-se historicamente um modelo evolutivo focado não apenas em codificação bruta. Esse ciclo, criado nos anos oitenta, é caracterizado por representar os ciclos como voltas, nas quais, a cada incremento do raio partindo do centro, eleva-se o custo da versão produzida; sendo indispensável em toda volta a fase proeminente de levantamento, avaliação técnica de riscos organizacionais e construção rigorosa de protótipos experimentais. PRESSMAN, Roger S. Engenharia de Software: uma abordagem profissional. 8. ed. Porto Alegre: AMGH, 2016. (adaptado).",
+  question: "Interprete as fases singulares destacadas no enunciado que definem a estrutura metodológica adotada e assinale a alternativa correta.",
+  code: ``,
+  options: [
+    "O modelo descarta formalmente a execução e análise financeira.",
+    "A construção exclui processos cíclicos que envolvam protótipos.",
+    "A modelagem incremental veda a análise e planejamento anterior.",
+    "A avaliação proativa de riscos domina a execução de cada ciclo."
+  ],
+  answer: 3,
+  feedback: "O modelo descrito é o Modelo Espiral, de Boehm, dos anos 1980. O texto confirma: é indispensável em toda volta a avaliação técnica de riscos organizacionais, a análise de riscos é o elemento central e diferenciador desse modelo. O espiral inclui análise e planejamento financeiro/orçamentário como parte de cada ciclo, ao contrário do que afirma a alternativa. A construção de protótipos é uma fase explícita e recorrente em cada volta, não excluída. A cada ciclo do espiral ocorre justamente planejamento e análise prévios antes de avançar, ao contrário do que afirma a alternativa.",
+  chips: []
+},
+],
+
+
 };

@@ -180,6 +180,7 @@
      template_init.js. Pequeno mapa local porque MODOS_CONFIG
      não é exportado por aquele módulo — evita import só por isso. */
   var _MODO_LABELS = {
+    revisao:  'Eevisão',
     ava:      'AVA',
     questoes: 'Questões',
     enade:    'ENADE',
@@ -190,6 +191,14 @@
      disciplinas_init.js. Cópia local para não importar aquele módulo
      inteiro (ele tem side effects ao carregar). */
   var _ICONES_MODO = {
+
+  revisao:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+    'stroke-linecap="round" stroke-linejoin="round">' +
+      '<rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>' +
+      '<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>' +
+      '<path d="m9 14 2 2 4-4"/>' +
+    '</svg>',
     ava:
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
       'stroke-linecap="round" stroke-linejoin="round">' +

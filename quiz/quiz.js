@@ -191,6 +191,161 @@ import '../src/session-tracker.js';
   }
 
   /* ══════════════════════════════════════════════
+     HOME — dados reais (Firebase via quiz_intelligence.js)
+     Nenhum dado mockado: tudo vem de window.NexusQuizIntelligence,
+     que já é a fonte oficial usada pelo Dashboard (Camada 4,
+     somente leitura, mesmo cache/lógica já existentes).
+  ══════════════════════════════════════════════ */
+
+  const MODO_LABELS = { questoes: 'Questões', revisao: 'Revisão', simulado: 'Simulado' };
+
+  function _formatarModo(modo) {
+    if (!modo) return 'Quiz em andamento';
+    return MODO_LABELS[modo] || (modo.charAt(0).toUpperCase() + modo.slice(1));
+  }
+
+  function _uidAtual() {
+    try {
+      const raw = window.NexusStorage ? window.NexusStorage.get('usuario', null) : null;
+      return raw && raw.uid ? raw.uid : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function _buscarDisc(sem, arquivo) {
+    const lista = getDisciplinasDeSemestre(sem) || [];
+    return lista.find(d => d.arquivo === arquivo) || null;
+  }
+
+  function _nomeDisciplina(sem, arquivo) {
+    const d = _buscarDisc(sem, arquivo);
+    return d ? (d.apelido ?? d.nome) : arquivo;
+  }
+
+  function _hrefDisciplina(sem, arquivo) {
+    return `disciplinas/disciplina.html?sem=${encodeURIComponent(sem)}&disc=${encodeURIComponent(arquivo)}`;
+  }
+
+  /* Formata um timestamp real (endedAt, vindo do Firestore) como "dd/mm" */
+  function _formatarDataCurta(ts) {
+    if (!ts) return '';
+    const d = new Date(ts);
+    const dia = String(d.getDate()).padStart(2, '0');
+    const mes = String(d.getMonth() + 1).padStart(2, '0');
+    return `${dia}/${mes}`;
+  }
+
+  async function _renderContinuarEstudando(sem) {
+    const section = document.getElementById('continue-section');
+    const row = document.getElementById('continue-row');
+    if (!section || !row) return;
+
+    section.style.display = '';
+    row.innerHTML = `<p class="continue-row__empty">Carregando…</p>`;
+
+    const uid = _uidAtual();
+    const QI = window.NexusQuizIntelligence;
+
+    if (!uid || !QI) {
+      row.innerHTML = `<p class="continue-row__empty">Faça login para ver seu progresso real.</p>`;
+      return;
+    }
+
+    // Fonte: estado real de retomada (usuarios/{uid}/quiz_respostas/{quizId}),
+    // NÃO o histórico de performance. Um registro de performance é uma
+    // fotografia imutável que pode sobreviver a um reset (reiniciar()) da
+    // tentativa que ele descreve, então "respondidas < totalQuestoes" ali
+    // não significa que exista algo para restaurar agora. QI.listarTentativasRetomaveis
+    // já filtra por isso — só devolve o que o próprio documento de estado
+    // confirma como uma tentativa em aberto.
+    let tentativas = [];
+    try {
+      tentativas = await QI.listarTentativasRetomaveis(uid, sem);
+    } catch (e) {
+      console.warn('[quiz] falha ao buscar listarTentativasRetomaveis:', e);
+    }
+
+    // tentativa retomável mais recente por disciplina (já vem ordenado desc por savedAt)
+    const maisRecentePorDisc = {};
+    tentativas.forEach(t => {
+      if (!maisRecentePorDisc[t.disc]) maisRecentePorDisc[t.disc] = t;
+    });
+
+    const emAndamento = Object.values(maisRecentePorDisc)
+      .sort((a, b) => (b.savedAt ?? 0) - (a.savedAt ?? 0))
+      .slice(0, 3);
+
+    if (!emAndamento.length) {
+      row.innerHTML = `<p class="continue-row__empty">Você ainda não começou nenhum estudo.</p>`;
+      return;
+    }
+
+    row.innerHTML = '';
+
+    emAndamento.forEach((t, idx) => {
+      const discMeta = _buscarDisc(sem, t.disc);
+      if (!discMeta) return;
+
+      const cor = _resolverCorCard(discMeta.arquivo, idx);
+      const nome = discMeta.apelido ?? discMeta.nome;
+      const icone = resolveIcone(discMeta.icone);
+      const pct = Math.round((t.respondidas / t.totalQuestoes) * 100);
+      // Leva o modo junto: é o que permite ao engine (quiz_engine.js lê
+      // window.__NEXUS_QUIZ_MODO__ || URLSearchParams(location.search).get('modo'))
+      // restaurar a MESMA tentativa em vez de simplesmente reabrir a
+      // disciplina do zero na Etapa 2.
+      const href = `${_hrefDisciplina(sem, discMeta.arquivo)}&modo=${encodeURIComponent(t.modo)}`;
+      const dataUltima = _formatarDataCurta(t.savedAt);
+
+      const a = document.createElement('a');
+      a.href = href;
+      a.className = 'continue-card';
+      // Mesmas variáveis de cor usadas nos cards de "Todas as Disciplinas",
+      // para manter a identidade visual (ícone com fundo tonalizado na
+      // cor da disciplina, brilho no hover, etc.).
+      a.style.setProperty('--card-accent',     cor.hex);
+      a.style.setProperty('--card-accent-rgb', cor.rgb);
+      a.style.setProperty('--card-accent-d',   `rgba(${cor.rgb},0.12)`);
+      a.style.setProperty('--card-glow',       `rgba(${cor.rgb},0.22)`);
+      a.style.animationDelay = `${0.06 + idx * 0.06}s`;
+
+      a.innerHTML = `
+        <div class="continue-card__head">
+          <div class="continue-card__icon" aria-hidden="true">${icone}</div>
+          <div class="continue-card__heading">
+            <h3 class="continue-card__title">${nome}</h3>
+            <span class="continue-card__subtitle">${_formatarModo(t.modo)}</span>
+          </div>
+        </div>
+        <div class="continue-card__progress">
+          <div class="continue-card__bar">
+            <div class="continue-card__bar-fill" style="width:${pct}%;"></div>
+          </div>
+          <span class="continue-card__pct">${pct}%</span>
+        </div>
+        <div class="continue-card__footer">
+          <span class="continue-card__meta">${dataUltima ? `Última tentativa em ${dataUltima} · ${t.respondidas}/${t.totalQuestoes} questões` : ''}</span>
+          <span class="continue-card__arrow-wrap" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
+            </svg>
+          </span>
+        </div>
+      `;
+
+      a.addEventListener('mouseenter', () => playSound('hover', 'quiz'));
+      a.addEventListener('click', () => playSound('click', 'quiz'));
+
+      row.appendChild(a);
+    });
+  }
+
+  function _renderHomeExtras(sem) {
+    _renderContinuarEstudando(sem);
+  }
+
+  /* ══════════════════════════════════════════════
      CARDS
   ══════════════════════════════════════════════ */
 
@@ -221,8 +376,6 @@ import '../src/session-tracker.js';
   }
 
   function gerarCards(sem) {
-    const periodo = _resolverPeriodo(sem);
-    const ano     = periodo.split('.')[0];
     const grid    = document.getElementById('disciplines-grid');
     const msgEl   = document.getElementById('disciplines-empty');
     const discs   = getDisciplinasDeSemestre(sem);
@@ -239,7 +392,7 @@ import '../src/session-tracker.js';
     msgEl.style.display = 'none';
 
     discs.forEach((disc, idx) => {
-      const href  = `disciplinas/${ano}/${periodo}/${disc.arquivo}.html?sem=${sem}`;
+      const href  = _hrefDisciplina(sem, disc.arquivo);
       const cor   = _resolverCorCard(disc.arquivo, idx);
       const label = disc.apelido ?? disc.nome;
       const num   = String(idx + 1).padStart(2, '0');
@@ -248,6 +401,7 @@ import '../src/session-tracker.js';
       const a = document.createElement('a');
       a.href      = href;
       a.className = 'disc-card';
+      a.dataset.arquivo = disc.arquivo; // usado pela Home para destacar o card certo
       // Aplica as variáveis de cor do card via inline style — fonte única: cores.js
       a.style.setProperty('--card-accent',     cor.hex);
       a.style.setProperty('--card-accent-rgb', cor.rgb);
@@ -293,9 +447,9 @@ import '../src/session-tracker.js';
     criarSemestreSelect('semestre-wrap', sem => {
       setSemestre(sem);
       gerarCards(sem);
+      _renderHomeExtras(sem);
       sincronizarSemNaURL(sem);
       playSound('select', 'quiz');
-      document.dispatchEvent(new CustomEvent('nexus:semestreChanged', { detail: sem }));
     });
 
     requestAnimationFrame(() => {
@@ -532,9 +686,12 @@ import '../src/session-tracker.js';
     // Estilo dos ícones SVG das disciplinas (ver _injetarEstiloIconeDisciplina)
     _injetarEstiloIconeDisciplina();
 
-    // Cards
+    // Cards (tela de seleção original)
     gerarCards(semAtual);
     sincronizarSemNaURL(semAtual);
+
+    // Home real: continuar estudando (somente leitura via inteligência)
+    _renderHomeExtras(semAtual);
 
     // Footer
     preencherAnos(['footer-year']);

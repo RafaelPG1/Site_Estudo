@@ -234,7 +234,7 @@ Campos opcionais (`assertions`, `questionContinuation`, `code`) só devem aparec
 ## Restrições de Estrutura
 
 * Gerar exatamente 10 objetos individuais, nem mais nem menos.
-* Cada objeto deve começar com `{` e terminar com `}`,.
+* Cada objeto deve começar com `{` e terminar com `},`,.
 * **É proibido utilizar um array externo `[]` para agrupar as questões.**
 * Não colocar vírgulas entre os objetos.
 * Não alterar os nomes nem a ordem dos campos.

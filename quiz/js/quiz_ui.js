@@ -293,14 +293,19 @@ function _buildTiposEspecial(listEl, sem, modo, _tipoRow, tipoMap) {
 
     /* Escolhe a lista certa conforme o modo ativo */
 // quiz_ui.js — _buildTiposEspecial, linha ~268
-var lista = modo === 'ava'
-  ? (conteudo.ava      || [])
-  : modo === 'enade'
-  ? (conteudo.enade    || [])
-  : modo === 'fixacao'
-  ? (conteudo.fixacao  || [])
-  : (conteudo.questoes || []);
+var lista = modo === 'revisao'
+  ? (conteudo.revisao || [])
 
+  : modo === 'ava'
+  ? (conteudo.ava || [])
+
+  : modo === 'enade'
+  ? (conteudo.enade || [])
+
+  : modo === 'fixacao'
+  ? (conteudo.fixacao || [])
+
+  : (conteudo.questoes || []);
     /* Extrai tipos únicos preservando a ordem de aparição */
     var vistos  = {};
     var tiposOrdem = [];
@@ -475,7 +480,7 @@ var lista = modo === 'ava'
     else if (_modo === 'ava')      _modoCfg = { icon: '📋', label: 'Questões AVA',         desc: 'Questões extraídas ou adaptadas das atividades acadêmicas, elaboradas e aplicadas pelos professores no AVA.' };
     else if (_modo === 'questoes') _modoCfg = { icon: '🤖', label: 'Geradas por IA',       desc: 'Questões didáticas que explicam o conceito antes de perguntar — ideais para revisar e consolidar o conteúdo estudado.' };
     else if (_modo === 'fixacao')  _modoCfg = { icon: '📌', label: 'Questões de Fixação',  desc: 'Questões objetivas para consolidar o conteúdo estudado — diretas, sem contextos extensos, ideais para revisão rápida.' };
-
+    else if (_modo === 'revisao')  _modoCfg = { icon: '📋', label: 'Questões de Revisão',  desc: 'Questões de revisão dos Professores(as)' };
     if (_modoCfg) {
       var modoBlock = _el('div', 'nlg-enade-block');
       var modoIcon  = _el('div', 'nlg-enade-icon', _modoCfg.icon);
@@ -533,6 +538,26 @@ var lista = modo === 'ava'
       avaTopo.appendChild(avaTxt);
       avaNota.appendChild(avaTopo);
       sTipos.list.appendChild(avaNota);
+
+          } else if (_modo === 'revisao') {
+      /* ── Tipos padrão AVA (2026.2 em diante) ─────────────── */
+      var avaNota = _el('div', 'nlg-enade-block');
+      avaNota.style.cssText += 'flex-direction:column;gap:0.4rem;';
+      var avaTopo = _el('div');
+      avaTopo.style.cssText = 'display:flex;align-items:center;gap:0.5rem;';
+      var avaIco  = _el('div', 'nlg-enade-icon', '📋');
+      var avaTxt  = _el('div', 'nlg-enade-text');
+      avaTxt.appendChild(_el('span', 'nlg-enade-label', 'Tipagem dependente da extração'));
+      avaTxt.appendChild(_el('span', 'nlg-enade-desc',
+        'Os tipos e a estrutura das questões refletem diretamente o conteúdo ' +
+        'disponibilizado pelo professor no AVA — enunciados, atividades e ' +
+        'avaliações são extraídos e adaptados sem padronização prévia de formato.'
+      ));
+      avaTopo.appendChild(avaIco);
+      avaTopo.appendChild(avaTxt);
+      avaNota.appendChild(avaTopo);
+      sTipos.list.appendChild(avaNota);
+
 
     } else {
       /* ── Tipos padrão Questões (2026.2 em diante) ────────── */

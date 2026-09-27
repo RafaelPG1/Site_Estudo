@@ -1,6 +1,30 @@
 // @ts-nocheck
 /* ============================================================
-   NEXUS STUDY — quiz/disciplinas/disciplinas_init.js  v7.4
+   NEXUS STUDY — quiz/disciplinas/disciplinas_init.js  v8.2
+
+   INTEGRAÇÃO v8.2 (mescla das versões v7.5/v8.1 e v7.4):
+     - Base deste arquivo é a versão mais recente (v7.5/v8.1),
+       que já é a implementação atual do projeto: renderização
+       dinâmica dos modos a partir de catalog._modos, HTML
+       genérico (disciplina.html) e discId lido de ?disc=.
+     - Único ponto realmente divergente entre as duas versões era
+       o Passo 1 (resolução do discId): a versão anterior (v7.4)
+       o extraía do NOME DO ARQUIVO (location.pathname), esquema
+       usado quando cada disciplina tinha seu próprio HTML. Esse
+       comportamento foi reincorporado como FALLBACK: se ?disc=
+       não estiver presente na URL, o script volta a tentar
+       resolver o discId a partir do nome do arquivo — cobrindo
+       links antigos/diretos — sem jamais sobrepor ?disc= quando
+       ele existir (fonte primária, exigida pela arquitetura
+       atual de HTML único + catalog._modos).
+     - Todo o restante (Passos 2 a 9) já era idêntico em espírito
+       entre as duas versões, com a mais recente apenas os
+       tornando mais robustos (estado inválido, renderização
+       dinâmica de cards, título de página dinâmico) — nada disso
+       foi removido nem substituído nesta integração.
+   ============================================================ */
+/* ============================================================
+   NEXUS STUDY — quiz/disciplinas/disciplinas_init.js  v7.5
 
    RESPONSABILIDADES (e apenas estas):
      1. Resolver o semestre da URL                      (navegação)
@@ -14,13 +38,49 @@
         não são dados de disciplina                      (visual)
      7. Injetar logo, inicializar áudio e eventos
         nos cards                                        (visual/UX)
-     8. Buscar catalog.json e marcar cards              (UX)
-        sem conteúdo como disc-card--vazio
+     8. Buscar catalog.json, RENDERIZAR os cards de modo
+        dinamicamente (fonte única: catalog._modos) e
+        marcar como disc-card--vazio os indisponíveis    (UX)
      9. Inicializar a IA (Nexus Assistente)             (IA)
 
      (contexto de leitura para a IA — disciplina/semestre/
       catalog — é exposto em window como Passo 4.5, antes
       do DOMContentLoaded)
+
+   MUDANÇAS v7.5 — CARDS DE MODO GERADOS DINAMICAMENTE
+   (SUBSTITUINDO OS <a class="disc-card"> HARDCODED NOS HTMLs):
+
+     Problema: cada HTML de disciplina (poo.html, banco_dados.html,
+     design.html, redes.html, redes2.html, analise_projeto.html,
+     estruturas_dados.html, legislacao.html,
+     psicologia_organizacional.html) repetia manualmente os mesmos
+     4 blocos <a class="disc-card"> (AVA/Questões/ENADE/Fixação).
+     Criar um modo novo exigia editar dezenas de arquivos HTML.
+
+     Solução:
+       • catalog.json ganhou uma chave global `_modos`, um array
+         com { id, titulo, descricao, cssClass, ordem } — a fonte
+         única de QUAIS modos existem (a disponibilidade por
+         disciplina/semestre continua exatamente como antes, nas
+         chaves de semestre do próprio catalog.json).
+       • O Passo 8 (antes `_aplicarDisponibilidade`, só marcava
+         cards já existentes) virou `_renderizarModos`: monta um
+         `<a class="disc-card">` por item de `_modos` (na ordem
+         de `ordem`), idêntico em marcação/classe/ícone/texto ao
+         que cada HTML tinha fixo, e insere via DocumentFragment
+         no `#disciplines-container`.
+       • Os HTMLs agora só declaram o container vazio:
+           <div class="disciplines" id="disciplines-container"></div>
+         Nenhum <a class="disc-card"> fica fixo em HTML.
+       • Ícones (`_ICONES_MODO`, Passo 6) e sons de hover/click
+         (Passo 7) foram mantidos como funções reaproveitáveis,
+         agora também invocadas DEPOIS que os cards são inseridos
+         no DOM (antes só rodavam uma vez no DOMContentLoaded, o
+         que não bastava mais porque os cards passaram a existir
+         apenas depois do fetch assíncrono do catalog.json).
+       • Criar um modo novo, daqui pra frente, é: adicionar um
+         objeto em `_modos` + a disponibilidade por disciplina/
+         semestre no catalog.json. Nenhum HTML precisa ser tocado.
 
    MUDANÇAS v7.4 — ÍCONES SVG DOS MODOS DE ESTUDO
    (SUBSTITUINDO OS EMOJIS FIXOS DA v7.3):
@@ -148,11 +208,84 @@ import '../../src/session-tracker.js';
 
 
 /* ══════════════════════════════════════════════════════════
+   MODOS — lista de fallback e montagem do href de cada modo
+
+   Movidos para o topo do arquivo (v8.1) porque agora são usados
+   em dois pontos que precisam existir ANTES do fetch assíncrono
+   de catalog.json:
+     • Passo 3.7 — continuar direto no modo indicado por ?modo=
+       (síncrono, roda antes de qualquer coisa ser desenhada)
+     • Passo 8   — renderização dos cards de modo (depois do
+       fetch, como já era)
+
+   v8.1 — CORREÇÃO DE PATH (migração para disciplina.html):
+     Antes, os HTMLs de disciplina viviam em
+     quiz/disciplinas/{ano}/{periodo}/{arquivo}.html — dois
+     níveis mais fundo que este script (quiz/disciplinas/
+     disciplinas_init.js), por isso o href para o template
+     precisava subir 3 níveis: '../../../template/template.html'.
+
+     Agora existe um único disciplina.html, na MESMA pasta deste
+     script (quiz/disciplinas/disciplina.html), então o caminho
+     correto passa a subir apenas 1 nível: '../template/template.html'.
+     Sem este ajuste, todo card de modo (e o redirecionamento do
+     Passo 3.7) apontaria para um caminho inexistente.
+   ══════════════════════════════════════════════════════════ */
+
+/* Fallback usado se catalog._modos vier ausente/inválido — mesmos
+   4 modos que antes estavam hardcoded em cada HTML. Mantém a
+   página funcional mesmo se o catalog.json for editado incorretamente,
+   e serve também como lista síncrona de "modos conhecidos" para o
+   Passo 3.7 (antes do catalog.json ainda ter respondido). */
+var _MODOS_FALLBACK = [
+  { id: 'revisao',  titulo: 'Revisão',   descricao: 'Questões de revisão dos Professores(as).',                            cssClass: 'disc-card--revisao', ordem: 1 },
+  { id: 'ava',      titulo: 'AVA',       descricao: 'Questões extraídas das atividades do AVA',                                          cssClass: 'disc-card--ava',     ordem: 2 },
+  { id: 'questoes', titulo: 'Questões',  descricao: 'Questões adaptativas criadas por IA com feedback explicativo.',                       cssClass: 'disc-card--quiz',    ordem: 3 },
+  { id: 'enade',    titulo: 'ENADE',     descricao: 'Questões estilo ENADE com contexto aplicado, asserções e análise crítica.',           cssClass: 'disc-card--enade',   ordem: 4 },
+  { id: 'fixacao',  titulo: 'Fixação',   descricao: 'Questões de revisão para consolidar o conteúdo estudado.',                            cssClass: 'disc-card--fixacao', ordem: 5 },
+
+];
+
+function _montarHrefModo(discId, modoId, sem) {
+  var href = '../template/template.html?disc=' + encodeURIComponent(discId) +
+             '&modo=' + encodeURIComponent(modoId);
+  if (sem) href += '&sem=' + encodeURIComponent(sem);
+  return href;
+}
+
+
+/* ══════════════════════════════════════════════════════════
    PASSO 1 — Resolver ID da disciplina a partir da URL
+
+   v8.0 — MIGRAÇÃO PARA HTML GLOBAL (disciplina.html):
+     Antes, cada disciplina tinha seu próprio HTML e o discId
+     era inferido do NOME DO ARQUIVO (location.pathname).
+     Agora existe um único HTML (disciplina.html) para todas as
+     disciplinas, então o discId passa a vir explicitamente do
+     parâmetro ?disc= da URL.
+
+     Ex.: disciplina.html?sem=2026.1-AP1&disc=poo → discId = "poo"
+
+     'desconhecida' continua sendo o valor sentinela usado em
+     todo o arquivo quando nenhum discId válido é encontrado.
    ══════════════════════════════════════════════════════════ */
 var _discId = 'desconhecida';
 try {
-  _discId = location.pathname.split('/').pop().replace('.html', '') || 'desconhecida';
+  var _discParam = new URLSearchParams(location.search).get('disc');
+  if (_discParam) {
+    _discId = _discParam;
+  } else {
+    /* INTEGRAÇÃO (esquema anterior, um HTML por disciplina — ex.:
+       poo.html, banco_dados.html): fallback para quando a página é
+       acessada sem ?disc= (ex.: link antigo/direto ainda em uso).
+       Extrai o id a partir do nome do arquivo, exatamente como o
+       script fazia antes da migração para disciplina.html (v8.0).
+       Só entra em ação na ausência de ?disc=; nunca sobrepõe o
+       parâmetro da URL, que continua sendo a fonte primária. */
+    var _fromPath = '';
+    try { _fromPath = location.pathname.split('/').pop().replace('.html', ''); } catch (_) {}
+    if (_fromPath) _discId = _fromPath;
+  }
 } catch (_) {}
 
 
@@ -212,21 +345,137 @@ try {
      já assume quando nenhuma chave é reconhecida.
    ══════════════════════════════════════════════════════════ */
 function _resolverInfoDisciplina(discId, sem) {
+  var lista = [];
   try {
-    var lista = getDisciplinasDeSemestre(sem);
-    var info = lista.find(function (d) { return d.id === discId || d.arquivo === discId; });
-    if (info) return info;
+    lista = getDisciplinasDeSemestre(sem) || [];
   } catch (e) {
-    console.warn('[disciplinas_init] Falha ao resolver disciplina via global.js:', e.message);
+    console.warn('[disciplinas_init] Falha ao resolver disciplinas via global.js:', e.message);
   }
-  console.warn(
-    '[disciplinas_init] Disciplina "' + discId + '" não encontrada em _DISCIPLINAS para "' +
-    sem + '". Usando fallback visual.'
-  );
-  return { id: discId, nome: discId, arquivo: discId, icone: 'code' };
+
+  /* Semestre "existe" se _DISCIPLINAS tiver ao menos uma disciplina
+     cadastrada para ele — mesmo critério usado por quiz.js. */
+  var semEncontrado = lista.length > 0;
+
+  var info = lista.find(function (d) { return d.id === discId || d.arquivo === discId; });
+  if (info) {
+    return { info: info, discEncontrada: true, semEncontrado: semEncontrado };
+  }
+
+  if (discId && discId !== 'desconhecida') {
+    console.warn(
+      '[disciplinas_init] Disciplina "' + discId + '" não encontrada em _DISCIPLINAS para "' +
+      sem + '". Usando fallback visual.'
+    );
+  }
+
+  return {
+    info: { id: discId, nome: discId, arquivo: discId, icone: 'code' },
+    discEncontrada: false,
+    semEncontrado: semEncontrado,
+  };
 }
 
-var _discInfo = _resolverInfoDisciplina(_discId, _sem);
+var _contextoDisc = _resolverInfoDisciplina(_discId, _sem);
+var _discInfo      = _contextoDisc.info;
+
+/* ══════════════════════════════════════════════════════════
+   PASSO 3.6 — Validar estado geral (disc + sem) a partir da URL
+
+   v8.0 — MIGRAÇÃO PARA HTML GLOBAL (disciplina.html):
+     Como o HTML agora é genérico, precisamos decidir aqui,
+     de forma centralizada, se a combinação ?disc=&sem= recebida
+     é utilizável. Casos tratados como inválidos:
+       • disciplina.html                          (sem parâmetros)
+       • disciplina.html?disc=nao_existe           (sem sem=)
+       • disciplina.html?sem=nao_existe            (sem disc=)
+       • disciplina.html?sem=2026.1-AP1&disc=nao_existe
+
+     Quando inválido, a página não tenta buscar catalog.json nem
+     renderizar cards de modo — em vez disso mostra uma mensagem
+     simples (ver _renderizarEstadoInvalido), mantendo header,
+     logo, back-btn e áudio funcionando normalmente.
+   ══════════════════════════════════════════════════════════ */
+var _semValido    = !!_sem && _contextoDisc.semEncontrado;
+var _discValido   = _discId !== 'desconhecida' && _contextoDisc.discEncontrada;
+var _estadoValido = _semValido && _discValido;
+
+function _mensagemEstadoInvalido() {
+  if (!_sem) return 'Nenhum semestre foi informado na URL.';
+  if (!_contextoDisc.semEncontrado) return 'O semestre "' + _sem + '" não foi encontrado.';
+  if (_discId === 'desconhecida') return 'Nenhuma disciplina foi informada na URL.';
+  return 'A disciplina "' + _discId + '" não foi encontrada em ' + _sem + '.';
+}
+
+/* ══════════════════════════════════════════════════════════
+   PASSO 3.7 — Continuar direto no modo indicado por ?modo=
+
+   INTEGRAÇÃO (v8.1): esta funcionalidade existia numa versão
+   anterior deste arquivo (pré-v7.5, cards de modo hardcoded no
+   HTML) e foi perdida quando os cards passaram a ser renderizados
+   dinamicamente a partir de catalog.json (Passo 8, assíncrono).
+
+   Origem/uso: a Home ("Continuar Estudando", em quiz.js/
+   _renderContinuarEstudando) monta o link desta página como
+   "disciplina.html?sem=X&disc=Y&modo=Z" para retomar uma
+   tentativa em andamento. Sem este passo, ?modo= chega aqui e
+   é ignorado — o usuário sempre para na tela de escolha manual,
+   mesmo já sabendo o modo.
+
+   Adaptação necessária: a versão anterior fazia
+   `document.querySelector('.disc-card[data-modo="X"][href]')`,
+   o que exigia que os cards já existissem no DOM. Isso não é
+   mais garantido de forma síncrona: os cards só nascem depois
+   do fetch assíncrono de catalog.json (Passo 8). Em vez de
+   depender do DOM, este passo monta o href diretamente via
+   _montarHrefModo(), usando a lista estática _MODOS_FALLBACK
+   como "modos conhecidos" — exatamente os mesmos 4 modos que a
+   versão anterior enxergava como cards fixos no HTML.
+
+   Mesma filosofia da versão anterior (documentada lá): NÃO
+   verifica disponibilidade (discEntry[modo] === true) antes de
+   redirecionar — isso só é conhecido depois do catalog.json
+   responder (Passo 8), e preferimos deixar o usuário continuar
+   a bloquear precocemente um caso que normalmente é válido.
+
+   Camada 2 (correção/robustez, ver _renderizarModos): se
+   catalog._modos trouxer um modo que não está em
+   _MODOS_FALLBACK, esta camada síncrona não o reconhece — o
+   Passo 8 tenta novamente com a lista real assim que ela chega.
+   ══════════════════════════════════════════════════════════ */
+var _modoRedirecionado = false;
+
+function _tentarContinuarModo(modosConhecidos) {
+  if (_modoRedirecionado || !_estadoValido) return;
+
+  var modoContinuar;
+  try {
+    modoContinuar = new URLSearchParams(location.search).get('modo');
+  } catch (_) {
+    return;
+  }
+  if (!modoContinuar) return;
+
+  var modoValido = modosConhecidos.some(function (m) { return m.id === modoContinuar; });
+  if (!modoValido) {
+    console.warn(
+      '[disciplinas_init] ?modo="' + modoContinuar + '" não corresponde a nenhum modo' +
+      ' conhecido — mantendo a tela de escolha normal.'
+    );
+    return;
+  }
+
+  _modoRedirecionado = true;
+  /* location.replace() (em vez de location.href) evita empilhar esta
+     tela intermediária no histórico — "voltar" a partir do quiz volta
+     para a Home, e não para esta tela de escolha que o usuário nunca
+     viu de fato. Mesmo comportamento da versão anterior. */
+  location.replace(_montarHrefModo(_discId, modoContinuar, _sem));
+}
+
+/* Camada 1 — síncrona, com a lista estática (idêntico em espírito
+   à versão anterior, que via os 4 cards fixos no HTML antes de
+   qualquer fetch). */
+_tentarContinuarModo(_MODOS_FALLBACK);
 
 
 /* ══════════════════════════════════════════════════════════
@@ -328,8 +577,49 @@ function _renderizarCabecalhoDisciplina() {
 
     var nomeEl = document.getElementById('disc-nome');
     if (nomeEl) nomeEl.textContent = _discInfo.nome;
+
+    /* document.title era fixo por HTML (um por disciplina). Agora
+       o HTML é genérico, então o título passa a ser montado aqui,
+       a partir do mesmo _discInfo.nome já usado no header. */
+    document.title = 'Nexus Study — ' + _discInfo.nome;
   } catch (e) {
     console.warn('[disciplinas_init] Ícone/nome da disciplina não aplicado:', e.message);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   PASSO 5.5 — Estado inválido (?disc= / ?sem= ausentes ou
+   inexistentes em _DISCIPLINAS)
+
+   Não é uma "tela de erro" separada: reaproveita os mesmos
+   elementos do header/página (eyebrow, título, descrição,
+   container de modos), apenas substituindo o conteúdo deles
+   por uma mensagem curta. Header, logo, back-btn e áudio
+   continuam funcionando normalmente — a página nunca fica em
+   branco/quebrada.
+   ══════════════════════════════════════════════════════════ */
+function _renderizarEstadoInvalido() {
+  try {
+    _injetarEstiloIconeDisciplina();
+
+    var iconeEl = document.getElementById('disc-emoji');
+    if (iconeEl) iconeEl.innerHTML = resolveIcone('code');
+
+    var nomeEl = document.getElementById('disc-nome');
+    if (nomeEl) nomeEl.textContent = '—';
+
+    var tituloEl = document.getElementById('page-title-h1');
+    if (tituloEl) tituloEl.innerHTML = 'Não foi possível <em>continuar</em>';
+
+    var descEl = document.getElementById('page-header-desc');
+    if (descEl) descEl.textContent = _mensagemEstadoInvalido();
+
+    var container = document.getElementById('disciplines-container');
+    if (container) container.innerHTML = '';
+
+    document.title = 'Nexus Study — Disciplina não encontrada';
+  } catch (e) {
+    console.warn('[disciplinas_init] Falha ao renderizar estado inválido:', e.message);
   }
 }
 
@@ -361,6 +651,15 @@ function _renderizarCabecalhoDisciplina() {
    ══════════════════════════════════════════════════════════ */
 
 var _ICONES_MODO = {
+
+  /* REVISÃO — prancheta com marcação (questões de revisão dos professores) */
+  revisao:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+    'stroke-linecap="round" stroke-linejoin="round">' +
+      '<rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>' +
+      '<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>' +
+      '<path d="m9 14 2 2 4-4"/>' +
+    '</svg>',
   /* AVA — livro aberto (material/atividades do ambiente virtual) */
   ava:
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
@@ -397,6 +696,8 @@ var _ICONES_MODO = {
       '<path d="M12 17v5"/>' +
       '<path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/>' +
     '</svg>',
+
+
 };
 
 function _injetarEstiloIconeModo() {
@@ -430,14 +731,52 @@ function _aplicarIconesModo() {
 
 
 /* ══════════════════════════════════════════════════════════
+   PASSO 6.5 — Vincular sons de hover/click nos cards de modo
+
+   Extraído do antigo Passo 7 para virar uma função reaproveitável:
+   antes, os cards já existiam no DOM quando o DOMContentLoaded
+   disparava (eram hardcoded no HTML). Agora eles só existem depois
+   que o catalog.json responde (Passo 8, assíncrono) — então esta
+   função passa a ser chamada também logo após os cards serem
+   inseridos no DOM, e não só uma vez no boot.
+
+   `data-som-vinculado` evita vincular o mesmo card duas vezes caso
+   a função seja chamada mais de uma vez sobre o mesmo elemento.
+   ══════════════════════════════════════════════════════════ */
+function _vincularSomCards() {
+  try {
+    document.querySelectorAll('.disc-card').forEach(function (card) {
+      if (card.dataset.somVinculado === '1') return;
+      card.dataset.somVinculado = '1';
+
+      card.addEventListener('mouseenter', function () {
+        try { playSound('hover', 'quiz'); } catch (_) {}
+      });
+      card.addEventListener('click', function () {
+        try { playSound('click', 'quiz'); } catch (_) {}
+      });
+    });
+  } catch (_) {}
+}
+
+
+/* ══════════════════════════════════════════════════════════
    PASSO 7 — Logo, áudio e eventos (após DOMContentLoaded)
    ══════════════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', function () {
 
-  /* Ícone + nome da disciplina (Passo 5) */
-  _renderizarCabecalhoDisciplina();
+  /* Ícone + nome da disciplina (Passo 5) — ou mensagem de
+     estado inválido (Passo 5.5), se ?disc=/?sem= não resolverem
+     para uma disciplina real de _DISCIPLINAS. */
+  if (_estadoValido) {
+    _renderizarCabecalhoDisciplina();
+  } else {
+    _renderizarEstadoInvalido();
+  }
 
-  /* Ícones dos modos de estudo (Passo 6) */
+  /* Ícones dos modos de estudo (Passo 6) — não-op se os cards
+     ainda não existirem (ver Passo 8); roda de novo depois que
+     eles forem inseridos. */
   _aplicarIconesModo();
 
   /* Logo */
@@ -460,7 +799,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   } catch (_) {}
 
-  /* Eventos de hover e click nos cards */
+  /* Som do botão "Voltar" (não depende dos cards de modo) */
   try {
     var backBtn = document.getElementById('back-btn');
     if (backBtn) {
@@ -468,16 +807,11 @@ document.addEventListener('DOMContentLoaded', function () {
         try { playSound('click', 'quiz'); } catch (_) {}
       });
     }
-
-    document.querySelectorAll('.disc-card').forEach(function (card) {
-      card.addEventListener('mouseenter', function () {
-        try { playSound('hover', 'quiz'); } catch (_) {}
-      });
-      card.addEventListener('click', function () {
-        try { playSound('click', 'quiz'); } catch (_) {}
-      });
-    });
   } catch (_) {}
+
+  /* Som dos cards de modo — não-op se ainda não existirem
+     (ver Passo 8); roda de novo depois que eles forem inseridos. */
+  _vincularSomCards();
 
   /* Áudio pronto em background */
   try { Sound.waitUntilReady().catch(function () {}); } catch (_) {}
@@ -492,27 +826,170 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 /* ══════════════════════════════════════════════════════════
-   PASSO 8 — Verificar disponibilidade via catalog.json
+   PASSO 8 — Renderizar os cards de modo a partir do catalog.json
+
+   Fonte única: catalog.json passa a descrever tanto QUAIS modos
+   existem (chave global `_modos`) quanto a disponibilidade deles
+   por disciplina/semestre (chaves de semestre, como já era antes).
 
    Fluxo:
      1. Usa o semestre completo como chave do catalog
         (ex: "2026.1-AP1", "2026.1-AP2" — sem extração de período base)
      2. Faz fetch de ./catalog.json (mesma pasta do disciplinas_init.js)
-     3. Lê catalog[_sem][discId]
-     4. Para cada card com data-modo, aplica disc-card--vazio
-        se o modo estiver ausente ou false no catalog
-     5. Guarda o discEntry em _catalogDiscEntry, para que
+     3. Lê catalog._modos (lista de modos existentes) e
+        catalog[_sem][discId] (disponibilidade)
+     4. Para cada modo, na ordem de `ordem`, monta um
+        <a class="disc-card"> idêntico em marcação ao que antes
+        era hardcoded em cada HTML, e insere via DocumentFragment
+        em #disciplines-container
+     5. Modos ausentes ou marcados como false recebem
+        disc-card--vazio (mesmo estado visual de antes)
+     6. Guarda o discEntry em _catalogDiscEntry, para que
         getConteudoIndex() possa retorná-lo
+     7. Reaplica ícones (Passo 6) e sons (Passo 6.5) sobre os
+        cards recém-criados, já que eles não existiam quando o
+        DOMContentLoaded rodou essas funções pela primeira vez
 
-   Garantias:
-     - Nunca remove cards do DOM
-     - Se o fetch falhar, nenhum card é desabilitado
-       (preferimos falso-positivo a esconder conteúdo válido)
-     - Assíncrono: não bloqueia a exibição dos cards
+   Garantias mantidas:
+     - Nunca omite um modo do DOM: um modo sem disponibilidade
+       aparece desabilitado (disc-card--vazio), nunca some
+     - Se o fetch falhar ou catalog._modos estiver ausente,
+       usa um fallback estático com os 4 modos atuais — nenhum
+       modo desaparece por falha de rede
+     - Se catalog[_sem][discId] não existir, nenhum card é
+       desabilitado (mesmo comportamento de antes: preferimos
+       falso-positivo a esconder conteúdo válido)
+     - Assíncrono: não bloqueia a exibição do resto da página
    ══════════════════════════════════════════════════════════ */
-(function _aplicarDisponibilidade() {
 
-  if (!_sem || !_discId || _discId === 'desconhecida') return;
+/* _MODOS_FALLBACK e _montarHrefModo foram centralizados no topo
+   do arquivo (logo após os imports) — são usados tanto aqui
+   (Passo 8, renderização dos cards) quanto no Passo 3.7
+   (continuar direto no modo via ?modo=), que roda bem antes
+   deste ponto do arquivo. */
+
+function _criarCardModo(modo, disponivel, discId, sem) {
+  var a = document.createElement('a');
+  a.className = 'disc-card' + (modo.cssClass ? ' ' + modo.cssClass : '');
+  a.href = _montarHrefModo(discId, modo.id, sem);
+  a.dataset.modo = modo.id;
+
+  if (!disponivel) {
+    a.classList.add('disc-card--vazio');
+    a.setAttribute('aria-disabled', 'true');
+    a.setAttribute('tabindex', '-1');
+  }
+
+  var iconWrap = document.createElement('div');
+  iconWrap.className = 'disc-card__icon-wrap';
+  iconWrap.appendChild(document.createElement('span'));
+
+  var body = document.createElement('div');
+  body.className = 'disc-card__body';
+
+  var titulo = document.createElement('h2');
+  titulo.className = 'disc-card__title';
+  titulo.textContent = modo.titulo;
+
+  var desc = document.createElement('p');
+  desc.className = 'disc-card__desc';
+  desc.textContent = modo.descricao;
+
+  body.appendChild(titulo);
+  body.appendChild(desc);
+
+  var cta = document.createElement('div');
+  cta.className = 'disc-card__cta';
+  cta.innerHTML =
+    '<div class="disc-card__arrow">' +
+      '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
+      'stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+        '<path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>' +
+      '</svg>' +
+    '</div>' +
+    '<span class="disc-card__cta-label">Iniciar</span>';
+
+  var glow = document.createElement('div');
+  glow.className = 'disc-card__glow';
+
+  a.appendChild(iconWrap);
+  a.appendChild(body);
+  a.appendChild(cta);
+  a.appendChild(glow);
+
+  return a;
+}
+
+function _renderizarModos(catalog) {
+  var container = document.getElementById('disciplines-container');
+  if (!container) {
+    console.warn('[disciplinas_init] #disciplines-container não encontrado — cards de modo não renderizados.');
+    return;
+  }
+
+  var modos = Array.isArray(catalog._modos) ? catalog._modos : _MODOS_FALLBACK;
+  if (!Array.isArray(catalog._modos)) {
+    console.warn('[disciplinas_init] catalog._modos ausente/inválido — usando fallback estático de modos.');
+  }
+
+  modos = modos.slice().sort(function (a, b) {
+    return (a.ordem || 0) - (b.ordem || 0);
+  });
+
+  /* Camada 2 do Passo 3.7 — agora com a lista REAL de modos
+     (catalog._modos, que pode ter mais/menos itens que o fallback
+     estático usado na Camada 1, síncrona). Não-op se a Camada 1
+     já redirecionou. */
+  _tentarContinuarModo(modos);
+  if (_modoRedirecionado) return;
+
+  var semesterEntry = catalog[_sem];
+  var discEntry      = semesterEntry ? semesterEntry[_discId] : null;
+
+  if (!semesterEntry) {
+    console.info(
+      '[disciplinas_init] Semestre "' + _sem + '" não encontrado no catalog.json.' +
+      ' Nenhum card será desabilitado.'
+    );
+  } else if (!discEntry) {
+    console.info(
+      '[disciplinas_init] Disciplina "' + _discId + '" não encontrada em "' + _sem + '"' +
+      ' no catalog.json. Nenhum card será desabilitado.'
+    );
+  }
+
+  /* Disponibiliza o discEntry para getConteudoIndex() — igual a antes */
+  _catalogDiscEntry = discEntry || null;
+
+  var frag = document.createDocumentFragment();
+  modos.forEach(function (modo) {
+    /* Sem entrada no catalog para este semestre/disciplina:
+       nenhum card é desabilitado (mesmo comportamento de antes).
+       Com entrada: disponível apenas se explicitamente `true`. */
+    var disponivel = discEntry ? discEntry[modo.id] === true : true;
+    frag.appendChild(_criarCardModo(modo, disponivel, _discId, _sem));
+  });
+
+  container.innerHTML = '';
+  container.appendChild(frag);
+
+  /* Os cards acabaram de nascer — reaplica ícones (Passo 6) e
+     sons de hover/click (Passo 6.5), que já rodaram uma vez no
+     DOMContentLoaded sem encontrar nenhum card. */
+  _aplicarIconesModo();
+  _vincularSomCards();
+}
+
+(function _carregarCatalogERenderizarModos() {
+
+  if (!_estadoValido) {
+    /* ?disc=/?sem= inválidos: Passo 5.5 já mostrou a mensagem
+       de estado inválido. Não faz sentido buscar catalog.json
+       nem renderizar cards de modo para uma disciplina/semestre
+       que não existem. */
+    try { document.documentElement.removeAttribute('data-catalog-loading'); } catch (_) {}
+    return;
+  }
 
   /* Caminho do catalog relativo à raiz do projeto */
   var _catalogUrl = new URL('./catalog.json', import.meta.url).href;
@@ -523,42 +1000,15 @@ document.addEventListener('DOMContentLoaded', function () {
       return res.json();
     })
     .then(function (catalog) {
-      var semesterEntry = catalog[_sem];
-      if (!semesterEntry) {
-        console.info(
-          '[disciplinas_init] Semestre "' + _sem + '" não encontrado no catalog.json.' +
-          ' Nenhum card será desabilitado.'
-        );
-        try { document.documentElement.removeAttribute('data-catalog-loading'); } catch (_) {}
-        return;
-      }
-
-      var discEntry = semesterEntry[_discId];
-      if (!discEntry) {
-        console.info(
-          '[disciplinas_init] Disciplina "' + _discId + '" não encontrada em "' + _sem + '"' +
-          ' no catalog.json. Nenhum card será desabilitado.'
-        );
-        try { document.documentElement.removeAttribute('data-catalog-loading'); } catch (_) {}
-        return;
-      }
-
-      /* Disponibiliza o discEntry para getConteudoIndex() */
-      _catalogDiscEntry = discEntry;
-
-      document.querySelectorAll('.disc-card[data-modo]').forEach(function (card) {
-        var modo = card.dataset.modo;
-        var disponivel = discEntry[modo] === true;
-
-        if (!disponivel) {
-          card.classList.add('disc-card--vazio');
-          card.setAttribute('aria-disabled', 'true');
-          card.setAttribute('tabindex', '-1');
-        }
-      });
+      _renderizarModos(catalog);
     })
     .catch(function (err) {
       console.warn('[disciplinas_init] Falha ao carregar catalog.json:', err.message);
+      console.warn('[disciplinas_init] Renderizando modos com fallback estático (sem disponibilidade).');
+      /* Mesmo sem catalog.json, renderiza os modos (fallback) para
+         a página não ficar vazia — nenhum card fica desabilitado,
+         seguindo a mesma filosofia de "falso-positivo > esconder". */
+      _renderizarModos({});
     })
     .finally(function () {
       try { document.documentElement.removeAttribute('data-catalog-loading'); } catch (_) {}

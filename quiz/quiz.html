@@ -104,20 +104,45 @@
   <!-- ══ HERO ══ -->
   <section class="hero">
     <div class="hero__inner">
-      <div class="hero__kicker">
-        <span class="kicker-dot" aria-hidden="true"></span>
-        Selecione a disciplina
-      </div>
       <h1 class="hero__title">
-
-        <span class="hero__title-line hero__title-line--accent">QUIZ</span>
+        <span class="hero__title-row">
+          <span class="hero__title-line hero__title-line--accent">QUIZ</span>
+        </span>
       </h1>
       <p class="hero__sub">Escolha a matéria e inicie sua sessão de perguntas</p>
     </div>
   </section>
 
-  <!-- ══ CARDS GRID ══ -->
+  <!-- ══ CONTINUAR ESTUDANDO — tentativas reais em aberto (Firebase).
+       Fica oculta quando não há progresso real a retomar: sem dado fake.
+       Compartilha a mesma largura máxima da grade de disciplinas abaixo
+       (ver quiz.css) para manter a Home alinhada em uma única coluna. ══ -->
+  <section class="home-continue-section" id="continue-section" style="display:none">
+    <div class="home-section__head">
+      <svg class="home-section__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+           style="color:var(--violet)" aria-hidden="true">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+      </svg>
+      <h2 class="home-section__title">Continuar Estudando</h2>
+    </div>
+    <div class="continue-row" id="continue-row"></div>
+  </section>
+
+  <!-- ══ CARDS GRID — Todas as Disciplinas
+       #disciplines-grid e gerarCards() permanecem exatamente como estavam. ══ -->
   <main class="arena">
+    <div class="home-section__head arena__head">
+      <svg class="home-section__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+           style="color:var(--cyan)" aria-hidden="true">
+        <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+        <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+        <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+        <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+      </svg>
+      <h2 class="home-section__title">Todas as Disciplinas</h2>
+    </div>
     <div class="arena__grid" id="disciplines-grid" role="list">
       <p class="arena__empty" id="disciplines-empty" aria-live="polite" style="display:none"></p>
     </div>
@@ -131,6 +156,11 @@
   </footer>
 
   <!-- ══ SCRIPTS ══ -->
+  <!-- Camada de leitura (Camada 4) do quiz_intelligence.js: única fonte real
+       de progresso/performance usada pela Home. quiz_engine.js e quiz_ui.js
+       NÃO são carregados aqui — pertencem exclusivamente à Etapa 3 (execução
+       do quiz) e dependem de elementos de DOM que não existem nesta tela. -->
+  <script type="module" src="js/quiz_intelligence.js"></script>
   <script type="module" src="quiz.js"></script>
   <script src="../shared/js/utils/quick-access.js"></script>
 

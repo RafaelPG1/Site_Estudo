@@ -41,7 +41,7 @@ Cada questão deve ser convertida em um objeto individual:
   answer: 0,
   feedback: "Feedback original da questão.",
   chips: []
-}
+},
 ```
 
 ## Regras dos campos
@@ -54,7 +54,7 @@ Cada questão deve ser convertida em um objeto individual:
 * `answer`: use o índice numérico da alternativa correta, começando em `0`. Se a resposta não puder ser identificada, não invente.
 * `feedback`: preserve o feedback original. Se não existir, use `""`.
 * `chips`: preserve os chips existentes, sem adicionar, remover ou alterar informações.
-
+* Cada objeto deve começar com `{` e terminar com `},`.
 ## Categorias permitidas para os chips
 
 Use somente as categorias abaixo quando elas já estiverem presentes ou forem claramente identificadas no conteúdo original:
@@ -86,7 +86,7 @@ Antes de cada questão, adicione um comentário numerado:
 
 * Retorne somente código JavaScript.
 * Não escreva explicações antes ou depois do código.
-* Gere objetos `{}` individuais.
+* Gere objetos `{},` individuais.
 * Não utilize um array externo `[]`.
 * Não coloque vírgulas entre os objetos.
 * Não crie HTML, CSS, interface, botões ou funções.

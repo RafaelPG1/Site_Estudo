@@ -49,6 +49,7 @@ import { aplicarZoomQuestoes, getZoomQuestoes, setZoomQuestoes } from '../../sha
    ══════════════════════════════════════════════════════════ */
 
 var MODOS_CONFIG = {
+  fixacao:  { breadcrumb: 'Revisão',  h1: 'Questões de <em>Revisão</em>', label: 'Revisão'           },
   ava:      { breadcrumb: 'AVA',      h1: 'Avaliação <em>AVA</em>',       label: 'Avaliação AVA'     },
   questoes: { breadcrumb: 'Questões', h1: 'Questões <em>Práticas</em>',   label: 'Questões Práticas' },
   enade:    { breadcrumb: 'ENADE',    h1: 'Questões <em>ENADE</em>',      label: 'Questões ENADE'    },
@@ -168,10 +169,25 @@ function _atualizarBackBtn(urlBack) {
   if (backBtn) backBtn.href = urlBack;
 }
 
+/* ══════════════════════════════════════════════════════════
+   v8.0 — MIGRAÇÃO PARA HTML GLOBAL DA PARTE 2 (disciplina.html)
+
+   Antes, cada disciplina tinha seu próprio HTML em
+   disciplinas/{ano}/{periodo}/{arquivo}.html, então o botão
+   "Voltar" do template.html precisava montar esse caminho
+   completo (ano/periodo/arquivo) para saber a qual arquivo
+   retornar.
+
+   Agora a Parte 2 inteira é servida por um único HTML
+   (disciplinas/disciplina.html), que recebe a disciplina/
+   semestre via querystring — exatamente como o próprio
+   template.html já faz. O botão "Voltar" passa a apontar
+   para esse HTML global, preservando os mesmos parâmetros
+   `disc` e `sem` que os cards de modo já usam.
+   ══════════════════════════════════════════════════════════ */
 function _montarUrlBack(semestre, arquivo) {
-  var periodo = semestre.includes('-') ? semestre.split('-')[0] : semestre;
-  var ano     = periodo.split('.')[0];
-  return '../disciplinas/' + ano + '/' + periodo + '/' + arquivo + '.html?sem=' + semestre;
+  return '../disciplinas/disciplina.html?sem=' + encodeURIComponent(semestre) +
+         '&disc=' + encodeURIComponent(arquivo);
 }
 
 function _montarVisual(params, info, modoConfig) {
@@ -534,38 +550,64 @@ function _carregarConteudo(params, info) {
 
   _contentPromise = _loadScript(contentSrc, document.head).catch(function () {
     console.warn('[template_init] Conteúdo não encontrado:', contentSrc);
-    window.questoes = window.questoes || { ava: [], questoes: [], fixacao: [], enade: [] };
+    window.questoes = window.questoes || { revisao: [], ava: [], questoes: [], fixacao: [], enade: [] };
   });
 
   return _contentPromise;
 }
 
-function _carregarQuiz(params, info) {
+function _carregarQuiz(params, info, fbPronto) {
   var uiSrc           = '../js/quiz_ui.js';
   var engineSrc       = '../js/quiz_engine.js';
   var intelligenceSrc = '../js/quiz_intelligence.js';
 
-  /* filter.js carregado pelo template.html antes deste módulo. */
+  /* OTIMIZAÇÃO — quiz_intelligence.js só expõe window.NexusQuizIntelligence,
+     que nem quiz_engine.js nem quiz_ui.js leem em nenhum momento do boot
+     (engine só usa window.QuizUI e window.questoes — ver initQuiz()/boot()).
+     Antes, ele carregava em SÉRIE entre "conteúdo+ui" e "esperar o
+     Firebase", atrasando o engine pelo tempo total dele mesmo, sem
+     nenhum motivo funcional. Agora carrega em paralelo, sem bloquear
+     nada — se falhar, só loga um aviso; não impede o quiz de abrir. */
+  var _intelligencePromise = new Promise(function (resolve, reject) {
+    var s  = document.createElement('script');
+    s.type = 'module';
+    s.src  = intelligenceSrc;
+    s.onload  = resolve;
+    s.onerror = reject;
+    document.body.appendChild(s);
+  }).catch(function (err) {
+    console.warn('[template_init] quiz_intelligence.js falhou ao carregar (não bloqueia o quiz):', err);
+  });
+
+  /* filter.js carregado pelo template.html antes deste módulo.
+
+     engine só realmente PRECISA esperar por três coisas, e as três
+     agora correm em paralelo (antes eram sequenciais):
+       • conteúdo (window.questoes)
+       • quiz_ui.js (window.QuizUI, usado por boot()/initQuiz())
+       • fbPronto — a MESMA Promise de _aguardarFirebase() que
+         __nexusCarregarQuiz já cria (não é uma segunda busca; só
+         estamos deixando de esperar ela DEPOIS da intelligence, e
+         passando a esperar ela AO MESMO TEMPO que conteúdo/ui). Se o
+         Firebase já tiver respondido antes desses dois carregarem
+         (caso comum), esta espera não adiciona nenhum atraso.
+     Isso preserva exatamente a correção da race condition (engine só
+     carrega depois de window.__NEXUS_FIREBASE_RESPOSTAS__ estar
+     definido) — só deixou de ficar atrás de um script que o engine
+     nunca leu. */
   Promise.all([
     _carregarConteudo(params, info),
     _loadScript(uiSrc, document.head),
+    fbPronto,
   ])
-    .then(function () {
-      return new Promise(function (resolve, reject) {
-        var s  = document.createElement('script');
-        s.type = 'module';
-        s.src  = intelligenceSrc;
-        s.onload  = resolve;
-        s.onerror = reject;
-        document.body.appendChild(s);
-      });
-    })
     .then(function () {
       return _loadScript(engineSrc, document.body);
     })
     .catch(function (err) {
       console.error('[template_init] Falha ao carregar UI do quiz:', err);
     });
+
+  return _intelligencePromise;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -751,8 +793,8 @@ document.addEventListener('DOMContentLoaded', function () {
 window.__nexusCarregarQuiz = function () {
   window.__NEXUS_QUIZ_CARREGANDO__ = true;
   window.dispatchEvent(new CustomEvent('nexus:quizCarregando'));
-  _aguardarFirebase(_params);
-  _carregarQuiz(_params, _info);
+  var fbPronto = _aguardarFirebase(_params);
+  _carregarQuiz(_params, _info, fbPronto);
 };
 
 window.__nexusPreCarregarConteudo = function () {

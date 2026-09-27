@@ -162,7 +162,7 @@ Gere exatamente 10 objetos JavaScript válidos, seguindo exatamente a estrutura 
 ## Restrições de Estrutura
 
 * Gerar exatamente 10 objetos individuais, nem mais nem menos.
-* Cada objeto deve começar com `{` e terminar com `}`.
+* Cada objeto deve começar com `{` e terminar com `},`.
 * **É proibido utilizar um array externo `[]` para agrupar as questões.**
 * Não colocar vírgulas entre os objetos.
 * Não alterar os nomes nem a ordem dos campos mostrados no exemplo.
@@ -195,7 +195,7 @@ A resposta deve ser apenas o código JavaScript, pronto para ser copiado manualm
 
 ## Checklist Final (verificar antes de responder)
 
-* [ ] Existem exatamente 10 objetos individuais, cada um delimitado por `{ }`?
+* [ ] Existem exatamente 10 objetos individuais, cada um delimitado por `{ },`?
 * [ ] **A saída não possui nenhum array externo `[]` envolvendo as questões?**
 * [ ] Não existem colchetes externos agrupando os 10 objetos?
 * [ ] Todo objeto tem o campo `aula` preenchido com o nome real, como primeiro campo?

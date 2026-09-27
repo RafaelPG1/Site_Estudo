@@ -3058,7 +3058,7 @@ window.questoes = {
 }
   ],
 
-ava: [
+revisao: [
     // aula: 
 
 // 1 - Modos de operação em redes sem fio e asserções sobre mobilidade

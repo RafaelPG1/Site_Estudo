@@ -4447,7 +4447,7 @@ fixacao: [
 }
 ],
 
-ava: [
+revisao: [
   // aula:
 
 // 1 - Operações sobre listas em Python
@@ -4667,7 +4667,8 @@ x = dados.pop()`,
   feedback: "pop() sem argumento remove e retorna o último elemento da lista, que é 30. Isso simula o comportamento de uma pilha (LIFO), pois o último elemento inserido é o primeiro removido.",
   chips: []
 }
-]
+],
+
 
 
 };

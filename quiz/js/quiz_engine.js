@@ -143,8 +143,18 @@
       if (!usuario || !usuario.uid) return;
 
       var str = _respostasParaStr(respostas, questoesBase.length);
+
+      /* shuffleMap acompanha a mesma gravação: hoje ele só existe no
+         localStorage (_smapKey()), então restaurar respostas a partir
+         do Firebase sem ele reembaralharia as questões e aplicaria os
+         índices salvos às questões erradas. Enviado como string (mesmo
+         padrão de `respostas`) para não introduzir um objeto aninhado
+         novo no documento. */
+      var smapStr;
+      try { smapStr = JSON.stringify(shuffleMap); } catch (_) { smapStr = undefined; }
+
       window.NexusFirebase.salvarRespostasQuiz(
-        usuario.uid, _semestre, _modo, _disc, str, revelado, finalizado
+        usuario.uid, _semestre, _modo, _disc, str, revelado, finalizado, smapStr
       ).catch(function () {});
     }
 
@@ -490,6 +500,19 @@ function _dispararFinalizacao(reveladoPorBotao) {
           };
           _Storage.saveProgress(_discUid(), _modo, _semestre,
                                 fbRespostas, salvo.revelado, salvo.finalizado);
+
+          /* O shuffleMap do Firebase só é aplicado junto com o "pacote"
+             de respostas que ele acompanha (tsFB > tsLocal acima) — nunca
+             isoladamente. Se local venceu, o smap local (já correto para
+             essas respostas locais) é preservado sem alteração abaixo. */
+          if (fbDados.shuffleMap) {
+            try {
+              var fbShuffleMap = JSON.parse(fbDados.shuffleMap);
+              _Storage.set(_smapKey(), fbShuffleMap);
+            } catch (e) {
+              console.warn('[quiz_engine] shuffleMap do Firebase inválido, ignorando:', e);
+            }
+          }
         }
       }
 

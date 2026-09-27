@@ -144,12 +144,35 @@
    `listarTentativasRecentes`, `contarQuestoesRespondidas`) foi
    alterada — o ajuste ficou restrito exclusivamente à função que
    alimenta o card "Previsão".
+
+   ─────────────────────────────────────────────────────
+   CORREÇÃO — "CONTINUAR ESTUDANDO" MOSTRAVA TENTATIVA NÃO RETOMÁVEL
+   ─────────────────────────────────────────────────────
+   A Home usava `listarTentativasRecentes` (histórico de `performance`,
+   imutável) e o heurístico "respondidas < totalQuestoes" para decidir o
+   que aparece em "Continuar Estudando". Um registro de performance é só
+   uma fotografia de uma tentativa passada — ele sobrevive a
+   reiniciar()/limparRespostasQuiz(), que zera o estado real. Resultado:
+   uma disciplina já reiniciada (sem nada para restaurar) continuava
+   aparecendo como "em andamento" com base no registro antigo, e o botão
+   "Continuar" só reabria a Etapa 2 do zero.
+
+   Nova função `listarTentativasRetomaveis` lê diretamente o documento-pai
+   `usuarios/{uid}/quiz_respostas/{quizId}` (estado real de retomada:
+   `respostas`, `revelado`, `finalizado`, `savedAt` — já gravado a cada
+   resposta por quiz_engine.js/_salvarFirebase) em vez do histórico de
+   performance. Nenhuma estrutura nova no Firebase foi criada. A Home
+   (quiz.js/_renderContinuarEstudando) passou a usar esta função no lugar
+   de listarTentativasRecentes só para a seção "Continuar Estudando";
+   listarTentativasRecentes continua igual e é usada onde já era (Timeline
+   do Dashboard, que é histórico mesmo, não continuação).
    ============================================================ */
 
 import {
   salvarPerformanceQuiz,
   listarPerformanceQuiz,
   listarQuizIds,
+  listarEstadosQuizUsuario,
   carregarEvolutionSummary,
   gravarConsolidacaoEvolucao,
 } from '../../src/firebase.js';
@@ -1224,6 +1247,113 @@ export async function listarTentativasRecentes(uid, limite = 10, semestre = null
   return resultado;
 }
 
+/* ── 8b. ESTADO REALMENTE RETOMÁVEL ("Continuar Estudando") ───────────────
+   Regra explícita — NÃO é uma dedução a partir de performance/histórico:
+   uma disciplina só é "retomável" quando o PRÓPRIO documento de estado
+   (usuarios/{uid}/quiz_respostas/{quizId}) diz que existe uma tentativa
+   em aberto. Um registro em 'performance' é apenas uma fotografia
+   histórica e imutável de uma tentativa passada (é gravado tanto ao
+   concluir quanto ao abandonar — ver processarPayloadBruto) e pode
+   continuar existindo mesmo depois que o estado retomável daquela mesma
+   tentativa já tenha sido zerado (reiniciar() → limparRespostasQuiz()).
+   Por isso um registro de performance sozinho nunca deve decidir se algo
+   aparece aqui.
+
+   `respostas` é a mesma string gravada por quiz_engine.js
+   (_respostasParaStr): uma entrada por questão, separada por vírgula,
+   'null' para quem ainda não foi respondida. Total e respondidas são
+   contados diretamente dessa string — o estado real de agora, não o
+   totalQuestoes/respondidas de um registro de performance antigo, que
+   pode não corresponder mais à tentativa atual. */
+function _contarRespostasStr(respostasStr) {
+  if (typeof respostasStr !== 'string' || respostasStr.length === 0) {
+    return { total: 0, respondidas: 0 };
+  }
+  const partes = respostasStr.split(',');
+  return {
+    total:       partes.length,
+    respondidas: partes.filter(v => v !== 'null' && v !== '').length,
+  };
+}
+
+/* Resolve disc/modo/semestre do estado. Documentos novos já gravam esses
+   três campos explicitamente (ver salvarRespostasQuiz). Para documentos
+   gravados antes dessa mudança, cai de volta para o próprio quizId, que
+   já seguia (e continua seguindo) o formato "${semestre}_${modo}_${disc}"
+   — a mesma convenção usada em processarPayloadBruto. Isso evita precisar
+   de qualquer migração de dados: assim que o usuário responder mais uma
+   questão naquela disciplina, o documento passa a ter os campos
+   explícitos e este fallback deixa de ser necessário para ele. */
+function _resolverMetaEstado(estado) {
+  if (estado.disc && estado.modo && estado.semestre) {
+    return { disc: estado.disc, modo: estado.modo, semestre: estado.semestre };
+  }
+  const partes = String(estado.quizId || '').split('_');
+  if (partes.length < 3) {
+    return { disc: estado.disc ?? null, modo: estado.modo ?? null, semestre: estado.semestre ?? null };
+  }
+  const [semestre, modo, ...discPartes] = partes;
+  return {
+    semestre: estado.semestre ?? semestre,
+    modo:     estado.modo     ?? modo,
+    disc:     estado.disc     ?? discPartes.join('_'),
+  };
+}
+
+function _estadoEhRetomavel(estado) {
+  if (!estado || estado._limpo) return false;
+  if (estado.finalizado) return false;
+
+  const meta = _resolverMetaEstado(estado);
+  if (!meta.disc || !meta.modo) return false;
+
+  const { total, respondidas } = _contarRespostasStr(estado.respostas);
+  return total > 0 && respondidas > 0 && respondidas < total;
+}
+
+/* ── 8c. Listar tentativas REALMENTE retomáveis (Home → "Continuar
+   Estudando"). Propositalmente NÃO reaproveita _buscarTodasTentativas
+   (cache de performance): lê direto os documentos-pai de
+   quiz_respostas, a única fonte de verdade sobre o que pode ser
+   continuado. Um registro de performance nunca é suficiente aqui —
+   ver comentário acima de _estadoEhRetomavel. */
+export async function listarTentativasRetomaveis(uid, semestre = null) {
+  const _t0 = performance.now();
+  if (!uid) {
+    perfLog('quiz_intelligence', 'listarTentativasRetomaveis (sem uid)', performance.now() - _t0);
+    return [];
+  }
+
+  let estados = [];
+  try {
+    estados = await listarEstadosQuizUsuario(uid);
+  } catch (e) {
+    console.warn('[quiz_intelligence] falha ao buscar listarEstadosQuizUsuario:', e);
+    return [];
+  }
+
+  const resultado = estados
+    .filter(_estadoEhRetomavel)
+    .map(e => {
+      const meta = _resolverMetaEstado(e);
+      const { total, respondidas } = _contarRespostasStr(e.respostas);
+      return {
+        quizId:        e.quizId,
+        disc:          meta.disc,
+        modo:          meta.modo,
+        semestre:      meta.semestre,
+        totalQuestoes: total,
+        respondidas,
+        savedAt:       e.savedAt ?? null,
+      };
+    })
+    .filter(t => !semestre || t.semestre === semestre)
+    .sort((a, b) => (b.savedAt ?? 0) - (a.savedAt ?? 0));
+
+  perfLog('quiz_intelligence', 'listarTentativasRetomaveis (total)', performance.now() - _t0, { estados: estados.length, retomaveis: resultado.length });
+  return resultado;
+}
+
 /* ── 9. Contar questões respondidas (para Conquistas do Dashboard) ──
    Reutiliza _buscarTodasTentativas e seu cache existente.
    Apenas soma totalQuestoes. Sem novo cache. Sem recálculo. */
@@ -1379,6 +1509,13 @@ relatorioEvolucao: (uid, semestre = null) => relatorioEvolucao(uid, semestre),
     listarTentativasRecentes(uid, limite, semestre),
   contarQuestoesRespondidas: (uid, semestre = null) =>
     contarQuestoesRespondidas(uid, semestre),
+
+  /* Estado realmente retomável (Home → "Continuar Estudando").
+     Não deve ser confundido com listarTentativasRecentes: aquela lê o
+     histórico imutável de performance; esta lê o estado de retomada
+     real (usuarios/{uid}/quiz_respostas/{quizId}). */
+  listarTentativasRetomaveis: (uid, semestre = null) =>
+    listarTentativasRetomaveis(uid, semestre),
 
   subscribe,
 };

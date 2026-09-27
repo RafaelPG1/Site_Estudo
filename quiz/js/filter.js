@@ -131,6 +131,7 @@
     var lista;
 
     if (Array.isArray(q))            { lista = q; }
+    else if (modo === 'revisao')     { lista = q.revisao     || []; }
     else if (modo === 'ava')         { lista = q.ava      || []; }
     else if (modo === 'enade')       { lista = q.enade    || []; }
     else if (modo === 'fixacao')     { lista = q.fixacao  || []; }

@@ -274,35 +274,6 @@ a { text-decoration: none; color: inherit; }
   margin: 0 auto;
 }
 
-/* Kicker / badge animado */
-.hero__kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  font-family: var(--f-display);
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--violet);
-  background: rgba(var(--violet-rgb),0.1);
-  border: 1px solid rgba(var(--violet-rgb),0.25);
-  padding: 0.35rem 1rem;
-  border-radius: 99px;
-  margin-bottom: 1.5rem;
-  animation: fade-in-up 0.5s var(--ease-out) both;
-}
-
-/* Dot do kicker — estático, sem piscar */
-.kicker-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--violet);
-  box-shadow: 0 0 6px var(--violet-glow);
-  flex-shrink: 0;
-}
-
 /* Título */
 .hero__title {
   font-family: var(--f-display);
@@ -315,6 +286,25 @@ a { text-decoration: none; color: inherit; }
   flex-direction: column;
   gap: 0.15em;
 }
+
+/* Linha do título com o ícone (documento + check) ao lado do texto */
+.hero__title-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.hero__icon {
+  width: clamp(2.1rem, 6vw, 3.4rem);
+  height: clamp(2.1rem, 6vw, 3.4rem);
+  flex-shrink: 0;
+  animation: fade-in-up 0.55s var(--ease-out) both;
+}
+
+/* Gradiente do ícone do hero — mesmas cores do texto "QUIZ" */
+.hero-icon-grad-a { stop-color: var(--violet); }
+.hero-icon-grad-b { stop-color: var(--cyan); }
 
 .hero__title-line {
   display: block;
@@ -347,7 +337,7 @@ a { text-decoration: none; color: inherit; }
 }
 
 .arena__grid {
-  max-width: 1000px;
+  max-width: 860px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -382,7 +372,7 @@ a { text-decoration: none; color: inherit; }
   overflow: hidden;
   cursor: pointer;
   text-decoration: none;
-  min-height: 210px;
+  min-height: 178px;
 
   /* Reveal animado ao entrar na tela */
   animation: card-reveal 0.6s var(--ease-out) both;
@@ -462,7 +452,7 @@ a { text-decoration: none; color: inherit; }
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 1.6rem 1.6rem 1.25rem;
+  padding: 1.3rem 1.3rem 1.05rem;
   gap: 0.85rem;
   position: relative;
   z-index: 1;
@@ -841,7 +831,7 @@ a { text-decoration: none; color: inherit; }
   .hero { padding: 3rem 1.25rem 2rem; }
   .arena { padding: 1.5rem 1.25rem 3rem; }
   .arena__grid { grid-template-columns: 1fr; gap: 1rem; }
-  .disc-card { min-height: 160px; }
+  .disc-card { min-height: 140px; }
   .hero__title { font-size: clamp(2.2rem, 10vw, 3.2rem); }
 }
 
@@ -852,4 +842,236 @@ a { text-decoration: none; color: inherit; }
 /* ── Respeita preferência por menos movimento ── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* ══════════════════════════════════════════════
+   HOME — "Continuar Estudando" (dados reais)
+   Reaproveita os tokens do topo do arquivo.
+
+   Alinhamento com a Arena: esta seção e o cabeçalho de
+   "Todas as Disciplinas" (.arena__head) compartilham a mesma
+   largura máxima do .arena__grid (860px), para que toda a Home
+   fique alinhada em uma única coluna visual — em vez de larguras
+   diferentes por seção, o que dava a impressão de blocos soltos.
+══════════════════════════════════════════════ */
+.home-continue-section {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.home-section__head {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 1rem;
+}
+
+/* Ícone do cabeçalho de seção — sem quadrado/círculo de fundo,
+   apenas o ícone puro, com a cor definida inline por seção. */
+.home-section__icon {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+}
+
+.home-section__title {
+  font-family: var(--f-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-1);
+}
+
+.arena__head { max-width: 860px; margin: 0 auto 1rem; padding: 0 0 0.25rem; }
+.arena .arena__head { padding-left: 0; padding-right: 0; }
+
+.continue-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.continue-card {
+  --card-accent:     #6c63ff;
+  --card-accent-rgb: 108,99,255;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 1.25rem 1.35rem 1.1rem;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  overflow: hidden;
+  text-decoration: none;
+  cursor: pointer;
+  animation: card-reveal 0.6s var(--ease-out) both;
+  transition: transform 0.35s var(--ease-out), border-color 0.3s, box-shadow 0.35s;
+}
+
+.continue-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 60%; height: 60%;
+  background: radial-gradient(ellipse at top left, rgba(var(--card-accent-rgb),0.14) 0%, transparent 65%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+.continue-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--card-accent);
+  box-shadow: 0 18px 50px rgba(0,0,0,0.4), 0 0 30px rgba(var(--card-accent-rgb),0.18);
+}
+
+.continue-card:hover::after { opacity: 1; }
+
+/* Cabeçalho do card: ícone da disciplina + nome + modo (o ícone aqui
+   segue o mesmo padrão visual do .disc-card__icon — mantém a
+   identidade já usada em "Todas as Disciplinas"). */
+.continue-card__head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  position: relative;
+  z-index: 1;
+}
+
+.continue-card__icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  background: var(--card-accent-d, rgba(var(--card-accent-rgb),0.12));
+  border: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  color: var(--card-accent);
+  flex-shrink: 0;
+  transition: transform 0.3s var(--ease-spring);
+}
+
+.continue-card__icon svg { width: 1em; height: 1em; display: block; }
+
+.continue-card:hover .continue-card__icon { transform: scale(1.08) rotate(-4deg); }
+
+.continue-card__heading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.continue-card__title {
+  font-family: var(--f-display);
+  font-size: 1.02rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text-1);
+  transition: color 0.2s;
+}
+
+.continue-card:hover .continue-card__title { color: var(--card-accent); }
+
+.continue-card__subtitle {
+  font-family: var(--f-display);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+/* Barra de progresso + percentual na mesma linha */
+.continue-card__progress {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  position: relative;
+  z-index: 1;
+}
+
+.continue-card__bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.07);
+  overflow: hidden;
+}
+
+.continue-card__bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--card-accent), rgba(var(--card-accent-rgb),0.6));
+  transition: width 0.6s var(--ease-out);
+}
+
+.continue-card__pct {
+  font-family: var(--f-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-2);
+  flex-shrink: 0;
+}
+
+/* Rodapé: meta (última tentativa) + botão circular só com seta,
+   no mesmo padrão do .disc-card__arrow-wrap */
+.continue-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: auto;
+  position: relative;
+  z-index: 1;
+}
+
+.continue-card__meta {
+  font-size: 0.68rem;
+  color: var(--text-2);
+  line-height: 1.4;
+}
+
+.continue-card__arrow-wrap {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-3);
+  flex-shrink: 0;
+  transition:
+    transform 0.3s var(--ease-spring),
+    border-color 0.3s,
+    color 0.3s,
+    background 0.3s,
+    box-shadow 0.3s;
+}
+
+.continue-card:hover .continue-card__arrow-wrap {
+  transform: translateX(3px);
+  border-color: var(--card-accent);
+  color: var(--card-accent);
+  background: var(--card-accent-d);
+  box-shadow: 0 0 12px var(--card-glow);
+}
+
+.continue-row__empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--text-3);
+  font-size: 0.85rem;
+  padding: 1.5rem 1rem;
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+}
+
+@media (max-width: 720px) {
+  .home-continue-section, .arena__head { padding-left: 1.25rem; padding-right: 1.25rem; }
+  .continue-row { grid-template-columns: 1fr; }
 }
