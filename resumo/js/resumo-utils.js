@@ -30,6 +30,7 @@ export const State = {
   resumao:         [],
   professor:       [],
   extra:           {},   // recursos do modo Extra (ver js/resumo-extra.js)
+  emHome:          false, // true = nenhuma disciplina escolhida ainda (Home da área de Resumo, ver resolverContexto())
   aulaAberta:      null,
   discVerificadas: new Set(),
   temConteudo:     null,
@@ -162,13 +163,20 @@ export function resolverContexto() {
   State.semestre    = semestre;
   State.disciplinas = lista;
 
+  // Home da área de Resumo: só quando a URL não traz "?disc=" explícito
+  // (link direto/compartilhado para uma disciplina continua abrindo
+  // ela direto, sem passar pela Home). Não depende de getDisciplinaAtual()
+  // de propósito — esse valor é de outras áreas do site e não deve, sozinho,
+  // pular a Home aqui.
+  const params = new URLSearchParams(window.location.search);
+  State.emHome = !params.get('disc');
+
   if (!lista.length) {
     State.disciplina = null;
     setDisciplina(null);
     return;
   }
 
-  const params = new URLSearchParams(window.location.search);
   const discId = params.get('disc') ?? getDisciplinaAtual();
   const disc   = (discId ? lista.find(d => d.id === discId) : null) ?? lista[0] ?? null;
   State.disciplina = disc;

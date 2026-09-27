@@ -322,20 +322,46 @@ async function _renderBlocoPdfMake(b, discArquivo, sem) {
   }
 }
 
-async function _buildItemPdfMake(item, discArquivo, sem, tipoLabel) {
-  const { num, titulo } = _splitTitulo(item.aula);
+/* `opts.mostrarTipoLabel` esconde o selo de tipo no canto (RESUMO /
+   SÍNTESE...) quando a disciplina já tem um cabeçalho de MODO acima
+   deste item (ver _buildDisciplinaPdfMake) — evita repetir a mesma
+   informação duas vezes. Com um único modo ativo (sem cabeçalho de
+   MODO), o selo continua aparecendo, como sempre apareceu. */
+async function _buildItemPdfMake(item, discArquivo, sem, tipoLabel, opts = {}) {
+  const { mostrarTipoLabel = true, numeroAula } = opts;
+  // _splitTitulo só serve aqui pra tirar um eventual prefixo "Aula NN"
+  // que já viesse embutido no texto de item.aula (mesmo parsing de
+  // sempre) — o número exibido no cabeçalho, abaixo, não vem mais
+  // daqui: vem de `numeroAula`, recebido pronto de
+  // _buildDisciplinaPdfMake (a mesma numeração que o Sumário já usa
+  // para este item, nunca uma contagem nova).
+  const { titulo } = _splitTitulo(item.aula);
+
   const secoes = item.secoes ?? [];
   const content = [];
 
+  // Cabeçalho da aula — "Aula NN — Título" como uma linha só, no
+  // mesmo tamanho/peso, pra deixar óbvio (sem virar caixa/selo extra)
+  // onde cada aula começa dentro do conteúdo do PDF. A linha fina
+  // logo abaixo, que já existia, continua sendo o único elemento de
+  // separação.
+  const numeroFmt = String(numeroAula ?? '').padStart(2, '0');
   content.push({
     unbreakable: true,
     margin: [0, 0, 0, 14],
     stack: [
       {
         columns: [
-          { text: num || '', color: PDF_COLORS.accent, bold: true, fontSize: 8, width: 'auto' },
-          { text: titulo || item.aula || '', bold: true, fontSize: 16, margin: [8, 0, 8, 0] },
-          { text: tipoLabel.toUpperCase(), fontSize: 7, color: PDF_COLORS.ink3, alignment: 'right', width: 'auto' },
+          {
+            width: '*',
+            fontSize: 16,
+            bold: true,
+            text: [
+              { text: `Aula ${numeroFmt} — `, color: PDF_COLORS.accent },
+              { text: titulo || item.aula || '', color: PDF_COLORS.ink1 },
+            ],
+          },
+          ...(mostrarTipoLabel ? [{ text: tipoLabel.toUpperCase(), fontSize: 7, color: PDF_COLORS.ink3, alignment: 'right', width: 'auto', margin: [8, 5, 0, 0] }] : []),
         ],
       },
       { canvas: [{ type: 'line', x1: 0, y1: 6, x2: 495, y2: 6, lineWidth: 0.6, lineColor: PDF_COLORS.line }] },
@@ -388,7 +414,7 @@ function _itensDaDisciplina(g) {
   return g.itensPorAula.reduce((n, a) => n + a.tipos.length, 0) + g.outros.length;
 }
 
-function _buildCapaPdfMake(grupos, tipoLabel) {
+function _buildCapaPdfMake(grupos, tipoLabel, modosPorGrupo) {
   const totalItens = grupos.reduce((n, g) => n + _itensDaDisciplina(g), 0);
   const dataGeracao = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
 
@@ -426,7 +452,7 @@ function _buildCapaPdfMake(grupos, tipoLabel) {
     ],
   };
 
-  const sumario = _buildSumarioPdfMake(grupos);
+  const sumario = _buildSumarioPdfMake(grupos, modosPorGrupo);
 
   // A quebra de página deixa de ser forçada AQUI (no fim do sumário) —
   // anexá-la a um nó "unbreakable" perto do fim da página é o que
@@ -445,65 +471,76 @@ function _buildCapaPdfMake(grupos, tipoLabel) {
    tenham sido realmente incluídos — é a mesma estrutura,
    só formatada como índice.
 
-   Hierarquia (ver grupos → itensPorAula/outros vindos de
-   resumo-pdf.js::_disciplinasSelecionadasOrdenadas):
-     DISCIPLINA
-       ├── 01. Aula
-       │     • Resumo / Síntese   (recuados, sem número próprio)
-       │     ...
-       └── OUTROS CONTEÚDOS        (sem número de aula)
-             • Resumão / Revisão do professor
-
-   A numeração de aula (01, 02, 03…) reinicia a cada
-   disciplina — nunca continua a contagem da disciplina
-   anterior. Com mais de uma disciplina selecionada, cada
-   bloco ganha também seu próprio número de disciplina
-   (1., 2., 3.) para deixar a separação óbvia.
+   SEM números de página: uma tentativa anterior usava
+   `id` + `pageReference` do pdfmake pra isso, mas esse
+   recurso obriga o pdfmake a rodar uma SEGUNDA passagem
+   completa de layout sobre o documento inteiro só pra
+   resolver os números — dobrando o tempo de geração — e,
+   nesta versão do pdfmake, `id` em nós compostos (stack
+   com canvas dentro, usados no cabeçalho de disciplina/
+   modo/item) não é resolvido de forma confiável, o que
+   gerava o erro "Page reference id not found". Ficou de
+   fora por ora: a hierarquia (texto) já resolve a
+   localização, que era o pedido original; navegação por
+   página pode voltar depois, se for demonstrado que não
+   pesa na geração.
 ══════════════════════════════════════════════ */
-function _buildSumarioPdfMake(grupos) {
+function _agruparPorModo(g) {
+  const porTipo = new Map(); // tipo -> [{ idx, item }], nesta ordem
+
+  g.itensPorAula.forEach(a => {
+    a.tipos.forEach(({ tipo, item }) => {
+      if (!porTipo.has(tipo)) porTipo.set(tipo, []);
+      porTipo.get(tipo).push({ idx: a.idx, item });
+    });
+  });
+
+  g.outros.forEach(o => {
+    if (!porTipo.has(o.tipo)) porTipo.set(o.tipo, []);
+    porTipo.get(o.tipo).push({ idx: o.idx, item: o.item });
+  });
+
+  return ALL_TIPOS
+    .filter(tipo => porTipo.has(tipo))
+    .map(tipo => ({ tipo, itens: porTipo.get(tipo) }));
+}
+
+// `modosPorGrupo` vem pronto de _buildDocDefinition (um só cálculo de
+// _agruparPorModo por disciplina, reaproveitado aqui e no corpo do
+// PDF — ver comentário em _buildDocDefinition).
+function _buildSumarioPdfMake(grupos, modosPorGrupo) {
   const nodes = [];
   nodes.push({ text: 'SUMÁRIO', bold: true, fontSize: 11, color: PDF_COLORS.accent2, characterSpacing: 1.5, margin: [0, 0, 0, 16] });
 
   const multiDisc = grupos.length > 1;
 
-  // Entrada de AULA — numerada (01, 02...), com Resumo/Síntese
-  // recuados logo abaixo, como subitens dela.
-  const pushAula = (n, aulaStr, tiposLabels) => {
-    const { num, titulo } = _splitTitulo(aulaStr ?? '');
-    const label = titulo || aulaStr || '';
+  // Cabeçalho de MODO — agora aparece SEMPRE, mesmo com um único modo
+  // selecionado, pra manter a hierarquia do Sumário sempre constante
+  // (DISCIPLINA → MODO → AULA, nunca DISCIPLINA → AULA direto).
+  const pushModo = (tipo, primeiro) => {
     nodes.push({
-      unbreakable: true,
-      margin: [0, 0, 0, 9],
-      stack: [
-        {
-          columns: [
-            { text: `${String(n).padStart(2, '0')}.`, width: 22, bold: true, fontSize: 9.5, color: PDF_COLORS.accent },
-            {
-              text: [
-                ...(num ? [{ text: `${num} — `, color: PDF_COLORS.ink3 }] : []),
-                { text: label, bold: true, fontSize: 9.5 },
-              ],
-            },
-          ],
-        },
-        { ul: tiposLabels, margin: [22, 3, 0, 0], fontSize: 8.5, color: PDF_COLORS.ink2 },
-      ],
+      text: `Modo: ${TIPO_LABEL[tipo]}`,
+      bold: true, fontSize: 9.5, color: PDF_COLORS.accent2,
+      margin: [0, primeiro ? 4 : 16, 0, 8],
     });
   };
 
-  // Entrada de "OUTRO CONTEÚDO" (Resumão / Revisão do professor) —
-  // NUNCA numerada como aula (não é "a aula X"): marcador simples +
-  // rótulo do tipo, com o título próprio do conteúdo quando houver.
-  const pushOutro = (tipoLabel, tituloProprio) => {
+  // Entrada de aula — numerada sequencialmente (01, 02, 03...) na
+  // ordem real em que já vem em `modo.itens` (mesma ordem de idx
+  // usada no corpo do PDF, nunca uma ordem inventada aqui). O número
+  // reinicia a cada modo, igual reiniciava a cada disciplina antes —
+  // mesmo estilo visual do Sumário anterior (número em destaque +
+  // título ao lado), só que agora sempre aninhada sob o Modo — por
+  // isso o recuo abaixo do Modo também é sempre aplicado (a
+  // hierarquia Disciplina → Modo → Aula deixou de ser condicional).
+  const pushAula = (n, aulaStr) => {
+    const { titulo } = _splitTitulo(aulaStr ?? '');
+    const label = titulo || aulaStr || '';
     nodes.push({
-      margin: [0, 0, 0, 6],
+      margin: [6, 0, 0, 6],
       columns: [
-        { text: '—', width: 16, bold: true, fontSize: 9.5, color: PDF_COLORS.accent2 },
-        {
-          text: tituloProprio
-            ? [{ text: `${tipoLabel}`, bold: true, fontSize: 9.5 }, { text: `  ·  ${tituloProprio}`, fontSize: 9.5, color: PDF_COLORS.ink2 }]
-            : [{ text: tipoLabel, bold: true, fontSize: 9.5 }],
-        },
+        { text: `${String(n).padStart(2, '0')}.`, width: 22, bold: true, fontSize: 9.5, color: PDF_COLORS.accent },
+        { text: label, bold: true, fontSize: 9.5 },
       ],
     });
   };
@@ -517,41 +554,56 @@ function _buildSumarioPdfMake(grupos) {
       });
     }
 
-    // Reinicia a numeração de aula a cada disciplina — cada bloco é
-    // independente, nunca uma sequência única entre disciplinas.
-    let n = 1;
-    g.itensPorAula.forEach(aula => {
-      const ref = aula.tipos[0]?.item ?? null;
-      pushAula(n, ref?.aula, aula.tipos.map(t => TIPO_LABEL[t.tipo]));
-      n++;
-    });
+    const modos = modosPorGrupo[gi];
 
-    // Resumão e Revisão do professor nunca são "a aula X" — são
-    // conteúdo independente da disciplina — por isso ganham uma seção
-    // própria, sem numeração de aula, separada visualmente das aulas
-    // acima.
-    if (g.outros.length) {
-      nodes.push({
-        text: 'OUTROS CONTEÚDOS',
-        bold: true, fontSize: 8, color: PDF_COLORS.ink3, characterSpacing: 1,
-        margin: [0, g.itensPorAula.length ? 4 : 0, 0, 8],
+    modos.forEach((modo, mi) => {
+      pushModo(modo.tipo, mi === 0);
+
+      // Reinicia a numeração a cada modo — cada bloco é independente,
+      // nunca uma sequência única entre modos ou entre disciplinas.
+      let n = 1;
+      modo.itens.forEach(({ item }) => {
+        pushAula(n, item?.aula);
+        n++;
       });
-      g.outros.forEach(o => {
-        const { titulo } = _splitTitulo(o.item?.aula ?? '');
-        pushOutro(TIPO_LABEL[o.tipo], titulo || o.item?.aula || '');
-      });
-    }
+    });
   });
 
   return nodes;
 }
 
-async function _buildDisciplinaPdfMake(g, sem, headerLabel) {
+/* Cabeçalho de MODO — a divisão intermediária entre disciplina e
+   aula (DISCIPLINA → MODO → AULA). Só é inserida quando a disciplina
+   tem mais de um modo selecionado (ver `multiModo` abaixo): com um
+   único modo ativo não há troca de modo pra sinalizar, então essa
+   linha extra seria só ruído — o selo de tipo no canto de cada item
+   (ver _buildItemPdfMake) já basta nesse caso, como sempre bastou.
+   Visualmente mais forte que a linha fina do cabeçalho de aula (cor
+   de destaque, texto maior), mas mais leve que a quebra de página +
+   título de 22pt da disciplina — mantendo a disciplina como a maior
+   divisão do documento (pageBreak, só ela). */
+function _modoHeaderNode(tipo) {
+  return {
+    unbreakable: true,
+    margin: [0, 22, 0, 16],
+    stack: [
+      { text: 'MODO', fontSize: 7, bold: true, color: PDF_COLORS.ink3, characterSpacing: 1.5, margin: [0, 0, 0, 3] },
+      { text: TIPO_LABEL[tipo], bold: true, fontSize: 16, color: PDF_COLORS.accent2 },
+      { canvas: [{ type: 'line', x1: 0, y1: 8, x2: 495, y2: 8, lineWidth: 1.1, lineColor: PDF_COLORS.accent2 }] },
+    ],
+  };
+}
+
+// `modos` vem pronto (já calculado por _buildDocDefinition) — esta
+// função não chama mais _agruparPorModo por conta própria.
+async function _buildDisciplinaPdfMake(g, sem, headerLabel, modos) {
   const content = [{
     // Todo bloco de disciplina força sua própria quebra de página —
     // inclusive o primeiro. É essa quebra (não mais uma marcação no
     // fim do sumário) que garante que o conteúdo das disciplinas
-    // sempre comece em página nova, depois da capa + sumário.
+    // sempre comece em página nova, depois da capa + sumário. É
+    // também a maior divisão estrutural do documento — nenhum outro
+    // nível (modo, aula) força quebra de página.
     pageBreak: 'before',
     margin: [0, 0, 0, 24],
     stack: [
@@ -561,28 +613,28 @@ async function _buildDisciplinaPdfMake(g, sem, headerLabel) {
     ],
   }];
 
-  // Uma entrada por aula, e dentro dela um bloco por tipo selecionado
-  // (na mesma ordem estável de ALL_TIPOS) — mantém as aulas com mais
-  // de um tipo selecionado juntas no corpo do PDF, na mesma ordem em
-  // que aparecem no sumário da capa.
-  for (const aula of g.itensPorAula) {
-    for (const { tipo, item } of aula.tipos) {
-      const nodes = await _buildItemPdfMake(item, g.disc.arquivo, sem, TIPO_LABEL[tipo]);
-      content.push(...nodes);
-    }
-  }
+  // DISCIPLINA → MODO → AULA: os mesmos itens (itensPorAula + outros)
+  // já vêm agrupados por modo, na ordem estável de ALL_TIPOS — Resumo
+  // e Síntese primeiro (se ambos ativos), Resumão e Nota do professor
+  // depois, cada um na sua própria seção. Dentro de cada modo, a
+  // ordem das aulas é a mesma de sempre (itensPorAula, por idx).
+  const multiModo = modos.length > 1;
 
-  // Resumão e Revisão do professor entram DEPOIS, como bloco à parte
-  // — não são "mais um tipo da aula X" (ver comentário em
-  // resumo-pdf.js::_disciplinasSelecionadasOrdenadas), então nunca
-  // são intercalados dentro do loop de aulas acima.
-  if (g.outros.length) {
-    if (g.itensPorAula.length) {
-      content.push({ text: 'OUTROS CONTEÚDOS', bold: true, fontSize: 10, color: PDF_COLORS.accent2, characterSpacing: 1.2, margin: [0, 4, 0, 14] });
-    }
-    for (const o of g.outros) {
-      const nodes = await _buildItemPdfMake(o.item, g.disc.arquivo, sem, TIPO_LABEL[o.tipo]);
+  for (const modo of modos) {
+    if (multiModo) content.push(_modoHeaderNode(modo.tipo));
+    // Mesmo número que o Sumário já mostra para este item: contagem
+    // sequencial dentro do modo, reiniciada a cada modo, na mesma
+    // ordem de modo.itens (ver pushAula em _buildSumarioPdfMake, que
+    // percorre este mesmo array). Não é uma contagem nova/paralela —
+    // é a mesma numeração de aula que o resto do PDF já usa.
+    let numeroAula = 1;
+    for (const { item } of modo.itens) {
+      const nodes = await _buildItemPdfMake(item, g.disc.arquivo, sem, TIPO_LABEL[modo.tipo], {
+        mostrarTipoLabel: !multiModo,
+        numeroAula,
+      });
       content.push(...nodes);
+      numeroAula++;
     }
   }
 
@@ -604,10 +656,17 @@ export async function _buildDocDefinition(grupos, tiposAtivos) {
   // já mostra exatamente quais tipos entraram em cada aula.
   const tituloGeral = tiposAtivos.length === 1 ? TIPO_LABEL[tiposAtivos[0]] : 'Resumos';
 
-  const content = [..._buildCapaPdfMake(grupos, tituloGeral)];
+  // _agruparPorModo roda UMA VEZ por disciplina aqui (era chamada
+  // duas vezes antes: uma no Sumário, outra no corpo) e o resultado é
+  // reaproveitado nos dois lugares abaixo — é um cálculo O(nº de
+  // itens) por disciplina, não é o que pesava na geração, mas não há
+  // motivo pra repeti-lo.
+  const modosPorGrupo = grupos.map(g => _agruparPorModo(g));
+
+  const content = [..._buildCapaPdfMake(grupos, tituloGeral, modosPorGrupo)];
 
   for (let gi = 0; gi < grupos.length; gi++) {
-    const nodes = await _buildDisciplinaPdfMake(grupos[gi], sem, tituloGeral);
+    const nodes = await _buildDisciplinaPdfMake(grupos[gi], sem, tituloGeral, modosPorGrupo[gi]);
     content.push(...nodes);
   }
 
