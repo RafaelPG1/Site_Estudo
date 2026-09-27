@@ -1,44 +1,6 @@
 {
   "_comentario": "Fonte única de disponibilidade de modos por semestre e disciplina. Atualize este arquivo manualmente ao adicionar novos ques_*.js. Os valores booleanos refletem se o array do modo possui questões no arquivo de conteúdo correspondente.",
 
-  "_modos": [
-      {
-      "id": "revisao",
-      "titulo": "Revisão",
-      "descricao": "Questões de revisão dos Professores(as)",
-      "cssClass": "disc-card--revisao",
-      "ordem": 1
-    },
-    {
-      "id": "ava",
-      "titulo": "AVA",
-      "descricao": "Questões extraídas das atividades do AVA",
-      "cssClass": "disc-card--ava",
-      "ordem": 2
-    },
-    {
-      "id": "questoes",
-      "titulo": "Questões",
-      "descricao": "Questões adaptativas criadas por IA com feedback explicativo.",
-      "cssClass": "disc-card--quiz",
-      "ordem": 3
-    },
-    {
-      "id": "enade",
-      "titulo": "ENADE",
-      "descricao": "Questões estilo ENADE com contexto aplicado, asserções e análise crítica.",
-      "cssClass": "disc-card--enade",
-      "ordem": 4
-    },
-    {
-      "id": "fixacao",
-      "titulo": "Fixação",
-      "descricao": "Questões de revisão para consolidar o conteúdo estudado.",
-      "cssClass": "disc-card--fixacao",
-      "ordem": 5
-    }
-
-  ],
 
   "2026.1-AP1": {
     "poo":          { "ava": true, "questoes": false, "enade": false, "fixacao": false },

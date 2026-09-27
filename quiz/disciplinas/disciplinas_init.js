@@ -1,12 +1,45 @@
 // @ts-nocheck
 /* ============================================================
+   NEXUS STUDY — quiz/disciplinas/disciplinas_init.js  v9.0
+
+   INTEGRAÇÃO v9.0 — CENTRALIZAÇÃO DA CONFIGURAÇÃO DE MODOS:
+
+     Problema: a configuração visual de cada modo (SVG, título,
+     descrição, cssClass, ordem) estava duplicada em 3 lugares
+     (catalog.json._modos, _MODOS_FALLBACK/_ICONES_MODO aqui, e
+     uma cópia manual em quiz_starter_modal.js). Isso já tinha
+     causado divergência real: o modo "Revisão" existia aqui e
+     no catalog.json, mas não em template_init.js, então
+     ?modo=revisao caía no fallback "Questões" no template do
+     quiz.
+
+     Solução: toda a configuração de modo (id/titulo/descricao/
+     cssClass/ordem/icone/breadcrumb/h1/label) foi extraída para
+     ./modos.js (mesma pasta), que passa a ser a ÚNICA fonte.
+     Este arquivo agora apenas IMPORTA de lá:
+       • _MODOS_FALLBACK e _ICONES_MODO foram REMOVIDOS.
+       • Passo 3.7 (continuar direto via ?modo=) usa MODOS_QUIZ.
+       • Passo 6/6.5 (ícones dos cards) usa getIconeModo().
+       • Passo 8 (renderização dos cards) usa getModosOrdenados()
+         em vez de ler catalog._modos — catalog.json não guarda
+         mais nada visual, só disponibilidade por disciplina/
+         semestre (o que já era true antes).
+
+     catalog.json: a chave global `_modos` deve ser REMOVIDA do
+     arquivo (não é mais lida por este script). As chaves de
+     semestre (disponibilidade por disciplina) continuam
+     exatamente como estavam.
+
+   ============================================================ */
+/* ============================================================
    NEXUS STUDY — quiz/disciplinas/disciplinas_init.js  v8.2
 
    INTEGRAÇÃO v8.2 (mescla das versões v7.5/v8.1 e v7.4):
      - Base deste arquivo é a versão mais recente (v7.5/v8.1),
        que já é a implementação atual do projeto: renderização
-       dinâmica dos modos a partir de catalog._modos, HTML
-       genérico (disciplina.html) e discId lido de ?disc=.
+       dinâmica dos modos a partir de catalog._modos (SUBSTITUÍDO
+       em v9.0 — ver nota acima), HTML genérico (disciplina.html)
+       e discId lido de ?disc=.
      - Único ponto realmente divergente entre as duas versões era
        o Passo 1 (resolução do discId): a versão anterior (v7.4)
        o extraía do NOME DO ARQUIVO (location.pathname), esquema
@@ -22,167 +55,6 @@
        tornando mais robustos (estado inválido, renderização
        dinâmica de cards, título de página dinâmico) — nada disso
        foi removido nem substituído nesta integração.
-   ============================================================ */
-/* ============================================================
-   NEXUS STUDY — quiz/disciplinas/disciplinas_init.js  v7.5
-
-   RESPONSABILIDADES (e apenas estas):
-     1. Resolver o semestre da URL                      (navegação)
-     2. Propagar ?sem= nos hrefs dos cards              (navegação)
-     3. Exibir badge de semestre no header              (visual)
-     4. Aplicar cores da disciplina                     (visual)
-     5. Resolver ícone + nome da disciplina a partir de
-        _DISCIPLINAS (global.js) e aplicar no header     (visual)
-     6. Aplicar os ícones SVG dos MODOS de estudo (AVA,
-        Questões, ENADE, Fixação) — centralizados aqui,
-        não são dados de disciplina                      (visual)
-     7. Injetar logo, inicializar áudio e eventos
-        nos cards                                        (visual/UX)
-     8. Buscar catalog.json, RENDERIZAR os cards de modo
-        dinamicamente (fonte única: catalog._modos) e
-        marcar como disc-card--vazio os indisponíveis    (UX)
-     9. Inicializar a IA (Nexus Assistente)             (IA)
-
-     (contexto de leitura para a IA — disciplina/semestre/
-      catalog — é exposto em window como Passo 4.5, antes
-      do DOMContentLoaded)
-
-   MUDANÇAS v7.5 — CARDS DE MODO GERADOS DINAMICAMENTE
-   (SUBSTITUINDO OS <a class="disc-card"> HARDCODED NOS HTMLs):
-
-     Problema: cada HTML de disciplina (poo.html, banco_dados.html,
-     design.html, redes.html, redes2.html, analise_projeto.html,
-     estruturas_dados.html, legislacao.html,
-     psicologia_organizacional.html) repetia manualmente os mesmos
-     4 blocos <a class="disc-card"> (AVA/Questões/ENADE/Fixação).
-     Criar um modo novo exigia editar dezenas de arquivos HTML.
-
-     Solução:
-       • catalog.json ganhou uma chave global `_modos`, um array
-         com { id, titulo, descricao, cssClass, ordem } — a fonte
-         única de QUAIS modos existem (a disponibilidade por
-         disciplina/semestre continua exatamente como antes, nas
-         chaves de semestre do próprio catalog.json).
-       • O Passo 8 (antes `_aplicarDisponibilidade`, só marcava
-         cards já existentes) virou `_renderizarModos`: monta um
-         `<a class="disc-card">` por item de `_modos` (na ordem
-         de `ordem`), idêntico em marcação/classe/ícone/texto ao
-         que cada HTML tinha fixo, e insere via DocumentFragment
-         no `#disciplines-container`.
-       • Os HTMLs agora só declaram o container vazio:
-           <div class="disciplines" id="disciplines-container"></div>
-         Nenhum <a class="disc-card"> fica fixo em HTML.
-       • Ícones (`_ICONES_MODO`, Passo 6) e sons de hover/click
-         (Passo 7) foram mantidos como funções reaproveitáveis,
-         agora também invocadas DEPOIS que os cards são inseridos
-         no DOM (antes só rodavam uma vez no DOMContentLoaded, o
-         que não bastava mais porque os cards passaram a existir
-         apenas depois do fetch assíncrono do catalog.json).
-       • Criar um modo novo, daqui pra frente, é: adicionar um
-         objeto em `_modos` + a disponibilidade por disciplina/
-         semestre no catalog.json. Nenhum HTML precisa ser tocado.
-
-   MUDANÇAS v7.4 — ÍCONES SVG DOS MODOS DE ESTUDO
-   (SUBSTITUINDO OS EMOJIS FIXOS DA v7.3):
-
-     Problema: os emojis de cada modo (📚/❓/🏛️/📌) eram texto
-     simples aplicado via textContent. Isso funcionava, mas
-     destoava visualmente do restante do produto, que já usa
-     ícones SVG em outline (mesmo padrão do ícone de disciplina
-     resolvido via resolveIcone() em global.js).
-
-     Solução:
-       • `_EMOJIS_MODO` foi substituído por `_ICONES_MODO`, um
-         dicionário de SVGs inline (outline, stroke="currentColor",
-         mesmo padrão visual dos ícones de disciplina).
-       • `_aplicarEmojisModo()` foi substituído por
-         `_aplicarIconesModo()`, que injeta o SVG via innerHTML
-         (em vez de textContent) no mesmo `<span>` que cada card
-         já possui dentro de `.disc-card__icon-wrap`.
-       • Uma regra CSS mínima (`_injetarEstiloIconeModo`) garante
-         que o SVG herde tamanho (1em) e cor (currentColor) do
-         elemento pai, sem tocar em nenhum CSS do projeto — mesmo
-         padrão já usado para o ícone de disciplina no Passo 5.
-
-     Fonte única: para trocar o ícone de um modo em todas as
-     páginas de todas as disciplinas, basta editar o SVG
-     correspondente em `_ICONES_MODO`, aqui. Os HTMLs continuam
-     declarando apenas `<span></span>` vazio dentro de
-     `.disc-card__icon-wrap` — nenhum SVG/emoji fica fixo nos
-     arquivos HTML.
-
-   MUDANÇAS v7.3 — CENTRALIZAÇÃO DE ÍCONE/NOME DE DISCIPLINA
-   (ANTES FIXOS NOS HTMLs):
-
-     Problema: cada HTML de disciplina (banco_dados.html,
-     poo.html, analise_projeto.html etc.) foi criado copiando
-     a mesma estrutura e fixando manualmente o emoji/nome da
-     disciplina no eyebrow do header, e o emoji de cada modo
-     (AVA/Questões/ENADE/Fixação) em cada card. Trocar um
-     ícone/emoji exigia editar dezenas de arquivos HTML.
-
-     Solução:
-       • Ícone + nome da disciplina — passam a vir de
-         _DISCIPLINAS (fonte única já existente em global.js).
-         Este arquivo resolve o registro da disciplina atual
-         via getDisciplinasDeSemestre(_sem) e injeta:
-           #disc-emoji → resolveIcone(discInfo.icone)  (SVG)
-           #disc-nome  → discInfo.nome                 (texto)
-         Os HTMLs só precisam declarar os elementos vazios
-         (<span id="disc-emoji">, <span id="disc-nome">) —
-         nenhum dado de disciplina fica fixo no HTML.
-
-     Nenhum dado é duplicado: a fonte de disciplina continua
-     sendo exclusivamente _DISCIPLINAS (global.js); este
-     arquivo apenas lê e aplica no DOM.
-
-   MUDANÇAS v7.2 — INICIALIZAÇÃO DA IA:
-     - Adicionado _inicializarIA() no Passo 9.
-     - Mesmo padrão de quiz.js/_carregarIA(): carrega as
-       dependências via <script> em sequência e chama
-       NexusAssistant.initUI() + NexusAssistant.init().
-     - Os HTMLs das disciplinas NÃO devem mais carregar
-       fab.js diretamente — esta função assume essa
-       responsabilidade. ui.js faz getElementById('nexus-fab')
-       || _criarFAB(), portanto o FAB aparece no momento certo
-       independentemente de quem chega primeiro.
-     - O contexto da disciplina já está disponível em
-       window.__NEXUS_CONTEXT__ (Passo 4.5) quando a IA inicia.
-
-   MUDANÇAS v7.0 — REMOÇÃO DO ASSISTENTE NEXUS IA:
-     - Removido por completo o bootstrap do assistente de chat
-       (ctx.js, context.js, text-utils.js, loader.js, worker.js,
-       ui.js, resumo/search_resumo.js, resumo/assistant_resumo.js, init.js).
-     - Removida a declaração de contexto em sessionStorage
-       (nexus_ctx / nexus_ctx_dirty), que existia exclusivamente
-       para o assistente restaurar/descartar histórico de chat.
-
-   PATCH v7.1 — EXPOSIÇÃO DE CONTEXTO (SEM CARREGAR IA):
-     - Reintroduzido window.__NEXUS_CONTEXT__ e três funções de
-       leitura (getDisciplinaAtual, getSemestreAtual,
-       getConteudoIndex), todas retornando dados que este
-       arquivo já calculava (_discId, _sem, discEntry do
-       catalog.json). Nenhum script novo é carregado, nenhum
-       elemento <script> é criado dinamicamente, nenhuma
-       inicialização de IA acontece aqui.
-
-   REVERSÃO (este arquivo NÃO bloqueia .disc-card):
-     - Nenhuma lógica de login/bloqueio visual é aplicada aos
-       cards de disciplina. Este arquivo permanece restrito às
-       responsabilidades listadas acima. O bloqueio por login
-       é exclusivo do botão da IA (ui.js / ia.css) e não deve
-       ser estendido a nenhum outro componente desta página.
-
-   PROIBIÇÕES ABSOLUTAS (mantidas):
-     ✗ Carregar ques_*.js
-     ✗ Criar elementos <script> dinamicamente fora do Passo 9
-     ✗ Ler window.questoes
-     ✗ Montar caminhos de conteúdo de quiz
-     ✗ Conhecer template_init.js ou quiz_engine.js
-     ✗ Verificar arrays de questões
-     ✗ Decidir o que o template deve fazer
-     ✗ Aplicar qualquer classe de bloqueio (login) nos
-       .disc-card — isso NÃO é responsabilidade deste arquivo
    ============================================================ */
 
 import { getDisciplinasDeSemestre, resolveIcone } from '../../src/global.js';
@@ -201,6 +73,11 @@ import {
   playSound,
 } from '../../shared/js/audio/audio-api.js';
 
+/* FONTE ÚNICA de configuração dos modos de estudo (v9.0).
+   Ver ./modos.js para a lista completa e instruções de como
+   adicionar um modo novo. */
+import { MODOS_QUIZ, getModosOrdenados, getIconeModo } from './modos.js';
+
 /* NAVIGATION ANALYTICS — importa o tracker para garantir que
    window.__nexusPageEnter seja registrado nesta página.
    O tracker inicializa automaticamente via auto-boot interno. */
@@ -208,43 +85,20 @@ import '../../src/session-tracker.js';
 
 
 /* ══════════════════════════════════════════════════════════
-   MODOS — lista de fallback e montagem do href de cada modo
+   MONTAGEM DO HREF DE CADA MODO
 
-   Movidos para o topo do arquivo (v8.1) porque agora são usados
-   em dois pontos que precisam existir ANTES do fetch assíncrono
-   de catalog.json:
+   Movido para o topo do arquivo (v8.1) porque é usado em dois
+   pontos que precisam existir ANTES do fetch assíncrono de
+   catalog.json:
      • Passo 3.7 — continuar direto no modo indicado por ?modo=
        (síncrono, roda antes de qualquer coisa ser desenhada)
      • Passo 8   — renderização dos cards de modo (depois do
        fetch, como já era)
 
-   v8.1 — CORREÇÃO DE PATH (migração para disciplina.html):
-     Antes, os HTMLs de disciplina viviam em
-     quiz/disciplinas/{ano}/{periodo}/{arquivo}.html — dois
-     níveis mais fundo que este script (quiz/disciplinas/
-     disciplinas_init.js), por isso o href para o template
-     precisava subir 3 níveis: '../../../template/template.html'.
-
-     Agora existe um único disciplina.html, na MESMA pasta deste
-     script (quiz/disciplinas/disciplina.html), então o caminho
-     correto passa a subir apenas 1 nível: '../template/template.html'.
-     Sem este ajuste, todo card de modo (e o redirecionamento do
-     Passo 3.7) apontaria para um caminho inexistente.
+   v9.0 — a lista de modos em si (id/titulo/descricao/cssClass/
+   ordem/icone) não vive mais aqui: vem de ./modos.js
+   (MODOS_QUIZ / getModosOrdenados / getIconeModo).
    ══════════════════════════════════════════════════════════ */
-
-/* Fallback usado se catalog._modos vier ausente/inválido — mesmos
-   4 modos que antes estavam hardcoded em cada HTML. Mantém a
-   página funcional mesmo se o catalog.json for editado incorretamente,
-   e serve também como lista síncrona de "modos conhecidos" para o
-   Passo 3.7 (antes do catalog.json ainda ter respondido). */
-var _MODOS_FALLBACK = [
-  { id: 'revisao',  titulo: 'Revisão',   descricao: 'Questões de revisão dos Professores(as).',                            cssClass: 'disc-card--revisao', ordem: 1 },
-  { id: 'ava',      titulo: 'AVA',       descricao: 'Questões extraídas das atividades do AVA',                                          cssClass: 'disc-card--ava',     ordem: 2 },
-  { id: 'questoes', titulo: 'Questões',  descricao: 'Questões adaptativas criadas por IA com feedback explicativo.',                       cssClass: 'disc-card--quiz',    ordem: 3 },
-  { id: 'enade',    titulo: 'ENADE',     descricao: 'Questões estilo ENADE com contexto aplicado, asserções e análise crítica.',           cssClass: 'disc-card--enade',   ordem: 4 },
-  { id: 'fixacao',  titulo: 'Fixação',   descricao: 'Questões de revisão para consolidar o conteúdo estudado.',                            cssClass: 'disc-card--fixacao', ordem: 5 },
-
-];
 
 function _montarHrefModo(discId, modoId, sem) {
   var href = '../template/template.html?disc=' + encodeURIComponent(discId) +
@@ -421,26 +275,20 @@ function _mensagemEstadoInvalido() {
    é ignorado — o usuário sempre para na tela de escolha manual,
    mesmo já sabendo o modo.
 
-   Adaptação necessária: a versão anterior fazia
-   `document.querySelector('.disc-card[data-modo="X"][href]')`,
-   o que exigia que os cards já existissem no DOM. Isso não é
-   mais garantido de forma síncrona: os cards só nascem depois
-   do fetch assíncrono de catalog.json (Passo 8). Em vez de
-   depender do DOM, este passo monta o href diretamente via
-   _montarHrefModo(), usando a lista estática _MODOS_FALLBACK
-   como "modos conhecidos" — exatamente os mesmos 4 modos que a
-   versão anterior enxergava como cards fixos no HTML.
+   v9.0: antes, esta camada síncrona usava uma lista estática
+   local (_MODOS_FALLBACK) e existia uma "Camada 2" no Passo 8
+   que reconferia com a lista real vinda de catalog._modos, caso
+   ela trouxesse mais/menos modos que o fallback. Como agora a
+   lista de modos (MODOS_QUIZ, vinda de ./modos.js) já é a lista
+   REAL e completa desde o início — não depende mais de nenhum
+   fetch — essa segunda camada deixou de ser necessária e foi
+   removida. Esta função roda apenas uma vez.
 
    Mesma filosofia da versão anterior (documentada lá): NÃO
    verifica disponibilidade (discEntry[modo] === true) antes de
    redirecionar — isso só é conhecido depois do catalog.json
    responder (Passo 8), e preferimos deixar o usuário continuar
    a bloquear precocemente um caso que normalmente é válido.
-
-   Camada 2 (correção/robustez, ver _renderizarModos): se
-   catalog._modos trouxer um modo que não está em
-   _MODOS_FALLBACK, esta camada síncrona não o reconhece — o
-   Passo 8 tenta novamente com a lista real assim que ela chega.
    ══════════════════════════════════════════════════════════ */
 var _modoRedirecionado = false;
 
@@ -472,10 +320,10 @@ function _tentarContinuarModo(modosConhecidos) {
   location.replace(_montarHrefModo(_discId, modoContinuar, _sem));
 }
 
-/* Camada 1 — síncrona, com a lista estática (idêntico em espírito
-   à versão anterior, que via os 4 cards fixos no HTML antes de
-   qualquer fetch). */
-_tentarContinuarModo(_MODOS_FALLBACK);
+/* Lista real e completa de modos, vinda da fonte única (./modos.js).
+   Não depende de nenhum fetch — está disponível de forma síncrona
+   desde o carregamento do módulo. */
+_tentarContinuarModo(MODOS_QUIZ);
 
 
 /* ══════════════════════════════════════════════════════════
@@ -626,79 +474,21 @@ function _renderizarEstadoInvalido() {
 
 /* ══════════════════════════════════════════════════════════
    PASSO 6 — Ícones SVG dos MODOS de estudo (AVA/Questões/
-   ENADE/Fixação)
+   ENADE/Fixação/Revisão)
 
-   Estes ícones representam o MODO de estudo, não a
-   disciplina — são os mesmos em toda disciplina. Por isso
-   NÃO pertencem a _DISCIPLINAS/_ICONES (global.js), que
-   guardam apenas dados por disciplina. Ficam centralizados
-   aqui: para trocar o ícone de um modo em todas as páginas
-   de todas as disciplinas, basta editar o SVG correspondente
-   neste objeto.
-
-   Padrão visual (idêntico ao dos ícones de disciplina
-   resolvidos por resolveIcone() em global.js):
-     fill="none"
-     stroke="currentColor"
-     stroke-linecap="round"
-     stroke-linejoin="round"
-     viewBox="0 0 24 24"
+   v9.0: os SVGs de cada modo NÃO vivem mais aqui. Eles foram
+   centralizados em ./modos.js (MODOS_QUIZ / getIconeModo()),
+   junto com título, descrição, cssClass e ordem — a mesma fonte
+   que quiz_starter_modal.js também consome (via import()
+   dinâmico). Trocar o ícone de um modo em todas as páginas de
+   todas as disciplinas passa a exigir editar um único arquivo:
+   ./modos.js.
 
    Aplicados via o atributo `data-modo` que cada `.disc-card`
    já possui — nenhum novo atributo é necessário no HTML.
    O HTML só precisa do `<span>` vazio dentro de
    `.disc-card__icon-wrap`.
    ══════════════════════════════════════════════════════════ */
-
-var _ICONES_MODO = {
-
-  /* REVISÃO — prancheta com marcação (questões de revisão dos professores) */
-  revisao:
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
-    'stroke-linecap="round" stroke-linejoin="round">' +
-      '<rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>' +
-      '<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>' +
-      '<path d="m9 14 2 2 4-4"/>' +
-    '</svg>',
-  /* AVA — livro aberto (material/atividades do ambiente virtual) */
-  ava:
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
-    'stroke-linecap="round" stroke-linejoin="round">' +
-      '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>' +
-      '<path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>' +
-    '</svg>',
-
-  /* QUESTÕES — círculo com interrogação (banco de questões adaptativas) */
-  questoes:
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
-    'stroke-linecap="round" stroke-linejoin="round">' +
-      '<circle cx="12" cy="12" r="10"/>' +
-      '<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>' +
-      '<line x1="12" y1="17" x2="12.01" y2="17"/>' +
-    '</svg>',
-
-  /* ENADE — fachada de instituição (prova de avaliação institucional) */
-  enade:
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
-    'stroke-linecap="round" stroke-linejoin="round">' +
-      '<line x1="3" y1="22" x2="21" y2="22"/>' +
-      '<line x1="6" y1="18" x2="6" y2="11"/>' +
-      '<line x1="10" y1="18" x2="10" y2="11"/>' +
-      '<line x1="14" y1="18" x2="14" y2="11"/>' +
-      '<line x1="18" y1="18" x2="18" y2="11"/>' +
-      '<polygon points="12 2 20 7 4 7"/>' +
-    '</svg>',
-
-  /* FIXAÇÃO — alfinete (revisão/consolidação do conteúdo) */
-  fixacao:
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
-    'stroke-linecap="round" stroke-linejoin="round">' +
-      '<path d="M12 17v5"/>' +
-      '<path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/>' +
-    '</svg>',
-
-
-};
 
 function _injetarEstiloIconeModo() {
   if (document.getElementById('disc-card-icon-svg-style')) return;
@@ -719,7 +509,7 @@ function _aplicarIconesModo() {
   try {
     _injetarEstiloIconeModo();
     document.querySelectorAll('.disc-card[data-modo]').forEach(function (card) {
-      var svg = _ICONES_MODO[card.dataset.modo];
+      var svg = getIconeModo(card.dataset.modo);
       if (!svg) return;
       var span = card.querySelector('.disc-card__icon-wrap span');
       if (span) span.innerHTML = svg;
@@ -828,17 +618,20 @@ document.addEventListener('DOMContentLoaded', function () {
 /* ══════════════════════════════════════════════════════════
    PASSO 8 — Renderizar os cards de modo a partir do catalog.json
 
-   Fonte única: catalog.json passa a descrever tanto QUAIS modos
-   existem (chave global `_modos`) quanto a disponibilidade deles
-   por disciplina/semestre (chaves de semestre, como já era antes).
+   v9.0 — catalog.json deixou de guardar QUAIS modos existem
+   (chave global `_modos`, removida). Ele agora é responsável
+   apenas pela DISPONIBILIDADE por disciplina/semestre — o que
+   já era sua única responsabilidade real. A lista de modos em
+   si (id/titulo/descricao/cssClass/ordem/icone) vem sempre de
+   ./modos.js (getModosOrdenados()), a mesma fonte usada no
+   Passo 3.7 e no Passo 6.
 
    Fluxo:
      1. Usa o semestre completo como chave do catalog
         (ex: "2026.1-AP1", "2026.1-AP2" — sem extração de período base)
      2. Faz fetch de ./catalog.json (mesma pasta do disciplinas_init.js)
-     3. Lê catalog._modos (lista de modos existentes) e
-        catalog[_sem][discId] (disponibilidade)
-     4. Para cada modo, na ordem de `ordem`, monta um
+     3. Lê catalog[_sem][discId] (disponibilidade)
+     4. Para cada modo de getModosOrdenados(), monta um
         <a class="disc-card"> idêntico em marcação ao que antes
         era hardcoded em cada HTML, e insere via DocumentFragment
         em #disciplines-container
@@ -853,20 +646,15 @@ document.addEventListener('DOMContentLoaded', function () {
    Garantias mantidas:
      - Nunca omite um modo do DOM: um modo sem disponibilidade
        aparece desabilitado (disc-card--vazio), nunca some
-     - Se o fetch falhar ou catalog._modos estiver ausente,
-       usa um fallback estático com os 4 modos atuais — nenhum
-       modo desaparece por falha de rede
-     - Se catalog[_sem][discId] não existir, nenhum card é
-       desabilitado (mesmo comportamento de antes: preferimos
+     - A lista de modos em si não depende do fetch (vem de
+       ./modos.js, síncrono) — só a DISPONIBILIDADE depende dele.
+       Se o fetch falhar, os cards ainda aparecem, só que nenhum
+       é desabilitado (mesma filosofia de antes: preferimos
        falso-positivo a esconder conteúdo válido)
+     - Se catalog[_sem][discId] não existir, nenhum card é
+       desabilitado (mesmo comportamento de antes)
      - Assíncrono: não bloqueia a exibição do resto da página
    ══════════════════════════════════════════════════════════ */
-
-/* _MODOS_FALLBACK e _montarHrefModo foram centralizados no topo
-   do arquivo (logo após os imports) — são usados tanto aqui
-   (Passo 8, renderização dos cards) quanto no Passo 3.7
-   (continuar direto no modo via ?modo=), que roda bem antes
-   deste ponto do arquivo. */
 
 function _criarCardModo(modo, disponivel, discId, sem) {
   var a = document.createElement('a');
@@ -927,21 +715,9 @@ function _renderizarModos(catalog) {
     return;
   }
 
-  var modos = Array.isArray(catalog._modos) ? catalog._modos : _MODOS_FALLBACK;
-  if (!Array.isArray(catalog._modos)) {
-    console.warn('[disciplinas_init] catalog._modos ausente/inválido — usando fallback estático de modos.');
-  }
-
-  modos = modos.slice().sort(function (a, b) {
-    return (a.ordem || 0) - (b.ordem || 0);
-  });
-
-  /* Camada 2 do Passo 3.7 — agora com a lista REAL de modos
-     (catalog._modos, que pode ter mais/menos itens que o fallback
-     estático usado na Camada 1, síncrona). Não-op se a Camada 1
-     já redirecionou. */
-  _tentarContinuarModo(modos);
-  if (_modoRedirecionado) return;
+  /* Fonte única e sempre completa dos modos — não depende mais
+     de catalog._modos (removido). Já vem ordenada por `ordem`. */
+  var modos = getModosOrdenados();
 
   var semesterEntry = catalog[_sem];
   var discEntry      = semesterEntry ? semesterEntry[_discId] : null;
@@ -1004,9 +780,9 @@ function _renderizarModos(catalog) {
     })
     .catch(function (err) {
       console.warn('[disciplinas_init] Falha ao carregar catalog.json:', err.message);
-      console.warn('[disciplinas_init] Renderizando modos com fallback estático (sem disponibilidade).');
-      /* Mesmo sem catalog.json, renderiza os modos (fallback) para
-         a página não ficar vazia — nenhum card fica desabilitado,
+      console.warn('[disciplinas_init] Renderizando modos sem informação de disponibilidade.');
+      /* Mesmo sem catalog.json, renderiza os modos (fonte ./modos.js)
+         para a página não ficar vazia — nenhum card fica desabilitado,
          seguindo a mesma filosofia de "falso-positivo > esconder". */
       _renderizarModos({});
     })

@@ -1,5 +1,5 @@
 /* ============================================================
-   NEXUS STUDY — quiz/js/quiz_starter_modal.js  v8.2
+   NEXUS STUDY — quiz/js/quiz_starter_modal.js  v9.0
 
    REGRA ÚNICA:
      Tem progresso salvo (≥ 1 resposta)? → entra direto no quiz.
@@ -60,28 +60,37 @@
      anterior (duas opções).
 
    CONTEXTO VISUAL (Disciplina / Modo) — v8.1:
-     O modal agora exibe, entre o título e o subtítulo, dois
-     chips discretos com a disciplina e o modo do quiz atual.
-
-     - O MODO usa o mesmo texto já adotado pelo breadcrumb de
-       template_init.js (AVA / Questões / ENADE / Fixação),
-       replicado aqui como um mapa mínimo (_MODO_LABELS) — não
-       há acesso direto a MODOS_CONFIG porque ele não é exportado
-       por template_init.js. Modos desconhecidos caem num
-       fallback que apenas capitaliza a primeira letra.
+     O modal exibe, entre o título e o subtítulo, dois chips
+     discretos com a disciplina e o modo do quiz atual.
 
      - A DISCIPLINA é resolvida via import() dinâmico de
        ../../src/global.js, reaproveitando getDisciplinasDeSemestre()
        — a MESMA fonte de dados que template_init.js já usa para
-       resolver o nome oficial da disciplina. Nenhuma lista nova
-       é criada. Como o módulo já foi carregado/avaliado antes
-       (por template_init.js), esse import é praticamente
-       instantâneo (cache de módulo do navegador).
+       resolver o nome oficial da disciplina.
 
-     - Resolução é assíncrona: o chip de disciplina nasce com o
-       id cru (ex.: "estruturas_dados") e é substituído pelo nome
-       oficial assim que a promise resolve — sem bloquear a
-       abertura do modal.
+     - O MODO (v9.0 — CENTRALIZADO): SVG e label deixaram de ser
+       cadastrados manualmente aqui. Antes existiam duas cópias
+       locais (_MODO_LABELS e _ICONES_MODO) que precisavam ser
+       atualizadas manualmente toda vez que um modo era criado ou
+       alterado em disciplinas_init.js — o que já tinha causado
+       divergência real entre os arquivos. Agora este módulo busca
+       essa configuração via import() dinâmico de
+       ../disciplinas/modos.js — a MESMA fonte única usada por
+       disciplinas_init.js (cards de modo) e template_init.js
+       (breadcrumb/h1 da página do quiz). Não existe mais nenhum
+       SVG ou label de modo cadastrado neste arquivo.
+
+       import() dinâmico (em vez de import estático de
+       disciplinas_init.js) porque aquele arquivo tem efeitos
+       colaterais próprios da página de disciplinas (fetch de
+       catalog.json, inicialização da IA, manipulação de
+       #disciplines-container) que não devem rodar dentro do
+       template do quiz. modos.js, por outro lado, não tem efeito
+       colateral nenhum — só exporta dados e funções puras.
+
+     - Resolução de ambos é assíncrona: os chips nascem com um
+       estado mínimo e são completados assim que as respectivas
+       promises resolvem — sem bloquear a abertura do modal.
 
      - Nenhum outro dado (semestre, AP, progresso, contagem de
        questões/aulas) é exibido — apenas disciplina e modo.
@@ -173,66 +182,36 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     CONTEXTO — DISCIPLINA / MODO (v8.1)
+     CONTEXTO — MODO (v9.0 — CENTRALIZADO EM ../disciplinas/modos.js)
+
+     Nenhum SVG ou label de modo é mais cadastrado neste arquivo.
+     Tudo vem da fonte única, carregada uma única vez e cacheada
+     na promise abaixo.
   ══════════════════════════════════════════════════════════ */
 
-  /* Mesmo texto já usado no breadcrumb de MODOS_CONFIG em
-     template_init.js. Pequeno mapa local porque MODOS_CONFIG
-     não é exportado por aquele módulo — evita import só por isso. */
-  var _MODO_LABELS = {
-    revisao:  'Eevisão',
-    ava:      'AVA',
-    questoes: 'Questões',
-    enade:    'ENADE',
-    fixacao:  'Fixação',
-  };
+  var _modosConfigPromise = null;
 
-  /* Ícones SVG dos modos — mesma fonte visual de _ICONES_MODO em
-     disciplinas_init.js. Cópia local para não importar aquele módulo
-     inteiro (ele tem side effects ao carregar). */
-  var _ICONES_MODO = {
+  /* Retorna uma Promise que resolve para o módulo
+     ../disciplinas/modos.js ({ getModo, getIconeModo, getLabelModo,
+     getModosOrdenados, MODOS_QUIZ }), ou null se o import falhar
+     (ex.: arquivo indisponível) — nesse caso os chamadores caem
+     em fallbacks mínimos, sem quebrar o modal. */
+  function _carregarConfigModos() {
+    if (!_modosConfigPromise) {
+      _modosConfigPromise = import('../disciplinas/modos.js').catch(function (err) {
+        console.warn('[quiz_starter_modal] Falha ao carregar ../disciplinas/modos.js:', err);
+        return null;
+      });
+    }
+    return _modosConfigPromise;
+  }
 
-  revisao:
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
-    'stroke-linecap="round" stroke-linejoin="round">' +
-      '<rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>' +
-      '<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>' +
-      '<path d="m9 14 2 2 4-4"/>' +
-    '</svg>',
-    ava:
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
-      'stroke-linecap="round" stroke-linejoin="round">' +
-        '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>' +
-        '<path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>' +
-      '</svg>',
-    questoes:
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
-      'stroke-linecap="round" stroke-linejoin="round">' +
-        '<circle cx="12" cy="12" r="10"/>' +
-        '<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>' +
-        '<line x1="12" y1="17" x2="12.01" y2="17"/>' +
-      '</svg>',
-    enade:
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
-      'stroke-linecap="round" stroke-linejoin="round">' +
-        '<line x1="3" y1="22" x2="21" y2="22"/>' +
-        '<line x1="6" y1="18" x2="6" y2="11"/>' +
-        '<line x1="10" y1="18" x2="10" y2="11"/>' +
-        '<line x1="14" y1="18" x2="14" y2="11"/>' +
-        '<line x1="18" y1="18" x2="18" y2="11"/>' +
-        '<polygon points="12 2 20 7 4 7"/>' +
-      '</svg>',
-    fixacao:
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
-      'stroke-linecap="round" stroke-linejoin="round">' +
-        '<path d="M12 17v5"/>' +
-        '<path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/>' +
-      '</svg>',
-  };
-
-  function _resolverModoLabel(modo) {
+  /* Fallback mínimo, usado apenas se o import de modos.js falhar
+     por completo — mesmo comportamento que getLabelModo() já tem
+     internamente, replicado aqui só para o caso do módulo inteiro
+     não estar disponível. */
+  function _resolverModoLabelFallback(modo) {
     if (!modo) return '';
-    if (_MODO_LABELS[modo]) return _MODO_LABELS[modo];
     try {
       return modo.charAt(0).toUpperCase() + modo.slice(1);
     } catch (e) {
@@ -271,8 +250,12 @@
 
   /* Monta o bloco de chips (Disciplina / Modo). Retorna null se
      não houver disc nem modo definidos (nunca deve acontecer em
-     uso normal, mas evita quebrar o modal). */
-  function _construirContexto() {
+     uso normal, mas evita quebrar o modal).
+
+     `modosMod` é o módulo já resolvido de ../disciplinas/modos.js
+     (ou null, se o import tiver falhado) — passado pelo chamador
+     para não reimportar a cada chamada. */
+  function _construirContexto(modosMod) {
     var disc = window.__NEXUS_QUIZ_DISC__     || '';
     var modo = window.__NEXUS_QUIZ_MODO__     || '';
     var sem  = window.__NEXUS_QUIZ_SEMESTRE__ || '';
@@ -314,10 +297,14 @@
     if (modo) {
       var chipModo = _el('div', { class: 'nsm-ctx-chip nsm-ctx-chip--modo' });
       var iconModo = _el('div', { class: 'nsm-ctx-icon' });
-      iconModo.innerHTML = _ICONES_MODO[modo] || '';
+      /* SVG e label vêm da fonte única (../disciplinas/modos.js).
+         Se o módulo não carregou (modosMod === null), fica em
+         branco / usa o fallback de capitalização — nunca quebra. */
+      iconModo.innerHTML = modosMod ? (modosMod.getIconeModo(modo) || '') : '';
       var bodyModo  = _el('div', { class: 'nsm-ctx-body' });
       var labelModo = _el('span', { class: 'nsm-ctx-label' }, 'Modo');
-      var valorModo = _el('span', { class: 'nsm-ctx-value' }, _resolverModoLabel(modo));
+      var valorModo = _el('span', { class: 'nsm-ctx-value' },
+        modosMod ? modosMod.getLabelModo(modo) : _resolverModoLabelFallback(modo));
 
       bodyModo.appendChild(labelModo);
       bodyModo.appendChild(valorModo);
@@ -553,7 +540,7 @@
      CONSTRUIR MODAL (somente tela 1)
   ══════════════════════════════════════════════════════════ */
 
-  function _construirModal(multiplasAulas) {
+  function _construirModal(multiplasAulas, modosMod) {
     var bd = _el('div', { id: 'nsm-backdrop' });
     var card = _el('div', { id: 'nsm-card' });
 
@@ -568,8 +555,10 @@
     head.appendChild(titulo);
 
     /* Chips de contexto: Disciplina / Modo — entre o título e o
-       subtítulo, exatamente como no layout de referência. */
-    var contexto = _construirContexto();
+       subtítulo, exatamente como no layout de referência. O SVG
+       e o label do modo vêm de modosMod (../disciplinas/modos.js,
+       já resolvido pelo chamador). */
+    var contexto = _construirContexto(modosMod);
     if (contexto) head.appendChild(contexto);
 
     head.appendChild(subtitulo);
@@ -673,13 +662,18 @@
       ? window.__nexusPreCarregarConteudo()
       : Promise.resolve();
 
-    pronto.then(function () {
-      _montarEVincularModal(_temMultiplasAulas());
+    /* Conteúdo (para contar aulas) e configuração de modos
+       (para SVG/label do chip) são carregados em paralelo —
+       nenhum bloqueia o outro, e o modal só monta quando ambos
+       estiverem resolvidos. */
+    Promise.all([pronto, _carregarConfigModos()]).then(function (resultados) {
+      var modosMod = resultados[1];
+      _montarEVincularModal(_temMultiplasAulas(), modosMod);
     });
   }
 
-  function _montarEVincularModal(multiplasAulas) {
-    var ui = _construirModal(multiplasAulas);
+  function _montarEVincularModal(multiplasAulas, modosMod) {
+    var ui = _construirModal(multiplasAulas, modosMod);
 
     /* "Todas as aulas" / "Iniciar quiz" — remove qualquer filtro ativo e conclui */
     ui.btnContinuar.addEventListener('click', function () {

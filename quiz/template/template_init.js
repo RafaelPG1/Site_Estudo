@@ -20,6 +20,33 @@
      ✗ Correção de respostas
      ✗ Conhecer catalog.json
      ✗ Conhecer HTMLs de disciplinas
+
+   ── CORREÇÃO v9.0 — MODOS_CONFIG SUBSTITUÍDO POR FONTE ÚNICA ──
+
+     Bug corrigido: o antigo objeto MODOS_CONFIG (logo abaixo dos
+     imports) declarava a chave `fixacao` DUAS VEZES:
+       fixacao:  { breadcrumb: 'Revisão',  h1: '...Revisão...', ... }
+       ava:      { ... }
+       questoes: { ... }
+       enade:    { ... }
+       fixacao:  { breadcrumb: 'Fixação',  h1: '...Fixação...', ... }
+     Em um objeto JS literal, a segunda ocorrência de uma chave
+     SOBRESCREVE a primeira silenciosamente — não há erro, não há
+     aviso. Resultado: a entrada "Revisão" era descartada e NUNCA
+     existiu uma chave `revisao` neste objeto. Sempre que
+     ?modo=revisao chegava aqui, caía no fallback
+     `MODOS_CONFIG.questoes` (breadcrumb/h1/label de "Questões"),
+     mesmo o card de Revisão estando correto na tela anterior.
+
+     Correção: MODOS_CONFIG foi REMOVIDO. A resolução de
+     breadcrumb/h1/label agora vem de getModo(modo), importado de
+     ../disciplinas/modos.js — a MESMA fonte única usada por
+     disciplinas_init.js para os cards de modo (SVG, título,
+     descrição, cssClass, ordem) e por quiz_starter_modal.js para
+     o chip "Modo" do modal inicial. Não existe mais divergência
+     possível entre os três: id/breadcrumb/h1/label do modo
+     "Revisão" (e de qualquer modo futuro) vêm sempre do mesmo
+     lugar.
    ============================================================ */
 
 
@@ -44,17 +71,24 @@ import { Sound, audio, installAudioRecovery, playSound } from '../../shared/js/a
 import { carregarRespostasQuiz, salvarRespostasQuiz, limparRespostasQuiz, salvarPerformanceQuiz } from '../../src/firebase.js';
 import { aplicarZoomQuestoes, getZoomQuestoes, setZoomQuestoes } from '../../shared/js/utils/zoom.js';
 
+/* FONTE ÚNICA de configuração dos modos de estudo (v9.0).
+   Ver quiz/disciplinas/modos.js para a lista completa e
+   instruções de como adicionar um modo novo. */
+import { getModo } from '../disciplinas/modos.js';
+
 /* ══════════════════════════════════════════════════════════
    CONFIGURAÇÃO DE MODOS
+
+   v9.0: o objeto MODOS_CONFIG hardcoded foi removido (tinha um
+   bug de chave duplicada que quebrava o modo "Revisão" — ver
+   nota no topo do arquivo). breadcrumb/h1/label de cada modo
+   agora vêm de getModo(modo), importado da fonte única em
+   ../disciplinas/modos.js.
    ══════════════════════════════════════════════════════════ */
 
-var MODOS_CONFIG = {
-  fixacao:  { breadcrumb: 'Revisão',  h1: 'Questões de <em>Revisão</em>', label: 'Revisão'           },
-  ava:      { breadcrumb: 'AVA',      h1: 'Avaliação <em>AVA</em>',       label: 'Avaliação AVA'     },
-  questoes: { breadcrumb: 'Questões', h1: 'Questões <em>Práticas</em>',   label: 'Questões Práticas' },
-  enade:    { breadcrumb: 'ENADE',    h1: 'Questões <em>ENADE</em>',      label: 'Questões ENADE'    },
-  fixacao:  { breadcrumb: 'Fixação',  h1: 'Questões de <em>Fixação</em>', label: 'Fixação'           },
-};
+function _resolverModoConfig(modo) {
+  return getModo(modo) || getModo('questoes');
+}
 
 
 /* ══════════════════════════════════════════════════════════
@@ -751,20 +785,21 @@ function _atualizarEstadoGlobal(params) {
      [síncrono, imediato]
        1. Lê parâmetros da URL
        2. Resolve disciplina
-       3. Aplica tema (evita FOUC)
-       4. Expõe globais e contexto do quiz
-       5. Atualiza estado global
-       6. Declara contexto para o sistema de reset
+       3. Resolve config do modo (getModo — fonte única)
+       4. Aplica tema (evita FOUC)
+       5. Expõe globais e contexto do quiz
+       6. Atualiza estado global
+       7. Declara contexto para o sistema de reset
 
      [assíncrono, após DOMContentLoaded]
-       7. Monta componentes visuais
-       8. Injeta nav-float
-       9. Inicializa áudio
+       8. Monta componentes visuais
+       9. Injeta nav-float
+      10. Inicializa áudio
 
      [controlado pelo modal — não automático]
-       10. Aguarda Firebase (máx 3s)
-       11. Carrega conteúdo + UI + engine
-       12. Inicializa Quiz-Assistant (após engine montar questões)
+      11. Aguarda Firebase (máx 3s)
+      12. Carrega conteúdo + UI + engine
+      13. Inicializa Quiz-Assistant (após engine montar questões)
 
    IMPORTANTE: _carregarQuiz NÃO é chamado aqui.
    É exposto via window.__nexusCarregarQuiz e chamado
@@ -773,7 +808,7 @@ function _atualizarEstadoGlobal(params) {
 
 var _params     = _lerParams();
 var _info       = _resolverDisciplina(_params.disc, _params.semestre);
-var _modoConfig = MODOS_CONFIG[_params.modo] || MODOS_CONFIG.questoes;
+var _modoConfig = _resolverModoConfig(_params.modo);
 
 _aplicarTema(_info.arquivo);
 
