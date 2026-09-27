@@ -38,6 +38,14 @@
        (lógica em js/resumo-busca.js) -->
   <link rel="stylesheet" href="css/resumo-busca.css" />
 
+  <!-- Home da área de Resumo — busca em destaque + legenda dos tipos
+       de conteúdo, exibida só quando nenhuma disciplina foi escolhida
+       ainda (sem lógica própria em JS: alterna via classe "tela-home"
+       em <body>, ver resumo.js/resumo-utils.js). Depende dos tokens
+       de tipo (--amber/--violet/--sage/--disc-tema) já definidos em
+       resumo.css e reforça a visibilidade de css/resumo-busca.css. -->
+  <link rel="stylesheet" href="css/resumo-home.css" />
+
   <!-- Geração de PDF — botão no header + modal de seleção
        (documento impresso/PDF em si vai embutido em js/resumo-pdf.js) -->
   <link rel="stylesheet" href="css/resumo-pdf.css" />
@@ -230,52 +238,104 @@
         </div>
       </header>
 
-      <!-- Hero -->
-      <div class="page-hero" id="page-hero">
-        <div class="page-hero__inner">
-          <div class="page-hero__text">
-            <div class="page-hero__eyebrow">
-              <span class="eyebrow-dot"></span>
-              <span id="hero-eyebrow-text">Carregando…</span>
-            </div>
-            <h1 class="page-hero__title">Resumos</h1>
-            <p class="page-hero__sub" id="hero-sub">Selecione uma disciplina.</p>
-          </div>
-          <div class="page-hero__stats" id="hero-stats"></div>
-        </div>
-      </div>
-
       <!-- ═══════════════════════════════════════════
-           BUSCA — foco da área principal. Pesquisa dentro do
-           conteúdo das aulas (não filtra os cards). Os tipos de
-           conteúdo (Resumo/Resumão/Síntese/Revisão do professor)
-           ficam SOMENTE na sidebar; a busca cobre todos eles e
-           cada resultado indica de qual veio. Tudo é preenchido
-           por js/resumo-busca.js.
+           #resumo-home-shell — envolve o hero, a busca e a
+           legenda de tipos numa ÚNICA composição visual. Fora
+           da Home (body sem "tela-home") é "display:contents":
+           não afeta em nada o layout de sempre — cada filho
+           continua exatamente como antes, ocupando a largura
+           total. Só na Home (css/resumo-home.css) vira um
+           painel de verdade: coluna central, espaçamento único
+           entre os três blocos, paddings internos dos filhos
+           zerados (quem passa a controlar o respiro é o painel).
+           Nenhum dos três filhos foi duplicado — são os MESMOS
+           elementos/IDs de sempre, só que agora agrupados.
       ═══════════════════════════════════════════ -->
-      <section class="busca" id="busca" aria-label="Buscar nos resumos">
-        <div class="busca__inner" role="search">
-          <div class="busca__campo">
-            <svg class="busca__icone" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>
-            </svg>
-            <input id="busca-input" class="busca__input" type="text" inputmode="search"
-                   enterkeyhint="search" placeholder="Buscar nos resumos…"
-                   aria-label="Buscar nos resumos" autocomplete="off" autocapitalize="off" spellcheck="false" />
-            <button id="busca-limpar" class="busca__limpar" type="button" aria-label="Limpar busca" hidden>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </button>
-          </div>
-          <div class="busca__escopo" id="busca-escopo" role="group" aria-label="Onde buscar">
-            <button type="button" class="busca__escopo-btn busca__escopo-btn--ativo" data-escopo="disc" aria-pressed="true">Nesta disciplina</button>
-            <button type="button" class="busca__escopo-btn" data-escopo="todas" aria-pressed="false">Todas as disciplinas</button>
+      <div class="resumo-home-shell" id="resumo-home-shell">
+
+        <!-- Hero -->
+        <div class="page-hero" id="page-hero">
+          <div class="page-hero__inner">
+            <div class="page-hero__text">
+              <div class="page-hero__eyebrow">
+                <span class="eyebrow-dot"></span>
+                <span id="hero-eyebrow-text">Carregando…</span>
+              </div>
+              <h1 class="page-hero__title">Resumos</h1>
+              <p class="page-hero__sub" id="hero-sub">Busque um conteúdo ou escolha uma disciplina para começar.</p>
+              <!-- Só aparece na Home (ver renderHeader() em js/resumo-ui.js) —
+                   contagem real de State.disciplinas, nada inventado. -->
+              <span class="resumo-home__meta" id="hero-home-meta" hidden></span>
+            </div>
+            <div class="page-hero__stats" id="hero-stats"></div>
           </div>
         </div>
-        <div class="busca__status" id="busca-status" role="status" aria-live="polite"></div>
-        <div class="busca__resultados" id="busca-resultados"></div>
-      </section>
+
+        <!-- ═══════════════════════════════════════════
+             BUSCA — foco da área principal. Pesquisa dentro do
+             conteúdo das aulas (não filtra os cards). Os tipos de
+             conteúdo (Resumo/Resumão/Síntese/Revisão do professor)
+             ficam SOMENTE na sidebar; a busca cobre todos eles e
+             cada resultado indica de qual veio. Tudo é preenchido
+             por js/resumo-busca.js.
+        ═══════════════════════════════════════════ -->
+        <section class="busca" id="busca" aria-label="Buscar nos resumos">
+          <div class="busca__inner" role="search">
+            <div class="busca__campo">
+              <svg class="busca__icone" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>
+              </svg>
+              <input id="busca-input" class="busca__input" type="text" inputmode="search"
+                     enterkeyhint="search" placeholder="Buscar nos resumos…"
+                     aria-label="Buscar nos resumos" autocomplete="off" autocapitalize="off" spellcheck="false" />
+              <button id="busca-limpar" class="busca__limpar" type="button" aria-label="Limpar busca" hidden>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+            <div class="busca__escopo" id="busca-escopo" role="group" aria-label="Onde buscar">
+              <button type="button" class="busca__escopo-btn busca__escopo-btn--ativo" data-escopo="disc" aria-pressed="true">Nesta disciplina</button>
+              <button type="button" class="busca__escopo-btn" data-escopo="todas" aria-pressed="false">Todas as disciplinas</button>
+            </div>
+          </div>
+          <div class="busca__status" id="busca-status" role="status" aria-live="polite"></div>
+          <div class="busca__resultados" id="busca-resultados"></div>
+        </section>
+
+        <!-- HOME — legenda dos tipos de conteúdo. Só aparece quando
+             nenhuma disciplina foi escolhida ainda (body.tela-home,
+             ver css/resumo-home.css e State.emHome em
+             js/resumo-utils.js). Mesmos nomes e descrições já usados
+             em "Tipo de Conteúdo" na sidebar (nav#modo-list, no topo
+             deste arquivo) — só apresentados de forma mais visual. -->
+        <section class="home-tipos" id="home-tipos" aria-label="Tipos de conteúdo disponíveis nos resumos">
+          <h2 class="home-tipos__titulo">O que você encontra em cada disciplina</h2>
+          <ul class="home-tipos__lista">
+            <li class="home-tipo" data-tipo="completo">
+              <span class="home-tipo__nome">Resumo</span>
+              <span class="home-tipo__desc">Conteúdo completo e detalhado da aula.</span>
+            </li>
+            <li class="home-tipo" data-tipo="sintese">
+              <span class="home-tipo__nome">Síntese</span>
+              <span class="home-tipo__desc">Uma aula em tópicos rápidos.</span>
+            </li>
+            <li class="home-tipo" data-tipo="resumao">
+              <span class="home-tipo__nome">Resumão</span>
+              <span class="home-tipo__desc">Várias aulas em uma revisão geral.</span>
+            </li>
+            <li class="home-tipo" data-tipo="professor">
+              <span class="home-tipo__nome">Revisão do Professor</span>
+              <span class="home-tipo__desc">Resumo escrito pelo professor da disciplina.</span>
+            </li>
+            <li class="home-tipo" data-tipo="extra">
+              <span class="home-tipo__nome">Extra</span>
+              <span class="home-tipo__desc">Mapas mentais, vídeos, links e outros recursos.</span>
+            </li>
+          </ul>
+        </section>
+
+      </div><!-- /resumo-home-shell -->
 
       <!-- Vídeos das aulas -->
       <div id="videos-section" style="display:none"></div>

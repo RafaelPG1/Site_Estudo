@@ -28,7 +28,7 @@ import { State, carregarIA, resolverContexto, renderSemestreBadge } from './js/r
 import { renderHeader, renderSidebar, carregarConteudo, setModo, setProfessorFiltro } from './js/resumo-ui.js';
 import { bindModal, bindTocChrome, bindCopyButton, bindThemeToggle } from './js/resumo-reader.js';
 import { initPdfModal } from './js/pdf/resumo-pdf.js';
-import { initBusca, limparBusca, atualizarContextoBusca } from './js/resumo-busca.js';
+import { initBusca, limparBusca, atualizarContextoBusca, definirEscopoInicial } from './js/resumo-busca.js';
 
 injetarLogo('#header-logo-wrap');
 
@@ -48,8 +48,14 @@ function _initProgressBar() {
    busca e volta à listagem de cards. */
 function trocarDisciplina(disc, { manterBusca = false } = {}) {
   if (!manterBusca) limparBusca();
-  if (disc.id === State.disciplina?.id) return;
+  // Vindo da Home, mesmo a disciplina de fallback (a que resolverContexto()
+  // já tinha resolvido internamente, ver js/resumo-utils.js) precisa
+  // "confirmar" a seleção e sair da Home — por isso o early-return abaixo
+  // não vale enquanto State.emHome for true.
+  if (!State.emHome && disc.id === State.disciplina?.id) return;
   playSound('click', 'resumos');
+  State.emHome       = false;
+  document.body.classList.remove('tela-home');
   State.disciplina   = disc;
   State.temConteudo  = null;
   State.aulas        = [];
@@ -66,9 +72,33 @@ function trocarDisciplina(disc, { manterBusca = false } = {}) {
 
   renderHeader();
   aplicarCoresDisciplina(disc.arquivo, State.DISC_CORES);
-  renderSidebar(trocarDisciplina);
+  renderSidebar(trocarDisciplina, irParaHome);
   carregarConteudo();
   atualizarContextoBusca();
+}
+
+/* Início — volta para a Home da área de Resumo a partir de qualquer
+   disciplina (primeiro item de #disc-list, ver renderSidebar() em
+   js/resumo-ui.js). Espelha trocarDisciplina(): mesma limpeza de
+   busca, mesma sincronização de URL, só que "desmarcando" a
+   disciplina em vez de escolher uma. */
+function irParaHome() {
+  if (State.emHome) return;
+  limparBusca();
+  playSound('click', 'resumos');
+  State.emHome = true;
+  document.body.classList.add('tela-home');
+
+  const url = new URL(window.location.href);
+  url.searchParams.delete('disc');
+  window.history.pushState({}, '', url);
+
+  renderHeader();
+  renderSidebar(trocarDisciplina, irParaHome);
+  atualizarContextoBusca();
+  // Mesmo critério do carregamento inicial (ver DOMContentLoaded):
+  // a Home nasce em "Todas as disciplinas".
+  if (State.disciplinas.length > 1) definirEscopoInicial('todas');
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -92,19 +122,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch (_) {}
 
   resolverContexto();
+  document.body.classList.toggle('tela-home', State.emHome);
 
   renderSemestreBadge({
     onChange: () => {
       limparBusca();
       renderHeader();
-      renderSidebar(trocarDisciplina);
-      carregarConteudo();
+      renderSidebar(trocarDisciplina, irParaHome);
+      // Trocar de semestre não tira a Home do ar sozinho — o usuário
+      // ainda não escolheu disciplina nenhuma (ver trocarDisciplina()).
+      if (!State.emHome) carregarConteudo();
       atualizarContextoBusca();
     },
   });
 
   renderHeader();
-  renderSidebar(trocarDisciplina);
+  renderSidebar(trocarDisciplina, irParaHome);
 
   bindModal();
   bindTocChrome();
@@ -112,8 +145,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   bindThemeToggle();
   initPdfModal();
   initBusca({ trocarDisciplina });
+  // Home: busca nasce em "Todas as disciplinas" — ainda não há uma
+  // disciplina "atual" de verdade para restringir a busca a ela.
+  if (State.emHome) definirEscopoInicial('todas');
   _initProgressBar();
-  carregarConteudo();
+  if (!State.emHome) carregarConteudo();
 
   document.getElementById('btn-back')?.addEventListener('mouseenter', () => playSound('hover', 'resumos'));
   document.getElementById('btn-back')?.addEventListener('click',      () => playSound('click', 'resumos'));

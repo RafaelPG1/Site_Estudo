@@ -10,9 +10,12 @@
 .busca [hidden] { display: none !important; }
 
 /* Enquanto há uma busca em andamento, os resultados substituem a
-   listagem de cards e a faixa de vídeos (o hero continua visível). */
+   listagem de cards e a faixa de vídeos (o hero continua visível).
+   Na Home (ver css/resumo-home.css) isso também esconde a legenda de
+   tipos de conteúdo (#home-tipos), pelo mesmo motivo. */
 body.busca-ativa .main,
-body.busca-ativa #videos-section { display: none !important; }
+body.busca-ativa #videos-section,
+body.busca-ativa #home-tipos { display: none !important; }
 
 .busca {
   position: relative;

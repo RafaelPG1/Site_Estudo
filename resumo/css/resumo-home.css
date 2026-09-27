@@ -1,0 +1,169 @@
+/* =============================================
+   NEXUS STUDY — resumo/css/resumo-home.css
+   Home da área de Resumo: página inicial própria,
+   acessível a qualquer momento pelo item "Início" no
+   topo de #disc-list (primeiro item da própria lista
+   de disciplinas, montado por renderSidebar() em
+   js/resumo-ui.js — mesma estrutura de ".disc-item",
+   sem CSS extra aqui) e ativada por padrão quando não
+   há "?disc=" na URL (State.emHome, ver
+   js/resumo-utils.js — alternado em <body> como classe
+   "tela-home" por resumo.js).
+
+   #resumo-home-shell agrupa hero + busca + legenda de
+   tipos numa ÚNICA composição visual. Fora da Home ele
+   é "display:contents" — não muda em nada o layout de
+   sempre da página de disciplina (cada filho continua
+   full-width, exatamente como antes deste arquivo
+   existir). Dentro de body.tela-home, o alinhamento
+   segue a MESMA lógica da página de disciplina —
+   grudado à esquerda (mesmo padding do header/hero de
+   sempre), sem centralizar nada. A busca é o elemento
+   mais largo de propósito (ver comentário na seção
+   dela, mais abaixo).
+   ============================================= */
+
+/* ══════════════════════════════════════════
+   O QUE SOME / APARECE EM MODO HOME
+══════════════════════════════════════════ */
+body.tela-home #main-content,
+body.tela-home #videos-section,
+body.tela-home #modo-header,
+body.tela-home #modo-list,
+body.tela-home #professor-header,
+body.tela-home #professor-list {
+  display: none !important;
+}
+
+#home-tipos { display: none; }
+body.tela-home #home-tipos { display: block; }
+
+/* ══════════════════════════════════════════
+   O PAINEL — hero + busca + tipos como um só bloco,
+   alinhado à esquerda (mesmo início horizontal do
+   header/hero de sempre — ver padding abaixo, igual ao
+   ".page-hero"/".busca" originais).
+══════════════════════════════════════════ */
+.resumo-home-shell { display: contents; }
+
+body.tela-home .resumo-home-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  padding: 3rem 3rem 4rem;
+}
+
+/* Os três filhos têm padding/max-width próprios pra funcionar sozinhos
+   na página de disciplina — dentro do painel isso é zerado, porque
+   quem passa a definir o respiro horizontal é o próprio painel. */
+body.tela-home .resumo-home-shell > .page-hero,
+body.tela-home .resumo-home-shell > .busca,
+body.tela-home .resumo-home-shell > #home-tipos {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* ── Hero — só o texto (título/subtítulo) tem largura de leitura
+   confortável; o painel em si não é limitado, pra busca e tipos
+   poderem usar mais espaço logo abaixo ── */
+body.tela-home .page-hero { border-bottom: none; padding-top: 0; padding-bottom: 0; }
+body.tela-home .page-hero__inner { display: block; }
+body.tela-home .page-hero__text  { max-width: 640px; }
+body.tela-home .page-hero__title { font-size: clamp(2.15rem, 4vw, 2.9rem); }
+body.tela-home .page-hero__sub   { max-width: 100%; }
+body.tela-home .page-hero__stats { display: none; } /* vazio na Home — nunca chega a ter conteúdo */
+
+.resumo-home__meta {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 0.9rem;
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+/* ── Busca — o elemento principal da Home: bem mais larga que o
+   texto do hero acima dela, pra puxar o olho primeiro pra cá ── */
+body.tela-home .busca { padding-top: 0; }
+body.tela-home .busca__inner  { max-width: 1040px; }
+body.tela-home .busca__campo  {
+  border-color: var(--border-3);
+  background: rgba(255,255,255,0.045);
+}
+body.tela-home .busca__input  { height: 64px; font-size: 1.08rem; }
+body.tela-home .busca__icone  { width: 20px; height: 20px; }
+
+/* ══════════════════════════════════════════
+   LEGENDA DE TIPOS DE CONTEÚDO
+   Reaproveita a mesma linguagem visual de
+   ".busca-res"/".resumo-card" (faixa colorida à
+   esquerda = identidade do tipo) em vez de inventar
+   um componente novo — só menor e sem interação.
+   "Extra" nunca teve cor própria nesse sistema (não é
+   um tipo pesquisável); usa --text-3.
+══════════════════════════════════════════ */
+.home-tipos__titulo {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--text-2);
+  margin-bottom: 1.1rem;
+}
+.home-tipos__lista {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 0.75rem;
+}
+body.tela-home .home-tipos__lista { max-width: 1040px; }
+
+.home-tipo {
+  --tipo-cor: var(--disc-tema);
+  position: relative;
+  padding: 0.9rem 1rem 0.95rem 1.2rem;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-1);
+  background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.006));
+  overflow: hidden;
+}
+.home-tipo::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--tipo-cor);
+  opacity: 0.6;
+}
+.home-tipo[data-tipo="sintese"]   { --tipo-cor: var(--amber); }
+.home-tipo[data-tipo="resumao"]   { --tipo-cor: var(--violet); }
+.home-tipo[data-tipo="professor"] { --tipo-cor: var(--sage); }
+.home-tipo[data-tipo="extra"]     { --tipo-cor: var(--text-3); }
+
+.home-tipo__nome {
+  display: block;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--tipo-cor);
+  margin-bottom: 0.28rem;
+}
+.home-tipo__desc {
+  display: block;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVO
+══════════════════════════════════════════ */
+@media (max-width: 900px) {
+  body.tela-home .resumo-home-shell { padding: 2.5rem 1.5rem 3rem; gap: 2.1rem; }
+}
+@media (max-width: 600px) {
+  body.tela-home .resumo-home-shell { padding: 2rem 1rem 2.5rem; gap: 1.85rem; }
+  body.tela-home .busca__input { height: 54px; font-size: 1rem; }
+  .home-tipos__lista { grid-template-columns: 1fr; }
+}

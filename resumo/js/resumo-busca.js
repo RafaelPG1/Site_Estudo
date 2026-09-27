@@ -650,11 +650,15 @@ export function atualizarContextoBusca() {
   const temDisc = State.disciplinas.length > 0;
   const varias  = State.disciplinas.length > 1;
   raiz.hidden = !temDisc;
-  if (!varias) Busca.escopo = 'disc';
-  escopo.hidden = !varias;
+  // Na Home não existe "disciplina atual" de verdade pra restringir a
+  // busca — nem faz sentido oferecer a escolha, então o toggle nem
+  // aparece (fica sempre em "todas as disciplinas").
+  if (State.emHome) Busca.escopo = 'todas';
+  else if (!varias) Busca.escopo = 'disc';
+  escopo.hidden = State.emHome || !varias;
   _sincronizarEscopoUI();
 
-  const nome = State.disciplina ? (State.disciplina.apelido ?? State.disciplina.nome) : '';
+  const nome = (!State.emHome && State.disciplina) ? (State.disciplina.apelido ?? State.disciplina.nome) : '';
   input.placeholder = Busca.escopo === 'todas'
     ? 'Buscar em todas as disciplinas…'
     : (nome ? `Buscar em ${nome}…` : 'Buscar nos resumos…');
@@ -676,6 +680,16 @@ function _definirEscopo(escopo) {
   atualizarContextoBusca();
   if (Busca.query.trim().length >= MIN_CHARS) _executar();
   else _aquecer();
+}
+
+/* Define o escopo inicial sem som/execução — usado só pela Home (nenhuma
+   disciplina escolhida ainda), que já nasce com "Todas as disciplinas"
+   em vez de "Nesta disciplina" (não há disciplina "atual" de verdade
+   para restringir a busca). atualizarContextoBusca() já corrige de
+   volta para 'disc' sozinha caso só exista 1 disciplina no semestre. */
+export function definirEscopoInicial(escopo) {
+  Busca.escopo = escopo;
+  atualizarContextoBusca();
 }
 
 export function initBusca({ trocarDisciplina } = {}) {

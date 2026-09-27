@@ -34,7 +34,11 @@ export function atualizarStatusBadge() {
 }
 
 export function renderHeader() {
-  const disc = State.disciplina;
+  // Na Home (nenhuma disciplina escolhida ainda), State.disciplina pode
+  // estar preenchido só como fallback interno (ver resolverContexto()) —
+  // header/hero não devem mostrar essa disciplina como se já estivesse
+  // selecionada.
+  const disc = State.emHome ? null : State.disciplina;
 
   const bc = document.getElementById('header-breadcrumb');
   if (bc) bc.innerHTML = disc ? `Resumos <span>· ${disc.nome}</span>` : 'Resumos';
@@ -54,7 +58,21 @@ export function renderHeader() {
   }
 
   const ey = document.getElementById('hero-eyebrow-text');
-  if (ey) ey.textContent = disc?.nome ?? 'Resumos';
+  if (ey) ey.textContent = State.emHome ? 'Página inicial' : (disc?.nome ?? 'Resumos');
+
+  // Meta-dado do hero na Home: contagem real de State.disciplinas do
+  // semestre atual (nada calculado/estimado — o mesmo array que a
+  // sidebar usa para montar a lista de disciplinas).
+  const meta = document.getElementById('hero-home-meta');
+  if (meta) {
+    meta.hidden = !State.emHome;
+    if (State.emHome) {
+      const n = State.disciplinas.length;
+      meta.textContent = n > 0
+        ? `${n} disciplina${n === 1 ? '' : 's'} neste semestre`
+        : '';
+    }
+  }
 
   document.title = disc ? `Resumos — ${disc.nome} · Nexus Study` : 'Resumos · Nexus Study';
   atualizarStatusBadge();
@@ -63,24 +81,57 @@ export function renderHeader() {
 /* ══════════════════════════════════════════════
    SIDEBAR — lista de disciplinas
 ══════════════════════════════════════════════ */
-export function renderSidebar(onSelect) {
+export function renderSidebar(onSelect, onHome) {
   const semEl = document.getElementById('sidebar-semestre');
   if (semEl) semEl.textContent = State.semestre ?? '—';
 
   const lista = document.getElementById('disc-list');
   if (!lista) return;
 
+  // "Início" é o primeiro item da MESMA lista das disciplinas (não um
+  // nav separado) — por isso é montado aqui, com a estrutura exata de
+  // ".disc-item" (emoji/ícone + nome + chevron), pra ficar visualmente
+  // idêntico aos itens abaixo dele. Fica sempre presente, mesmo sem
+  // nenhuma disciplina no semestre (ver o branch "sem disciplinas" logo
+  // adiante). O clique é ligado depois do innerHTML, junto com o dos
+  // itens de disciplina.
+  const homeAtivo = State.emHome;
+  const homeHtml = `
+    <button class="disc-item disc-item--home${homeAtivo ? ' disc-item--active' : ''}"
+            id="home-nav-btn"
+            aria-current="${homeAtivo ? 'page' : 'false'}"
+            title="Início">
+      <span class="disc-item__emoji" aria-hidden="true">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 10.5 12 3l9 7.5"/>
+          <path d="M5.5 9.5V20a1 1 0 0 0 1 1H9v-6h6v6h2.5a1 1 0 0 0 1-1V9.5"/>
+        </svg>
+      </span>
+      <span class="disc-item__info">
+        <span class="disc-item__nome">Início</span>
+      </span>
+      <svg class="disc-item__chevron" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 18l6-6-6-6"/>
+      </svg>
+    </button>`;
+
   if (!State.disciplinas.length) {
-    lista.innerHTML = `
+    lista.innerHTML = homeHtml + `
       <div style="padding:2rem 1rem;text-align:center;color:var(--rs-text-3,var(--text-3));font-size:0.78rem;line-height:1.6;">
         <span style="display:block;font-size:1.4rem;margin-bottom:0.4rem;">📭</span>
         Nenhuma disciplina<br>neste semestre
       </div>`;
+    const homeBtn = lista.querySelector('#home-nav-btn');
+    if (homeBtn) {
+      homeBtn.addEventListener('mouseenter', () => playSound('hover', 'resumos'));
+      homeBtn.addEventListener('click', () => onHome?.());
+    }
     return;
   }
 
-  lista.innerHTML = State.disciplinas.map(disc => {
-    const ativo = disc.id === State.disciplina?.id;
+  lista.innerHTML = homeHtml + State.disciplinas.map(disc => {
+    const ativo = !State.emHome && disc.id === State.disciplina?.id;
     const label = disc.apelido ?? disc.nome;
     // Cor própria de CADA disciplina da lista — não a --cor-tema
     // global (essa reflete só a disciplina ativa). Sobrescrita local
@@ -103,7 +154,13 @@ export function renderSidebar(onSelect) {
       </button>`;
   }).join('');
 
-  lista.querySelectorAll('.disc-item').forEach(btn => {
+  const homeBtn = lista.querySelector('#home-nav-btn');
+  if (homeBtn) {
+    homeBtn.addEventListener('mouseenter', () => playSound('hover', 'resumos'));
+    homeBtn.addEventListener('click', () => onHome?.());
+  }
+
+  lista.querySelectorAll('.disc-item[data-disc-id]').forEach(btn => {
     const disc = State.disciplinas.find(d => d.id === btn.dataset.discId);
     if (!disc) return;
     btn.addEventListener('mouseenter', () => playSound('hover', 'resumos'));
