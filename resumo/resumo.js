@@ -29,6 +29,7 @@ import { renderHeader, renderSidebar, carregarConteudo, setModo, setProfessorFil
 import { bindModal, bindTocChrome, bindCopyButton, bindThemeToggle } from './js/resumo-reader.js';
 import { initPdfModal } from './js/pdf/resumo-pdf.js';
 import { initBusca, limparBusca, atualizarContextoBusca, definirEscopoInicial } from './js/resumo-busca.js';
+import { initFormatador, fechar as fecharFormatador } from './js/formatador/formatador.js';
 
 injetarLogo('#header-logo-wrap');
 
@@ -47,6 +48,7 @@ function _initProgressBar() {
    resultados ao fechar. Qualquer outra troca (clique na sidebar) sai da
    busca e volta à listagem de cards. */
 function trocarDisciplina(disc, { manterBusca = false } = {}) {
+  fecharFormatador();
   if (!manterBusca) limparBusca();
   // Vindo da Home, mesmo a disciplina de fallback (a que resolverContexto()
   // já tinha resolvido internamente, ver js/resumo-utils.js) precisa
@@ -83,6 +85,8 @@ function trocarDisciplina(disc, { manterBusca = false } = {}) {
    busca, mesma sincronização de URL, só que "desmarcando" a
    disciplina em vez de escolher uma. */
 function irParaHome() {
+  // Se o Formatador está aberto por cima da Home, "Início" só o fecha.
+  fecharFormatador();
   if (State.emHome) return;
   limparBusca();
   playSound('click', 'resumos');
@@ -145,6 +149,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   bindThemeToggle();
   initPdfModal();
   initBusca({ trocarDisciplina });
+  initFormatador();
   // Home: busca nasce em "Todas as disciplinas" — ainda não há uma
   // disciplina "atual" de verdade para restringir a busca a ela.
   if (State.emHome) definirEscopoInicial('todas');

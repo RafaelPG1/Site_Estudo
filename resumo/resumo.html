@@ -54,6 +54,10 @@
        vídeos, links) + visualizador de mapa mental (js/resumo-extra.js) -->
   <link rel="stylesheet" href="css/resumo-extra.css" />
 
+  <!-- Formatador — card na Home + tela da ferramenta (lógica em
+       js/formatador/). Depois de resumo-home.css, que ele complementa. -->
+  <link rel="stylesheet" href="css/formatador.css" />
+
 
   <!-- Preload da IA -->
   <link rel="modulepreload" href="../shared/js/ia/core/context.js" />
@@ -303,6 +307,24 @@
           <div class="busca__resultados" id="busca-resultados"></div>
         </section>
 
+        <!-- HOME — ferramentas. Mesma estrutura visual da legenda de tipos
+             (.home-tipo), só que clicável. Ligado por initFormatador()
+             (js/formatador/formatador.js). -->
+        <section class="home-ferramentas" id="home-ferramentas" aria-label="Ferramentas">
+          <h2 class="home-tipos__titulo">Ferramentas</h2>
+          <ul class="home-tipos__lista home-ferramentas__lista">
+            <li>
+              <button type="button" class="home-tipo home-ferramenta" id="btn-abrir-formatador" data-tipo="formatador">
+                <span class="home-tipo__nome">Formatador</span>
+                <span class="home-tipo__desc">Transforme um texto em um conteúdo organizado para leitura.</span>
+                <span class="home-ferramenta__seta" aria-hidden="true">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+                </span>
+              </button>
+            </li>
+          </ul>
+        </section>
+
         <!-- HOME — legenda dos tipos de conteúdo. Só aparece quando
              nenhuma disciplina foi escolhida ainda (body.tela-home,
              ver css/resumo-home.css e State.emHome em
@@ -336,6 +358,10 @@
         </section>
 
       </div><!-- /resumo-home-shell -->
+
+      <!-- Formatador — tela da ferramenta (montada por js/formatador/).
+           Só aparece com body.tela-home.tela-formatador. -->
+      <section id="formatador-view" aria-label="Formatador"></section>
 
       <!-- Vídeos das aulas -->
       <div id="videos-section" style="display:none"></div>

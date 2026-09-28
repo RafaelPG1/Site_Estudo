@@ -1070,11 +1070,11 @@ window.__nexusConteudo = {
       src: "revisao_estruturas_dados.mp4"
     },
     {
-      titulo: "Revisão de Estrutura de Dados",         
+      titulo: "DSA Completo: Domine Estruturas de Dados em 60min",         
       url: "https://youtu.be/TcNt1aW1OMM"
     },
     {
-      titulo: "Revisão de Estrutura de Dados",         
+      titulo: "ESTRUTURAS DE DADOS de um jeito fácil! (Guia rápido para programadores iniciantes)",         
       url: "https://www.youtube.com/watch?v=ddXb6CYXMzA"
     },
   ],

@@ -1,0 +1,472 @@
+/* =============================================
+   NEXUS STUDY — resumo/css/formatador.css
+   Card do Formatador na Home + tela da ferramenta.
+   Só usa os tokens já definidos em resumo.css e a
+   mesma linguagem visual de .home-tipo / .resumo-card.
+   Carregar DEPOIS de resumo-home.css.
+
+   Índice: 1 Card na Home · 2 Alternância de tela · 3 Tokens locais
+           4 Layout · 5 Cabeçalho · 6 Blocos · 7 Campos · 8 Modelos
+           9 Botões e status · 10 Meus conteúdos · 11 Tooltip
+           12 Detalhes do navegador · 13 Responsivo
+   ============================================= */
+
+/* ══════════════════════════════════════════
+   1. CARD NA HOME (seção "Ferramentas")
+══════════════════════════════════════════ */
+#home-ferramentas { display: none; }
+body.tela-home #home-ferramentas { display: block; }
+body.tela-home .home-ferramentas__lista { max-width: 1040px; }
+
+.home-ferramenta {
+  --tipo-cor: var(--cyan);
+  display: block;
+  width: 100%;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  padding-right: 3rem;
+  transition: transform var(--dur-base) var(--ease),
+              border-color var(--dur-base) var(--ease),
+              box-shadow var(--dur-base) var(--ease);
+}
+.home-ferramenta:hover {
+  transform: translateY(-2px);
+  border-color: rgba(61,217,194,0.4);
+  box-shadow: 0 14px 30px -16px rgba(61,217,194,0.3), 0 6px 14px -4px rgba(0,0,0,0.35);
+}
+.home-ferramenta:hover::before { opacity: 1; }
+.home-ferramenta:active { transform: scale(0.985); transition-duration: var(--dur-fast); }
+.home-ferramenta:focus-visible { box-shadow: var(--focus-ring); }
+.home-ferramenta__seta {
+  position: absolute;
+  right: 1rem; top: 50%;
+  width: 28px; height: 28px;
+  margin-top: -14px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  color: var(--tipo-cor);
+  background: rgba(61,217,194,0.1);
+  transition: transform var(--dur-base) var(--ease), background var(--dur-base), color var(--dur-base);
+}
+.home-ferramenta:hover .home-ferramenta__seta { background: var(--tipo-cor); color: var(--bg-base); transform: translateX(2px); }
+
+/* ══════════════════════════════════════════
+   2. ALTERNÂNCIA DE TELA
+   O Formatador é um sub-estado da Home. Fora da Home
+   (body sem "tela-home") ele nunca aparece.
+══════════════════════════════════════════ */
+#formatador-view { display: none; }
+body.tela-home.tela-formatador .resumo-home-shell { display: none; }
+body.tela-home.tela-formatador #formatador-view  { display: block; }
+
+/* ══════════════════════════════════════════
+   3. TOKENS LOCAIS (derivados da identidade do Nexus: fundo
+      azul-noturno, acento ciano). Camadas, do fundo para cima:
+      página → sidebar → bloco → campo (mais escuro = "afundado").
+══════════════════════════════════════════ */
+/* Altura mínima da caixa "Nenhum conteúdo ainda" (Meus conteúdos vazio) — ajuste aqui */
+.fmt { --fmt-vazio-altura: 460px; }
+
+.fmt,
+.fmt-dialogo {
+  --fmt-accent-rgb: 61, 217, 194;                 /* = var(--cyan) */
+  --fmt-line:       rgba(255,255,255,0.07);       /* separadores */
+  --fmt-surface:    rgba(255,255,255,0.035);      /* blocos, itens */
+  --fmt-surface-hi: rgba(255,255,255,0.065);      /* hover */
+  --fmt-field:      rgba(3,7,20,0.55);            /* textareas */
+  --fmt-shadow:     0 1px 0 rgba(255,255,255,0.05) inset,
+                    0 22px 44px -30px rgba(0,0,0,0.75);
+  --fmt-accent-line: rgba(var(--fmt-accent-rgb), 0.45);
+  --fmt-accent-soft: rgba(var(--fmt-accent-rgb), 0.09);
+}
+
+/* ══════════════════════════════════════════
+   4. LAYOUT — Página = área principal + sidebar independente
+══════════════════════════════════════════ */
+.fmt {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  align-items: stretch;                       /* a sidebar acompanha toda a altura da página */
+  min-height: calc(100vh - var(--header-h));
+}
+.fmt__main { min-width: 0; align-self: start; padding: 2.5rem 3rem 4rem; }
+
+/* Prompt em cima, Texto embaixo — caixas com tamanho próprio */
+.fmt__principal {
+  display: flex; flex-direction: column;
+  gap: 1.25rem;
+  align-items: stretch;
+  min-width: 0;
+}
+
+/* ══════════════════════════════════════════
+   5. CABEÇALHO
+══════════════════════════════════════════ */
+.fmt__head { max-width: 640px; margin-bottom: 1.9rem; }
+.fmt__voltar {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  min-height: 36px; padding: 0 0.85rem 0 0.7rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border-2); border-radius: var(--r-md);
+  background: var(--fmt-surface);
+  font-size: 0.74rem; font-weight: 500; color: var(--text-2);
+  transition: color var(--dur-base), border-color var(--dur-base), background var(--dur-base), transform var(--dur-base) var(--ease);
+}
+.fmt__voltar svg { transition: transform var(--dur-base) var(--ease); }
+.fmt__voltar:hover { color: var(--text-1); border-color: var(--border-3); background: var(--fmt-surface-hi); }
+.fmt__voltar:hover svg { transform: translateX(-2px); }
+.fmt__voltar:active { transform: scale(0.97); }
+.fmt__voltar:focus-visible { box-shadow: var(--focus-ring); }
+.fmt__titulo {
+  font-family: var(--font-display);
+  font-size: clamp(2.15rem, 4vw, 2.9rem);
+  font-weight: 300; line-height: 1.08; letter-spacing: -0.01em;
+  text-wrap: balance;
+  color: var(--text-1); margin-bottom: 0.6rem;
+}
+.fmt__sub { max-width: 58ch; font-size: 0.9rem; line-height: 1.6; color: var(--text-2); }
+
+/* ══════════════════════════════════════════
+   6. BLOCOS (Prompt / Texto)
+══════════════════════════════════════════ */
+.fmt__bloco {
+  display: flex; flex-direction: column; gap: 0.8rem;
+  min-width: 0;
+  padding: 1.5rem 1.5rem 1.55rem;
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-lg);
+  background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.012));
+  box-shadow: var(--fmt-shadow);
+  transition: border-color var(--dur-base) var(--ease);
+}
+.fmt__bloco:focus-within { border-color: var(--border-3); }
+.fmt__h {
+  font-family: var(--font-display);
+  font-size: 1.35rem; font-weight: 500; letter-spacing: -0.005em; line-height: 1.2;
+  color: var(--text-1);
+}
+/* a descrição fecha o cabeçalho do bloco; o que vem depois são os controles */
+.fmt__dica {
+  max-width: 68ch;
+  padding-bottom: 1rem; margin-bottom: 0.1rem;
+  border-bottom: 1px solid var(--fmt-line);
+  font-size: 0.82rem; line-height: 1.6; color: var(--text-2);
+}
+.fmt__dica code {
+  padding: 0.08em 0.4em;
+  border-radius: 5px;
+  background: rgba(255,255,255,0.07);
+  font-size: 0.92em; color: var(--text-1);
+}
+.fmt__lbl { font-size: 0.74rem; font-weight: 600; color: var(--text-2); margin-top: 0.3rem; }
+.fmt__lbl--oculto { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ══════════════════════════════════════════
+   7. CAMPOS — mesma altura inicial, resize só vertical
+      (a igualdade durante o arrasto é feita em formatador.js)
+══════════════════════════════════════════ */
+.fmt__area {
+  width: 100%;
+  max-width: 100%;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border-2);
+  border-radius: var(--r-md);
+  background: var(--fmt-field);
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
+  font-family: var(--font-body); font-size: 0.9rem; line-height: 1.65;
+  color: var(--text-1);
+  caret-color: var(--cyan);
+  resize: vertical;
+  flex: none;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.2) transparent;
+  transition: border-color var(--dur-base) var(--ease), background var(--dur-base) var(--ease), box-shadow var(--dur-base) var(--ease);
+}
+.fmt__area::placeholder { color: var(--text-3); }
+.fmt__area:hover { border-color: var(--border-3); }
+.fmt__area:focus-visible {
+  outline: none;
+  border-color: var(--fmt-accent-line);
+  background: rgba(3,7,20,0.7);
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.3), 0 0 0 3px rgba(var(--fmt-accent-rgb), 0.14);
+}
+.fmt__area--prompt,
+.fmt__area--texto { height: 280px; min-height: 140px; max-height: 70vh; }
+.fmt__area--prompt { font-size: 0.8rem; line-height: 1.65; }
+.fmt__count { align-self: flex-end; margin-top: -0.3rem; font-size: 0.72rem; font-variant-numeric: tabular-nums; color: var(--text-3); }
+
+/* ══════════════════════════════════════════
+   8. MODELOS (chips)
+══════════════════════════════════════════ */
+.fmt__grupo { display: flex; flex-direction: column; gap: 0.5rem; }
+.fmt__grupo-nome { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-3); }
+.fmt__modelos { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.fmt__chip {
+  min-height: 34px; padding: 0 0.95rem;
+  border: 1px solid var(--border-2); border-radius: 99px;
+  background: var(--fmt-surface);
+  font-size: 0.78rem; font-weight: 500; color: var(--text-2);
+  transition: color var(--dur-base), border-color var(--dur-base), background var(--dur-base), transform var(--dur-fast);
+}
+.fmt__chip:hover { color: var(--text-1); border-color: var(--border-3); background: var(--fmt-surface-hi); }
+.fmt__chip:active { transform: scale(0.96); }
+.fmt__chip:focus-visible { box-shadow: var(--focus-ring); }
+.fmt__chip--ativo,
+.fmt__chip--ativo:hover { color: var(--cyan); border-color: var(--fmt-accent-line); background: rgba(var(--fmt-accent-rgb), 0.12); }
+.fmt__modelo-desc {
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--fmt-line); border-radius: var(--r-md);
+  background: var(--fmt-surface);
+  font-size: 0.78rem; line-height: 1.55; color: var(--text-2);
+}
+.fmt__modelo-desc[hidden] { display: none; }
+
+/* ══════════════════════════════════════════
+   9. BOTÕES E STATUS
+══════════════════════════════════════════ */
+.fmt__acoes { display: flex; align-items: center; flex-wrap: wrap; gap: 0.7rem; margin-top: 0.3rem; }
+.fmt__btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  min-height: 42px; padding: 0 1.15rem;
+  border: 1px solid var(--border-2); border-radius: var(--r-md);
+  background: var(--fmt-surface);
+  font-size: 0.8rem; font-weight: 500; color: var(--text-2);
+  transition: color var(--dur-base), border-color var(--dur-base), background var(--dur-base), transform var(--dur-fast), box-shadow var(--dur-base);
+}
+.fmt__btn svg { flex: none; opacity: 0.85; }
+.fmt__btn:hover { color: var(--text-1); border-color: var(--border-3); background: var(--fmt-surface-hi); }
+.fmt__btn:active { transform: scale(0.97); }
+.fmt__btn:focus-visible { box-shadow: var(--focus-ring); }
+.fmt__btn:disabled { opacity: 0.6; cursor: progress; }
+
+/* ação principal da ferramenta: "Formatar texto" */
+.fmt__btn--forte {
+  min-height: 44px; padding: 0 1.5rem;
+  border-color: transparent;
+  background: linear-gradient(180deg, #52e8d2, #34c8b2);
+  color: var(--bg-base); font-weight: 600;
+  box-shadow: 0 10px 22px -12px rgba(var(--fmt-accent-rgb), 0.7), 0 1px 0 rgba(255,255,255,0.35) inset;
+}
+.fmt__btn--forte:hover {
+  color: var(--bg-base); border-color: transparent;
+  background: linear-gradient(180deg, #6df0dc, #3fd5bf);
+  box-shadow: 0 14px 26px -12px rgba(var(--fmt-accent-rgb), 0.8), 0 1px 0 rgba(255,255,255,0.4) inset;
+}
+.fmt__btn--forte:focus-visible { box-shadow: var(--focus-ring), 0 10px 22px -12px rgba(var(--fmt-accent-rgb), 0.7); }
+
+/* mensagens: só ocupam espaço quando têm texto */
+.fmt__status { font-size: 0.78rem; line-height: 1.4; color: var(--text-2); }
+.fmt__status:not(:empty) {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--fmt-line); border-radius: 99px;
+  background: var(--fmt-surface);
+}
+.fmt__status[data-tipo="ok"]   { color: var(--sage); border-color: rgba(130,200,160,0.3); background: rgba(130,200,160,0.08); }
+.fmt__status[data-tipo="erro"] { color: var(--rose); border-color: rgba(230,120,140,0.3); background: rgba(230,120,140,0.08); }
+
+/* ══════════════════════════════════════════
+   10. MEUS CONTEÚDOS — sidebar independente, toda a altura
+══════════════════════════════════════════ */
+.fmt__lateral {
+  border-left: 1px solid var(--border-2);
+  background:
+    linear-gradient(180deg, rgba(var(--fmt-accent-rgb), 0.05), rgba(var(--fmt-accent-rgb), 0) 38%),
+    rgba(3,7,20,0.4);
+}
+.fmt__lateral-in {
+  position: sticky; top: var(--header-h);
+  height: calc(100vh - var(--header-h));
+  display: flex; flex-direction: column; gap: 1rem;
+  padding: 2rem 1.4rem 1.5rem;
+}
+.fmt__lateral .fmt__h {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--fmt-line);
+  font-size: 1.5rem;
+}
+.fmt__lista {
+  flex: 1; min-height: 0;
+  display: flex; flex-direction: column; gap: 0.6rem;
+  overflow-y: auto;
+  margin-right: -0.5rem; padding-right: 0.5rem;   /* rolagem fica junto à borda, sem apertar os cards */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.18) transparent;
+}
+
+/* itens */
+.fmt__item {
+  display: flex; align-items: stretch; gap: 0.2rem;
+  flex: none;
+  border: 1px solid var(--border-2); border-radius: var(--r-md);
+  background: var(--fmt-surface);
+  transition: border-color var(--dur-base) var(--ease), background var(--dur-base) var(--ease), transform var(--dur-base) var(--ease), box-shadow var(--dur-base) var(--ease);
+}
+.fmt__item:hover {
+  transform: translateY(-1px);
+  border-color: var(--border-3); background: var(--fmt-surface-hi);
+  box-shadow: 0 10px 20px -14px rgba(0,0,0,0.7);
+}
+.fmt__item--novo { border-color: var(--fmt-accent-line); background: var(--fmt-accent-soft); }
+.fmt__item-abrir {
+  flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.25rem;
+  padding: 0.8rem 0.3rem 0.8rem 0.95rem; text-align: left; color: inherit; font: inherit;
+  border-radius: var(--r-md) 0 0 var(--r-md);
+}
+.fmt__item-abrir:focus-visible, .fmt__item-del:focus-visible { box-shadow: var(--focus-ring); }
+.fmt__item-titulo {
+  font-size: 0.88rem; font-weight: 600; line-height: 1.35; color: var(--text-1);
+  overflow-wrap: anywhere;
+  display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  transition: color var(--dur-base);
+}
+.fmt__item-abrir:hover .fmt__item-titulo { color: var(--cyan); }
+.fmt__item-meta { font-size: 0.7rem; color: var(--text-3); }
+.fmt__item-del {
+  flex: none; width: 38px; display: grid; place-items: center;
+  color: var(--text-3); border-radius: 0 var(--r-md) var(--r-md) 0;
+  transition: color var(--dur-base), background var(--dur-base), opacity var(--dur-base);
+}
+.fmt__item-del:hover { color: var(--rose); background: rgba(230,120,140,0.1); }
+@media (hover: hover) {
+  .fmt__item-del { opacity: 0.45; }
+  .fmt__item:hover .fmt__item-del, .fmt__item:focus-within .fmt__item-del { opacity: 1; }
+}
+
+/* avisos dentro da lista */
+.fmt__vazio { font-size: 0.78rem; line-height: 1.55; color: var(--text-3); }
+.fmt__vazio--aviso { padding: 0.7rem 0.85rem; border: 1px solid rgba(240,190,90,0.25); border-radius: var(--r-md); background: rgba(240,190,90,0.06); color: var(--amber); }
+
+/* estado vazio: centralizado na área disponível da sidebar */
+.fmt__vazio-card {
+  flex: 1; min-height: var(--fmt-vazio-altura, 460px);     /* <— altura da caixa vazia (valor em §3) */
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;
+  padding: 1.5rem 1.2rem;
+  border: 1px dashed rgba(255,255,255,0.13); border-radius: var(--r-lg);
+  text-align: center;
+}
+.fmt__vazio-icone {
+  width: 46px; height: 46px; margin-bottom: 0.4rem;
+  display: grid; place-items: center;
+  border: 1px solid rgba(var(--fmt-accent-rgb), 0.22); border-radius: 14px;
+  background: var(--fmt-accent-soft); color: var(--cyan);
+}
+.fmt__vazio-titulo { font-size: 0.92rem; font-weight: 600; color: var(--text-1); }
+.fmt__vazio-txt { max-width: 24ch; font-size: 0.8rem; line-height: 1.55; color: var(--text-3); text-wrap: balance; }
+
+/* ══════════════════════════════════════════
+   11. TOOLTIP (formatador-tooltip.js)
+       Fica em <body>, por isso não usa os tokens de .fmt.
+══════════════════════════════════════════ */
+.fmt-tip {
+  position: fixed; z-index: 9999; left: 0; top: 0;
+  max-width: min(300px, calc(100vw - 16px));
+  padding: 0.55rem 0.8rem;
+  border: 1px solid rgba(255,255,255,0.14); border-radius: 10px;
+  background: #121a33;                         /* opaco: a seta se funde ao corpo */
+  color: var(--text-1, #e8ecf6);
+  font: 500 0.75rem/1.5 var(--font-body, system-ui, sans-serif);
+  box-shadow: 0 14px 30px -10px rgba(0,0,0,0.65), 0 2px 6px rgba(0,0,0,0.35);
+  pointer-events: none;                        /* nunca atrapalha o clique */
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 160ms cubic-bezier(0.22, 1, 0.36, 1), transform 160ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.fmt-tip[data-lado="baixo"] { transform: translateY(-4px); }
+.fmt-tip.is-on { opacity: 1; transform: none; }
+.fmt-tip__seta {
+  position: absolute; left: var(--seta-x, 50%);
+  width: 10px; height: 10px; margin-left: -5px;
+  background: #121a33;
+  border: 1px solid rgba(255,255,255,0.14);
+  transform: rotate(45deg);
+}
+.fmt-tip[data-lado="cima"]  .fmt-tip__seta { bottom: -6px; border-width: 0 1px 1px 0; }
+.fmt-tip[data-lado="baixo"] .fmt-tip__seta { top: -6px;    border-width: 1px 0 0 1px; }
+@media (hover: none), (pointer: coarse) { .fmt-tip { display: none; } }   /* toque: sem tooltip */
+
+/* ══════════════════════════════════════════
+   11b. CAIXA DE CONFIRMAÇÃO (formatador-dialogo.js)
+        Excluir conteúdo. Vive em <body> (camada modal do navegador).
+══════════════════════════════════════════ */
+.fmt__btn--perigo {
+  border-color: rgba(230,120,140,0.45);
+  background: rgba(230,120,140,0.12);
+  color: var(--rose); font-weight: 600;
+}
+.fmt__btn--perigo:hover { color: #1a0810; border-color: transparent; background: var(--rose); }
+.fmt__btn--perigo:focus-visible { box-shadow: var(--focus-ring); }
+
+.fmt-dialogo {
+  /* centralização explícita: o reset global do site zera a margin:auto padrão do <dialog> */
+  position: fixed; inset: 0; margin: auto;
+  height: fit-content; max-height: calc(100vh - 2rem); overflow-y: auto;
+  width: min(420px, calc(100vw - 2rem));
+  padding: 0;
+  border: 1px solid rgba(255,255,255,0.14); border-radius: 16px;
+  background: linear-gradient(180deg, #141c38, #0e1530);
+  color: var(--text-1, #e8ecf6);
+  font-family: var(--font-body, system-ui, sans-serif);
+  box-shadow: 0 34px 80px -24px rgba(0,0,0,0.85), 0 1px 0 rgba(255,255,255,0.06) inset;
+}
+.fmt-dialogo::backdrop { background: rgba(2,5,16,0.66); backdrop-filter: blur(3px); }
+.fmt-dialogo[open] { animation: fmt-dialogo-in 200ms cubic-bezier(0.22, 1, 0.36, 1); }
+.fmt-dialogo[open]::backdrop { animation: fmt-dialogo-fundo 200ms ease-out; }
+@keyframes fmt-dialogo-in    { from { opacity: 0; transform: translateY(8px) scale(0.98); } }
+@keyframes fmt-dialogo-fundo { from { opacity: 0; } }
+
+.fmt-dialogo__corpo { display: flex; flex-direction: column; gap: 0.7rem; padding: 1.6rem 1.6rem 1.2rem; }
+.fmt-dialogo__icone {
+  width: 44px; height: 44px; margin-bottom: 0.2rem;
+  display: grid; place-items: center;
+  border: 1px solid rgba(var(--fmt-accent-rgb), 0.25); border-radius: 13px;
+  background: rgba(var(--fmt-accent-rgb), 0.09); color: var(--cyan);
+}
+.fmt-dialogo__icone svg { width: 20px; height: 20px; }
+.fmt-dialogo--perigo .fmt-dialogo__icone { border-color: rgba(230,120,140,0.3); background: rgba(230,120,140,0.1); color: var(--rose); }
+.fmt-dialogo__titulo { font-family: var(--font-display, inherit); font-size: 1.4rem; font-weight: 500; line-height: 1.2; color: var(--text-1, #e8ecf6); }
+.fmt-dialogo__item {
+  padding: 0.65rem 0.85rem;
+  border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;
+  background: rgba(255,255,255,0.04);
+  font-size: 0.86rem; font-weight: 600; line-height: 1.4; color: var(--text-1, #e8ecf6);
+  overflow-wrap: anywhere;
+  display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.fmt-dialogo__texto { font-size: 0.82rem; line-height: 1.55; color: var(--text-2, #a9b2c8); }
+.fmt-dialogo__acoes {
+  display: flex; justify-content: flex-end; gap: 0.6rem;
+  padding: 1rem 1.6rem 1.4rem;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+
+/* ══════════════════════════════════════════
+   12. DETALHES DO NAVEGADOR
+══════════════════════════════════════════ */
+.fmt ::selection { background: rgba(var(--fmt-accent-rgb), 0.28); color: #fff; }
+
+/* ══════════════════════════════════════════
+   13. RESPONSIVO
+══════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .fmt { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+  .fmt__main { padding: 2rem 1.5rem 3rem; }
+  .fmt__lateral { border-left: 0; border-top: 1px solid var(--border-2); }   /* Meus conteúdos desce para depois da área principal */
+  .fmt__lateral-in { position: static; height: auto; padding: 1.5rem; }
+  .fmt__lista { overflow: visible; margin-right: 0; padding-right: 0; }
+}
+@media (max-width: 600px) {
+  .fmt-dialogo__acoes { flex-direction: column-reverse; }
+  .fmt-dialogo__acoes .fmt__btn { width: 100%; }
+  .fmt__main { padding: 1.5rem 1rem 2.5rem; }
+  .fmt__lateral-in { padding: 1.25rem 1rem; }
+  .fmt__bloco { padding: 1.15rem 1rem 1.2rem; }
+  .fmt__btn { flex: 1 1 auto; min-height: 44px; }
+  .fmt__chip { min-height: 40px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-ferramenta, .fmt__btn, .fmt__chip, .fmt__item, .fmt__voltar, .fmt__voltar svg, .fmt-tip { transition: none; }
+  .fmt-dialogo[open], .fmt-dialogo[open]::backdrop { animation: none; }
+  .fmt__item:hover { transform: none; }
+}
