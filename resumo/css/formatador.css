@@ -361,6 +361,7 @@ body.tela-home.tela-formatador #formatador-view  { display: block; }
 ══════════════════════════════════════════ */
 .fmt-tip {
   position: fixed; z-index: 9999; left: 0; top: 0;
+  width: max-content;                          /* largura não muda conforme a posição → medida exata */
   max-width: min(300px, calc(100vw - 16px));
   padding: 0.55rem 0.8rem;
   border: 1px solid rgba(255,255,255,0.14); border-radius: 10px;
@@ -416,11 +417,17 @@ body.tela-home.tela-formatador #formatador-view  { display: block; }
 @keyframes fmt-dialogo-in    { from { opacity: 0; transform: translateY(8px) scale(0.98); } }
 @keyframes fmt-dialogo-fundo { from { opacity: 0; } }
 
-.fmt-dialogo__corpo { display: flex; flex-direction: column; gap: 0.7rem; padding: 1.6rem 1.6rem 1.2rem; }
+.fmt-dialogo__corpo {
+  display: grid; grid-template-columns: auto minmax(0, 1fr);   /* ícone | título na mesma linha */
+  align-items: center; column-gap: 0.85rem; row-gap: 0.9rem;
+  padding: 1.6rem 1.6rem 1.2rem;
+}
+.fmt-dialogo__item, .fmt-dialogo__texto,
+.fmt-dialogo__titulo:first-child { grid-column: 1 / -1; }      /* linhas de baixo (e título quando não há ícone) ocupam a largura toda */
 .fmt-dialogo__icone {
-  width: 44px; height: 44px; margin-bottom: 0.2rem;
+  width: 40px; height: 40px;
   display: grid; place-items: center;
-  border: 1px solid rgba(var(--fmt-accent-rgb), 0.25); border-radius: 13px;
+  border: 1px solid rgba(var(--fmt-accent-rgb), 0.25); border-radius: 12px;
   background: rgba(var(--fmt-accent-rgb), 0.09); color: var(--cyan);
 }
 .fmt-dialogo__icone svg { width: 20px; height: 20px; }
