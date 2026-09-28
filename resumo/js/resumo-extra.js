@@ -159,6 +159,60 @@ function _resolverExtra(item) {
   return extraBase(State.semestre) + pasta + encodePath(src);
 }
 
+/* ── Download com nome personalizado ─────────────────────────── */
+function _slug(txt) {
+  return String(txt)
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')   // remove acentos
+    .replace(/[^\w\s-]/g, '')                            // remove símbolos
+    .trim().replace(/\s+/g, '_');                        // espaços → _
+}
+
+function _extensao(url) {
+  const m = String(url).split(/[?#]/)[0].match(/\.([a-z0-9]{2,5})$/i);
+  return m ? `.${m[1].toLowerCase()}` : '';
+}
+
+/* Ex.: Mapa_mental_Sistema_Nervoso_Central.png */
+function _nomeArquivo(prefixo, titulo, url) {
+  const nome = _slug(titulo || '');
+  return `${prefixo}${nome ? `_${nome}` : ''}${_extensao(url)}`;
+}
+
+function _dispararDownload(href, nome) {
+  const a = document.createElement('a');
+  a.href = href;
+  a.download = nome;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+async function _baixar(url, nome) {
+  const abs = new URL(url, location.href);
+  try {
+    const r = await fetch(abs.href, { mode: 'cors', cache: 'no-store' });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const blob = await r.blob();
+    const obj = URL.createObjectURL(blob);
+    _dispararDownload(obj, nome);
+    setTimeout(() => URL.revokeObjectURL(obj), 4000);
+  } catch (err) {
+    const mesmaOrigem = abs.origin === location.origin;
+    console.error(
+      '[Extra] Download falhou.',
+      '\nURL:', abs.href,
+      '\nSite:', location.origin,
+      '\nMesma origem?', mesmaOrigem,
+      '\nErro:', err
+    );
+    // Mesma origem: o atributo download funciona, sem abrir aba.
+    // Outra origem: o navegador ignora `download`, então avisamos em vez de abrir a aba.
+    if (mesmaOrigem) {
+      _dispararDownload(abs.href, nome);
+    } else {
+      alert('Não foi possível baixar: o arquivo está em outro domínio sem CORS liberado.');
+    }
+  }
+}
 /* ══════════════════════════════════════════════
    CARDS
 ══════════════════════════════════════════════ */
@@ -185,9 +239,11 @@ function _cardInner(cat, item, previewHtml, extraAcaoHtml = '') {
    verdade (força o download em vez de navegar). Vídeo por `url` e
    `links` não ganham esse botão — são de outro domínio, o navegador
    ignoraria o `download` e abriria a página normalmente. */
-function _botaoDownload(url, titulo) {
+function _botaoDownload(url, titulo, prefixo) {
+  const nome = _nomeArquivo(prefixo, titulo, url);
   return `
-    <a class="extra-card__download" href="${esc(url)}" download
+    <a class="extra-card__download" href="${esc(url)}" download="${esc(nome)}"
+       data-url="${esc(url)}" data-nome="${esc(nome)}"
        aria-label="Baixar: ${esc(titulo)}" title="Baixar arquivo">
       ${_DOWNLOAD_SVG}
     </a>`;
@@ -217,7 +273,7 @@ function _cardMapa(cat, item, idx, urlDownload) {
   return `
     <article class="extra-card extra-card--mapa" data-mapa="${idx}" tabindex="0" role="button"
              aria-label="${esc(cat.acao)}: ${esc(item.titulo)}">
-      ${_cardInner(cat, item, _preview(thumb, ''), _botaoDownload(urlDownload, item.titulo))}
+      ${_cardInner(cat, item, _preview(thumb, ''), _botaoDownload(urlDownload, item.titulo, 'Mapa_mental'))}
     </article>`;
 }
 
@@ -247,7 +303,7 @@ function _cardVideoLocal(cat, item) {
   return `
     <article class="extra-card extra-card--video-local" data-href="${esc(url)}" tabindex="0" role="button"
              aria-label="${esc(cat.acao)}: ${esc(item.titulo)}">
-      ${_cardInner(cat, item, thumb, _botaoDownload(url, item.titulo))}
+      ${_cardInner(cat, item, thumb, _botaoDownload(url, item.titulo, 'Video'))}
     </article>`;
 }
 
@@ -330,7 +386,12 @@ export function renderExtra() {
     });
   });
   panel.querySelectorAll('.extra-card__download').forEach(a => {
-    a.addEventListener('click', () => playSound('click', 'resumos'));
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      playSound('click', 'resumos');
+      _baixar(a.dataset.url, a.dataset.nome);
+    });
   });
   // Miniatura que falhou ao carregar: mantém o card, só troca por um placeholder.
   panel.querySelectorAll('.extra-card__preview img').forEach(img => {
@@ -411,6 +472,13 @@ function _criarViewer() {
   };
 
   root.addEventListener('click', e => {
+    const dl = e.target.closest('.extra-viewer__baixar');
+    if (dl) {
+      e.preventDefault();
+      playSound('click', 'resumos');
+      _baixar(dl.dataset.url, dl.dataset.nome);
+      return;
+    }
     if (e.target.closest('[data-fechar]')) { _fecharViewer(); return; }
     const btn = e.target.closest('[data-acao]');
     if (!btn) return;
@@ -509,7 +577,11 @@ function _abrirViewer(mapa, gatilho) {
   _v.desc.textContent   = mapa.descricao ?? '';
   _v.desc.hidden        = !mapa.descricao;
   _v.abrir.href         = mapa._url;
-  _v.baixar.href        = mapa._url;
+  const nomeArq = _nomeArquivo('Mapa_mental', mapa.titulo, mapa._url);
+  _v.baixar.href = mapa._url;
+  _v.baixar.setAttribute('download', nomeArq);
+  _v.baixar.dataset.url  = mapa._url;
+  _v.baixar.dataset.nome = nomeArq;
   _v.img.alt            = mapa.titulo ?? '';
 
   _v.stage.dataset.estado = 'carregando';
@@ -534,4 +606,33 @@ function _fecharViewer() {
   document.removeEventListener('keydown', _onKeydownViewer);
   _retornoFoco?.focus?.();
   _retornoFoco = null;
+}
+
+/* ══════════════════════════════════════════════
+   EXPORT PARA O MODAL DE DOWNLOAD (resumo-pdf.js)
+   Devolve os extras de UMA disciplina (o objeto `extra` do
+   res_{arquivo}.js dela) já separados em:
+     arquivos → baixáveis: mapasMentais e vídeo local, com `url`
+                 resolvida por _resolverExtra (mesma função dos cards)
+     links    → só acesso: `links` e vídeo externo (`url`), nunca baixam
+   Usa CATEGORIAS, _valorPrincipal, _perigosa e _resolverExtra deste
+   arquivo, então a validação e o caminho (inclusive R2, via
+   extraBase) são exatamente os da Home — sem segunda fonte de regra.
+══════════════════════════════════════════════ */
+export function extrasDaDisciplina(extra) {
+  const arquivos = [];
+  const links = [];
+  CATEGORIAS.forEach(cat => {
+    const lista = Array.isArray(extra?.[cat.chave]) ? extra[cat.chave] : [];
+    lista.forEach(it => {
+      const valor = it && typeof it === 'object' ? _valorPrincipal(cat, it) : null;
+      if (!(it && typeof it === 'object' && it.titulo && valor && !_perigosa(valor))) return;
+
+      const base = { cat: cat.chave, icone: cat.icone, singular: cat.singular, categoria: cat.titulo, titulo: it.titulo };
+      const local = cat.tipo === 'mapa' || (cat.chave === 'videos' && !it.url);
+      if (local) arquivos.push({ ...base, url: _resolverExtra(it) });
+      else       links.push({ ...base, url: it.url });
+    });
+  });
+  return { arquivos, links };
 }

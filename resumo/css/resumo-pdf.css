@@ -1,16 +1,26 @@
 /* =============================================
    NEXUS STUDY — resumo/css/resumo-pdf.css
-   Botão "Gerar PDF" no header + modal de seleção
-   (disciplinas, tipo de conteúdo, aulas) usados pelo
-   fluxo de geração de PDF (js/resumo-pdf.js).
+   Botão "Gerar PDF" no header + modal de download
+   (js/pdf/resumo-pdf.js).
 
-   O documento do PDF em si (tipografia de impressão,
-   paginação, quebras) é montado inline dentro de
-   js/resumo-pdf-document.js, e o visualizador (aba
-   própria com PDF.js) em js/resumo-pdf-viewer.js —
-   nenhum dos dois depende deste arquivo, porque são
-   documentos HTML separados, abertos via Blob URL em
-   outra aba/janela (sem acesso a este stylesheet).
+   O modal tem duas áreas:
+     • PDF (principal)  — disciplinas, tipo de conteúdo, aulas,
+                          PDF único/separado e o botão "Gerar PDF"
+                          (rodapé). Ocupa as duas colunas da esquerda.
+     • Extras (lateral) — .pdf-extras, coluna estreita à direita:
+                          mapas mentais, vídeos e links da(s)
+                          disciplina(s) marcada(s). Não entra no PDF.
+   No celular tudo vira uma coluna só (Extras depois das aulas) e o
+   modal sobe como uma folha inferior.
+
+   Colocação das seções no grid do corpo: as classes
+   .pdf-section--disc / --tipo / --aulas são garantidas por
+   _ensureExtrasUI() em js/pdf/resumo-pdf.js, então o layout não
+   depende de como o HTML do modal foi escrito.
+
+   O documento do PDF em si (js/pdf/resumo-pdf-document.js) e o
+   visualizador (js/pdf/resumo-pdf-viewer.js) são documentos HTML
+   separados, abertos via Blob URL — não usam este stylesheet.
    ============================================= */
 
 /* ══════════════════════════════════════════════
@@ -39,9 +49,15 @@
 .btn-pdf:active { transform: scale(0.97); transition-duration: var(--dur-fast); }
 
 /* ══════════════════════════════════════════════
-   MODAL
+   MODAL — casca
 ══════════════════════════════════════════════ */
 .pdf-modal {
+  /* Tokens do checklist (disciplinas, tipos, aulas e extras usam os
+     mesmos): tamanho do checkbox, espaço até o texto e entrelinha.
+     O checkbox é centralizado na PRIMEIRA linha do texto por conta
+     destes números — não por posição absoluta. */
+  --row-fs: 0.84rem;
+  --row-lh: 1.35;
   position: fixed;
   inset: 0;
   z-index: 300;
@@ -59,8 +75,12 @@
 .pdf-modal__panel {
   position: relative;
   width: 100%;
-  max-width: 860px;
-  max-height: 88vh;
+  max-width: 980px;
+  /* Único limite: a própria tela (menos o padding de 1.5rem do .pdf-modal
+     nos dois lados). Antes havia um teto de 780px / 88vh que travava o
+     modal em telas altas mesmo com espaço sobrando. */
+  max-height: calc(100vh - 3rem);
+  max-height: calc(100dvh - 3rem);
   display: flex;
   flex-direction: column;
   background: var(--bg-surface);
@@ -69,80 +89,176 @@
   box-shadow: var(--shadow-lg);
   overflow: hidden;
 }
+.pdf-modal--open .pdf-modal__panel { animation: pdf-panel-in 240ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes pdf-panel-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.985); }
+  to   { opacity: 1; transform: none; }
+}
 
 .pdf-modal__header {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 1.1rem 1.4rem;
+  padding: 1.05rem 1.4rem;
   border-bottom: 1px solid var(--border-1);
   flex-shrink: 0;
 }
 .pdf-modal__title {
   display: flex; align-items: center; gap: 0.6rem;
   font-family: var(--font-display);
-  font-size: 1.15rem; font-weight: 600; color: var(--text-1);
+  font-size: 1.2rem; font-weight: 600; color: var(--text-1);
 }
 .pdf-modal__title svg { color: var(--disc-tema); flex-shrink: 0; }
 .pdf-modal__close {
-  width: 30px; height: 30px;
+  width: 32px; height: 32px;
   display: flex; align-items: center; justify-content: center;
   border-radius: 8px; color: var(--text-2);
   transition: background var(--dur-base), color var(--dur-base);
 }
 .pdf-modal__close:hover { background: rgba(255,255,255,0.08); color: var(--text-1); }
 
+/* ══════════════════════════════════════════════
+   CORPO — grid: PDF (2 colunas) + Extras (1 coluna estreita)
+
+     ┌───────────────┬───────────────┬──────────┐
+     │ Disciplinas   │ Tipo          │          │
+     ├───────────────┴───────────────┤  Extras  │
+     │ Aulas                         │          │
+     └───────────────────────────────┴──────────┘
+   Sem Extras (nenhuma disciplina marcada tem), a coluna some e o
+   PDF ocupa tudo.
+
+   ALTURA (desktop): o corpo ocupa o que sobra entre header e rodapé
+   (flex: 1; min-height: 0). Sem teto fixo em px, a prioridade é:
+   1º o Tipo (piso da linha 1 = o conteúdo dele: todas as opções sempre
+   visíveis, como antes); 2º as Aulas, até o tamanho do conteúdo
+   (linha 2 = auto: sempre a altura do conteúdo, a lista tem seu teto); 3º as
+   Disciplinas, que ficam com TODO o resto (linha 1 = 1fr) e rolam por
+   dentro só quando o resto não comporta a lista inteira.
+   A coluna Extras atravessa as duas linhas e, por isso, tem sempre a
+   altura útil inteira do corpo; dentro dela a lista de itens é a
+   parte flexível e é ela que rola. Nenhuma altura fixa envolvida.
+   overflow-y: auto no corpo fica só como rede de segurança para
+   janelas muito baixas.
+══════════════════════════════════════════════ */
 .pdf-modal__body {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  padding: 1.3rem 1.4rem;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.2rem 1.4rem;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 272px;
+  grid-template-rows: 1fr auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.16) transparent;
 }
-.pdf-section--aulas { grid-column: 1 / -1; }
+.pdf-modal__body:has(> .pdf-extras[hidden]) {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.pdf-section { min-width: 0; padding: 1.3rem 1.4rem 1.2rem; }
+.pdf-section--disc  { grid-column: 1;     grid-row: 1; }
+.pdf-section--tipo  { grid-column: 2;     grid-row: 1; }
+/* Disciplinas e Tipo: coluna flex, como as aulas. Disciplinas: a lista
+   cresce até o conteúdo e, se a linha não comportar, encolhe e rola por
+   dentro. Tipo: nunca encolhe (todas as opções sempre visíveis). */
+.pdf-section--disc, .pdf-section--tipo { display: flex; flex-direction: column; }
+.pdf-section--disc { min-height: 0; }   /* cede espaço; o Tipo (min-height automático) dá o piso da linha */
+.pdf-section--disc > .pdf-section__head,
+.pdf-section--tipo > .pdf-section__head { flex-shrink: 0; }
+.pdf-section--disc > .pdf-disc-list { flex: 0 1 auto; min-height: 0; }
+.pdf-section--tipo > .pdf-tipo-list { flex: 0 0 auto; }
+.pdf-section--aulas {
+  grid-column: 1 / 3; grid-row: 2;
+  /* SEM min-height: 0 — a linha 2 (auto) precisa enxergar o conteúdo
+     inteiro das Aulas, senão encolhe e a lista transborda por cima do
+     padding de baixo. */
+  display: flex; flex-direction: column;
+  margin: 0 1.4rem;                     /* a linha acompanha o conteúdo, não encosta nas bordas */
+  padding: 1.2rem 0 2.6rem;             /* 2.6rem embaixo: folga entre as Aulas e o rodapé do modal */
+  border-top: 1px solid var(--border-1);
+}
+.pdf-section--aulas > .pdf-section__head { flex-shrink: 0; }
 
 .pdf-section__head {
   display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 0.65rem;
   gap: 0.5rem;
+  min-height: 26px;
+  margin-bottom: 0.7rem;
 }
 .pdf-section__label {
-  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em;
-  text-transform: uppercase; color: var(--text-3);
+  font-size: 0.84rem; font-weight: 600;
+  letter-spacing: 0.01em; text-transform: none;
+  color: var(--text-1);
 }
 .pdf-mini-btn {
-  font-size: 0.7rem; font-weight: 600; color: var(--disc-tema);
-  padding: 0.2rem 0.5rem; border-radius: 6px;
+  font-size: 0.72rem; font-weight: 600; color: var(--disc-tema);
+  padding: 0.25rem 0.55rem; border-radius: 6px;
   transition: background var(--dur-base);
   white-space: nowrap;
 }
 .pdf-mini-btn:hover:not(:disabled) { background: rgba(var(--disc-tema-rgb),0.1); }
 .pdf-mini-btn:disabled { opacity: 0.4; cursor: default; }
+a.pdf-mini-btn { text-decoration: none; }
 
+/* ── Listas (disciplinas / aulas) ───────────────────────────── */
 .pdf-disc-list, .pdf-aulas-list {
   border: 1px solid var(--border-1);
   border-radius: var(--r-md);
   background: rgba(255,255,255,0.02);
-  max-height: 220px;
   overflow-y: auto;
+  scrollbar-gutter: stable;              /* a barra aparecer/sumir não empurra as linhas */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.16) transparent;
 }
-.pdf-aulas-list { max-height: 260px; }
+/* Disciplinas: sem teto — o limite vem do espaço da linha (ver acima). */
+/* Aulas: teto bem maior (era 268px). O modal NÃO cresce: a lista não
+   encolhe mais para caber na linha (flex-shrink: 0), então a linha 2
+   fica com a altura do conteúdo e quem rola é o corpo do modal
+   (.pdf-modal__body, overflow-y: auto) — o fim das Aulas fica sempre
+   alcançável. */
+.pdf-aulas-list { max-height: 520px; }
+.pdf-section--aulas > .pdf-aulas-list { flex: 0 0 auto; min-height: 120px; }
 
+/* ── Linha do checklist ─────────────────────────────────────────
+   Visual do checklist de referência: linha flex centralizada, checkbox
+   NATIVO de 15px e texto em uma linha só (reticências se for longo).
+   A cor é a de sempre do projeto: accent-color: var(--disc-tema).
+   Estrutura do JS inalterada:  [ checkbox ][ ícone ][ texto ]
+   O padding usa os tokens --row-py/--row-px só para o celular poder
+   aumentar o alvo de toque (regra no @media 600px, mais abaixo). */
 .pdf-disc-item, .pdf-aula-item {
+  --row-py: 0.55rem;
+  --row-px: 0.75rem;
   display: flex; align-items: center; gap: 0.55rem;
-  padding: 0.55rem 0.75rem;
+  padding: var(--row-py) var(--row-px);
   font-size: 0.82rem; color: var(--text-2);
   border-bottom: 1px solid var(--border-1);
   cursor: pointer;
+  user-select: none; -webkit-tap-highlight-color: transparent;
   transition: background var(--dur-fast), color var(--dur-fast);
 }
 .pdf-disc-item:last-child, .pdf-aula-item:last-child { border-bottom: none; }
 .pdf-disc-item:hover, .pdf-aula-item:hover { background: rgba(255,255,255,0.04); color: var(--text-1); }
+
+/* Coluna do ícone: o JS sempre renderiza o span (mesmo sem ícone) e os
+   ícones são SVG sem largura própria — por isso a coluna tem tamanho
+   fixo (não faz parte do checklist de referência, que usava emoji). */
+.pdf-disc-item__emoji {
+  flex: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 1.25rem;
+  height: calc(var(--row-fs) * var(--row-lh));
+  line-height: 1;
+  overflow: hidden;
+}
+.pdf-disc-item__emoji > * { max-width: 100%; max-height: 100%; }
+
+.pdf-disc-item__nome,
+.pdf-aula-item span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Checkbox nativo, na cor do projeto. */
 .pdf-disc-item input, .pdf-aula-item input {
   width: 15px; height: 15px; accent-color: var(--disc-tema); flex-shrink: 0;
 }
-.pdf-disc-item__emoji { flex-shrink: 0; }
-.pdf-disc-item__nome,
-.pdf-aula-item span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pdf-disc-item input:disabled, .pdf-aula-item input:disabled { opacity: 0.5; cursor: default; }
 
 .pdf-aulas-empty {
   padding: 1.6rem 1rem; text-align: center;
@@ -154,10 +270,10 @@
   border-top: 2px solid var(--border-3);
 }
 .pdf-aula-grupo__titulo {
+  position: sticky; top: 0; z-index: 1;
   padding: 0.65rem 0.75rem;
   font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
   letter-spacing: 0.06em; color: var(--disc-tema);
-  position: sticky; top: 0;
   background: var(--bg-raised);
   border-bottom: 1px solid var(--border-2);
 }
@@ -167,78 +283,328 @@
 }
 
 /* Subcabeçalho de TIPO dentro de um grupo de disciplina — só aparece
-   quando mais de um "Tipo de conteúdo" está selecionado ao mesmo
-   tempo (ver _renderAulas em js/resumo-pdf.js); com um único tipo
-   ativo essa marcação nem é renderizada, preservando o visual
-   original (disciplina → lista de aulas, sem esse nível extra). */
+   quando mais de um tipo está selecionado (ver _renderAulas). */
 .pdf-aula-subgrupo__titulo {
   padding: 0.55rem 0.75rem 0.3rem;
   font-size: 0.66rem; font-weight: 700; text-transform: uppercase;
   letter-spacing: 0.05em; color: var(--text-2);
 }
 .pdf-aula-grupo__loading + .pdf-aula-subgrupo__titulo,
-.pdf-aula-grupo__titulo + .pdf-aula-subgrupo__titulo {
-  padding-top: 0.4rem;
-}
+.pdf-aula-grupo__titulo + .pdf-aula-subgrupo__titulo { padding-top: 0.4rem; }
 
 /* ══════════════════════════════════════════════
-   TIPO DE CONTEÚDO
+   TIPO DE CONTEÚDO — seleção múltipla (cada botão é um toggle)
 ══════════════════════════════════════════════ */
-.pdf-tipo-list { display: flex; flex-direction: column; gap: 0.5rem; }
-.pdf-tipo-btn {
-  display: flex; flex-direction: column; align-items: flex-start; gap: 0.15rem;
-  text-align: left;
-  padding: 0.6rem 0.8rem;
+/* Mesma caixa e mesma linha de Disciplinas (label.pdf-disc-item com
+   checkbox nativo); a descrição vai numa 2ª linha do texto. */
+.pdf-tipo-list {
   border: 1px solid var(--border-1);
   border-radius: var(--r-md);
   background: rgba(255,255,255,0.02);
-  transition: border-color var(--dur-base), background var(--dur-base);
+  overflow: hidden;
 }
-.pdf-tipo-btn:hover { border-color: var(--border-3); }
-.pdf-tipo-btn--active {
-  border-color: rgba(var(--disc-tema-rgb),0.4);
-  background: rgba(var(--disc-tema-rgb),0.08);
-}
-.pdf-tipo-btn__nome { font-size: 0.86rem; font-weight: 600; color: var(--text-1); }
-.pdf-tipo-btn--active .pdf-tipo-btn__nome { color: var(--disc-tema); }
-.pdf-tipo-btn__desc { font-size: 0.74rem; color: var(--text-3); line-height: 1.4; }
+.pdf-tipo-item__txt { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; flex: 1; }
+.pdf-tipo-item__nome { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pdf-tipo-item__desc { font-size: 0.72rem; line-height: 1.4; color: var(--text-3); overflow-wrap: anywhere; }
+.pdf-tipo-item input:checked ~ .pdf-tipo-item__txt .pdf-tipo-item__nome { color: var(--text-1); }
 
 /* ══════════════════════════════════════════════
-   FOOTER
+   EXTRAS — coluna lateral, secundária
+   Um resumo do que existe, UM botão de baixar e um "Escolher itens"
+   recolhido (<details>) para desmarcar arquivos ou abrir/copiar links.
+
+   Altura: a coluna atravessa as 2 linhas do grid, mas com
+   align-self: start — o container (fundo e divisória) tem a altura
+   do CONTEÚDO: cabeçalho, resumo, botão e a lista de itens. A lista tem piso e teto
+   (ver .pdf-extras__itens[open] .pdf-extras__lista) e só rola por
+   dentro ao passar do teto. O overflow-y: auto da própria coluna é
+   rede de segurança para janelas muito baixas.
+══════════════════════════════════════════════ */
+.pdf-extras {
+  grid-column: 3; grid-row: 1 / span 2;
+  align-self: start;                     /* o fundo termina no conteúdo (sem isso o item de grid estica até o fim do corpo) */
+  display: flex; flex-direction: column; gap: 1.2rem;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  /* Caixa arredondada, igual às listas de Disciplinas/Tipo/Aulas: borda
+     completa + --r-md, destacada das bordas do modal por uma margem.
+     O padding-top compensa a margem, para o título continuar alinhado
+     com os das outras seções. */
+  margin: 0.9rem 1rem 1rem 0;
+  padding: 0.4rem 1.2rem 1.4rem;
+  border: 1px solid var(--border-1);
+  border-radius: var(--r-md);
+  background: rgba(255,255,255,0.022);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.16) transparent;
+}
+.pdf-extras[hidden] { display: none; }
+.pdf-extras > * { flex-shrink: 0; }
+
+.pdf-extras__titulo {
+  display: flex; align-items: center;
+  margin: 0;
+  min-height: 26px;                      /* mesma altura dos títulos das seções do PDF, para alinhar */
+  font-family: var(--font-display);
+  font-size: 1rem; font-weight: 600; line-height: 1.2;
+  color: var(--text-1);
+}
+.pdf-extras__nota {
+  margin: 0.1rem 0 0;
+  font-size: 0.74rem; line-height: 1.45; color: var(--text-3);
+}
+.pdf-extras__vazio { margin: 0; font-size: 0.78rem; line-height: 1.5; color: var(--text-3); }
+
+.pdf-extras__resumo { display: flex; flex-direction: column; gap: 0.5rem; list-style: none; margin: 0; padding: 0; }
+.pdf-extras__resumo li { display: flex; align-items: center; gap: 0.6rem; font-size: 0.83rem; color: var(--text-2); }
+.pdf-extras__ico { display: inline-flex; flex-shrink: 0; color: var(--text-3); }
+.pdf-extras__nome { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pdf-extras__qtd {
+  font-family: var(--font-mono); font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-3);
+}
+
+/* Ação secundária: contorno, sem preenchimento — o "Gerar PDF" do
+   rodapé continua sendo o único botão de destaque do modal. */
+.pdf-extras__btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  width: 100%; height: 38px;
+  padding: 0 0.9rem;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-3);
+  background: transparent;
+  color: var(--text-1);
+  font-size: 0.8rem; font-weight: 600;
+  transition: background var(--dur-base), border-color var(--dur-base), transform var(--dur-fast);
+}
+.pdf-extras__btn:hover:not(:disabled) { background: rgba(255,255,255,0.07); border-color: rgba(var(--disc-tema-rgb), 0.5); }
+.pdf-extras__btn:active:not(:disabled) { transform: scale(0.98); }
+.pdf-extras__btn:focus-visible { outline: 2px solid rgba(var(--disc-tema-rgb), 0.6); outline-offset: 2px; }
+.pdf-extras__btn:disabled { opacity: 0.45; cursor: default; }
+.pdf-extras__btn--loading svg { animation: pdf-gerando-spin 0.8s linear infinite; }
+
+.pdf-extras__itens summary {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.2rem 0;
+  font-size: 0.76rem; font-weight: 600; color: var(--text-2);
+  cursor: pointer; list-style: none;
+  transition: color var(--dur-base);
+}
+.pdf-extras__itens summary::-webkit-details-marker { display: none; }
+.pdf-extras__itens summary:hover { color: var(--text-1); }
+.pdf-extras__itens summary:focus-visible { outline: 2px solid rgba(var(--disc-tema-rgb), 0.6); outline-offset: 2px; border-radius: 4px; }
+.pdf-extras__itens summary svg { transition: transform var(--dur-base); }
+.pdf-extras__itens[open] summary svg { transform: rotate(180deg); }
+
+/* A lista NÃO tem mais teto fixo (era max-height: 220px): ela cresce
+   até o conteúdo e, quando falta espaço, encolhe e rola por dentro. */
+.pdf-extras__lista {
+  margin-top: 0.4rem;
+  border: 1px solid var(--border-1);
+  border-radius: var(--r-md);
+  background: rgba(255,255,255,0.02);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.16) transparent;
+}
+
+/* Altura do Extras = altura do CONTEÚDO. Nada aqui usa flex-grow: o
+   <details> aberto e a lista NÃO ocupam o espaço que sobra na coluna.
+   A lista tem um piso confortável e um teto; só passando do teto é que
+   aparece o scroll interno. (A coluna em si continua com a altura do
+   corpo — divisória e fundo — mas a caixa da lista termina no conteúdo.) */
+.pdf-extras__itens[open] .pdf-extras__lista {
+  flex: 0 0 auto;
+  min-height: 150px;
+  max-height: 420px;
+  overflow-y: auto;
+  scrollbar-gutter: stable;            /* barra não empurra as linhas */
+}
+
+.pdf-extras__disc {
+  position: sticky; top: 0; z-index: 1;
+  padding: 0.65rem 0.75rem;
+  font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--disc-tema);
+  background: var(--bg-raised);
+  border-bottom: 1px solid var(--border-2);
+}
+
+/* A linha dos Extras é a do checklist (.pdf-aula-item: label > checkbox
+   nativo + texto em 1 linha com reticências). Aqui só o que é próprio:
+   o nome ocupa o espaço e a etiqueta do formato (EXT) não encolhe. */
+.pdf-extras__item-nome { flex: 1 1 0; min-width: 0; }
+.pdf-extras__item:has(input:checked) { color: var(--text-1); }
+.pdf-extras__ext {
+  flex: none;
+  font-family: var(--font-mono); font-size: 0.64rem; line-height: 1; color: var(--text-3);
+}
+/* Linha de link (sem checkbox): reserva a coluna do checkbox (15px +
+   gap 0.55rem) para o texto começar no mesmo x das linhas de arquivo. */
+.pdf-extras__item--link {
+  cursor: default; gap: 0.3rem;
+  padding-left: calc(var(--row-px) + 15px + 0.55rem);
+}
+.pdf-extras__item--link:hover { background: transparent; color: var(--text-2); }
+.pdf-extras__item--link .pdf-mini-btn { flex: none; }
+
+/* ══════════════════════════════════════════════
+   RODAPÉ — contagem + PDF único/separado + Gerar PDF
 ══════════════════════════════════════════════ */
 .pdf-modal__footer {
   display: flex; align-items: center; justify-content: space-between;
   gap: 1rem;
-  padding: 1rem 1.4rem;
+  padding: 0.9rem 1.4rem;
   border-top: 1px solid var(--border-1);
+  background: var(--bg-surface);
   flex-shrink: 0;
 }
 .pdf-modal__count { font-size: 0.78rem; color: var(--text-3); }
+
+/* Agrupa contagem + toggle "Baixar separado por disciplina" (ver
+   _ensureSeparadoToggleUI em js/pdf/resumo-pdf.js). */
+.pdf-modal__footer-left {
+  display: flex; align-items: center; gap: 1.1rem;
+  min-width: 0; flex-wrap: wrap;
+}
+.pdf-separado-toggle {
+  display: inline-flex; align-items: center; gap: 0.55rem;
+  font-size: 0.79rem; color: var(--text-2);
+  cursor: pointer; white-space: nowrap;
+}
+.pdf-separado-toggle:has(input:checked) { color: var(--text-1); }
+.pdf-separado-toggle:has(input:disabled) { opacity: 0.5; cursor: default; }
+/* o checkbox vira um interruptor */
+.pdf-separado-toggle input {
+  appearance: none; -webkit-appearance: none;
+  position: relative; flex-shrink: 0;
+  width: 30px; height: 18px; margin: 0;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.16);
+  cursor: pointer;
+  transition: background var(--dur-base);
+}
+.pdf-separado-toggle input::after {
+  content: '';
+  position: absolute; top: 2px; left: 2px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: #fff;
+  transition: transform var(--dur-base) cubic-bezier(0.22, 1, 0.36, 1);
+}
+.pdf-separado-toggle input:checked { background: var(--disc-tema); }
+.pdf-separado-toggle input:checked::after { transform: translateX(12px); }
+.pdf-separado-toggle input:focus-visible { outline: 2px solid rgba(var(--disc-tema-rgb), 0.6); outline-offset: 2px; }
+
 .pdf-generate-btn {
-  display: inline-flex; align-items: center; gap: 0.5rem;
-  padding: 0.65rem 1.3rem;
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.55rem;
+  height: 42px; padding: 0 1.5rem;
   border-radius: var(--r-md);
   background: var(--disc-tema);
   color: var(--bg-base);
-  font-size: 0.84rem; font-weight: 700;
+  font-size: 0.88rem; font-weight: 700;
   transition: opacity var(--dur-base), transform var(--dur-fast);
 }
 .pdf-generate-btn:hover:not(:disabled) { opacity: 0.9; }
 .pdf-generate-btn:active:not(:disabled) { transform: scale(0.97); }
+.pdf-generate-btn:focus-visible { outline: 2px solid var(--text-1); outline-offset: 2px; }
 .pdf-generate-btn:disabled { opacity: 0.35; cursor: default; }
 
-/* Gira o ícone do botão "Gerar PDF" enquanto a geração está em
-   andamento (ver _setGerando em js/resumo-pdf.js, que só alterna a
-   classe abaixo — antes esta regra era injetada em runtime via JS
-   (_injetarEstiloGerando); movida para cá porque é CSS de uma parte
-   fixa desta própria página, sem motivo pra passar por JS). */
-.pdf-generate-btn--loading svg { animation: pdf-gerando-spin .8s linear infinite; }
+/* Gira o ícone do botão enquanto a geração/download está em andamento
+   (_setGerando em js/pdf/resumo-pdf.js só alterna as classes). */
+.pdf-generate-btn--loading svg { animation: pdf-gerando-spin 0.8s linear infinite; }
 @keyframes pdf-gerando-spin { to { transform: rotate(360deg); } }
 
-@media (max-width: 720px) {
-  .pdf-modal__body { grid-template-columns: 1fr; }
+/* ══════════════════════════════════════════════
+   RESPONSIVO
+══════════════════════════════════════════════ */
+
+/* Desktop com janela baixa (notebook pequeno): piso menor para as
+   duas linhas. As listas de disciplinas/tipo NÃO são mais encurtadas
+   (antes: max-height 120px) — só rolam por dentro se faltar espaço. */
+@media (min-width: 861px) and (max-height: 700px) {
+  .pdf-modal__body { grid-template-rows: 1fr auto; }
+  .pdf-section--aulas > .pdf-aulas-list { min-height: 64px; }
+  .pdf-extras__itens[open] .pdf-extras__lista { min-height: 80px; }
 }
+
+/* Tablet / janela estreita: uma coluna. Extras vem depois das aulas.
+   Aqui o corpo é quem rola (coluna única, altura livre); cada lista
+   tem o seu teto próprio e rola por dentro. */
+@media (max-width: 860px) {
+  .pdf-modal__body,
+  .pdf-modal__body:has(> .pdf-extras[hidden]) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+  }
+
+  .pdf-section--disc, .pdf-section--tipo, .pdf-section--aulas, .pdf-extras {
+    grid-column: 1; grid-row: auto;
+  }
+  .pdf-section--disc { padding-bottom: 0.4rem; }
+  .pdf-section--tipo { padding-top: 0.9rem; }
+  /* Coluna única: sem linhas de altura definida, as seções voltam a ser
+     blocos com altura natural (o corpo é quem rola). */
+  .pdf-section--disc, .pdf-section--tipo { display: block; min-height: auto; }
+  /* Coluna única: o corpo rola, então a lista de disciplinas precisa de
+     um limite — proporcional à altura da tela (piso = valor antigo). */
+  .pdf-disc-list { max-height: max(232px, 46vh); max-height: max(232px, 46dvh); }
+  .pdf-section--aulas { display: block; min-height: auto; }
+  .pdf-section--aulas > .pdf-aulas-list { min-height: 0; max-height: min(520px, 60dvh); }
+
+  .pdf-extras {
+    min-height: auto;
+    overflow: visible;
+    /* coluna única: volta a ser uma faixa de largura total */
+    margin: 0; padding-top: 1.3rem;
+    border: none; border-radius: 0;
+    border-top: 1px solid var(--border-1);
+  }
+  .pdf-extras__itens .pdf-extras__lista,
+  .pdf-extras__itens[open] .pdf-extras__lista {
+    flex: 0 1 auto;
+    min-height: 0;
+    max-height: min(360px, 45dvh);
+    overflow-y: auto;
+  }
+}
+
+/* Celular: o modal sobe como folha inferior, rodapé empilhado. */
 @media (max-width: 600px) {
+  .pdf-modal { padding: 0; align-items: flex-end; }
+  .pdf-modal__panel {
+    max-width: none;
+    max-height: 94dvh;
+    border-radius: var(--r-xl) var(--r-xl) 0 0;
+    border-bottom: none;
+  }
+  .pdf-modal--open .pdf-modal__panel { animation-name: pdf-sheet-in; }
+
+  .pdf-modal__header { padding: 0.95rem 1.1rem; }
+  .pdf-section { padding-left: 1.1rem; padding-right: 1.1rem; }
+  .pdf-section--aulas { margin: 0 1.1rem; padding-left: 0; padding-right: 0; }
+  .pdf-extras { padding-left: 1.1rem; padding-right: 1.1rem; }
+
+  /* alvos de toque maiores */
+  .pdf-disc-item, .pdf-aula-item { --row-py: 0.75rem; }
+  .pdf-extras__btn { height: 42px; }
+
   .btn-pdf__label { display: none; }
   .btn-pdf { padding: 0.45rem 0.6rem; }
+
+  .pdf-modal__footer {
+    flex-direction: column; align-items: stretch; gap: 0.7rem;
+    padding: 0.85rem 1.1rem calc(0.85rem + env(safe-area-inset-bottom, 0px));
+  }
+  .pdf-modal__footer-left { width: 100%; justify-content: space-between; gap: 0.6rem; }
+  .pdf-generate-btn { width: 100%; height: 46px; }
+}
+@keyframes pdf-sheet-in {
+  from { opacity: 0.6; transform: translateY(24px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pdf-modal--open .pdf-modal__panel { animation: none; }
+  .pdf-modal *, .pdf-modal *::after, .pdf-modal *::before { transition-duration: 0.01ms !important; }
 }
