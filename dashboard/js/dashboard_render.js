@@ -121,11 +121,18 @@
    nenhum arquivo utilitário compartilhado foi criado; a pequena
    duplicação dessa função pura foi o trade-off aceito para manter
    os dois módulos sem dependência de um terceiro arquivo.
+
+   ─────────────────────────────────────────────
+   REORGANIZAÇÃO — SISTEMA DE CONQUISTAS EM conquista/
+   ─────────────────────────────────────────────
+   conquistas.js foi movido para dashboard/js/conquista/ e este
+   arquivo passou a importar renderAchievements de
+   './conquista/index.js' (interface única). Nenhuma outra alteração.
    ============================================= */
 
 import { State } from './dashboard_data.js';
 import { perfLog } from '../../src/perf_logger.js';
-import { renderAchievements } from './conquistas.js';
+import { renderAchievements } from './conquista/index.js';
 import { UIState } from './utils/ui_state_manager.js';
 
 /* ══════════════════════════════════════════════

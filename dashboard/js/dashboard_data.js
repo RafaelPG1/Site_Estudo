@@ -168,6 +168,19 @@
    console. console.warn/console.error de erro real (uid
    ausente, módulo indisponível, falha de leitura) foram
    mantidos.
+
+   ─────────────────────────────────────────────
+   REORGANIZAÇÃO — SISTEMA DE CONQUISTAS EM conquista/
+   ─────────────────────────────────────────────
+   _calcularConquistas e _calcularProgressoConquistas saíram deste
+   arquivo para dashboard/js/conquista/regras.js, e a busca do
+   relatório/contagem GLOBAIS de conquistas foi para
+   conquista/index.js (carregarConquistas). Aqui restou apenas: o
+   import de carregarConquistas, sua chamada dentro do Promise.all de
+   _carregarIntelligence e a gravação de relatorio.conquistas /
+   relatorio.conquistasProgresso. Os changelogs acima que citam essas
+   funções descrevem o histórico — o código agora está em conquista/.
+   O comportamento (conquistas sempre globais, mesmos campos) não mudou.
    ============================================= */
 
 import { getUsuario } from '../../src/global.js';
@@ -189,6 +202,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 import { renderDashboardIntelligence } from './dashboard_render.js';
+import { carregarConquistas } from './conquista/index.js';
 import { perfLog, logFirestore } from '../../src/perf_logger.js';
 
 /* ─────────────────────────────────────────────
@@ -400,101 +414,11 @@ function _importarQuizIntelligence() {
   return _quizIntelligenceModulePromise;
 }
 
-/* ── Derivação das conquistas ────────────────────────────────
-   Recebe o relatorio + estatísticas de sessão (ambos já em
-   memória — nenhuma chamada adicional).
-
-   IMPORTANTE (ver changelog "CONQUISTAS INDEPENDENTES DE
-   SEMESTRE" no topo do arquivo): o `relatorio` recebido aqui
-   por _carregarIntelligence é sempre o relatório GLOBAL
-   (semestre=null), nunca o relatório filtrado pelo semestre
-   selecionado no dashboard. Esta função em si não sabe nem
-   precisa saber disso — ela só lê os campos do objeto que
-   recebe; a garantia de "sempre global" é responsabilidade de
-   quem chama (_carregarIntelligence).
-
-   Retorna objeto { id: boolean } para renderAchievements().
-
-   Regras de cada conquista — leitura de campos já existentes:
-     sequencia7      → stats.streak >= 7
-     sequencia30     → stats.streak >= 30
-     tentativas100   → relatorio.scoreEvolutivo.totalTentativas >= 100
-     questoesMil     → relatorio.totalQuestoes >= 1000
-                       (contarQuestoesRespondidas já foi chamado e
-                        armazenado em relatorio.totalQuestoes)
-     scoreAvancado   → relatorio.scoreEvolutivo.nivelEstimado === 'avancado'
-     emEvolucao      → relatorio.tendenciaDoAluno.direcao === 'melhorando'
-     miraAfiada      → scoreEvolutivo.composicao.taxaAcertoMediaPct >= 75
-     maratonista     → stats.melhorDia.tempo >= 18000 (5h)
-     semQuedas       → fraquezasPorDisciplina sem nenhum emQueda === true
-     sessoes50       → stats.totalSessoes >= 50
-*/
-function _calcularConquistas(relatorio, stats) {
-  if (!relatorio || !stats) return {};
-
-  const score      = relatorio.scoreEvolutivo;
-  const tendencia  = relatorio.tendenciaDoAluno;
-  const fraquezas  = relatorio.fraquezasPorDisciplina;
-
-  const streak          = stats.streak ?? 0;
-  const totalSessoes    = stats.totalSessoes ?? 0;
-  const melhorDiaTempo  = stats.melhorDia?.tempo ?? 0;
-
-  const totalTentativas   = score?.totalTentativas ?? 0;
-  const totalQuestoes     = relatorio.totalQuestoes ?? 0;
-  const nivelEstimado     = score?.nivelEstimado ?? '';
-  const tendenciaDir      = tendencia?.direcao ?? '';
-  const taxaMediaPct      = score?.composicao?.taxaAcertoMediaPct ?? 0;
-  const temQueda          = Array.isArray(fraquezas)
-    ? fraquezas.some(f => f?.emQueda === true)
-    : false;
-
-  return {
-    sequencia7:    streak >= 7,
-    sequencia30:   streak >= 30,
-    tentativas100: totalTentativas >= 100,
-    questoesMil:   totalQuestoes >= 1000,
-    scoreAvancado: nivelEstimado === 'avançado',
-    emEvolucao:    tendenciaDir === 'melhorando',
-    miraAfiada:    taxaMediaPct >= 75,
-    maratonista:   melhorDiaTempo >= 18000,
-    semQuedas:     !temQueda && totalTentativas > 0,
-    sessoes50:     totalSessoes >= 50,
-  };
-}
-
-/* ── Progresso numérico das conquistas (apoio visual) ──────────
-   NÃO recalcula nada e NÃO cria nenhuma regra nova: lê os MESMOS
-   campos já extraídos em _calcularConquistas (streak, totalSessoes,
-   totalTentativas, totalQuestoes, taxaAcertoMediaPct, melhorDia.tempo)
-   e apenas expõe o par {atual, meta} para as barras de progresso
-   da UI. A lógica de desbloqueio continua 100% em _calcularConquistas.
-
-   IMPORTANTE: assim como em _calcularConquistas, o `relatorio`
-   recebido aqui deve ser sempre o relatório GLOBAL (semestre=null)
-   — ver changelog "CONQUISTAS INDEPENDENTES DE SEMESTRE". */
-function _calcularProgressoConquistas(relatorio, stats) {
-  if (!relatorio || !stats) return {};
-
-  const score = relatorio.scoreEvolutivo;
-
-  const streak           = stats.streak ?? 0;
-  const totalSessoes     = stats.totalSessoes ?? 0;
-  const melhorDiaTempo   = stats.melhorDia?.tempo ?? 0;
-  const totalTentativas  = score?.totalTentativas ?? 0;
-  const totalQuestoes    = relatorio.totalQuestoes ?? 0;
-  const taxaMediaPct     = score?.composicao?.taxaAcertoMediaPct ?? 0;
-
-  return {
-    sequencia7:    { atual: streak,          meta: 7,     tipo: 'numero'     },
-    sequencia30:   { atual: streak,          meta: 30,    tipo: 'numero'     },
-    tentativas100: { atual: totalTentativas, meta: 100,   tipo: 'numero'     },
-    questoesMil:   { atual: totalQuestoes,   meta: 1000,  tipo: 'numero'     },
-    miraAfiada:    { atual: taxaMediaPct,    meta: 75,    tipo: 'percentual' },
-    maratonista:   { atual: melhorDiaTempo,  meta: 18000, tipo: 'tempo'      },
-    sessoes50:     { atual: totalSessoes,    meta: 50,    tipo: 'numero'     },
-  };
-}
+/* ── Conquistas ──────────────────────────────────────────────
+   As regras de desbloqueio/progresso (antes _calcularConquistas e
+   _calcularProgressoConquistas) vivem agora em conquista/regras.js.
+   Este arquivo só chama carregarConquistas() (conquista/index.js) em
+   _carregarIntelligence e grava o resultado em relatorio. */
 
 /* _carregarIntelligence(uid)
    Lê State.semestre para filtrar as métricas de quiz POR SEMESTRE
@@ -533,9 +457,7 @@ export async function _carregarIntelligence(uid, statsPreCarregadas = null) {
       relatorio,
       tentativasRecentes,
       totalQuestoes,
-      statsAtuais,
-      relatorioGlobalConquistas,
-      totalQuestoesGlobal,
+      resultadoConquistas,
     ] = await Promise.all([
       (async () => {
         const t0 = performance.now();
@@ -559,51 +481,32 @@ export async function _carregarIntelligence(uid, statsPreCarregadas = null) {
         perfLog('Promise.all (item)', '_carregarIntelligence :: contarQuestoesRespondidas (filtrado por semestre)', performance.now() - t0);
         return r;
       })(),
+      /* ── CONQUISTAS — delegadas a conquista/ ────────────────────
+         Busca do relatório GLOBAL (semestre=null) + cálculo de
+         desbloqueio/progresso acontecem dentro de
+         conquista/index.js — sempre independentes de State.semestre.
+         Instrumentação de tempo (perfLog) fica aqui, não em
+         conquista/index.js, para conquista/ não precisar importar
+         nada de fora de dashboard/js/conquista/. */
       (async () => {
         const t0 = performance.now();
-        const r = await statsPromise;
-        perfLog('Promise.all (item)', '_carregarIntelligence :: statsPromise (compartilhada)', performance.now() - t0);
-        return r;
-      })(),
-      /* ── CONQUISTAS — SEMPRE GLOBAL ──────────────────────────────
-         Relatório independente, buscado com semestre=null
-         INDEPENDENTEMENTE de State.semestre. É a única fonte usada
-         para _calcularConquistas/_calcularProgressoConquistas logo
-         abaixo — nunca o `relatorio` filtrado acima. Isso garante
-         que a coleção de Conquistas nunca varie ao trocar de
-         semestre no seletor do dashboard. */
-      (async () => {
-        const t0 = performance.now();
-        const r = await mod.relatorioEvolucao(uid, null);
-        perfLog('Promise.all (item)', '_carregarIntelligence :: relatorioEvolucao (GLOBAL, p/ conquistas)', performance.now() - t0);
-        return r;
-      })(),
-      (async () => {
-        const t0 = performance.now();
-        const r = typeof mod.contarQuestoesRespondidas === 'function'
-          ? await mod.contarQuestoesRespondidas(uid, null)
-          : 0;
-        perfLog('Promise.all (item)', '_carregarIntelligence :: contarQuestoesRespondidas (GLOBAL, p/ conquistas)', performance.now() - t0);
+        const r = await carregarConquistas(mod, uid, statsPromise);
+        perfLog('Promise.all (item)', '_carregarIntelligence :: carregarConquistas (GLOBAL, conquista/)', performance.now() - t0);
         return r;
       })(),
     ]);
-    perfLog('Promise.all', '_carregarIntelligence :: total do conjunto (6 itens)', performance.now() - _tPromiseAll);
+    perfLog('Promise.all', '_carregarIntelligence :: total do conjunto (4 itens)', performance.now() - _tPromiseAll);
 
     relatorio.tentativasRecentes = tentativasRecentes;
     relatorio.totalQuestoes      = totalQuestoes;
     relatorio.semestreFiltrado   = semestreAtivo;
 
-    /* Conquistas: SEMPRE calculadas a partir do relatório GLOBAL
-       (relatorioGlobalConquistas / totalQuestoesGlobal) — nunca do
-       `relatorio` filtrado por semestre acima. `relatorio.conquistas`
-       e `relatorio.conquistasProgresso` continuam sendo os campos
-       lidos por renderAchievements() (ver conquistas.js), então nada
-       muda do lado de fora desta função: só a origem dos dados. */
-    const _tConquistas = performance.now();
-    relatorioGlobalConquistas.totalQuestoes = totalQuestoesGlobal;
-    relatorio.conquistas          = _calcularConquistas(relatorioGlobalConquistas, statsAtuais);
-    relatorio.conquistasProgresso = _calcularProgressoConquistas(relatorioGlobalConquistas, statsAtuais);
-    perfLog('quiz_intelligence', '_carregarIntelligence :: cálculo local de conquistas (fonte global)', performance.now() - _tConquistas);
+    /* Conquistas: calculadas por conquista/index.js SEMPRE a partir do
+       relatório GLOBAL — nunca do `relatorio` filtrado por semestre.
+       `relatorio.conquistas` e `relatorio.conquistasProgresso` continuam
+       sendo os campos lidos por renderAchievements(). */
+    relatorio.conquistas          = resultadoConquistas.conquistas;
+    relatorio.conquistasProgresso = resultadoConquistas.conquistasProgresso;
 
     State.intelligence = relatorio;
 

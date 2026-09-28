@@ -667,7 +667,25 @@ function _initProgressBarAnimation() {
 /* ══════════════════════════════════════════════
    BOOT
 ══════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════
+   BLOQUEIO DE ACESSO — sem login, volta para o index.html
+   ─────────────────────────────────────────────
+   Sem usuário (getUsuario() sem uid) o Dashboard não tem o que
+   carregar: _carregarMetricasReais() sairia em silêncio e a tela
+   ficaria vazia. Aqui a pessoa é redirecionada para a página de
+   login. replace() evita que o botão Voltar traga a Dashboard
+   vazia de volta.
+══════════════════════════════════════════════ */
+const _URL_LOGIN = '../index.html';
+
+function _exigirLogin() {
+  if (getUsuario?.()?.uid) return true;
+  location.replace(_URL_LOGIN);
+  return false;
+}
+
 async function _bootPagina() {
+  if (!_exigirLogin()) return;
   setPagina('DASHBOARD');
   Sound.init();
   installAudioRecovery({ Sound, audio });
@@ -734,6 +752,8 @@ async function _bootPagina() {
   });
 
   document.addEventListener('nexus:logout', () => {
+    location.replace(_URL_LOGIN);
+    return;
     _renderUsuario();
     _renderMetricasVazio();
     /* Limpa o relatório de inteligência ao fazer logout. */
