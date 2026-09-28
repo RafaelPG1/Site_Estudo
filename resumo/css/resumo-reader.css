@@ -80,7 +80,8 @@
   white-space: nowrap;
   transition: max-width var(--dur-slow) var(--ease), opacity var(--dur-base);
 }
-.reader__bar--compact .reader__back-label { max-width: 0; opacity: 0; }
+/* O botão Voltar mantém o texto "Voltar" também no header compacto
+   (antes o rótulo encolhia até sobrar só o ícone ao rolar a página). */
 
 /* Identidade: Disciplina · Aula (· Seção, quando compacto) — alinhado
    à esquerda, junto do botão Voltar, como uma trilha de contexto real. */
@@ -490,14 +491,75 @@
   text-transform: uppercase;
   color: var(--text-2);
 }
+/* Botão recolher/expandir todos — destacado com a cor da disciplina.
+   O ícone mostra a PRÓXIMA ação; o tooltip aparece no hover/foco. */
 .rm-toc__action {
-  width: 26px; height: 26px;
+  position: relative;
+  width: 32px; height: 32px;
+  flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   border-radius: var(--r-sm);
-  color: var(--text-3);
-  transition: color var(--dur-base), background var(--dur-base);
+  color: var(--disc-tema);
+  background: rgba(var(--disc-tema-rgb), 0.14);
+  border: 1px solid rgba(var(--disc-tema-rgb), 0.38);
+  cursor: pointer;
+  transition: color var(--dur-base), background var(--dur-base),
+              border-color var(--dur-base), box-shadow var(--dur-base),
+              transform var(--dur-fast);
 }
-.rm-toc__action:hover { color: var(--disc-tema); background: rgba(var(--disc-tema-rgb),0.10); }
+.rm-toc__action:hover:not(:disabled),
+.rm-toc__action:focus-visible {
+  background: rgba(var(--disc-tema-rgb), 0.26);
+  border-color: var(--disc-tema);
+  box-shadow: 0 0 0 3px rgba(var(--disc-tema-rgb), 0.16);
+}
+.rm-toc__action:disabled { opacity: 0.4; cursor: default; }
+
+.rm-toc__action-icon {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity var(--dur-base), transform var(--dur-base) var(--ease);
+}
+/* estado "open" (tudo aberto) → próxima ação é recolher */
+.rm-toc__action[data-state="open"]   .rm-toc__action-icon--expand,
+.rm-toc__action[data-state="closed"] .rm-toc__action-icon--collapse {
+  opacity: 0;
+  transform: scale(0.6) rotate(-45deg);
+}
+.rm-toc__action:not([data-state]) .rm-toc__action-icon--expand {
+  opacity: 0;
+}
+
+.rm-toc__action-tip {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 30;
+  padding: 0.35rem 0.6rem;
+  border-radius: var(--r-sm);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-1);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  color: var(--text-1);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity var(--dur-base), transform var(--dur-base) var(--ease);
+}
+.rm-toc__action:hover:not(:disabled) .rm-toc__action-tip,
+.rm-toc__action:focus-visible .rm-toc__action-tip {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0.25s;   /* evita piscar ao só passar o mouse */
+}
+@media (hover: none) {
+  .rm-toc__action-tip { display: none; }
+}
 
 .rm-toc__list {
   list-style: none;

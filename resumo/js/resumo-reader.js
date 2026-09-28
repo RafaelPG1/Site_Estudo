@@ -45,6 +45,8 @@ export function buildTOC(secoes) {
       _readerScroll?.navigateTo(Number(btn.dataset.sec));
     });
   });
+
+  _atualizarBotaoToggle();
 }
 
 function _abrirTocSheet() {
@@ -56,25 +58,78 @@ function _fecharTocSheet() {
   document.getElementById('rm-toc-trigger')?.setAttribute('aria-expanded', 'false');
 }
 
-function _collapseAllSections() {
-  const sections = document.querySelectorAll('.rm-collapse');
-  if (!sections.length) return;
-  playSound('select', 'resumos');
-  sections.forEach(sec => {
-    sec.classList.remove('rm-collapse--open');
-    sec.querySelector('.rm-collapse__trigger')?.setAttribute('aria-expanded', 'false');
+/* ══════════════════════════════════════════════
+   BOTÃO "RECOLHER / EXPANDIR TODOS OS MÓDULOS"
+   Um único botão alterna todos os módulos de uma vez:
+   - se TODOS estão abertos → recolhe todos
+   - caso contrário         → expande todos
+   O ícone e o tooltip sempre mostram a PRÓXIMA ação, e o
+   botão acompanha qualquer mudança feita por fora (clique
+   num módulo, busca, navegação pelo índice) via
+   MutationObserver.
+══════════════════════════════════════════════ */
+const _TOC_TOGGLE_IDS = ['rm-toc-collapse-all', 'rm-toc-collapse-all-mobile'];
+let _accordionKeyAtual = null;   // chave de localStorage da aula aberta
+let _tocToggleObs      = null;
+
+const _SVG_ATTRS = 'width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
+const _ICON_COLLAPSE = `<svg ${_SVG_ATTRS}><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>`;
+const _ICON_EXPAND   = `<svg ${_SVG_ATTRS}><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>`;
+
+function _montarBotaoToggle(btn) {
+  if (btn.dataset.ready) return;
+  btn.dataset.ready = '1';
+  btn.innerHTML =
+    `<span class="rm-toc__action-icon rm-toc__action-icon--collapse">${_ICON_COLLAPSE}</span>` +
+    `<span class="rm-toc__action-icon rm-toc__action-icon--expand">${_ICON_EXPAND}</span>` +
+    `<span class="rm-toc__action-tip" role="tooltip"></span>`;
+}
+
+function _atualizarBotaoToggle() {
+  const secs       = Array.from(document.querySelectorAll('.rm-collapse'));
+  const tudoAberto = secs.length > 0 && secs.every(sec => sec.classList.contains('rm-collapse--open'));
+  const texto      = tudoAberto ? 'Recolher todos os módulos' : 'Expandir todos os módulos';
+
+  _TOC_TOGGLE_IDS.forEach(id => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    _montarBotaoToggle(btn);
+    btn.disabled = secs.length === 0;
+    btn.dataset.state = tudoAberto ? 'open' : 'closed';
+    btn.setAttribute('aria-label', texto);
+    btn.removeAttribute('title');            // o tooltip próprio substitui o nativo
+    const tip = btn.querySelector('.rm-toc__action-tip');
+    if (tip) tip.textContent = texto;
   });
-  const aulaLabel = document.getElementById('rm-aula-label');
-  if (aulaLabel && aulaLabel.textContent) {
-    const disc = State.disciplina?.id ?? 'unknown';
-    const sem  = State.semestre       ?? 'unknown';
-    const safe = String(aulaLabel.textContent).replace(/[^a-zA-Z0-9_\-\.]/g, '_');
-    try {
-      const estado = {};
-      sections.forEach(sec => { if (sec.dataset.sec !== undefined) estado[sec.dataset.sec] = false; });
-      localStorage.setItem(`nexus_accordion__${sem}__${disc}__${safe}`, JSON.stringify(estado));
-    } catch (_) {}
-  }
+}
+
+function _toggleAllSections() {
+  const sections = Array.from(document.querySelectorAll('.rm-collapse'));
+  if (!sections.length) return;
+
+  const abrir = !sections.every(sec => sec.classList.contains('rm-collapse--open'));
+  playSound('select', 'resumos');
+
+  sections.forEach(sec => {
+    sec.classList.toggle('rm-collapse--open', abrir);
+    sec.querySelector('.rm-collapse__trigger')?.setAttribute('aria-expanded', String(abrir));
+  });
+
+  if (_accordionKeyAtual) _salvarEstadoAccordion(_accordionKeyAtual);
+  _atualizarBotaoToggle();
+}
+
+function _observarAcordeons() {
+  if (_tocToggleObs) return;
+  let raf = 0;
+  _tocToggleObs = new MutationObserver(muts => {
+    if (!muts.some(m => m.target.classList?.contains('rm-collapse'))) return;
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(_atualizarBotaoToggle);
+  });
+  _tocToggleObs.observe(document.body, {
+    subtree: true, attributes: true, attributeFilter: ['class'],
+  });
 }
 
 export function bindTocChrome() {
@@ -88,8 +143,14 @@ export function bindTocChrome() {
     document.getElementById('read-modal-panel')?.classList.remove('reader__bar--compact');
     smoothScrollTo(document.getElementById('rm-body-wrapper'), 0);
   });
-  document.getElementById('rm-toc-collapse-all')?.addEventListener('click', _collapseAllSections);
-  document.getElementById('rm-toc-collapse-all-mobile')?.addEventListener('click', _collapseAllSections);
+  _TOC_TOGGLE_IDS.forEach(id => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    _montarBotaoToggle(btn);
+    btn.addEventListener('click', _toggleAllSections);
+  });
+  _atualizarBotaoToggle();
+  _observarAcordeons();
 }
 
 /* ══════════════════════════════════════════════
@@ -358,6 +419,7 @@ function _restaurarEstadoAccordion(key) {
 }
 
 function _bindReaderAccordion(storageKey) {
+  _accordionKeyAtual = storageKey;
   _restaurarEstadoAccordion(storageKey);
 
   document.querySelectorAll('.rm-collapse__trigger').forEach(btn => {
