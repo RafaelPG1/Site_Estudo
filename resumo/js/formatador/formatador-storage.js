@@ -102,6 +102,36 @@ export async function obter(id) {
   return meta && corpo ? { ...meta, ...corpo } : null;
 }
 
+/* Duplicado = mesma estrutura `aula` (título, ideia central, seções e blocos).
+   Compara a estrutura normalizada, não o texto colado (espaços/aspas/vírgulas
+   mudam sem mudar o conteúdo). O `id` das seções fica de fora: o leitor não o usa. */
+function _canon(v) {
+  if (Array.isArray(v)) return v.map(_canon);
+  if (v && typeof v === 'object') {
+    return Object.fromEntries(Object.keys(v).sort().map(k => [k, _canon(v[k])]));
+  }
+  return v;
+}
+
+function _assinatura(aula) {
+  const { secoes = [], ...resto } = aula;
+  return JSON.stringify(_canon({ ...resto, secoes: secoes.map(({ id, ...sec }) => sec) }));
+}
+
+/* Devolve o meta do conteúdo idêntico já salvo, ou null. O pré-filtro por
+   título e nº de seções (que vêm da própria estrutura) evita ler corpos à toa;
+   a decisão final é sempre a comparação da estrutura completa. */
+export async function buscarDuplicado(aula) {
+  const alvo = _assinatura(aula);
+  const n = aula.secoes?.length ?? 0;
+  const candidatos = (await listar()).filter(m => m.titulo === aula.aula && m.secoes === n);
+  for (const m of candidatos) {
+    const reg = await obter(m.id);
+    if (reg?.aula && _assinatura(reg.aula) === alvo) return m;
+  }
+  return null;
+}
+
 export async function remover(id) {
   const db = await _abrir();
   if (!db) { _memMeta.delete(id); _memCorpos.delete(id); return; }

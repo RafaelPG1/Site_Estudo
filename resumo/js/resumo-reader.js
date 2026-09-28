@@ -22,13 +22,34 @@ let _readerScroll = null;
    TOC — ÍNDICE DE SEÇÕES
 ══════════════════════════════════════════════ */
 export function buildTOC(secoes) {
-  const items = (secoes ?? []).map((sec, i) => `
-    <li class="rm-toc__item" data-sec="${i}">
+  // Conteúdo unido (Formatador → Juntar conteúdos): a seção `divisor`
+  // abre um grupo no índice (rótulo sem número, como no corpo da leitura)
+  // e as seguintes ficam sob ele até o próximo divisor. Conteúdos sem
+  // divisor não entram nesse ramo: a marcação é a mesma de sempre.
+  let emGrupo = false;
+  const items = (secoes ?? []).map((sec, i) => {
+    if (sec.divisor) {
+      emGrupo = true;
+      // "Conteúdo 1 — Título": o rótulo vira uma etiqueta pequena e o título
+      // ganha a linha inteira (títulos unidos são longos). Sem esse formato,
+      // cai no título inteiro, como antes.
+      const m = String(sec.titulo ?? '').match(/^(Conteúdo\s+\d+)\s+—\s+([\s\S]+)$/);
+      return `
+    <li class="rm-toc__item rm-toc__item--grupo" data-sec="${i}">
+      <button class="rm-toc__link" data-sec="${i}">
+        ${m ? `<span class="rm-toc__grupo-tag">${esc(m[1])}</span>` : ''}
+        <span class="rm-toc__title">${esc(m ? m[2] : sec.titulo)}</span>
+      </button>
+    </li>`;
+    }
+    return `
+    <li class="rm-toc__item${emGrupo ? ' rm-toc__item--em-grupo' : ''}" data-sec="${i}">
       <button class="rm-toc__link" data-sec="${i}">
         <span class="rm-toc__num">${String(i + 1).padStart(2, '0')}</span>
         <span class="rm-toc__title">${esc(sec.titulo)}</span>
       </button>
-    </li>`).join('');
+    </li>`;
+  }).join('');
 
   const listDesktop = document.getElementById('rm-toc-list');
   const listMobile  = document.getElementById('rm-toc-list-mobile');
@@ -206,7 +227,7 @@ function _initReadingScrollSystem(scrollEl) {
     });
     sections.forEach(sec => sec.classList.toggle('rm-collapse--current', sec === current));
 
-    const titulo = current?.querySelector('.rm-collapse__trigger .rm-toc__title, .rm-collapse__trigger span')?.textContent;
+    const titulo = current?.querySelector('.rm-collapse__trigger .rm-toc__title, .rm-collapse__trigger span, .rm-collapse__divisor-label')?.textContent;
     if (label) {
       label.style.opacity = '0';
       setTimeout(() => {
@@ -490,6 +511,21 @@ function _buildReaderBody(aula, idx) {
   }
 
   secoes.forEach((sec, i) => {
+    // Divisor de junção (ver formatador.js/juntarAulas): marca onde
+    // cada metade de um conteúdo unido começa. Ocupa um índice de
+    // seção como qualquer outra (mantém o índice do TOC e do
+    // scroll-spy alinhado 1:1 com a lista real), mas é exibido só
+    // como um título com régua, sem número, seta nem abrir/fechar —
+    // reaproveita a tipografia de rótulo já usada em
+    // .rm-topico__titulo/.rm-exemplo__titulo, não cria estilo novo.
+    if (sec.divisor) {
+      html += `
+        <div class="rm-collapse rm-collapse--divisor" data-sec="${i}">
+          <hr />
+          <div class="rm-topico__titulo rm-collapse__divisor-label">${esc(sec.titulo)}</div>
+        </div>`;
+      return;
+    }
     html += `
       <div class="rm-collapse" data-sec="${i}">
         <button class="rm-collapse__trigger" aria-expanded="false">

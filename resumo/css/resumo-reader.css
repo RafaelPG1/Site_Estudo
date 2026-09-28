@@ -417,6 +417,25 @@
 }
 .rm-collapse__inner p { font-size: 0.91rem; line-height: 1.8; }
 
+/* Divisor de seção (ex.: separador "Conteúdo 1 / Conteúdo 2" das
+   junções feitas em Meus conteúdos do Formatador — ver formatador.js/
+   juntarAulas e a marcação `sec.divisor` em _buildReaderBody, no
+   resumo-reader.js). Continua sendo um `.rm-collapse` — mesma
+   indexação que o índice de seções e o scroll-spy usam — mas sem os
+   elementos de card: sem número, sem seta, sem abrir/fechar. A
+   tipografia do rótulo é a mesma já usada em .rm-topico__titulo/
+   .rm-exemplo__titulo; a régua reaproveita o <hr> de .reader__content
+   — nenhum estilo novo, só a composição dos dois. */
+.rm-collapse.rm-collapse--divisor {
+  border: none;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  margin: var(--space-2) 0 var(--space-1);
+}
+.rm-collapse--divisor hr { margin: 0 0 var(--space-2); }
+.rm-collapse__divisor-label { margin-bottom: 0; }
+
 .tópico-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
 .tópico-item {
   display: flex; gap: 0.65rem; align-items: flex-start;
@@ -604,6 +623,51 @@
   color: var(--disc-tema);
   transform: scale(1.05);
 }
+
+/* Grupos de um conteúdo unido (Formatador → Juntar conteúdos): o divisor
+   vira o cabeçalho do grupo — mesma tipografia de rótulo do divisor no
+   corpo (.rm-topico__titulo), sem número — e as seções seguintes ficam
+   recuadas sob ele. Só aparece quando há `sec.divisor` (ver buildTOC). */
+.rm-toc__item--grupo:not(:first-child) { margin-top: var(--space-3); }
+.rm-toc__item--grupo .rm-toc__link {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  min-height: 0;
+  padding-top: 0.55rem;
+  padding-bottom: 0.55rem;
+}
+.rm-toc__grupo-tag {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--disc-tema);
+}
+.rm-toc__item--grupo .rm-toc__title {
+  font-size: 0.84rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--text-1);
+  text-wrap: balance;
+}
+/* Seções do grupo: uma linha-guia fina liga todas ao cabeçalho, e o
+   indicador de ativo (borda de 2px do link) fica afastado dela. */
+.rm-toc__item--em-grupo { position: relative; }
+.rm-toc__item--em-grupo::before {
+  content: '';
+  position: absolute;
+  left: 0.65rem;
+  top: 0;
+  bottom: -1px;
+  width: 1px;
+  background: var(--border-2, var(--border-1));
+}
+.rm-toc__item--em-grupo .rm-toc__link {
+  width: calc(100% - 1.35rem);
+  margin-left: 1.35rem;
+}
+.reader--light .rm-toc__grupo-tag { color: var(--text-2); }
 
 .rm-toc__top {
   display: flex;

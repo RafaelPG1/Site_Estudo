@@ -9,7 +9,9 @@
                        o objeto e gera o texto de leitura; salvar()
                        (formatador-storage.js) guarda. O título é o campo
                        `aula`.
-     Meus conteúdos  → lateral direita; lista o que foi formatado.
+     Meus conteúdos  → lateral direita; lista o que foi formatado. Não salva
+                       o mesmo conteúdo duas vezes (buscarDuplicado) e permite
+                       juntar dois conteúdos em um novo (seção JUNTAR).
                        Clicar abre no resumo-reader EXISTENTE
                        (abrirNoLeitor, abaixo) — não há outro leitor.
    Arquivos: formatador.js (este: controle + conversão + ponte com o leitor)
@@ -23,8 +25,8 @@ import { playSound } from '../../../shared/js/audio/audio-api.js';
 import { State, esc } from '../resumo-utils.js';
 import { abrirModal } from '../resumo-reader.js';
 import { MODELOS_PROMPT, garantirEstrutura, extrairEstrutura } from './formatador-prompts.js';
-import { montarView, iniciarTooltips, confirmar, htmlVazio, ICONE_LIXO } from './formatador-ui.js';
-import { salvar, listar, obter, remover, persistente } from './formatador-storage.js';
+import { montarView, iniciarTooltips, confirmar, htmlVazio, ICONE_LIXO, ICONE_JUNTAR } from './formatador-ui.js';
+import { salvar, listar, obter, remover, persistente, buscarDuplicado } from './formatador-storage.js';
 
 
 const $ = id => document.getElementById(id);
@@ -47,6 +49,7 @@ function _status(msg, tipo, ms = 2600, id = 'fmt-status') {
   const el = $(id);
   if (!el) return;
   clearTimeout(_statusTimers[id]);
+  delete el.dataset.largo;             // "largo" vale só para a mensagem que o pediu (ver aviso de junção duplicada)
   el.textContent = msg;
   el.dataset.tipo = tipo ?? '';
   if (ms && msg) _statusTimers[id] = setTimeout(() => { el.textContent = ''; el.dataset.tipo = ''; }, ms);
@@ -500,6 +503,12 @@ async function _formatar() {
 
   try {
     const r = converterEstrutura(texto.value);
+    const dup = await buscarDuplicado(r.aula);
+    if (dup) {
+      await _renderLista(dup.id);          // destaca o que já existe; nada é criado nem alterado
+      st(`Este conteúdo já existe em Meus conteúdos: “${dup.titulo}”. Nada foi salvo.`, 'erro', 7000);
+      return;
+    }
     const meta = await salvar({
       titulo: r.aula.aula,
       textoOriginal: texto.value,
@@ -534,8 +543,13 @@ async function _renderLista(novoId) {
   let itens = [];
   try { itens = await listar(); } catch (_) {}
 
+  _total = itens.length;
+  _selecao = _selecao.filter(id => itens.some(m => m.id === id));
+  if (_total < 2) _modoJuntar = false;
+
   if (!itens.length) {
     host.innerHTML = htmlVazio();
+    _atualizarSelecao();
     return;
   }
 
@@ -543,10 +557,11 @@ async function _renderLista(novoId) {
     const n = m.secoes ?? 0;
     const meta = [m.formato, `${n} seç${n !== 1 ? 'ões' : 'ão'}`, _data(m.criadoEm)].filter(Boolean).join(' · ');
     return `
-      <div class="fmt__item${m.id === novoId ? ' fmt__item--novo' : ''}">
+      <div class="fmt__item${m.id === novoId ? ' fmt__item--novo' : ''}" data-item="${esc(m.id)}">
         <button type="button" class="fmt__item-abrir" data-fmt="abrir" data-id="${esc(m.id)}" data-tip="${esc(m.previa ?? '')}">
           <span class="fmt__item-titulo">${esc(m.titulo)}</span>
           <span class="fmt__item-meta">${esc(meta)}</span>
+          <span class="fmt__item-ordem" hidden></span>
         </button>
         <button type="button" class="fmt__item-del" data-fmt="remover" data-id="${esc(m.id)}" aria-label="Excluir ${esc(m.titulo)}" data-tip="Excluir">${ICONE_LIXO}</button>
       </div>`;
@@ -556,6 +571,7 @@ async function _renderLista(novoId) {
     html += `<p class="fmt__vazio fmt__vazio--aviso">O navegador não permite salvar neste modo (ex.: navegação privada): estes conteúdos somem ao recarregar a página.</p>`;
   }
   host.innerHTML = html;
+  _atualizarSelecao();
   if (novoId) host.querySelector('.fmt__item--novo')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
@@ -588,6 +604,7 @@ function abrirNoLeitor(aula, { rotulo } = {}) {
 }
 
 async function _abrirConteudo(id) {
+  if (_modoJuntar) { _alternarSelecao(id); return; }
   let reg = null;
   try { reg = await obter(id); } catch (_) {}
   if (!reg?.aula) { _status('Não foi possível abrir este conteúdo.', 'erro', 3500, 'fmt-status-formatar'); return; }
@@ -609,6 +626,154 @@ async function _removerConteudo(id) {
   await _renderLista();
 }
 
+/* ══════════════════════════════════════════════
+   JUNTAR dois conteúdos em um NOVO (os originais não são tocados)
+     1º selecionado vem primeiro, depois o 2º.
+     título        → "Título 1 + Título 2"
+     ideia_central → as duas, uma após a outra
+     seções        → marcador "Conteúdo 1 — título" + seções do 1º, depois
+                     marcador "Conteúdo 2 — título" + seções do 2º; blocos
+                     intactos; `id` de seção só muda quando colide
+     formato       → igual nos dois: mantém; diferente: "Formato 1 + Formato 2"
+   Salvar passa pela mesma checagem de duplicado do "Formatar texto".
+══════════════════════════════════════════════ */
+let _modoJuntar = false;
+let _selecao = [];        // ids na ordem em que foram marcados (1º, 2º)
+let _total = 0;           // nº de conteúdos na lista
+
+function juntarAulas(a, b) {
+  const copia = v => JSON.parse(JSON.stringify(v));           // blocos preservados, sem compartilhar referência
+  const secA = copia(a.aula.secoes ?? []);
+  const secB = copia(b.aula.secoes ?? []);
+  const usados = new Set(secA.map(s => s.id).filter(Boolean));
+  secB.forEach(s => {
+    if (s.id && usados.has(s.id)) {
+      let n = 2;
+      while (usados.has(`${s.id}_${n}`)) n++;
+      s.id = `${s.id}_${n}`;
+    }
+    if (s.id) usados.add(s.id);
+  });
+
+  /* Marcador de início: uma seção comum (título + 1 bloco "destaque"), o formato que o
+     leitor já consome. Assim aparece na lista "Nesta leitura" e como card próprio na
+     leitura, sem mexer no leitor. Só as junções ganham marcadores. */
+  const marcador = (n, reg, qtd) => {
+    let id = `conteudo_${n}`;
+    while (usados.has(id)) id += '_';
+    usados.add(id);
+    return {
+      id,
+      titulo: `Conteúdo ${n} — ${reg.aula.aula}`,
+      divisor: true,   // o leitor exibe só como título com régua, sem número/seta/abrir (ver resumo-reader.js)
+      blocos: [{ tipo: 'destaque', texto: `Aqui começa o Conteúdo ${n} de 2 · ${qtd} ${qtd === 1 ? 'seção' : 'seções'}.` }],
+    };
+  };
+
+  const aula = {
+    aula: `${a.aula.aula} + ${b.aula.aula}`,
+    secoes: [marcador(1, a, secA.length), ...secA, marcador(2, b, secB.length), ...secB],
+  };
+  const ideia = [a.aula.ideia_central, b.aula.ideia_central].filter(Boolean).join('\n\n');
+  if (ideia) aula.ideia_central = ideia;
+
+  const fa = (a.formato ?? '').trim(), fb = (b.formato ?? '').trim();
+  const formato = fa === fb ? fa : [fa, fb].filter(Boolean).join(' + ');
+  return { aula, formato };
+}
+
+/* Reflete _modoJuntar/_selecao na tela (sem recriar a lista). */
+function _atualizarSelecao() {
+  const host = $('fmt-lista');
+  if (host) {
+    host.classList.toggle('fmt__lista--juntar', _modoJuntar);
+    host.querySelectorAll('.fmt__item[data-item]').forEach(el => {
+      const i = _selecao.indexOf(el.dataset.item);
+      el.classList.toggle('fmt__item--sel', i >= 0);
+      const tag = el.querySelector('.fmt__item-ordem');
+      tag.hidden = i < 0;
+      tag.textContent = i >= 0 ? `${i + 1}º` : '';
+    });
+  }
+  const barra = $('fmt-barra');
+  if (!barra) return;
+  barra.hidden = _total < 2;
+  $('fmt-btn-juntar').hidden = _modoJuntar;
+  $('fmt-barra-txt').hidden = !_modoJuntar;
+  $('fmt-barra-acoes').hidden = !_modoJuntar;
+  $('fmt-btn-juntar-ok').disabled = _selecao.length !== 2;
+  $('fmt-barra-txt').textContent = _selecao.length === 0 ? 'Escolha o 1º conteúdo na lista.'
+    : _selecao.length === 1 ? 'Agora escolha o 2º conteúdo.'
+    : 'Pronto: o 1º vem antes do 2º.';
+}
+
+function _iniciarJuntar() {
+  if (_total < 2) return;
+  _modoJuntar = true;
+  _selecao = [];
+  _status('', '', 0, 'fmt-status-juntar');
+  _atualizarSelecao();
+}
+
+function _cancelarJuntar() {
+  _modoJuntar = false;
+  _selecao = [];
+  _atualizarSelecao();
+}
+
+function _alternarSelecao(id) {
+  const i = _selecao.indexOf(id);
+  if (i >= 0) _selecao.splice(i, 1);
+  else if (_selecao.length >= 2) { _status('Só dois conteúdos por vez. Desmarque um antes.', 'erro', 3000, 'fmt-status-juntar'); return; }
+  else _selecao.push(id);
+  _atualizarSelecao();
+}
+
+async function _juntarConfirmar() {
+  if (_ocupado || _selecao.length !== 2) return;
+  const st = (m, t, ms) => _status(m, t, ms, 'fmt-status-juntar');
+  _ocupado = true;
+  try {
+    const [a, b] = await Promise.all(_selecao.map(id => obter(id).catch(() => null)));
+    if (!a?.aula || !b?.aula) { st('Não foi possível ler um dos conteúdos selecionados.', 'erro', 5000); return; }
+
+    const uniao = juntarAulas(a, b);
+    const dup = await buscarDuplicado(uniao.aula);
+    if (dup) {
+      _cancelarJuntar();
+      await _renderLista(dup.id);
+      st(`Essa junção já existe em Meus conteúdos: “${dup.titulo}”. Nada foi salvo.`, 'erro', 7000);
+      $('fmt-status-juntar').dataset.largo = '1';   // CSS: aviso ocupa a largura da página, não só a coluna lateral
+      return;
+    }
+
+    const ok = await confirmar({
+      titulo: 'Juntar conteúdos?',
+      destaque: uniao.aula.aula,
+      texto: `“${a.titulo}” vem primeiro, depois “${b.titulo}”. Será criado um novo conteúdo; os dois originais continuam em Meus conteúdos.`,
+      icone: ICONE_JUNTAR,
+      rotuloOk: 'Juntar',
+    });
+    if (!ok) return;
+
+    const meta = await salvar({
+      titulo: uniao.aula.aula,
+      textoOriginal: '',
+      prompt: '',
+      aula: uniao.aula,
+      leitura: aulaParaTexto(uniao.aula),
+      formato: uniao.formato,
+    });
+    _cancelarJuntar();
+    await _renderLista(meta.id);
+    st(`✓ “${meta.titulo}” foi adicionado a Meus conteúdos.`, 'ok', 5000);
+  } catch (err) {
+    st(err?.message || 'Não foi possível juntar os conteúdos.', 'erro', 6000);
+  } finally {
+    _ocupado = false;
+  }
+}
+
 function _ligar(view) {
   view.addEventListener('click', e => {
     const chip = e.target.closest('[data-modelo]');
@@ -621,6 +786,9 @@ function _ligar(view) {
     else if (acao === 'copiar-estrutura') { playSound('click', 'resumos'); _copiarEstrutura(); }
     else if (acao === 'formatar') { playSound('click', 'resumos'); _formatar(); }
     else if (acao === 'abrir') { _abrirConteudo(el.dataset.id); }
+    else if (acao === 'juntar-iniciar') { playSound('click', 'resumos'); _iniciarJuntar(); }
+    else if (acao === 'juntar-cancelar') { playSound('click', 'resumos'); _cancelarJuntar(); }
+    else if (acao === 'juntar-confirmar') { playSound('click', 'resumos'); _juntarConfirmar(); }
     else if (acao === 'remover') { playSound('click', 'resumos'); _removerConteudo(el.dataset.id); }
   });
 

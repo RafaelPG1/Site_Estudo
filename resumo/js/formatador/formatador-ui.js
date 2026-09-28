@@ -2,7 +2,7 @@
    NEXUS STUDY — resumo/js/formatador/formatador-ui.js
    Tudo o que é interface do Formatador (sem regra de negócio):
      1) Ícones e estado vazio de "Meus conteúdos"
-     2) montarView()      → marcação da tela única
+     2) montarView()      → marcação da tela única (inclui a barra "Juntar conteúdos")
                             área principal   → Prompt e Texto (+ "Formatar texto")
                             lateral direita  → Meus conteúdos (lista preenchida por formatador.js)
      3) iniciarTooltips() → tooltip visual (data-tip), substitui o title="" do navegador
@@ -20,6 +20,8 @@ const ICONE_SETA = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" 
 const ICONE_COPIAR = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>`;
 const ICONE_DOC = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h4"/></svg>`;
 export const ICONE_LIXO = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>`;
+
+export const ICONE_JUNTAR = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4v6a4 4 0 0 0 4 4h4"/><path d="M18 4v6a4 4 0 0 1-4 4"/><path d="M12 14v6"/><path d="M9.5 17.5 12 20l2.5-2.5"/></svg>`;
 
 /* Estado vazio de Meus conteúdos (usado na montagem inicial e ao esvaziar a lista). */
 export function htmlVazio() {
@@ -95,6 +97,15 @@ export function montarView(host) {
      <aside class="fmt__lateral" aria-labelledby="fmt-h-lista">
       <div class="fmt__lateral-in">
         <h2 class="fmt__h" id="fmt-h-lista">Meus conteúdos</h2>
+        <div class="fmt__barra" id="fmt-barra" hidden>
+          <button type="button" class="fmt__btn" data-fmt="juntar-iniciar" id="fmt-btn-juntar" data-tip="Junta dois conteúdos em um novo; os dois originais continuam aqui">${ICONE_JUNTAR}Juntar conteúdos</button>
+          <p class="fmt__barra-txt" id="fmt-barra-txt" hidden></p>
+          <div class="fmt__acoes" id="fmt-barra-acoes" hidden>
+            <button type="button" class="fmt__btn" data-fmt="juntar-cancelar">Cancelar</button>
+            <button type="button" class="fmt__btn fmt__btn--forte" data-fmt="juntar-confirmar" id="fmt-btn-juntar-ok" disabled>Juntar</button>
+          </div>
+          <span class="fmt__status" id="fmt-status-juntar" role="status" aria-live="polite"></span>
+        </div>
         <div class="fmt__lista" id="fmt-lista">
           ${htmlVazio()}
         </div>
