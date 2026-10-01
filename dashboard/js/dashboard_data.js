@@ -202,7 +202,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 import { renderDashboardIntelligence } from './dashboard_render.js';
-import { carregarConquistas } from './conquista/index.js';
+import { carregarConquistas } from './conquista/conquista_index.js';
 import { perfLog, logFirestore } from '../../src/perf_logger.js';
 
 /* ─────────────────────────────────────────────

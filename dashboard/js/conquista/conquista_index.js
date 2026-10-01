@@ -1,4 +1,4 @@
-/* dashboard\js\conquista\index.js
+/* dashboard\js\conquista\conquista_index.js
    Conquistas — INTERFACE ÚNICA com o Dashboard. O Dashboard
    (dashboard_data.js / dashboard_render.js) importa SOMENTE deste
    arquivo; nunca de catalogo.js, regras.js ou conquistas.js.

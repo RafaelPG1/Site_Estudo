@@ -132,7 +132,7 @@
 
 import { State } from './dashboard_data.js';
 import { perfLog } from '../../src/perf_logger.js';
-import { renderAchievements } from './conquista/index.js';
+import { renderAchievements } from './conquista/conquista_index.js';
 import { UIState } from './utils/ui_state_manager.js';
 
 /* ══════════════════════════════════════════════
