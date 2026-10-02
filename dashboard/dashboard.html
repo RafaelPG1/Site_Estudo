@@ -786,7 +786,7 @@
       <!-- ── Sessão ativa ──────────────────────────────────────
            Movida para DENTRO de .sidebar-nav (era irmã, fora da
            nav) só de posição no DOM — nenhum id/classe mudou,
-           então session-manager continua funcionando via
+           então dashboard.js (_initSessionTimer) continua funcionando via
            document.querySelector('.session-time'/'.session-sub'),
            que são seletores de classe (independem de profundidade).
            No Desktop, .sidebar-footer recebe margin-top:auto, que

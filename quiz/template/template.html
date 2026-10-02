@@ -58,10 +58,9 @@
   <link rel="stylesheet" href="./template.css" />
 
   <!--
-    Script inline de URL — sem tocar em body ou classList.
-    Apenas lê parâmetros e salva numa variável global.
+    Script inline — sem tocar em body ou classList.
 
-    Também sinaliza __NSM_AGUARDANDO__ = true ANTES de qualquer
+    Sinaliza __NSM_AGUARDANDO__ = true ANTES de qualquer
     script defer (engine, modal, etc). Isso é necessário porque
     quiz_starter_modal.js também é defer — se a flag só fosse
     setada no corpo dele, a ordem real de execução entre os
@@ -75,13 +74,6 @@
   <script>
     (function () {
       window.__NSM_AGUARDANDO__ = true;
-
-      var params = new URLSearchParams(location.search);
-      var disc   = params.get('disc') || 'poo';
-      var sem    = params.get('sem')  || '2026.2';
-      var ano    = sem.split('.')[0];
-      window.__NEXUS_BACK_HREF_EARLY__ =
-        '../disciplinas/' + ano + '/' + disc + '.html?sem=' + sem;
     })();
   </script>
 </head>

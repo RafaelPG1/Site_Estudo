@@ -760,15 +760,6 @@ async function _bootPagina() {
     State.intelligence = null;
     console.log('[dashboard] nexus:logout — State.intelligence limpo.');
   });
-
-document.addEventListener('nexus:semestre-changed', e => {
-    const novoSemestre = e?.detail?.semestre;
-    if (novoSemestre && novoSemestre !== State.semestre) {
-      _trocarSemestre(novoSemestre);
-      /* criarSemestreSelect gerencia seu próprio estado visual —
-         não há <select> nativo para sincronizar. */
-    }
-  });
 }
 
 document.addEventListener('DOMContentLoaded', async () => {

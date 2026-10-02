@@ -17,8 +17,6 @@ import {
   getDb,
 } from '../src/firebase.js';
 
-import { encerrarSessao } from '../shared/js/utils/session-manager.js';
-
 import { _renderProgress } from './admin_progress.js';
 import { _renderSessions } from './admin-sessions.js';
 import { _renderRanking  } from './admin-ranking.js';
@@ -98,8 +96,7 @@ function _montarSidebar(u) {
 
 /* Logout — usado pelo botão da sidebar e pelo atalho da topbar (mobile),
    para que "Sair" continue acessível mesmo com o menu fechado. */
-async function _fazerLogout() {
-  await encerrarSessao();
+function _fazerLogout() {
   logout();
   window.location.href = '../index.html';
 }

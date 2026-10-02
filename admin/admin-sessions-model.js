@@ -18,12 +18,20 @@
      deviceType, pages, navigation, hourHeatmap, semestre, dataKey
      _encerradaComoZumbi (opcional)
 
-   LEGADO (shared/js/utils/session-tracker.js):
+   LEGADO (shared/js/utils/session-manager.js — removido na Fase 2):
      entrada   : ms (epoch)          início
      saida     : ms (epoch) | null   última gravação (heartbeat 60 s)
      duracao   : MILISSEGUNDOS       relógio corrido (saida − entrada)
      encerramento: 'ativo' | 'normal' | 'beforeunload' | 'timeout'
      nome, avatar, uid
+
+   SUPORTE AO FORMATO LEGADO — PRESERVADO DE PROPÓSITO (Fase 2):
+     O session-manager.js deixou de gravar, mas documentos neste
+     formato continuam no Firestore. O painel consulta `sessoes`
+     por intervalo de ID (admin-sessions.js), então eles ainda são
+     lidos enquanto estiverem dentro de CONFIG.JANELA_DIAS. O ramo
+     legado só pode ser removido depois de comprovar que não há
+     mais documentos sem `startedAt` dentro dessa janela.
 
    ── PRINCÍPIOS ────────────────────────────────────────────
    • Todos os timestamps são instantes (epoch ms). Nenhuma

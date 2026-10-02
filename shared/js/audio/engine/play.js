@@ -2,7 +2,12 @@
 /* =============================================
    NEXUS STUDY — shared/js/audio/engine/play.js
    Dispatcher central de SFX
-   Versão 2.1  ← log corrigido (sfx + master)
+   Versão 2.2  ← sem console.log por som
+
+   MUDANÇAS v2.1 → v2.2
+   ─────────────────────────────────────────────
+   - Removido o console.log disparado a cada som (ruído de console).
+     Nenhuma mudança de comportamento: o som toca exatamente como antes.
 
    MUDANÇAS v2.0 → v2.1
    ─────────────────────────────────────────────
@@ -50,7 +55,5 @@ export function playSound(event, area = null) {
   const variantId = audioState.resolveVariant(event, area);
   if (!variantId) return;
 
-  const sfx = audio.getSfxVolume();
-  console.log(`[sfx] ${variantId} | sfx=${sfx.toFixed(2)}`);
   audio.sfx[variantId]?.();
 }

@@ -3,10 +3,11 @@
 
    Responsabilidade deste arquivo: persistência do PROGRESSO do
    usuário no Checklist (item marcado/desmarcado) E persistência
-   do ESTADO DE UI dos accordions (disciplinas/categorias abertas
-   ou fechadas). São dois dados diferentes, mas ambos usam o MESMO
-   mecanismo de armazenamento local (localStorage) já existente
-   neste arquivo — nenhum sistema de persistência novo foi criado.
+   do ESTADO DE UI do Checklist (filtro e accordions de
+   disciplinas/categorias recolhidos). São dois dados diferentes e
+   usam mecanismos diferentes: o progresso usa Firestore com cache
+   em localStorage (neste arquivo); o estado de UI é delegado ao
+   UIState (ui_state_manager.js, sessionStorage).
 
    NUNCA lê nem escreve o conteúdo do checklist (checklist_data.js)
    — esse é fonte fixa e somente leitura, montada por
@@ -28,17 +29,18 @@
    dashboard/js/dashboard_data.js (getDb() + SDK modular via CDN).
 
    ─────────────────────────────────────────────
-   ESTADO DE UI (accordions abertos/fechados) — NOVO
+   ESTADO DE UI (filtro e accordions abertos/fechados)
    ─────────────────────────────────────────────
    Puramente visual (não é "progresso" do usuário, não vai para o
-   Firestore, não é sincronizado entre dispositivos) — por isso
-   fica somente em localStorage, sob uma chave própria e separada
-   da chave de progresso, mas seguindo exatamente o mesmo padrão
-   (uma chave por semestre, para que abrir/fechar disciplinas em
-   um semestre nunca afete outro semestre):
-     Chave local: nexus_checklist_ui::{semestre}
-     Formato:     { colapsados: [discId, ...],
-                    categoriasColapsadas: ["discId::catId", ...] }
+   Firestore, não é sincronizado entre dispositivos). É guardado via
+   UIState (dashboard/js/utils/ui_state_manager.js), que usa
+   sessionStorage por padrão: sobrevive a F5, não ao fechamento da
+   aba. Uma chave lógica por semestre, para que abrir/fechar
+   disciplinas em um semestre nunca afete outro semestre:
+     Chave lógica: checklist:{semestre}
+                   (sessionStorage: nexus_ui_state::checklist:{semestre})
+     Formato:      { filtro: string, colapsados: [discId, ...],
+                     categoriasColapsadas: ["discId::catId", ...] }
 
    Guarda apenas os IDs (estáveis, vindos de checklistData — nunca
    índice de array) que estão RECOLHIDOS. Disciplina/categoria que

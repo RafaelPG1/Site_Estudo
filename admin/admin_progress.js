@@ -1,7 +1,7 @@
 /* =============================================
-   NEXUS STUDY — admin-progress.js
+   NEXUS STUDY — admin_progress.js
    Painel de Administração — Seção Progresso
-   admin/admin-progress.js
+   admin/admin_progress.js
    ============================================= */
 
 import { getDb } from '../src/firebase.js';

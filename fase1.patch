@@ -1,0 +1,280 @@
+diff --git a/admin/admin_progress.js b/admin/admin_progress.js
+index 693cb0a..d385bb7 100644
+--- a/admin/admin_progress.js
++++ b/admin/admin_progress.js
+@@ -1,7 +1,7 @@
+ /* =============================================
+-   NEXUS STUDY — admin-progress.js
++   NEXUS STUDY — admin_progress.js
+    Painel de Administração — Seção Progresso
+-   admin/admin-progress.js
++   admin/admin_progress.js
+    ============================================= */
+ 
+ import { getDb } from '../src/firebase.js';
+diff --git a/dashboard/js/agenda/agenda_render.js b/dashboard/js/agenda/agenda_render.js
+index 827acb3..68ae1a8 100644
+--- a/dashboard/js/agenda/agenda_render.js
++++ b/dashboard/js/agenda/agenda_render.js
+@@ -58,7 +58,6 @@ function _renderCalendarAgora(grid) {
+   if (titleEl) titleEl.textContent = isThisWeek ? 'Semana atual' : formatWeekLabel(monday);
+   if (rangeEl) rangeEl.textContent = formatRange(monday);
+ 
+-  const todayMonday = new Date(monday);
+   const btnPrev = document.getElementById('agenda-btn-prev');
+   if (btnPrev) {
+     const weeksBack = Math.round((_getTodayMonday() - monday) / (7 * 86400000));
+diff --git a/dashboard/js/checklist/checklist_storage.js b/dashboard/js/checklist/checklist_storage.js
+index ac34dea..52721e2 100644
+--- a/dashboard/js/checklist/checklist_storage.js
++++ b/dashboard/js/checklist/checklist_storage.js
+@@ -3,10 +3,11 @@
+ 
+    Responsabilidade deste arquivo: persistência do PROGRESSO do
+    usuário no Checklist (item marcado/desmarcado) E persistência
+-   do ESTADO DE UI dos accordions (disciplinas/categorias abertas
+-   ou fechadas). São dois dados diferentes, mas ambos usam o MESMO
+-   mecanismo de armazenamento local (localStorage) já existente
+-   neste arquivo — nenhum sistema de persistência novo foi criado.
++   do ESTADO DE UI do Checklist (filtro e accordions de
++   disciplinas/categorias recolhidos). São dois dados diferentes e
++   usam mecanismos diferentes: o progresso usa Firestore com cache
++   em localStorage (neste arquivo); o estado de UI é delegado ao
++   UIState (ui_state_manager.js, sessionStorage).
+ 
+    NUNCA lê nem escreve o conteúdo do checklist (checklist_data.js)
+    — esse é fonte fixa e somente leitura, montada por
+@@ -28,17 +29,18 @@
+    dashboard/js/dashboard_data.js (getDb() + SDK modular via CDN).
+ 
+    ─────────────────────────────────────────────
+-   ESTADO DE UI (accordions abertos/fechados) — NOVO
++   ESTADO DE UI (filtro e accordions abertos/fechados)
+    ─────────────────────────────────────────────
+    Puramente visual (não é "progresso" do usuário, não vai para o
+-   Firestore, não é sincronizado entre dispositivos) — por isso
+-   fica somente em localStorage, sob uma chave própria e separada
+-   da chave de progresso, mas seguindo exatamente o mesmo padrão
+-   (uma chave por semestre, para que abrir/fechar disciplinas em
+-   um semestre nunca afete outro semestre):
+-     Chave local: nexus_checklist_ui::{semestre}
+-     Formato:     { colapsados: [discId, ...],
+-                    categoriasColapsadas: ["discId::catId", ...] }
++   Firestore, não é sincronizado entre dispositivos). É guardado via
++   UIState (dashboard/js/utils/ui_state_manager.js), que usa
++   sessionStorage por padrão: sobrevive a F5, não ao fechamento da
++   aba. Uma chave lógica por semestre, para que abrir/fechar
++   disciplinas em um semestre nunca afete outro semestre:
++     Chave lógica: checklist:{semestre}
++                   (sessionStorage: nexus_ui_state::checklist:{semestre})
++     Formato:      { filtro: string, colapsados: [discId, ...],
++                     categoriasColapsadas: ["discId::catId", ...] }
+ 
+    Guarda apenas os IDs (estáveis, vindos de checklistData — nunca
+    índice de array) que estão RECOLHIDOS. Disciplina/categoria que
+diff --git a/dashboard/js/dashboard.js b/dashboard/js/dashboard.js
+index 76ab447..1c1bb2e 100644
+--- a/dashboard/js/dashboard.js
++++ b/dashboard/js/dashboard.js
+@@ -760,15 +760,6 @@ async function _bootPagina() {
+     State.intelligence = null;
+     console.log('[dashboard] nexus:logout — State.intelligence limpo.');
+   });
+-
+-document.addEventListener('nexus:semestre-changed', e => {
+-    const novoSemestre = e?.detail?.semestre;
+-    if (novoSemestre && novoSemestre !== State.semestre) {
+-      _trocarSemestre(novoSemestre);
+-      /* criarSemestreSelect gerencia seu próprio estado visual —
+-         não há <select> nativo para sincronizar. */
+-    }
+-  });
+ }
+ 
+ document.addEventListener('DOMContentLoaded', async () => {
+diff --git a/quiz/template/template.html b/quiz/template/template.html
+index 646a8ef..ca21500 100644
+--- a/quiz/template/template.html
++++ b/quiz/template/template.html
+@@ -58,10 +58,9 @@
+   <link rel="stylesheet" href="./template.css" />
+ 
+   <!--
+-    Script inline de URL — sem tocar em body ou classList.
+-    Apenas lê parâmetros e salva numa variável global.
++    Script inline — sem tocar em body ou classList.
+ 
+-    Também sinaliza __NSM_AGUARDANDO__ = true ANTES de qualquer
++    Sinaliza __NSM_AGUARDANDO__ = true ANTES de qualquer
+     script defer (engine, modal, etc). Isso é necessário porque
+     quiz_starter_modal.js também é defer — se a flag só fosse
+     setada no corpo dele, a ordem real de execução entre os
+@@ -75,13 +74,6 @@
+   <script>
+     (function () {
+       window.__NSM_AGUARDANDO__ = true;
+-
+-      var params = new URLSearchParams(location.search);
+-      var disc   = params.get('disc') || 'poo';
+-      var sem    = params.get('sem')  || '2026.2';
+-      var ano    = sem.split('.')[0];
+-      window.__NEXUS_BACK_HREF_EARLY__ =
+-        '../disciplinas/' + ano + '/' + disc + '.html?sem=' + sem;
+     })();
+   </script>
+ </head>
+diff --git a/resumo/js/formatador/formatador-reader.js b/resumo/js/formatador/formatador-reader.js
+deleted file mode 100644
+index 9248567..0000000
+--- a/resumo/js/formatador/formatador-reader.js
++++ /dev/null
+@@ -1,36 +0,0 @@
+-/* =============================================
+-   NEXUS STUDY — resumo/js/formatador/formatador-reader.js
+-   Ponte para o leitor EXISTENTE (abrirModal em resumo-reader.js).
+-   Nenhuma linha do leitor foi alterada: o conteúdo do Formatador
+-   já sai no formato que ele consome, então só o "moldamos" ao
+-   contexto — o leitor lê State.disciplina para o rótulo/eyebrow e
+-   a chave do accordion. Trocamos esse campo SÓ durante a chamada
+-   síncrona de abrirModal() e restauramos em seguida (finally),
+-   então State nunca fica com a disciplina "falsa".
+-   ============================================= */
+-
+-import { State } from '../resumo-utils.js';
+-import { abrirModal } from '../resumo-reader.js';
+-
+-const ROTULO = 'Formatador';
+-
+-/* rotulo: nome do formato usado ao formatar (Resumo, Síntese…),
+-   mostrado no selo do leitor. */
+-export function abrirNoLeitor(aula, { rotulo } = {}) {
+-  const original = State.disciplina;
+-  // Mantém `arquivo`/demais campos da disciplina real (o leitor os usa
+-  // para resolver base de imagens); só id/nome mudam.
+-  State.disciplina = { ...(original ?? {}), id: 'formatador', nome: ROTULO };
+-  try {
+-    // idx omitido de propósito: sem ele o leitor não inventa o número
+-    // grande "1" quando o título não traz "Aula N".
+-    abrirModal(aula);
+-  } finally {
+-    State.disciplina = original;
+-  }
+-
+-  // abrirModal() rotula o selo como "Resumo"/"Síntese" conforme State.modo
+-  // (mesmo ajuste que abrirResultadoBusca faz para os seus tipos).
+-  const badge = document.getElementById('rm-tipo-badge');
+-  if (badge) badge.textContent = rotulo || ROTULO;
+-}
+\ No newline at end of file
+diff --git a/shared/css/audio/audio-btns.css b/shared/css/audio/audio-btns.css
+index 0a17dab..837a7ce 100644
+--- a/shared/css/audio/audio-btns.css
++++ b/shared/css/audio/audio-btns.css
+@@ -32,7 +32,7 @@
+    variável — trocar a identidade do componente é uma alteração
+    em um lugar só, e o hover/focus deixam de "brigar" com cor
+    fixada via JS (problema do markup anterior).
+-   Roxo escolhido de propósito para NÃO coincidir com o ciano
++   Azul royal escolhido de propósito para NÃO coincidir com o ciano
+    do #nexus-fab — mesma qualidade visual, identidade distinta. */
+ .abtn { --abtn-rgb: 64, 130, 255; }               /* normal — azul royal, mais "profundo" que o ciano da IA */
+ .abtn[data-state="mute"] { --abtn-rgb: 255, 77, 94; }   /* mudo — vermelho */
+diff --git a/shared/css/themes/fundo.css b/shared/css/themes/fundo.css
+index 54ca6d6..5809177 100644
+--- a/shared/css/themes/fundo.css
++++ b/shared/css/themes/fundo.css
+@@ -3,7 +3,7 @@
+    Fundo visual global: body base, orbs, grid.
+    Inclua este arquivo em qualquer página que
+    use o fundo animado padrão do projeto.
+-    <link rel="stylesheet" href="../shared/css/fundo.css">
++    <link rel="stylesheet" href="../shared/css/themes/fundo.css">
+    ============================================= */
+ 
+ /* ── BODY BASE ── */
+diff --git a/shared/css/themes/logo.css b/shared/css/themes/logo.css
+index 6debdd4..506ab69 100644
+--- a/shared/css/themes/logo.css
++++ b/shared/css/themes/logo.css
+@@ -3,7 +3,7 @@
+    Estilos do componente de logo injetado por logo.js.
+ 
+    Inclua em qualquer página que use injetarLogo():
+-    <link rel="stylesheet" href="../shared/css/logo.css">
++    <link rel="stylesheet" href="../shared/css/themes/logo.css">
+    ============================================= */
+ 
+ /* ── Wrapper base ────────────────────────────────── */
+diff --git a/shared/css/utils/quick-access.css b/shared/css/utils/quick-access.css
+index 149c615..2962aa5 100644
+--- a/shared/css/utils/quick-access.css
++++ b/shared/css/utils/quick-access.css
+@@ -1,7 +1,7 @@
+ /* ============================================================
+    Quick Access Bar — quick-access.css
+    Glassmorphism · Premium · Modular
+-   Ativação: tecla T | Fechar: ESC ou clique fora
++   Ativação: tecla Tab | Fechar: ESC ou clique fora
+    ============================================================ */
+ 
+ /* ── Custom Properties ─────────────────────────────────────── */
+diff --git a/shared/js/audio/engine/play.js b/shared/js/audio/engine/play.js
+index 8b75ac5..097211b 100644
+--- a/shared/js/audio/engine/play.js
++++ b/shared/js/audio/engine/play.js
+@@ -2,7 +2,12 @@
+ /* =============================================
+    NEXUS STUDY — shared/js/audio/engine/play.js
+    Dispatcher central de SFX
+-   Versão 2.1  ← log corrigido (sfx + master)
++   Versão 2.2  ← sem console.log por som
++
++   MUDANÇAS v2.1 → v2.2
++   ─────────────────────────────────────────────
++   - Removido o console.log disparado a cada som (ruído de console).
++     Nenhuma mudança de comportamento: o som toca exatamente como antes.
+ 
+    MUDANÇAS v2.0 → v2.1
+    ─────────────────────────────────────────────
+@@ -50,7 +55,5 @@ export function playSound(event, area = null) {
+   const variantId = audioState.resolveVariant(event, area);
+   if (!variantId) return;
+ 
+-  const sfx = audio.getSfxVolume();
+-  console.log(`[sfx] ${variantId} | sfx=${sfx.toFixed(2)}`);
+   audio.sfx[variantId]?.();
+ }
+\ No newline at end of file
+diff --git a/shared/js/audio/ui/audio-btns.js b/shared/js/audio/ui/audio-btns.js
+index ef4b6cd..8793fa3 100644
+--- a/shared/js/audio/ui/audio-btns.js
++++ b/shared/js/audio/ui/audio-btns.js
+@@ -3,7 +3,7 @@
+    NEXUS STUDY — shared/js/audio/ui/audio-btns.js
+    Botão flutuante de áudio — SFX
+    Versão 1.5 — cor por estado migrada para CSS var
+-   (--abtn-rgb via [data-state]), identidade roxa própria
++   (--abtn-rgb via [data-state]), identidade azul própria
+    em vez do ciano da IA; lógica de estado/click preservada
+    integralmente — ver seção 4
+ 
+@@ -22,7 +22,7 @@ import audioState from '../state/audio-state.js';
+    SEÇÃO 2 — ESTADOS VISUAIS
+ ═══════════════════════════════════════════════ */
+ 
+-/* A cor de cada estado (roxo/vermelho/verde-água) vive só no CSS,
++/* A cor de cada estado (azul/vermelho/verde-água) vive só no CSS,
+    via [data-state] + --abtn-rgb (ver audio-btns.css, seção 0).
+    Aqui só ficam os dados que realmente pertencem à lógica: id,
+    texto acessível e qual ícone mostrar. */
+diff --git a/shared/js/ia/quiz/assistant_quiz.js b/shared/js/ia/quiz/assistant_quiz.js
+index 3f07996..677b1f9 100644
+--- a/shared/js/ia/quiz/assistant_quiz.js
++++ b/shared/js/ia/quiz/assistant_quiz.js
+@@ -1,5 +1,5 @@
+ /**
+- * NEXUS — shared/js/ia/quiz/js/assistant_quiz.js  v2.7
++ * NEXUS — shared/js/ia/quiz/assistant_quiz.js  v2.7
+  *
+  * Quiz-Assistant: tutor de IA dentro do ambiente de quiz.
+  *

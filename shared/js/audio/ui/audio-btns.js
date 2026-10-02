@@ -3,7 +3,7 @@
    NEXUS STUDY — shared/js/audio/ui/audio-btns.js
    Botão flutuante de áudio — SFX
    Versão 1.5 — cor por estado migrada para CSS var
-   (--abtn-rgb via [data-state]), identidade roxa própria
+   (--abtn-rgb via [data-state]), identidade azul própria
    em vez do ciano da IA; lógica de estado/click preservada
    integralmente — ver seção 4
 
@@ -22,7 +22,7 @@ import audioState from '../state/audio-state.js';
    SEÇÃO 2 — ESTADOS VISUAIS
 ═══════════════════════════════════════════════ */
 
-/* A cor de cada estado (roxo/vermelho/verde-água) vive só no CSS,
+/* A cor de cada estado (azul/vermelho/verde-água) vive só no CSS,
    via [data-state] + --abtn-rgb (ver audio-btns.css, seção 0).
    Aqui só ficam os dados que realmente pertencem à lógica: id,
    texto acessível e qual ícone mostrar. */

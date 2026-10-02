@@ -1,5 +1,5 @@
 /**
- * NEXUS — shared/js/ia/quiz/js/assistant_quiz.js  v2.7
+ * NEXUS — shared/js/ia/quiz/assistant_quiz.js  v2.7
  *
  * Quiz-Assistant: tutor de IA dentro do ambiente de quiz.
  *

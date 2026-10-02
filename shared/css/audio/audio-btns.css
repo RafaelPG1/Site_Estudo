@@ -32,7 +32,7 @@
    variável — trocar a identidade do componente é uma alteração
    em um lugar só, e o hover/focus deixam de "brigar" com cor
    fixada via JS (problema do markup anterior).
-   Roxo escolhido de propósito para NÃO coincidir com o ciano
+   Azul royal escolhido de propósito para NÃO coincidir com o ciano
    do #nexus-fab — mesma qualidade visual, identidade distinta. */
 .abtn { --abtn-rgb: 64, 130, 255; }               /* normal — azul royal, mais "profundo" que o ciano da IA */
 .abtn[data-state="mute"] { --abtn-rgb: 255, 77, 94; }   /* mudo — vermelho */

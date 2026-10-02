@@ -30,7 +30,6 @@ import {
 
 import { injetarLogo }                       from './shared/js/utils/logo.js';
 import { login, logout, carregarConfigs }     from './src/firebase.js';
-import { iniciarSessao, encerrarSessao }      from './shared/js/utils/session-manager.js';
 import { criarSemestreSelect, preencherAnos } from './shared/js/utils/dom.js';
 import {
   Sound,
@@ -128,9 +127,9 @@ async function init() {
     _aplicarBloqueioCards();
     _bindCardLinks(); // registra listeners imediatamente — não depende do áudio
 
-    // Rastreamento de sessão
+    // Bloqueio dos cards e navegação. A sessão em si é do session-tracker.js,
+    // que escuta estes mesmos eventos (nexus:loginSuccess / nexus:logout).
     document.addEventListener('nexus:loginSuccess', () => {
-      iniciarSessao();
       _aplicarBloqueioCards();
       /* NAVIGATION ANALYTICS — re-registra a página após login
          para que o uid esteja disponível no flush */
@@ -139,7 +138,6 @@ async function init() {
       }
     });
     document.addEventListener('nexus:logout', () => {
-      encerrarSessao();
       _aplicarBloqueioCards();
     });
 

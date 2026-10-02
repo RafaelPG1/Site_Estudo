@@ -132,6 +132,30 @@
           console. console.warn/console.error de tratamento
           de falha real foram mantidos, pois sinalizam
           problemas de fato (rede, Firestore, etc.).
+
+   v11.1 — FASE 2 (SESSÕES): IMPLEMENTAÇÃO OFICIAL
+          ─────────────────────────────────────────
+          Este é o único rastreador de sessão do projeto. O antigo
+          shared/js/utils/session-manager.js (formato entrada/saida)
+          foi removido. NENHUMA lógica deste arquivo mudou nesta
+          versão: só este comentário.
+
+          FRONTEIRAS DE RESPONSABILIDADE (mapa para a Fase 3, camada
+          de dados). Todo o acesso ao Firestore está em:
+            · caminhos ... _sessaoRef, _usuarioRef, _diarioRef,
+                           _diarioMensalRef, _perfilUsoRef
+            · escrita .... _criarSessaoFirestore, _flush,
+                           _flushPerfilUsoGlobal, _resolverSessaoZumbi,
+                           _persistirLegacyCheck (marcador de leitura
+                           do histórico diário em formato antigo)
+            · leitura .... init() (getDoc de _sessaoRef, para retomar a
+                           sessão após F5), carregarEstatisticas,
+                           carregarPerfilUso
+          Todo o resto NÃO toca o Firestore e permanece aqui: lock de
+          aba, atividade/ociosidade, timer, navegação, getStats() /
+          subscribe() ao vivo, auto-boot.
+          Dependências externas: ./firebase.js (getDb, import estático)
+          e ./global.js (getUsuario, import dinâmico no auto-boot).
    ============================================= */
 
 import {

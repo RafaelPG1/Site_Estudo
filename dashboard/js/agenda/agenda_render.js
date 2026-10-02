@@ -58,7 +58,6 @@ function _renderCalendarAgora(grid) {
   if (titleEl) titleEl.textContent = isThisWeek ? 'Semana atual' : formatWeekLabel(monday);
   if (rangeEl) rangeEl.textContent = formatRange(monday);
 
-  const todayMonday = new Date(monday);
   const btnPrev = document.getElementById('agenda-btn-prev');
   if (btnPrev) {
     const weeksBack = Math.round((_getTodayMonday() - monday) / (7 * 86400000));
