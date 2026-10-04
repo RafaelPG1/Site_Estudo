@@ -26,7 +26,7 @@
    Chave local: nexus_checklist_progresso::{uid|anon}::{semestre}
 
    Mesmo padrão de acesso ao Firestore já usado em
-   dashboard/js/dashboard_data.js (getDb() + SDK modular via CDN).
+   dashboard/js/dashboard_data.js (getDb() via src/firebase.js; SDK via src/data/firebase-app.js).
 
    ─────────────────────────────────────────────
    ESTADO DE UI (filtro e accordions abertos/fechados)
@@ -53,7 +53,7 @@
 import { getDb } from '../../../src/firebase.js';
 import {
   doc, getDoc, setDoc,
-} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+} from '../../../src/data/firebase-app.js';
 
 /* ─────────────────────────────────────────────
    UI STATE MANAGER — sistema GLOBAL de preservação de estado de

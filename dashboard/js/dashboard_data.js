@@ -196,13 +196,10 @@ import {
 } from '../../src/session-tracker.js';
 
 /* ── Firestore (leitura da última sessão persistida — fallback do card Navegação) ── */
-import { getDb } from '../../src/firebase.js';
-import {
-  collection, query, orderBy, limit, getDocs,
-} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { buscarUltimaSessao } from '../../src/data/sessoes-repo.js';
 
 import { renderDashboardIntelligence } from './dashboard_render.js';
-import { carregarConquistas } from './conquista/conquista_index.js';
+import { carregarConquistas } from './conquista/index.js';
 import { perfLog, logFirestore } from '../../src/perf_logger.js';
 
 /* ─────────────────────────────────────────────
@@ -667,17 +664,13 @@ async function _buscarUltimaSessaoPersistida(uid) {
   if (!uid) return null;
   const t0 = performance.now();
   try {
-    const db  = getDb();
-    const ref = collection(db, 'usuarios', uid, 'sessoes');
-    const q   = query(ref, orderBy('startedAt', 'desc'), limit(1));
-    const snap = await getDocs(q);
-    if (snap.empty) {
+    const sessao = await buscarUltimaSessao(uid);
+    if (!sessao) {
       logFirestore('usuarios/{uid}/sessoes (última)', uid, performance.now() - t0, 0);
       return null;
     }
-    const docSnap = snap.docs[0];
     logFirestore('usuarios/{uid}/sessoes (última)', uid, performance.now() - t0, 1);
-    return { id: docSnap.id, ...docSnap.data() };
+    return sessao;
   } catch (err) {
     console.warn('[dashboard] _buscarUltimaSessaoPersistida:', err);
     logFirestore('usuarios/{uid}/sessoes (última) (ERRO)', uid, performance.now() - t0, 0);

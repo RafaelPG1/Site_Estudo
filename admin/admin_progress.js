@@ -10,7 +10,7 @@ import { limparTodoQuizUsuario } from '../src/firebase.js';
 import {
   collection, getDocs, deleteDoc, doc, setDoc,
   getDocsFromServer,
-} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+} from '../src/data/firebase-app.js';
 
 import { _getUsuarios, _toast, _modalConfirmar } from './admin.js';
 

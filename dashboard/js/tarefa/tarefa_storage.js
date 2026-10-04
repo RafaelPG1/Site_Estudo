@@ -37,7 +37,7 @@
 import { getDb } from '../../../src/firebase.js';
 import {
   collection, doc, getDocs, setDoc, deleteDoc, query, orderBy,
-} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+} from '../../../src/data/firebase-app.js';
 
 function _chaveLocal(uid) {
   return `nexus_tarefas_listas::${uid ?? 'anon'}`;

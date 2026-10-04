@@ -156,13 +156,27 @@
           subscribe() ao vivo, auto-boot.
           Dependências externas: ./firebase.js (getDb, import estático)
           e ./global.js (getUsuario, import dinâmico no auto-boot).
+
+   v11.2 — FASE 3 (DATA LAYER): só mudou ONDE vêm as referências e o
+          SDK. Os caminhos agora vêm de src/data/sessoes-repo.js
+          (refSessao, refUsuarioContador, refDiarioDia, refDiarioMes,
+          refPerfilUso) e o SDK/getDb de src/data/firebase-app.js (mesma
+          URL/instância de antes). As funções _sessaoRef/_usuarioRef/
+          _diarioRef/_diarioMensalRef/_perfilUsoRef continuam existindo
+          como delegadoras; nenhuma escrita, ordem de escrita, timer ou
+          contrato público mudou. A lógica de gravação (setDoc/batch com
+          increment) segue AQUI por depender do estado do rastreador.
+          Dependência externa nova: ./data/*  (./firebase.js deixou de
+          ser importado por este arquivo).
    ============================================= */
 
 import {
-  doc, getDoc, setDoc, increment, writeBatch,
-} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+  getDoc, setDoc, increment, writeBatch, getDb,
+} from './data/firebase-app.js';
 
-import { getDb } from './firebase.js';
+import {
+  refSessao, refUsuarioContador, refDiarioDia, refDiarioMes, refPerfilUso,
+} from './data/sessoes-repo.js';
 /* ══════════════════════════════════════════════
    CONSTANTES
 ══════════════════════════════════════════════ */
@@ -584,16 +598,16 @@ function _isPlainObject(v) {
 /* ══════════════════════════════════════════════
    REFS DO FIRESTORE
 ══════════════════════════════════════════════ */
-function _sessaoRef(uid, sid)     { return doc(getDb(), 'usuarios', uid, 'sessoes', sid); }
-function _usuarioRef(uid)         { return doc(getDb(), 'usuarios', uid); }
+function _sessaoRef(uid, sid)     { return refSessao(uid, sid); }
+function _usuarioRef(uid)         { return refUsuarioContador(uid); }
 
 /* Documento diário ANTIGO — mantido apenas para leitura de
    fallback em carregarEstatisticas(). Não recebe mais gravação. */
-function _diarioRef(uid, dateKey) { return doc(getDb(), 'usuarios', uid, 'historico_diario', dateKey); }
+function _diarioRef(uid, dateKey) { return refDiarioDia(uid, dateKey); }
 
 /* Documento mensal NOVO — fonte de gravação e leitura primária
    de historico_diario a partir da v8. */
-function _diarioMensalRef(uid, mesKey) { return doc(getDb(), 'usuarios', uid, 'historico_diario', mesKey); }
+function _diarioMensalRef(uid, mesKey) { return refDiarioMes(uid, mesKey); }
 
 /* ══════════════════════════════════════════════
    PERFIL DE USO — GLOBAL (v9 — reimplementação do zero)
@@ -602,7 +616,7 @@ function _diarioMensalRef(uid, mesKey) { return doc(getDb(), 'usuarios', uid, 'h
    NÃO depende de State.semestre, NÃO depende de Quiz Intelligence,
    NÃO interfere no timer/lock/navegação já existentes.
 ══════════════════════════════════════════════ */
-function _perfilUsoRef(uid) { return doc(getDb(), 'usuarios', uid, 'perfil_uso', 'global'); }
+function _perfilUsoRef(uid) { return refPerfilUso(uid); }
 
 const LS_PERFILUSO_BASELINE_KEY = 'nexus_perfilUso_baseline';
 
@@ -1123,7 +1137,6 @@ export function subscribe(fn) {
 export async function carregarEstatisticas(uid) {
   if (!uid) return null;
   try {
-    const db = getDb();
     const hoje = new Date();
 
     const diasJanela = [];
@@ -1137,7 +1150,7 @@ export async function carregarEstatisticas(uid) {
     const mapasMensais = {};
     const [snapUsuario] = await Promise.all([
       (async () => {
-        const snap = await getDoc(doc(db, 'usuarios', uid));
+        const snap = await getDoc(refUsuarioContador(uid));
         return snap;
       })(),
       ...mesesUnicos.map(async (mesKey) => {

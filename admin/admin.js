@@ -14,16 +14,14 @@ import {
   resetarPin,
   hashPin,
   logout,
-  getDb,
 } from '../src/firebase.js';
+
+/* Fase 3 — operações de dados que o painel fazia direto no Firestore */
+import { removerUsuarioCompleto, atualizarPerfilUsuario } from '../src/data/usuarios-repo.js';
 
 import { _renderProgress } from './admin_progress.js';
 import { _renderSessions } from './admin-sessions.js';
 import { _renderRanking  } from './admin-ranking.js';
-
-import {
-  collection, getDocs, deleteDoc, doc, setDoc,
-} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 /* ══════════════════════════════════════════════════════════
    CONSTANTES
@@ -177,31 +175,7 @@ export async function _getUsuarios(force = false) {
    ══════════════════════════════════════════════════════════ */
 
 async function _removerUsuarioCompleto(uid) {
-  try {
-    const db = getDb();
-    const SUBCOLLECTIONS = [
-      'quiz_respostas', 'srs_perfis',
-      'sm_historico', 'sm_pontuacoes',   // ← ambas as subcoleções do SM
-      'assoc_historico',                  // ← histórico de associação
-      'sessoes',                          // ← histórico de sessões
-    ];
-
-    for (const subCol of SUBCOLLECTIONS) {
-      const colRef = collection(db, 'usuarios', uid, subCol);
-      const snap   = await getDocs(colRef);
-      if (!snap.empty) {
-        await Promise.all(snap.docs.map(d => deleteDoc(d.ref)));
-        console.log(`[admin] Subcoleção "${subCol}" apagada (${snap.size} docs) → ${uid}`);
-      }
-    }
-
-    await deleteDoc(doc(db, 'usuarios', uid));
-    console.log('[admin] _removerUsuarioCompleto ok →', uid);
-    return { ok: true };
-  } catch (err) {
-    console.error('[admin] _removerUsuarioCompleto erro:', err);
-    return { ok: false, erro: err.message };
-  }
+  return removerUsuarioCompleto(uid);
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -633,7 +607,7 @@ function _modalEditarUsuario(uid, nome, avatarAtual) {
 
     saveBtn.disabled = true; saveBtn.textContent = 'Salvando…';
     try {
-      await setDoc(doc(getDb(), 'usuarios', uid), { nome: novoNome, avatar: avatarSel }, { merge: true });
+      await atualizarPerfilUsuario(uid, { nome: novoNome, avatar: avatarSel });
       _usuarios = [];
       overlay.remove();
       _toast('Usuário atualizado! ✅');
