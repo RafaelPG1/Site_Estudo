@@ -199,7 +199,7 @@ import {
 import { buscarUltimaSessao } from '../../src/data/sessoes-repo.js';
 
 import { renderDashboardIntelligence } from './dashboard_render.js';
-import { carregarConquistas } from './conquista/index.js';
+import { carregarConquistas } from './conquista/conquista_index.js';
 import { perfLog, logFirestore } from '../../src/perf_logger.js';
 
 /* ─────────────────────────────────────────────

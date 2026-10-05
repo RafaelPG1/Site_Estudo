@@ -2,8 +2,8 @@
 /* =============================================
    NEXUS STUDY — src/data/quiz-repo.js
    Repositório do QUIZ: estado retomável, histórico de performance e
-   evolução consolidada (quiz_evolution — caminho NÃO alterado nesta
-   fase; a migração é Fase 4).
+   evolução consolidada (Fase 4: nova estrutura sob usuarios/{uid} com
+   migração por cópia e leitura de compatibilidade do quiz_evolution legado).
 
    Regras: sem DOM, sem eventos, sem import de core/global, uid sempre
    parâmetro. Contratos de retorno idênticos aos de src/firebase.js.
@@ -201,30 +201,248 @@ export async function listarEstadosQuizUsuario(uid) {
   }
 }
 
-/* ── EVOLUÇÃO CONSOLIDADA (quiz_evolution/{uid}/…) — caminho inalterado ── */
-const _dailyRef   = (uid, k) => doc(getDb(), ...C.evolucaoDiaria(uid, k));
-const _weeklyRef  = (uid, k) => doc(getDb(), ...C.evolucaoSemanal(uid, k));
-const _summaryRef = (uid)    => doc(getDb(), ...C.evolucaoResumo(uid));
+/* ═══════════════════════════════════════════════════════════════
+   EVOLUÇÃO CONSOLIDADA — FASE 4 (migração + compatibilidade)
+
+   NOVA estrutura (dados do usuário sob usuarios/{uid}):
+     usuarios/{uid}/quiz_evolucao_diaria/{YYYY-MM-DD}
+     usuarios/{uid}/quiz_evolucao_semanal/{YYYY-Www}
+     usuarios/{uid}/quiz_evolucao_resumo/main
+   LEGADO (intacto; este código NUNCA o apaga nem o altera):
+     quiz_evolution/{uid}/daily|weekly/{key}  ·  quiz_evolution/{uid}/summary/main
+
+   Como funciona:
+     1. Antes de qualquer leitura/escrita de evolução de um usuário,
+        garantirMigracaoEvolucao(uid) confere o marcador
+        usuarios/{uid}.migracoes.quiz_evolucao_v2.
+     2. Sem marcador: migrarEvolucaoUsuario() COPIA o legado (mesmos IDs,
+        mesmos dados), valida por releitura e só então grava o marcador.
+     3. Com marcador: lê e escreve só na estrutura nova.
+     4. Se a migração falhar/não validar: LEITURAS caem para o legado
+        (compatibilidade) e ESCRITAS não são feitas (retornam { ok:false }),
+        para não dividir os dados entre dois lugares. Nada se perde: a
+        consolidação recalcula tudo a partir de `performance` e tenta de novo.
+     5. USAR_NOVA_ESTRUTURA_EVOLUCAO = false volta ao comportamento exato
+        da Fase 3 (lê/escreve só no legado), sem migrar.
+
+   Cópia: destino inexistente → copia a origem. Destino existente e igual →
+   mantém. Destino diferente → vence o maior `_updatedAt`; EMPATE com
+   conteúdo diferente é divergência (nada é escrito, nada é marcado, o
+   relatório lista o documento). No resumo, processedAttemptIds é a UNIÃO
+   das duas listas.
+   ═══════════════════════════════════════════════════════════════ */
+
+const USAR_NOVA_ESTRUTURA_EVOLUCAO = false;
+const _RETRY_FALHA_MS = 60_000;
+const _LOTE_MAX = 400;
+
+const _REFS_NOVO = {
+  daily:   (uid, k) => doc(getDb(), ...C.evolucaoDiaria(uid, k)),
+  weekly:  (uid, k) => doc(getDb(), ...C.evolucaoSemanal(uid, k)),
+  summary: (uid)    => doc(getDb(), ...C.evolucaoResumo(uid)),
+};
+const _REFS_LEGADO = {
+  daily:   (uid, k) => doc(getDb(), ...C.evolucaoDiariaLegado(uid, k)),
+  weekly:  (uid, k) => doc(getDb(), ...C.evolucaoSemanalLegado(uid, k)),
+  summary: (uid)    => doc(getDb(), ...C.evolucaoResumoLegado(uid)),
+};
+
+/* Comparação profunda independente da ordem das chaves. */
+function _canon(v) {
+  if (v === undefined) return 'u';
+  if (v === null || typeof v !== 'object') return JSON.stringify(v);
+  if (Array.isArray(v)) return '[' + v.map(_canon).join(',') + ']';
+  if (typeof v.toMillis === 'function') return 'T' + v.toMillis();
+  return '{' + Object.keys(v).filter(k => v[k] !== undefined).sort()
+    .map(k => JSON.stringify(k) + ':' + _canon(v[k])).join(',') + '}';
+}
+const _iguais = (a, b) => _canon(a) === _canon(b);
+const _upd = (d) => (typeof d?._updatedAt === 'number' ? d._updatedAt : -1);
+
+/* ── Migração por usuário ───────────────────────────────────────
+   opts.dryRun  → só calcula e relata (nenhuma escrita).
+   opts.forcar  → ignora o marcador (reexecuta a cópia; idempotente).
+   Retorna um relatório; ok:true somente se validado (ou já migrado). */
+export async function migrarEvolucaoUsuario(uid, { dryRun = false, forcar = false } = {}) {
+  const rel = {
+    uid, dryRun, ok: false, jaMigrado: false, validado: false, erro: null,
+    legado:  { diaria: 0, semanal: 0, resumo: 0 },
+    copiar:  { diaria: 0, semanal: 0, resumo: 0 },
+    iguais:  { diaria: 0, semanal: 0, resumo: 0 },
+    destinoVence: { diaria: 0, semanal: 0, resumo: 0 },
+    divergencias: [],
+  };
+  if (!uid) { rel.erro = 'uid_vazio'; return rel; }
+
+  try {
+    const db = getDb();
+    const userRef  = doc(db, ...C.usuario(uid));
+    const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) { rel.erro = 'usuario_inexistente'; return rel; }
+
+    const marcador = userSnap.data()?.migracoes?.[C.MARCADOR_MIGRACAO_EVOLUCAO] ?? null;
+    if (marcador && !forcar) { rel.jaMigrado = true; rel.ok = true; rel.marcador = marcador; return rel; }
+
+    const escritas = [];   // { ref, dados, tipo, id }
+
+    /* diário e semanal: 1 listagem do legado + 1 do destino */
+    for (const [tipo, colLeg, colNovo, refNovo] of [
+      ['diaria',  C.evolucaoDiariaColecaoLegado,  C.evolucaoDiariaColecao,  _REFS_NOVO.daily],
+      ['semanal', C.evolucaoSemanalColecaoLegado, C.evolucaoSemanalColecao, _REFS_NOVO.weekly],
+    ]) {
+      const [snapLeg, snapNovo] = await Promise.all([
+        getDocs(collection(db, ...colLeg(uid))),
+        getDocs(collection(db, ...colNovo(uid))),
+      ]);
+      const destino = new Map(snapNovo.docs.map(d => [d.id, d.data()]));
+      rel.legado[tipo] = snapLeg.size;
+      for (const d of snapLeg.docs) {
+        const src = d.data(); const dst = destino.get(d.id);
+        if (dst === undefined) { rel.copiar[tipo]++; escritas.push({ ref: refNovo(uid, d.id), dados: src, tipo, id: d.id }); }
+        else if (_iguais(src, dst)) { rel.iguais[tipo]++; }
+        else if (_upd(src) > _upd(dst)) { rel.copiar[tipo]++; escritas.push({ ref: refNovo(uid, d.id), dados: src, tipo, id: d.id }); }
+        else if (_upd(src) === _upd(dst)) { rel.divergencias.push({ tipo, id: d.id, motivo: 'empate_com_conteudo_diferente' }); }
+        else { rel.destinoVence[tipo]++; }
+      }
+    }
+
+    /* resumo: une processedAttemptIds */
+    const [sumLeg, sumNovo] = await Promise.all([
+      getDoc(_REFS_LEGADO.summary(uid)), getDoc(_REFS_NOVO.summary(uid)),
+    ]);
+    if (sumLeg.exists()) {
+      rel.legado.resumo = 1;
+      const src = sumLeg.data();
+      if (!sumNovo.exists()) {
+        rel.copiar.resumo = 1;
+        escritas.push({ ref: _REFS_NOVO.summary(uid), dados: src, tipo: 'resumo', id: 'main' });
+      } else if (_upd(src) === _upd(sumNovo.data())
+                 && !_iguais({ ...src, processedAttemptIds: undefined }, { ...sumNovo.data(), processedAttemptIds: undefined })) {
+        rel.divergencias.push({ tipo: 'resumo', id: 'main', motivo: 'empate_com_conteudo_diferente' });
+      } else {
+        const dst = sumNovo.data();
+        const vencedor = _upd(src) > _upd(dst) ? src : dst;
+        const ids = [...(Array.isArray(src.processedAttemptIds) ? src.processedAttemptIds : [])];
+        const visto = new Set(ids);
+        for (const id of (Array.isArray(dst.processedAttemptIds) ? dst.processedAttemptIds : [])) {
+          if (!visto.has(id)) { visto.add(id); ids.push(id); }
+        }
+        const esperado = (Array.isArray(src.processedAttemptIds) || Array.isArray(dst.processedAttemptIds))
+          ? { ...vencedor, processedAttemptIds: ids } : { ...vencedor };
+        if (_iguais(esperado, dst)) rel.iguais.resumo = 1;
+        else { rel.copiar.resumo = 1; escritas.push({ ref: _REFS_NOVO.summary(uid), dados: esperado, tipo: 'resumo', id: 'main' }); }
+      }
+    }
+
+    /* Divergência já no planejamento (destino diferente da origem com o
+       mesmo _updatedAt): NÃO escreve nada e NÃO marca — exige análise. */
+    if (rel.divergencias.length > 0) { rel.erro = 'divergencia_no_planejamento'; return rel; }
+
+    if (dryRun) { rel.ok = true; return rel; }
+
+    /* escrita em lotes */
+    for (let i = 0; i < escritas.length; i += _LOTE_MAX) {
+      const batch = writeBatch(db);
+      for (const e of escritas.slice(i, i + _LOTE_MAX)) batch.set(e.ref, e.dados);
+      await batch.commit();
+    }
+
+    /* validação: relê cada documento escrito e compara com o esperado */
+    for (const e of escritas) {
+      const snap = await getDoc(e.ref);
+      if (!snap.exists() || !_iguais(snap.data(), e.dados)) rel.divergencias.push({ tipo: e.tipo, id: e.id });
+    }
+    if (rel.divergencias.length > 0) { rel.erro = 'divergencia_na_validacao'; return rel; }
+
+    rel.validado = true;
+    await setDoc(userRef, { migracoes: { [C.MARCADOR_MIGRACAO_EVOLUCAO]: {
+      em: Date.now(),
+      diaria: rel.legado.diaria, semanal: rel.legado.semanal, resumo: rel.legado.resumo,
+      copiados: { ...rel.copiar }, validado: true,
+    } } }, { merge: true });
+    rel.ok = true;
+    return rel;
+  } catch (err) {
+    console.warn('[quiz-repo] migrarEvolucaoUsuario erro:', err);
+    rel.erro = String(err?.message ?? err);
+    return rel;
+  }
+}
+
+/* ── Inventário SOMENTE LEITURA da evolução (legado × novo) ──────
+   Cada leitura é isolada: se as regras do Firestore negarem um caminho,
+   ele aparece em `erros` e as demais contagens continuam válidas. */
+export async function inventariarEvolucaoUsuario(uid) {
+  const rel = { uid, legado: { diaria: null, semanal: null, resumo: null },
+                novo: { diaria: null, semanal: null, resumo: null }, marcador: null, erros: [] };
+  const db = getDb();
+  const ler = async (caminho, fn) => {
+    try { return await fn(); }
+    catch (err) { rel.erros.push({ caminho, codigo: String(err?.code ?? err?.name ?? 'erro') }); return null; }
+  };
+  const [lD, lW, lS, nD, nW, nS, u] = await Promise.all([
+    ler(`quiz_evolution/${uid}/daily`,   () => getDocs(collection(db, ...C.evolucaoDiariaColecaoLegado(uid)))),
+    ler(`quiz_evolution/${uid}/weekly`,  () => getDocs(collection(db, ...C.evolucaoSemanalColecaoLegado(uid)))),
+    ler(`quiz_evolution/${uid}/summary/main`, () => getDoc(_REFS_LEGADO.summary(uid))),
+    ler(`usuarios/${uid}/quiz_evolucao_diaria`,  () => getDocs(collection(db, ...C.evolucaoDiariaColecao(uid)))),
+    ler(`usuarios/${uid}/quiz_evolucao_semanal`, () => getDocs(collection(db, ...C.evolucaoSemanalColecao(uid)))),
+    ler(`usuarios/${uid}/quiz_evolucao_resumo/main`, () => getDoc(_REFS_NOVO.summary(uid))),
+    ler(`usuarios/${uid}`, () => getDoc(doc(db, ...C.usuario(uid)))),
+  ]);
+  if (lD) rel.legado.diaria  = lD.size;
+  if (lW) rel.legado.semanal = lW.size;
+  if (lS) rel.legado.resumo  = lS.exists() ? 1 : 0;
+  if (nD) rel.novo.diaria    = nD.size;
+  if (nW) rel.novo.semanal   = nW.size;
+  if (nS) rel.novo.resumo    = nS.exists() ? 1 : 0;
+  if (u?.exists()) rel.marcador = !!u.data()?.migracoes?.[C.MARCADOR_MIGRACAO_EVOLUCAO];
+  return rel;
+}
+
+/* ── Garantia antes de qualquer acesso (memoizada por usuário) ── */
+const _migracoes = new Map();   // uid → { ts, ok, p }
+export function garantirMigracaoEvolucao(uid) {
+  if (!uid) return Promise.resolve(false);
+  const c = _migracoes.get(uid);
+  if (c && (c.ok || Date.now() - c.ts < _RETRY_FALHA_MS)) return c.p;
+  const entrada = { ts: Date.now(), ok: false, p: null };
+  entrada.p = migrarEvolucaoUsuario(uid)
+    .then(r => { entrada.ok = !!r.ok; return !!r.ok; })
+    .catch(() => false);
+  _migracoes.set(uid, entrada);
+  return entrada.p;
+}
+
+/* 'novo' → estrutura nova · 'legado-leitura' → falhou (só lê o legado) ·
+   'legado' → chave desligada (comportamento da Fase 3) */
+async function _modoEvolucao(uid) {
+  if (!USAR_NOVA_ESTRUTURA_EVOLUCAO) return 'legado';
+  return (await garantirMigracaoEvolucao(uid)) ? 'novo' : 'legado-leitura';
+}
+const _refsDoModo = (modo) => (modo === 'novo' ? _REFS_NOVO : _REFS_LEGADO);
 
 export async function carregarEvolutionSummary(uid) {
   if (!uid) return null;
   const t0 = performance.now();
+  const modo = await _modoEvolucao(uid);
+  const rotulo = modo === 'novo' ? 'usuarios/{uid}/quiz_evolucao_resumo/main' : 'quiz_evolution/{uid}/summary/main';
   try {
-    const snap = await getDoc(_summaryRef(uid));
+    const snap = await getDoc(_refsDoModo(modo).summary(uid));
     const resultado = snap.exists() ? snap.data() : null;
-    _medir('quiz_evolution/{uid}/summary/main', uid, performance.now() - t0, resultado ? 1 : 0);
+    _medir(rotulo, uid, performance.now() - t0, resultado ? 1 : 0);
     return resultado;
   } catch (err) {
     console.warn('[firebase] carregarEvolutionSummary erro:', err);
-    _medir('quiz_evolution/{uid}/summary/main (ERRO)', uid, performance.now() - t0, 0);
+    _medir(`${rotulo} (ERRO)`, uid, performance.now() - t0, 0);
     return null;
   }
 }
 
 export async function carregarEvolutionDaily(uid, dateKey) {
   if (!uid || !dateKey) return null;
+  const modo = await _modoEvolucao(uid);
   try {
-    const snap = await getDoc(_dailyRef(uid, dateKey));
+    const snap = await getDoc(_refsDoModo(modo).daily(uid, dateKey));
     return snap.exists() ? snap.data() : null;
   } catch (err) {
     console.warn('[firebase] carregarEvolutionDaily erro:', err);
@@ -234,8 +452,9 @@ export async function carregarEvolutionDaily(uid, dateKey) {
 
 export async function carregarEvolutionWeekly(uid, weekKey) {
   if (!uid || !weekKey) return null;
+  const modo = await _modoEvolucao(uid);
   try {
-    const snap = await getDoc(_weeklyRef(uid, weekKey));
+    const snap = await getDoc(_refsDoModo(modo).weekly(uid, weekKey));
     return snap.exists() ? snap.data() : null;
   } catch (err) {
     console.warn('[firebase] carregarEvolutionWeekly erro:', err);
@@ -245,10 +464,11 @@ export async function carregarEvolutionWeekly(uid, weekKey) {
 
 export async function carregarEvolutionDailyRange(uid, dateKeys) {
   if (!uid || !Array.isArray(dateKeys) || dateKeys.length === 0) return {};
+  const refs = _refsDoModo(await _modoEvolucao(uid));
   const out = {};
   await Promise.all(dateKeys.map(async (key) => {
     try {
-      const snap = await getDoc(_dailyRef(uid, key));
+      const snap = await getDoc(refs.daily(uid, key));
       if (snap.exists()) out[key] = snap.data();
     } catch (_) { /* dia sem dado é normal, ignora */ }
   }));
@@ -256,15 +476,23 @@ export async function carregarEvolutionDailyRange(uid, dateKeys) {
 }
 
 /* Grava de forma atômica dia + semana + resumo (idempotência via
-   processedAttemptIds, decidida pelo chamador — quiz_intelligence.js). */
+   processedAttemptIds, decidida pelo chamador — quiz_intelligence.js).
+   Só escreve onde a leitura aponta: estrutura nova (migrada) ou legado
+   (chave desligada). Em 'legado-leitura' NÃO grava. */
 export async function gravarConsolidacaoEvolucao(uid, { dailyKey, dailyData, weeklyKey, weeklyData, summaryData }) {
   if (!uid || !dailyKey || !weeklyKey || !summaryData) return { ok: false };
   try {
+    const modo = await _modoEvolucao(uid);
+    if (modo === 'legado-leitura') {
+      console.warn('[quiz-repo] evolução não gravada: migração do usuário ainda não validada', uid);
+      return { ok: false };
+    }
+    const refs = _refsDoModo(modo);
     const batch = writeBatch(getDb());
 
-    batch.set(_dailyRef(uid, dailyKey),   dailyData,   { merge: true });
-    batch.set(_weeklyRef(uid, weeklyKey), weeklyData,  { merge: true });
-    batch.set(_summaryRef(uid),           summaryData, { merge: true });
+    batch.set(refs.daily(uid, dailyKey),   dailyData,   { merge: true });
+    batch.set(refs.weekly(uid, weeklyKey), weeklyData,  { merge: true });
+    batch.set(refs.summary(uid),           summaryData, { merge: true });
 
     await batch.commit();
     return { ok: true };
