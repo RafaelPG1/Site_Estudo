@@ -19,6 +19,11 @@
 
 import { SEMESTRES, getSemestreAtual, setSemestre, parseSemestre } from '../../../src/global.js';
 
+/* Listener de Escape por montagem (chave = wrapId). Remontar o mesmo
+   wrap (ex.: _refreshHeader) substitui o listener anterior em vez de
+   acumular um novo a cada chamada. Wraps diferentes coexistem. */
+const _escHandlers = new Map();
+
 /* ─────────────────────────────────────────────────────────────
    criarSemestreSelect
    ─────────────────────────────────────────────────────────── */
@@ -176,9 +181,13 @@ export function criarSemestreSelect(wrapId, onChange, semestreAtual) {
     spWrap.classList.contains('is-open') ? _close() : _open();
   });
 
-  document.addEventListener('keydown', e => {
+  const _antigoEsc = _escHandlers.get(wrapId);
+  if (_antigoEsc) document.removeEventListener('keydown', _antigoEsc);
+  const _onEsc = e => {
     if (e.key === 'Escape') _close();
-  });
+  };
+  _escHandlers.set(wrapId, _onEsc);
+  document.addEventListener('keydown', _onEsc);
 
   /* ── Estado inicial ──────────────────────────────────────── */
   _renderTrigger();
