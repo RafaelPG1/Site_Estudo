@@ -27,6 +27,16 @@
  *   provedor  = 'auto' | 'groq' | 'gemini' | 'openrouter' (vem do NexusModelPicker)
  * ← { resposta: string, fonte: string, modelo: string }
  *
+ * ── TIMEOUT E AVISOS (Fase 6) ────────────────────────────────
+ * A requisição ao Worker é cancelada após TIMEOUT_MS (30 s, cobre
+ * também a leitura do corpo). Timeout e HTTP 429 NÃO são respostas
+ * da IA: perguntar() devolve a mensagem amigável ao chamador
+ * (mesmo formato { texto, fonte:null, modelo:null, turnosAoEnviar }),
+ * mas NÃO grava o turno no histórico de sessão, e
+ * restaurarHistorico() ignora pares cuja resposta seja um desses
+ * avisos (inclusive os já salvos no histórico visual). Não há retry
+ * automático. O botão Parar (parar()) segue cancelando sem mensagem.
+ *
  * ── HISTÓRICO DE SESSÃO ──────────────────────────────────────
  * Mantém apenas as últimas MAX_TURNS interações (user + assistant).
  * Somente texto limpo — sem role 'system', metadados ou HTML.
@@ -73,6 +83,12 @@
   // Teto de segurança para o contexto (enunciado + alternativas de questões grandes).
   // Precisa ser <= MAX_CONTEXTO_CHARS do Cloudflare Worker.
   var CONTEXTO_MAX   = 20000;
+  // Tempo máximo de espera pela resposta do Cloudflare Worker.
+  var TIMEOUT_MS     = 30000;
+
+  // Avisos mostrados ao usuário. NÃO são respostas da IA: não vão ao histórico.
+  var MSG_RATE_LIMIT = '⚠️ Muitas perguntas agora 😅 Tente novamente em alguns segundos.';
+  var MSG_TIMEOUT    = '⏱️ A IA demorou demais para responder. Tente novamente.';
 
   /* ══════════════════════════════════════════════════════════
      ESTADO INTERNO
@@ -170,56 +186,72 @@
     var controller = new AbortController();
     _controllerAtual = controller;
 
-    var res;
+    // Timeout próprio: aborta o mesmo controller, mas marca `estourou`
+    // para distinguir de um cancelamento do usuário (parar()).
+    var estourou = false;
+    var timer = setTimeout(function () {
+      estourou = true;
+      controller.abort();
+    }, TIMEOUT_MS);
+
     try {
-      res = await fetch(WORKER_URL, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(payload),
-        signal:  controller.signal,
-      });
-    } catch (err) {
-      _controllerAtual = null;
-      if (err && err.name === 'AbortError') {
-        console.log('[NexusWorker] requisição cancelada pelo usuário.');
-        return { cancelado: true };
+      var res;
+      try {
+        res = await fetch(WORKER_URL, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify(payload),
+          signal:  controller.signal,
+        });
+      } catch (err) {
+        _controllerAtual = null;
+        if (err && err.name === 'AbortError') {
+          if (estourou) {
+            console.warn('[NexusWorker] timeout de ' + (TIMEOUT_MS / 1000) + 's aguardando o worker.');
+            return { timeout: true };
+          }
+          console.log('[NexusWorker] requisição cancelada pelo usuário.');
+          return { cancelado: true };
+        }
+        console.warn('[NexusWorker] falha de rede ao chamar worker:', err);
+        return null;
       }
-      console.warn('[NexusWorker] falha de rede ao chamar worker:', err);
-      return null;
-    }
-    _controllerAtual = null;
+      _controllerAtual = null;
 
-    if (res.status === 429) {
+      if (res.status === 429) {
+        return { limite: true };
+      }
+
+      if (!res.ok) {
+        console.warn('[NexusWorker] worker retornou HTTP', res.status);
+        return null;
+      }
+
+      var data;
+      try {
+        data = await res.json();
+      } catch (err) {
+        if (estourou) {
+          console.warn('[NexusWorker] timeout de ' + (TIMEOUT_MS / 1000) + 's lendo a resposta do worker.');
+          return { timeout: true };
+        }
+        console.warn('[NexusWorker] resposta do worker não é JSON válido:', err);
+        return null;
+      }
+
+      if (!data || !data.resposta) {
+        console.warn('[NexusWorker] worker respondeu sem campo "resposta".');
+        return null;
+      }
+
       return {
-        resposta: '⚠️ Muitas perguntas agora 😅 Tente novamente em alguns segundos.',
-        fonte:    null,
-        modelo:   null,
+        resposta: data.resposta,
+        fonte:    data.fonte  || null,
+        modelo:   data.modelo || null,
       };
+    } finally {
+      clearTimeout(timer);
     }
-
-    if (!res.ok) {
-      console.warn('[NexusWorker] worker retornou HTTP', res.status);
-      return null;
-    }
-
-    var data;
-    try {
-      data = await res.json();
-    } catch (err) {
-      console.warn('[NexusWorker] resposta do worker não é JSON válido:', err);
-      return null;
-    }
-
-    if (!data || !data.resposta) {
-      console.warn('[NexusWorker] worker respondeu sem campo "resposta".');
-      return null;
-    }
-
-    return {
-      resposta: data.resposta,
-      fonte:    data.fonte  || null,
-      modelo:   data.modelo || null,
-    };
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -262,7 +294,7 @@
     var registrarNoHistorico = opcoes.registrarNoHistorico;
     var ehQuestao            = opcoes.ehQuestao;
     var instrucao            = opcoes.instrucao;
-    // Modelo escolhido no seletor (model_picker.js). 'auto' = cascata com fallback.
+    // Modelo escolhido no seletor (NexusModelPicker, definido em core/ui.js). 'auto' = cascata com fallback.
     var provedor             = (window.NexusModelPicker && window.NexusModelPicker.get()) || 'auto';
 
     if (!pergunta || !pergunta.trim()) return null;
@@ -290,6 +322,17 @@
 
     if (resultado && resultado.cancelado) {
       return { cancelado: true };
+    }
+
+    // Avisos (429 / timeout): exibidos ao usuário, mas NÃO são resposta da
+    // IA — não entram no histórico de sessão (_registrarTurno não é chamado).
+    if (resultado && (resultado.limite || resultado.timeout)) {
+      return {
+        texto:          resultado.limite ? MSG_RATE_LIMIT : MSG_TIMEOUT,
+        fonte:          null,
+        modelo:         null,
+        turnosAoEnviar: turnosAoEnviar,
+      };
     }
 
     if (!resultado) {
@@ -336,6 +379,7 @@
    *
    * Regras:
    *   - Ignora mensagens role:'system' (banner de boas-vindas etc.)
+   *   - Ignora pares cuja resposta seja o aviso de 429 ou de timeout
    *   - Converte role:'bot' → role:'assistant' (contrato do worker remoto)
    *   - Aplica o mesmo limite MAX_TURNS que _registrarTurno()
    *   - Atualiza _ultimaAtividade para evitar expiração imediata
@@ -348,6 +392,9 @@
     var pares = [];
     for (var i = 0; i < mensagens.length - 1; i++) {
       if (mensagens[i].role === 'user' && mensagens[i + 1].role === 'bot') {
+        // Avisos de 429/timeout salvos no histórico visual não são resposta da IA.
+        var textoBot = (mensagens[i + 1].text || '').trim();
+        if (textoBot === MSG_RATE_LIMIT || textoBot === MSG_TIMEOUT) { i++; continue; }
         pares.push(
           { role: 'user',      content: mensagens[i].text     || '' },
           { role: 'assistant', content: mensagens[i + 1].text || '' }

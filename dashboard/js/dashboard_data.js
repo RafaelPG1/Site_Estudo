@@ -15,9 +15,9 @@
    apenas movida para este módulo dedicado a dados.
 
    Responsabilidade deste arquivo:
-     ✔ State (fonte única de verdade em memória)
-     ✔ _carregarIntelligence(uid) — ponte com
-       window.NexusQuizIntelligence
+     ✔ State — definido em dashboard_state.js e re-exportado aqui
+     ✔ _carregarIntelligence(uid) — carrega quiz_intelligence.js
+       via import() dinâmico
      ✔ _carregarMetricasReais() — leitura de
        session-tracker + Firestore (fallback)
      ✔ Renderização das métricas "reais" de sessão
@@ -175,7 +175,7 @@
    _calcularConquistas e _calcularProgressoConquistas saíram deste
    arquivo para dashboard/js/conquista/regras.js, e a busca do
    relatório/contagem GLOBAIS de conquistas foi para
-   conquista/index.js (carregarConquistas). Aqui restou apenas: o
+   conquista/conquista_index.js (carregarConquistas). Aqui restou apenas: o
    import de carregarConquistas, sua chamada dentro do Promise.all de
    _carregarIntelligence e a gravação de relatorio.conquistas /
    relatorio.conquistasProgresso. Os changelogs acima que citam essas
@@ -198,6 +198,7 @@ import {
 /* ── Firestore (leitura da última sessão persistida — fallback do card Navegação) ── */
 import { buscarUltimaSessao } from '../../src/data/sessoes-repo.js';
 
+import { State } from './dashboard_state.js';
 import { renderDashboardIntelligence } from './dashboard_render.js';
 import { carregarConquistas } from './conquista/conquista_index.js';
 import { perfLog, logFirestore } from '../../src/perf_logger.js';
@@ -358,28 +359,8 @@ function _normalizarRotaParaLabel(chaveNav) {
 }
 
 
-export const State = {
-  semestre:    null,
-  disciplinas: [],
-  discAtiva:   null,
-  DISC_CORES:  {},
-
-  /* ── CAMADA 5 ──
-     Resultado completo de relatorioEvolucao(uid) mais
-     dados complementares (tentativasRecentes, conquistas).
-     Populado por _carregarIntelligence(uid).
-     Nunca modificado diretamente por nenhum renderizador.
-     Nunca recalculado — apenas recebido da API pública.
-
-     IMPORTANTE: apesar de este relatório em si ser filtrado
-     pelo semestre selecionado (State.semestre), os campos
-     `.conquistas` e `.conquistasProgresso` dentro dele são
-     SEMPRE calculados a partir de um relatório GLOBAL separado
-     (semestre=null), buscado internamente por
-     _carregarIntelligence — ver changelog "CORREÇÃO — CONQUISTAS
-     INDEPENDENTES DE SEMESTRE" no topo do arquivo. */
-  intelligence: null,
-};
+/* State vive em dashboard_state.js (re-exportado abaixo; ver import). */
+export { State };
 
 /* ══════════════════════════════════════════════
    CAMADA 5 — SINCRONIZAÇÃO COM QUIZ INTELLIGENCE
@@ -414,7 +395,7 @@ function _importarQuizIntelligence() {
 /* ── Conquistas ──────────────────────────────────────────────
    As regras de desbloqueio/progresso (antes _calcularConquistas e
    _calcularProgressoConquistas) vivem agora em conquista/regras.js.
-   Este arquivo só chama carregarConquistas() (conquista/index.js) em
+   Este arquivo só chama carregarConquistas() (conquista/conquista_index.js) em
    _carregarIntelligence e grava o resultado em relatorio. */
 
 /* _carregarIntelligence(uid)
@@ -481,9 +462,9 @@ export async function _carregarIntelligence(uid, statsPreCarregadas = null) {
       /* ── CONQUISTAS — delegadas a conquista/ ────────────────────
          Busca do relatório GLOBAL (semestre=null) + cálculo de
          desbloqueio/progresso acontecem dentro de
-         conquista/index.js — sempre independentes de State.semestre.
+         conquista/conquista_index.js — sempre independentes de State.semestre.
          Instrumentação de tempo (perfLog) fica aqui, não em
-         conquista/index.js, para conquista/ não precisar importar
+         conquista/conquista_index.js, para conquista/ não precisar importar
          nada de fora de dashboard/js/conquista/. */
       (async () => {
         const t0 = performance.now();
@@ -498,7 +479,7 @@ export async function _carregarIntelligence(uid, statsPreCarregadas = null) {
     relatorio.totalQuestoes      = totalQuestoes;
     relatorio.semestreFiltrado   = semestreAtivo;
 
-    /* Conquistas: calculadas por conquista/index.js SEMPRE a partir do
+    /* Conquistas: calculadas por conquista/conquista_index.js SEMPRE a partir do
        relatório GLOBAL — nunca do `relatorio` filtrado por semestre.
        `relatorio.conquistas` e `relatorio.conquistasProgresso` continuam
        sendo os campos lidos por renderAchievements(). */

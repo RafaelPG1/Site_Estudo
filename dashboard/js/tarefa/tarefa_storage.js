@@ -34,7 +34,8 @@
    editar/excluir itens no meio do array). Aceitável para o volume
    de dados de uma lista de tarefas pessoal. */
 
-import { getDb } from '../../../src/firebase.js';
+import { getDb } from '../../../src/data/firebase-app.js';
+import { tarefasListas } from '../../../src/data/colecoes.js';
 import {
   collection, doc, getDocs, setDoc, deleteDoc, query, orderBy,
 } from '../../../src/data/firebase-app.js';
@@ -72,7 +73,7 @@ export async function carregarListas(uid) {
 
   try {
     const db   = getDb();
-    const ref  = collection(db, 'usuarios', uid, 'tarefas_listas');
+    const ref  = collection(db, ...tarefasListas(uid));
     const q    = query(ref, orderBy('ordem', 'asc'));
     const snap = await getDocs(q);
     const listas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -90,7 +91,7 @@ async function _salvarListaCompleta(uid, lista) {
 
   try {
     const db  = getDb();
-    const ref = doc(db, 'usuarios', uid, 'tarefas_listas', lista.id);
+    const ref = doc(db, ...tarefasListas(uid), lista.id);
     await setDoc(ref, {
       nome:         lista.nome,
       disciplinaId: lista.disciplinaId ?? null,
@@ -158,7 +159,7 @@ export async function excluirLista(uid, listaId) {
   _gravarLocal(uid, listas);
   if (!uid) return;
   try {
-    await deleteDoc(doc(getDb(), 'usuarios', uid, 'tarefas_listas', listaId));
+    await deleteDoc(doc(getDb(), ...tarefasListas(uid), listaId));
   } catch (err) {
     console.warn('[tarefa_storage] falha ao excluir lista no Firestore.', err);
   }

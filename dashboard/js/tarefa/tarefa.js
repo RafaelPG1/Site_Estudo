@@ -14,7 +14,7 @@
    usado pelo próprio Dashboard (mesma fonte do card "Disciplinas"). */
 
 import { getUsuario, getSemestreAtual, getDisciplinasDeSemestre } from '../../../src/global.js';
-import { State } from '../dashboard_data.js';
+import { State } from '../dashboard_state.js';
 import * as TarefaStorage from './tarefa_storage.js';
 import { renderTarefas, reabrirRascunhoNovaListaSeExistir } from './tarefa_renderer.js';
 /* ─────────────────────────────────────────────

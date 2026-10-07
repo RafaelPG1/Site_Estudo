@@ -107,7 +107,7 @@
    projeto. O caminho relativo em si (contagem de "../") não foi
    alterado: apenas a forma de resolvê-lo e reportá-lo. */
 
-import { State } from '../dashboard_data.js';
+import { State } from '../dashboard_state.js';
 import { getUsuario, getDisciplinasDeSemestre } from '../../../src/global.js';
 import { carregarProgresso, salvarItem, carregarEstadoUI, salvarEstadoUI } from './checklist_storage.js';
 import { renderChecklist, renderEstadoVazio } from './checklist_renderer.js';

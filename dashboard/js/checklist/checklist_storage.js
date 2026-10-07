@@ -26,7 +26,7 @@
    Chave local: nexus_checklist_progresso::{uid|anon}::{semestre}
 
    Mesmo padrão de acesso ao Firestore já usado em
-   dashboard/js/dashboard_data.js (getDb() via src/firebase.js; SDK via src/data/firebase-app.js).
+   dashboard/js/dashboard_data.js (getDb() e SDK via src/data/firebase-app.js).
 
    ─────────────────────────────────────────────
    ESTADO DE UI (filtro e accordions abertos/fechados)
@@ -50,7 +50,8 @@
    Checklist antes (primeira visita = nada salvo = tudo expandido,
    igual a hoje). */
 
-import { getDb } from '../../../src/firebase.js';
+import { getDb } from '../../../src/data/firebase-app.js';
+import { checklistProgresso } from '../../../src/data/colecoes.js';
 import {
   doc, getDoc, setDoc,
 } from '../../../src/data/firebase-app.js';
@@ -109,7 +110,7 @@ export async function carregarProgresso(uid, semestre) {
 
   try {
     const db   = getDb();
-    const ref  = doc(db, 'usuarios', uid, 'checklist_progresso', semestre);
+    const ref  = doc(db, ...checklistProgresso(uid, semestre));
     const snap = await getDoc(ref);
 
     if (!snap.exists()) return local;
@@ -140,7 +141,7 @@ export async function salvarItem(uid, semestre, itemId, concluido) {
 
   try {
     const db  = getDb();
-    const ref = doc(db, 'usuarios', uid, 'checklist_progresso', semestre);
+    const ref = doc(db, ...checklistProgresso(uid, semestre));
     await setDoc(ref, {
       itens:        local,
       atualizadoEm: Date.now(),

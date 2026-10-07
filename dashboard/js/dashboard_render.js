@@ -127,10 +127,10 @@
    ─────────────────────────────────────────────
    conquistas.js foi movido para dashboard/js/conquista/ e este
    arquivo passou a importar renderAchievements de
-   './conquista/index.js' (interface única). Nenhuma outra alteração.
+   './conquista/conquista_index.js' (interface única). Nenhuma outra alteração.
    ============================================= */
 
-import { State } from './dashboard_data.js';
+import { State } from './dashboard_state.js';
 import { perfLog } from '../../src/perf_logger.js';
 import { renderAchievements } from './conquista/conquista_index.js';
 import { UIState } from './utils/ui_state_manager.js';

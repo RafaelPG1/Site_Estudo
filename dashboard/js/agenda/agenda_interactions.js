@@ -21,13 +21,13 @@
    ============================================= */
 
 import {
-  state, SUBJECTS, SNAP_MINUTES, MIN_SESSION_MINUTES,
+  state, SUBJECTS, MIN_SESSION_MINUTES,
   TIMELINE_START_HOUR, TIMELINE_END_HOUR,
   getWeekKey, buildEmptyWeek, uid, getSession, findConflicts,
   timeToMinutes, minutesToTime, snapMinutes, offsetToMinutes, timeToOffset,
   getHourHeight, isPlanned, sortPlanned, saveStorage, saveRoutine,
   recalcTimelineBounds,
-  showToast, DAY_SHORT, getMondayOf, toISO, escHtml,
+  showToast, DAY_SHORT, getMondayOf, toISO,
   persistirEstadoUIAgenda,
 } from './agenda.js';
 

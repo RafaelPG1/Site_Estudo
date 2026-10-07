@@ -167,7 +167,6 @@ import {
   getDisciplinaAtual,
   getDisciplinasDeSemestre,
   setPagina,
-  SEMESTRES,
   getUsuario,
   resolveIcone,
 } from '../../src/global.js';
@@ -183,8 +182,6 @@ import { perfLog } from '../../src/perf_logger.js';
 // primeira linha do bootstrap/init do dashboard
 const __nexusDashboardT0 = performance.now();
 
-// última linha, depois que _carregarMetricasReais() (e o que mais rodar no boot) terminar
-perfLog('Dashboard', 'Dashboard Total', performance.now() - __nexusDashboardT0);
 /* ── Áudio ── */
 import {
   Sound,
@@ -753,13 +750,10 @@ async function _bootPagina() {
 
   document.addEventListener('nexus:logout', () => {
     location.replace(_URL_LOGIN);
-    return;
-    _renderUsuario();
-    _renderMetricasVazio();
-    /* Limpa o relatório de inteligência ao fazer logout. */
-    State.intelligence = null;
-    console.log('[dashboard] nexus:logout — State.intelligence limpo.');
   });
+
+  /* Fim do boot (após _carregarMetricasReais e a restauração da view). */
+  perfLog('Dashboard', 'Dashboard Total', performance.now() - __nexusDashboardT0);
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
