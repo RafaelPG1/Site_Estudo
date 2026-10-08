@@ -12,10 +12,9 @@
 
    Este arquivo mantém EXATAMENTE os mesmos exports de antes, para que
    nenhum consumidor (Home, Dashboard, Quiz, Admin, Áudio, Games, Atlas)
-   precise mudar. Só duas coisas ficam aqui:
+   precise mudar. Só uma coisa fica aqui:
      · login()/logout() — implementados em ./core/auth.js (Fase 5) e
        apenas reexportados daqui
-     · ligação do perf_logger às leituras do quiz-repo
 
    Fachada permanente (Games/Atlas e outros consumidores não podem ser
    verificados). Não importa mais ./global.js: o ciclo estático
@@ -23,12 +22,10 @@
    ============================================= */
 
 import { login, logout } from './core/auth.js';
-import { logFirestore } from './perf_logger.js';
 import { hashPin } from './data/usuarios-repo.js';
-import { definirObservadorLeitura } from './data/quiz-repo.js';
 
-/* Mantém as mesmas métricas [PERF] das leituras do quiz. */
-definirObservadorLeitura(logFirestore);
+/* As métricas [PERF] das leituras do quiz são registradas dentro de
+   data/quiz-repo.js (Fase 8) — não há mais ligação a fazer aqui. */
 
 export { getDb } from './data/firebase-app.js';
 

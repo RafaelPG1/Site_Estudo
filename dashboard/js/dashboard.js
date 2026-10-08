@@ -201,7 +201,6 @@ import {
 import {
   State,
   _carregarMetricasReais,
-  _renderMetricasVazio,
   _renderNavegacaoAoVivo,
 } from './dashboard_data.js';
 

@@ -157,7 +157,7 @@
    catalogo.js (importados acima). O import do UIState passou de
    './utils/...' para '../utils/...' por causa da nova pasta. Nenhuma
    função, HTML gerado ou comportamento foi alterado. O Dashboard
-   consome este módulo apenas via conquista/index.js.
+   consome este módulo apenas via conquista/conquista_index.js.
    ═══════════════════════════════════════════════════════════ */
 
 /* ─────────────────────────────────────────────

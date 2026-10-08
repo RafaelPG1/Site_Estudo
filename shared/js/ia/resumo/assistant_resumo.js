@@ -160,7 +160,7 @@
  *   (ver cabeçalho da versão anterior)
  *
  * Depende de:
- *   - core/ctx.js, core/context.js, core/history.js, core/ui.js
+ *   - core/context.js, core/history.js, core/ui.js
  *   - core/loader.js, core/worker.js, core/text-utils.js
  *   - resumo/search_resumo.js, window.__nexusCtx
  *
