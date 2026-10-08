@@ -8,9 +8,11 @@
    Regras: sem DOM, sem eventos, sem import de core/global, uid sempre
    parâmetro. Contratos de retorno idênticos aos de src/firebase.js.
 
-   Observabilidade: este módulo não conhece perf_logger. Quem quiser
-   medir leituras chama definirObservadorLeitura(fn); fn recebe
-   (rotulo, uid, ms, quantidade) — mesmos rótulos de antes.
+   Observabilidade (Fase 8): as métricas [PERF] das leituras do quiz são
+   registradas aqui mesmo, via perf_logger.logFirestore (mesmos rótulos
+   de antes; fn recebe (rotulo, uid, ms, quantidade)). Quem importar este
+   módulo direto (Quiz) não depende mais da fachada src/firebase.js.
+   definirObservadorLeitura(fn) segue disponível para trocar/desligar.
    ============================================= */
 
 import {
@@ -18,8 +20,9 @@ import {
   query, orderBy, writeBatch,
 } from './firebase-app.js';
 import * as C from './colecoes.js';
+import { logFirestore } from '../perf_logger.js';
 
-let _observador = null;
+let _observador = logFirestore;
 export function definirObservadorLeitura(fn) {
   _observador = (typeof fn === 'function') ? fn : null;
 }
@@ -232,7 +235,7 @@ export async function listarEstadosQuizUsuario(uid) {
    das duas listas.
    ═══════════════════════════════════════════════════════════════ */
 
-const USAR_NOVA_ESTRUTURA_EVOLUCAO = false;
+const USAR_NOVA_ESTRUTURA_EVOLUCAO = true;
 const _RETRY_FALHA_MS = 60_000;
 const _LOTE_MAX = 400;
 

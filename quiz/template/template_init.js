@@ -68,7 +68,7 @@ import { setText, setHTML } from '../../shared/js/utils/dom.js';
 import { aplicarCoresDisciplina } from '../../shared/js/themes/theme.js';
 import { injetarLogo } from '../../shared/js/utils/logo.js';
 import { Sound, audio, installAudioRecovery, playSound } from '../../shared/js/audio/audio-api.js';
-import { carregarRespostasQuiz, salvarRespostasQuiz, limparRespostasQuiz, salvarPerformanceQuiz } from '../../src/firebase.js';
+import { carregarRespostasQuiz, salvarRespostasQuiz, limparRespostasQuiz, salvarPerformanceQuiz } from '../../src/data/quiz-repo.js';
 import { aplicarZoomQuestoes, getZoomQuestoes, setZoomQuestoes } from '../../shared/js/utils/zoom.js';
 
 /* FONTE ÚNICA de configuração dos modos de estudo (v9.0).
@@ -752,22 +752,6 @@ function _exponerContextoQuiz(params) {
 
 
 /* ══════════════════════════════════════════════════════════
-   DECLARAÇÃO DE CONTEXTO PARA O SISTEMA DE RESET
-   ══════════════════════════════════════════════════════════ */
-
-function _declararContextoIA(params) {
-  if (typeof window.NexusCtx !== 'undefined') {
-    window.NexusCtx.declarar({
-      disc:   params.disc,
-      modo:   params.modo,
-      sem:    params.semestre,
-      pagina: 'QUIZ',
-    });
-  }
-}
-
-
-/* ══════════════════════════════════════════════════════════
    ATUALIZAÇÃO DO ESTADO GLOBAL
    ══════════════════════════════════════════════════════════ */
 
@@ -815,7 +799,6 @@ _aplicarTema(_info.arquivo);
 _exponerGlobais();
 _exponerContextoQuiz(_params);
 _atualizarEstadoGlobal(_params);
-_declararContextoIA(_params);
 
 document.addEventListener('DOMContentLoaded', function () {
   _montarVisual(_params, _info, _modoConfig);

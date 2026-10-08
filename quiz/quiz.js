@@ -25,6 +25,9 @@ import { Sound, audio, installAudioRecovery, playSound } from '../shared/js/audi
    O tracker inicializa automaticamente via auto-boot interno. */
 import '../src/session-tracker.js';
 
+/* Rótulos dos modos: fonte única em quiz/disciplinas/modos.js. */
+import { getModo } from './disciplinas/modos.js';
+
 (function () {
 
   /* ══════════════════════════════════════════════
@@ -197,11 +200,13 @@ import '../src/session-tracker.js';
      somente leitura, mesmo cache/lógica já existentes).
   ══════════════════════════════════════════════ */
 
-  const MODO_LABELS = { questoes: 'Questões', revisao: 'Revisão', simulado: 'Simulado' };
-
+  /* Rótulo = `titulo` do modo em modos.js (Questões, Revisão, AVA, ENADE,
+     Fixação). Modo desconhecido (ex.: 'simulado' legado) mantém o fallback
+     anterior: primeira letra maiúscula. */
   function _formatarModo(modo) {
     if (!modo) return 'Quiz em andamento';
-    return MODO_LABELS[modo] || (modo.charAt(0).toUpperCase() + modo.slice(1));
+    const cfg = getModo(modo);
+    return cfg ? cfg.titulo : (modo.charAt(0).toUpperCase() + modo.slice(1));
   }
 
   function _uidAtual() {

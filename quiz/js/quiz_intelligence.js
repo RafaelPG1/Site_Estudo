@@ -175,7 +175,7 @@ import {
   listarEstadosQuizUsuario,
   carregarEvolutionSummary,
   gravarConsolidacaoEvolucao,
-} from '../../src/firebase.js';
+} from '../../src/data/quiz-repo.js';
 import { perfLog, logFirestore, logCache } from '../../src/perf_logger.js';
 /* ══════════════════════════════════════════════
    CONSTANTES
