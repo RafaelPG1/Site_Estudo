@@ -23,8 +23,9 @@ import { injetarLogo } from '../shared/js/utils/logo.js';
 import { Sound, playSound } from '../shared/js/audio/audio-api.js';
 
 import '../src/session-tracker.js';
+import { carregarIA } from '../shared/js/ia/carregar-ia.js';
 
-import { State, carregarIA, resolverContexto, renderSemestreBadge } from './js/resumo-utils.js';
+import { State, resolverContexto, renderSemestreBadge } from './js/resumo-utils.js';
 import { renderHeader, renderSidebar, carregarConteudo, setModo, setProfessorFiltro } from './js/resumo-ui.js';
 import { bindModal, bindTocChrome, bindCopyButton, bindThemeToggle } from './js/resumo-reader.js';
 import { initPdfModal } from './js/pdf/resumo-pdf.js';
@@ -33,7 +34,7 @@ import { initFormatador, fechar as fecharFormatador } from './js/formatador/form
 
 injetarLogo('#header-logo-wrap');
 
-carregarIA();
+carregarIA('Resumo');
 
 function _initProgressBar() {
   const bar = document.getElementById('reading-progress');

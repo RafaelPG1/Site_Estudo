@@ -1784,25 +1784,8 @@
       });
     }());
 
-    var resetando = (typeof window.NexusCtx !== 'undefined') && window.NexusCtx.deveResetar();
-    if (resetando) {
-      if (typeof window.NexusHistory !== 'undefined') window.NexusHistory.limparDominio('resumo');
-      _limparDiscSalva();
-      state.messages       = [];
-      state.discEscolhida  = null;
-      state.processando    = false;
-      state.discsCacheadas = {};
-      state.chaveHistorico = null;
-      _versaoEditando      = null;
-      NexusUI.limparMensagens();
-      if (typeof window.NexusWorker !== 'undefined') NexusWorker.limparHistorico();
-      if (typeof window.NexusCtx !== 'undefined') window.NexusCtx.confirmarReset();
-      console.log('[NexusAssistant] reset de contexto aplicado.');
-      _addWelcomeMessage();
-    } else {
-      var restaurado = _restaurarSessao();
-      if (!restaurado) { _addWelcomeMessage(); }
-    }
+    var restaurado = _restaurarSessao();
+    if (!restaurado) { _addWelcomeMessage(); }
   }
 
   /* ══════════════════════════════════════════════════════════

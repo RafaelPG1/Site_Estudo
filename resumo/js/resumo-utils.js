@@ -1,8 +1,8 @@
 /* =============================================
    NEXUS STUDY — resumo/js/resumo-utils.js
    Estado global da página, helpers puros (escape/
-   parse de texto, scroll suave), carregamento
-   assíncrono da IA e resolução de contexto
+   parse de texto, scroll suave), contexto da IA
+   e resolução de contexto
    (semestre/disciplina a partir da URL + picker de
    semestre no header).
    ============================================= */
@@ -44,43 +44,11 @@ export const State = {
 window.__nexusState = State;
 
 /* ══════════════════════════════════════════════
-   CARREGAMENTO DA IA
+   CONTEXTO DA IA
+   A cadeia de scripts da IA vive em shared/js/ia/carregar-ia.js
+   (chamada por resumo.js); aqui fica só o contexto desta página.
 ══════════════════════════════════════════════ */
-function _loadScript(src) {
-  return new Promise((resolve, reject) => {
-    if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
-    const s = document.createElement('script');
-    s.src = src;
-    s.onload = resolve;
-    s.onerror = () => reject(new Error(`[Nexus IA] Falha ao carregar: ${src}`));
-    (document.head ?? document.documentElement).appendChild(s);
-  });
-}
-
 window.__NEXUS_CONTEXT__ = { tipos: ['resumo'] };
-
-export function carregarIA() {
-  const BASE = '../shared/js/ia/';
-  const deps = [
-    BASE + 'core/context.js',
-    BASE + 'core/text-utils.js',
-    BASE + 'core/history.js',
-    BASE + 'core/loader.js',
-    BASE + 'core/worker.js',
-    BASE + 'core/ui.js',
-    BASE + 'resumo/search_resumo.js',
-  ];
-
-  Promise.all(deps.map(_loadScript))
-    .then(() => _loadScript(BASE + 'resumo/assistant_resumo.js'))
-    .then(() => {
-      if (window.NexusAssistant) {
-        window.NexusAssistant.initUI();
-        window.NexusAssistant.init();
-      }
-    })
-    .catch(err => console.error('[Resumo] Falha ao carregar IA:', err));
-}
 
 /* ══════════════════════════════════════════════
    HELPERS — escape/parse de texto, scroll suave

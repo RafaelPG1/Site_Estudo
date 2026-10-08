@@ -82,6 +82,7 @@ import { MODOS_QUIZ, getModosOrdenados, getIconeModo } from './modos.js';
    window.__nexusPageEnter seja registrado nesta página.
    O tracker inicializa automaticamente via auto-boot interno. */
 import '../../src/session-tracker.js';
+import { carregarIA } from '../../shared/js/ia/carregar-ia.js';
 
 
 /* ══════════════════════════════════════════════════════════
@@ -816,46 +817,8 @@ function _renderizarModos(catalog) {
    ══════════════════════════════════════════════════════════ */
 (function _inicializarIA() {
 
-  function _loadScript(src) {
-    return new Promise(function (resolve, reject) {
-      if (document.querySelector('script[src="' + src + '"]')) { resolve(); return; }
-      var s = document.createElement('script');
-      s.src     = src;
-      s.onload  = resolve;
-      s.onerror = function () { reject(new Error('[Nexus IA] Falha: ' + src)); };
-      document.body.appendChild(s);
-    });
-  }
-
-  /* Caminho relativo ao próprio disciplinas_init.js:
-       quiz/disciplinas/disciplinas_init.js
-       → ../../shared/js/ia/
-       → shared/js/ia/
-     Idêntico ao BASE usado em quiz.js ('../../shared/js/ia/' a partir de quiz/). */
-  var BASE = new URL('../../shared/js/ia/', import.meta.url).href;
-
-  var deps = [
-    BASE + 'core/context.js',
-    BASE + 'core/text-utils.js',
-    BASE + 'core/history.js',
-    BASE + 'core/loader.js',
-    BASE + 'core/worker.js',
-    BASE + 'core/ui.js',
-    BASE + 'resumo/search_resumo.js',
-  ];
-
   document.addEventListener('DOMContentLoaded', function () {
-    Promise.all(deps.map(_loadScript))
-      .then(function () { return _loadScript(BASE + 'resumo/assistant_resumo.js'); })
-      .then(function () {
-        if (window.NexusAssistant) {
-          window.NexusAssistant.initUI();
-          window.NexusAssistant.init();
-        }
-      })
-      .catch(function (err) {
-        console.error('[disciplinas_init] Falha ao carregar IA:', err);
-      });
+    carregarIA('disciplinas_init');
   }, { once: true });
 
 }());

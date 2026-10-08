@@ -27,6 +27,7 @@ import '../src/session-tracker.js';
 
 /* Rótulos dos modos: fonte única em quiz/disciplinas/modos.js. */
 import { getModo } from './disciplinas/modos.js';
+import { carregarIA } from '../shared/js/ia/carregar-ia.js';
 
 (function () {
 
@@ -35,38 +36,6 @@ import { getModo } from './disciplinas/modos.js';
   ══════════════════════════════════════════════ */
   window.__NEXUS_CONTEXT__ = { tipos: ['resumo'] };
 
-  function _loadScript(src) {
-    return new Promise((resolve, reject) => {
-      if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
-      const s = document.createElement('script');
-      s.src = src;
-      s.onload = resolve;
-      s.onerror = () => reject(new Error(`[Nexus IA] Falha: ${src}`));
-      document.body.appendChild(s);
-    });
-  }
-
-  function _carregarIA() {
-    const BASE = '../shared/js/ia/';
-    const deps = [
-      BASE + 'core/context.js',
-      BASE + 'core/text-utils.js',
-      BASE + 'core/history.js',
-      BASE + 'core/loader.js',
-      BASE + 'core/worker.js',
-      BASE + 'core/ui.js',
-      BASE + 'resumo/search_resumo.js',
-    ];
-    Promise.all(deps.map(_loadScript))
-      .then(() => _loadScript(BASE + 'resumo/assistant_resumo.js'))
-      .then(() => {
-        if (window.NexusAssistant) {
-          window.NexusAssistant.initUI();
-          window.NexusAssistant.init();
-        }
-      })
-      .catch(err => console.error('[Quiz] Falha ao carregar IA:', err));
-  }
 
   /* ══════════════════════════════════════════════
      ÍCONES DE DISCIPLINA (SVG) — ajuste de estilo
@@ -705,7 +674,7 @@ import { getModo } from './disciplinas/modos.js';
     _initCanvas();
 
     // IA (não bloqueia renderização)
-    _carregarIA();
+    carregarIA('Quiz');
 
   });
 
