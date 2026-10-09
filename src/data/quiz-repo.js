@@ -235,7 +235,7 @@ export async function listarEstadosQuizUsuario(uid) {
    das duas listas.
    ═══════════════════════════════════════════════════════════════ */
 
-const USAR_NOVA_ESTRUTURA_EVOLUCAO = true;
+const USAR_NOVA_ESTRUTURA_EVOLUCAO = false;
 const _RETRY_FALHA_MS = 60_000;
 const _LOTE_MAX = 400;
 
