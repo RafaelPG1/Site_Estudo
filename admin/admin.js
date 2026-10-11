@@ -23,6 +23,9 @@ import { _renderProgress } from './admin_progress.js';
 import { _renderSessions } from './admin-sessions.js';
 import { _renderRanking  } from './admin-ranking.js';
 
+/* Etapa 1 (segurança): todo dado vindo do Firestore passa por esc()/urlImagemSegura() antes de ir para HTML */
+import { esc, urlImagemSegura } from '../shared/js/utils/html-seguro.js';
+
 /* ══════════════════════════════════════════════════════════
    CONSTANTES
    ══════════════════════════════════════════════════════════ */
@@ -83,9 +86,9 @@ function _montarSidebar(u) {
   `).join('');
 
   document.getElementById('sidebar-user').innerHTML = `
-    <div class="su-avatar">${u.foto ? `<img src="${u.foto}" alt="">` : u.avatar ?? '🛡️'}</div>
+    <div class="su-avatar">${_avatarHTML(u, '🛡️')}</div>
     <div class="su-info">
-      <strong>${u.nome}</strong>
+      <strong>${esc(u.nome)}</strong>
       <span>Admin</span>
     </div>`;
 
@@ -163,6 +166,12 @@ async function _navegarPara(secao) {
    HELPERS
    ══════════════════════════════════════════════════════════ */
 
+/* Avatar do usuário: foto (só se a URL for segura) ou emoji — sempre escapado. */
+function _avatarHTML(u, padrao) {
+  const foto = urlImagemSegura(u.foto);
+  return foto ? `<img src="${esc(foto)}" alt="">` : esc(u.avatar ?? padrao);
+}
+
 export async function _getUsuarios(force = false) {
   if (!force && _usuarios.length) return _usuarios;
   _usuarios = await getUsuarios();
@@ -223,10 +232,10 @@ async function _renderDashboard() {
         <div class="activity-list">
           ${users.slice(0, 8).map(u => `
             <div class="activity-item">
-              <div class="activity-avatar">${u.avatar ?? '🎓'}</div>
+              <div class="activity-avatar">${esc(u.avatar ?? '🎓')}</div>
               <div class="activity-info">
-                <strong>${u.nome ?? u.uid}</strong>
-                <span>${u.uid}</span>
+                <strong>${esc(u.nome ?? u.uid)}</strong>
+                <span>${esc(u.uid)}</span>
               </div>
               <div class="activity-meta">
                 ${u.admin
@@ -298,34 +307,34 @@ async function _renderUsers() {
 function _renderUserCards(users) {
   if (!users.length) return `<div class="empty-state">Nenhum usuário encontrado.</div>`;
   return users.map(u => `
-    <div class="user-card" data-uid="${u.uid}">
+    <div class="user-card" data-uid="${esc(u.uid)}">
       <div class="user-card__header">
         <div class="user-card__avatar ${u.admin ? 'user-card__avatar--admin' : ''}">
-          ${u.foto ? `<img src="${u.foto}" alt="">` : u.avatar ?? '🎓'}
+          ${_avatarHTML(u, '🎓')}
         </div>
         <div class="user-card__info">
-          <strong>${u.nome ?? u.uid}</strong>
-          <code>${u.uid}</code>
+          <strong>${esc(u.nome ?? u.uid)}</strong>
+          <code>${esc(u.uid)}</code>
         </div>
         ${u.admin ? `<span class="admin-chip">Admin</span>` : ''}
       </div>
       <div class="user-card__actions">
         <button class="icon-btn icon-btn--blue btn-reset-pin"
-                data-uid="${u.uid}"
-                data-nome="${u.nome ?? u.uid}"
+                data-uid="${esc(u.uid)}"
+                data-nome="${esc(u.nome ?? u.uid)}"
                 data-admin="${u.admin ? '1' : '0'}">
           🔑 PIN
         </button>
         <button class="icon-btn icon-btn--gold btn-edit-user"
-                data-uid="${u.uid}"
-                data-nome="${u.nome ?? u.uid}"
-                data-avatar="${u.avatar ?? '🎓'}">
+                data-uid="${esc(u.uid)}"
+                data-nome="${esc(u.nome ?? u.uid)}"
+                data-avatar="${esc(u.avatar ?? '🎓')}">
           ✏️ Editar
         </button>
         ${!u.admin ? `
         <button class="icon-btn icon-btn--rose btn-remover-user"
-                data-uid="${u.uid}"
-                data-nome="${u.nome ?? u.uid}">
+                data-uid="${esc(u.uid)}"
+                data-nome="${esc(u.nome ?? u.uid)}">
           🗑️ Remover
         </button>` : ''}
       </div>
@@ -349,7 +358,7 @@ function _bindUserCardActions() {
   document.querySelectorAll('.btn-remover-user').forEach(btn => {
     btn.addEventListener('click', () =>
       _modalConfirmar(
-        `Remover <strong>${btn.dataset.nome}</strong>?`,
+        `Remover <strong>${esc(btn.dataset.nome)}</strong>?`,
         'Apaga o usuário e todo o progresso permanentemente.',
         'Remover',
         async () => {
@@ -560,13 +569,13 @@ function _modalEditarUsuario(uid, nome, avatarAtual) {
 
   overlay.querySelector('.modal-box').innerHTML = `
     <div class="modal-header">
-      <span class="modal-title">Editar — ${nome}</span>
+      <span class="modal-title">Editar — ${esc(nome)}</span>
       <button class="modal-close" id="me-close">✕</button>
     </div>
     <div class="modal-body">
       <div class="form-group">
         <label>Nome de exibição</label>
-        <input class="form-input" id="me-nome" value="${nome}"
+        <input class="form-input" id="me-nome" value="${esc(nome)}"
                maxlength="30" autocomplete="off">
       </div>
       <div class="form-group">
@@ -630,7 +639,7 @@ function _modalResetPin(uid, nome, isAdmin) {
 
   overlay.querySelector('.modal-box').innerHTML = `
     <div class="modal-header">
-      <span class="panel-title">Resetar PIN — ${nome}</span>
+      <span class="panel-title">Resetar PIN — ${esc(nome)}</span>
       <button class="modal-close" id="rp-close">✕</button>
     </div>
     <div class="modal-body">
@@ -735,4 +744,4 @@ function iconRanking() {
 }
 function iconSessions() {
   return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="8" y1="18" x2="8" y2="18"/><line x1="12" y1="18" x2="12" y2="18"/></svg>`;
-}
+}

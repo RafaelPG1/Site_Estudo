@@ -31,6 +31,8 @@ import {
 import { injetarLogo }                       from './shared/js/utils/logo.js';
 import { login, logout, carregarConfigs }     from './src/firebase.js';
 import { criarSemestreSelect, preencherAnos } from './shared/js/utils/dom.js';
+/* Etapa 1 (segurança): nome/avatar/foto/uid vêm do Firestore → escapados antes de ir para HTML */
+import { esc, urlImagemSegura }                 from './shared/js/utils/html-seguro.js';
 import {
   Sound,
   audio,
@@ -219,9 +221,10 @@ function _renderHeader() {
     btnPerfil.className = 'nav-btn--avatar';
     btnPerfil.id        = 'btn-perfil';
     btnPerfil.title     = u.nome;
-    btnPerfil.innerHTML = u.foto
-      ? `<img src="${u.foto}" alt="${u.nome}" class="avatar-img" />`
-      : avatarVal;
+    const fotoNav = urlImagemSegura(u.foto);
+    btnPerfil.innerHTML = fotoNav
+      ? `<img src="${esc(fotoNav)}" alt="${esc(u.nome)}" class="avatar-img" />`
+      : esc(avatarVal);
 
     btnPerfil.addEventListener('click', () => {
       playSound('click', 'inicial');
@@ -551,6 +554,14 @@ function _abrirModalLogin() {
    Aparência, sistema e áudio.
 ═══════════════════════════════════════════════ */
 
+/* Avatar do painel "Conta": foto só se a URL for segura; emoji/inicial sempre escapado. */
+function _contaAvatarHTML(u) {
+  const foto = urlImagemSegura(u.foto);
+  return foto
+    ? `<img src="${esc(foto)}" alt="avatar" />`
+    : `<span>${esc(u.avatar ?? u.nome.charAt(0).toUpperCase())}</span>`;
+}
+
 function _abrirModalConfig() {
   _fecharTodosModais();
   playSound('openModal', 'inicial');
@@ -593,13 +604,11 @@ function _abrirModalConfig() {
           </div>
           <div class="config-perfil">
             <div class="config-perfil__avatar">
-              ${getUsuario().foto
-                ? `<img src="${getUsuario().foto}" alt="avatar" />`
-                : `<span>${getUsuario().avatar ?? getUsuario().nome.charAt(0).toUpperCase()}</span>`}
+              ${_contaAvatarHTML(getUsuario())}
             </div>
             <div class="config-perfil__info">
-              <strong>${getUsuario().nome}</strong>
-              <span class="config-perfil__uid">${getUsuario().uid}</span>
+              <strong>${esc(getUsuario().nome)}</strong>
+              <span class="config-perfil__uid">${esc(getUsuario().uid)}</span>
             </div>
             <button class="config-perfil__logout" id="btn-logout">Sair</button>
           </div>
@@ -782,14 +791,15 @@ function _abrirPerfilModal() {
   const u = getUsuario();
   if (!u) return;
 
-  const avatarAtual   = u.foto ? null : (u.avatar ?? u.nome.charAt(0).toUpperCase());
-  const avatarHTML    = u.foto
-    ? `<img src="${u.foto}" alt="${u.nome}" class="pm-avatar__img" />`
-    : `<span class="pm-avatar__emoji" id="pm-avatar-emoji">${avatarAtual}</span>`;
+  const fotoPerfil    = urlImagemSegura(u.foto);
+  const avatarAtual   = fotoPerfil ? null : (u.avatar ?? u.nome.charAt(0).toUpperCase());
+  const avatarHTML    = fotoPerfil
+    ? `<img src="${esc(fotoPerfil)}" alt="${esc(u.nome)}" class="pm-avatar__img" />`
+    : `<span class="pm-avatar__emoji" id="pm-avatar-emoji">${esc(avatarAtual)}</span>`;
   const badgeHTML     = u.admin
     ? `<div class="pm-data-badge pm-data-badge--admin">admin</div>`
     : `<div class="pm-data-badge pm-data-badge--locked">verificado</div>`;
-  const changeBtnHTML = u.foto ? '' : `
+  const changeBtnHTML = fotoPerfil ? '' : `
     <button class="pm-change-btn" id="pm-toggle-picker" type="button">
       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="2.2" stroke-linecap="round">
@@ -821,7 +831,7 @@ function _abrirPerfilModal() {
           <div class="pm-avatar-ring">
             <div class="pm-avatar-inner" id="pm-avatar-display">${avatarHTML}</div>
           </div>
-          <h3 class="pm-username">${u.nome}</h3>
+          <h3 class="pm-username">${esc(u.nome)}</h3>
           <span class="pm-role-pill ${u.admin ? 'pm-role-pill--admin' : ''}">
             ${u.admin ? 'Administrador' : 'Estudante'}
           </span>
@@ -841,7 +851,7 @@ function _abrirPerfilModal() {
               </div>
               <div class="pm-data-content">
                 <span class="pm-data-label">Nome</span>
-                <span class="pm-data-value">${u.nome}</span>
+                <span class="pm-data-value">${esc(u.nome)}</span>
               </div>
               ${badgeHTML}
             </div>
@@ -901,12 +911,12 @@ function _abrirPerfilModal() {
           <div class="pm-picker-preview">
             <div class="pm-mini-ring">
               <div class="pm-avatar-inner">
-                <span id="pm-picker-preview-emoji">${avatarAtual}</span>
+                <span id="pm-picker-preview-emoji">${esc(avatarAtual)}</span>
               </div>
             </div>
             <div class="pm-picker-preview-info">
               <span class="pm-picker-preview-lbl">Preview</span>
-              <span class="pm-picker-preview-val" id="pm-picker-preview-val">${avatarAtual}</span>
+              <span class="pm-picker-preview-val" id="pm-picker-preview-val">${esc(avatarAtual)}</span>
             </div>
           </div>
 
@@ -1113,4 +1123,4 @@ function _reposicionarToasts() {
     t.style.bottom = `${bottom}px`;
     bottom += t.offsetHeight + TOAST_OFFSET;
   });
-}
+}

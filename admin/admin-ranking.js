@@ -12,6 +12,9 @@ import {
 
 import { _getUsuarios } from './admin.js';
 
+/* Etapa 1 (segurança): nome, avatar, uid e campos de sm_pontuacoes vêm do Firestore → escapados antes do HTML */
+import { escDados } from '../shared/js/utils/html-seguro.js';
+
 /* ══════════════════════════════════════════════════════════
    SEÇÃO — RANKING
    Tabs: Quiz | Show do Milhão
@@ -90,7 +93,7 @@ async function _carregarRankingQuiz(estudantes) {
   if (!scores.length) { wrap.innerHTML = `<div class="empty-state">Sem dados ainda.</div>`; return; }
 
   wrap.innerHTML = `<div class="leaderboard">
-    ${scores.map((s, i) => `
+    ${scores.map(escDados).map((s, i) => `
       <div class="lb-item ${CLASSES[i] ?? ''}">
         <div class="lb-rank">${MEDALS[i] ?? `#${i+1}`}</div>
         <div class="lb-avatar">${s.avatar}</div>
@@ -169,7 +172,8 @@ async function _carregarRankingSm(estudantes) {
   const comPontos = scores.filter(s => s.melhorValorNum > 0);
   const semPontos = scores.filter(s => s.melhorValorNum === 0);
 
-  const renderItem = (s, posicao, classeEl) => {
+  const renderItem = (linha, posicao, classeEl) => {
+    const s = escDados(linha);
     const premioClass = s.melhorValorNum >= 1000000 ? 'badge--gold'
                       : s.melhorValorNum >= 300000  ? 'badge--amber'
                       : s.melhorValorNum >= 30000   ? 'badge--teal'
@@ -224,4 +228,4 @@ async function _carregarRankingSm(estudantes) {
         ).join('')}
     ` : ''}
   </div>`;
-}
+}

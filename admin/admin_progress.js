@@ -14,6 +14,9 @@ import {
 
 import { _getUsuarios, _toast, _modalConfirmar } from './admin.js';
 
+/* Etapa 1 (segurança): nome, avatar, uid e métricas vêm do Firestore → escapados antes do HTML */
+import { esc, escDados } from '../shared/js/utils/html-seguro.js';
+
 /* ══════════════════════════════════════════════════════════
    SEÇÃO — PROGRESSO
    ══════════════════════════════════════════════════════════ */
@@ -174,6 +177,7 @@ async function _carregarQuizProgress(estudantes) {
 
 function _buildQuizTable(dados) {
   if (!dados.length) return `<div class="empty-state">Nenhum dado encontrado.</div>`;
+  dados = dados.map(escDados);   // escapa todos os campos string antes de montar o HTML
   return `
     <table class="data-table">
       <thead><tr>
@@ -211,7 +215,7 @@ function _bindQuizActions(dados) {
   document.querySelectorAll('.btn-limpar-quiz').forEach(btn => {
     btn.addEventListener('click', () =>
       _modalConfirmar(
-        `Limpar quiz de <strong>${btn.dataset.nome}</strong>?`,
+        `Limpar quiz de <strong>${esc(btn.dataset.nome)}</strong>?`,
         'Remove todo o progresso de quiz salvo no Firestore.',
         'Limpar',
         async () => {
@@ -275,6 +279,7 @@ async function _carregarPessoalProgress(estudantes) {
 
 function _buildPessoalTable(dados) {
   if (!dados.length) return `<div class="empty-state">Nenhum dado encontrado.</div>`;
+  dados = dados.map(escDados);   // escapa todos os campos string antes de montar o HTML
   return `
     <table class="data-table">
       <thead><tr>
@@ -339,7 +344,7 @@ function _bindPessoalActions(estudantes, dados) {
   document.querySelectorAll('.btn-limpar-checklist').forEach(btn => {
     btn.addEventListener('click', () =>
       _modalConfirmar(
-        `Limpar checklist de <strong>${btn.dataset.nome}</strong>?`,
+        `Limpar checklist de <strong>${esc(btn.dataset.nome)}</strong>?`,
         'Desmarca todos os itens do checklist de todas as disciplinas.',
         'Limpar',
         async () => {
@@ -355,7 +360,7 @@ function _bindPessoalActions(estudantes, dados) {
   document.querySelectorAll('.btn-limpar-tarefas').forEach(btn => {
     btn.addEventListener('click', () =>
       _modalConfirmar(
-        `Limpar tarefas de <strong>${btn.dataset.nome}</strong>?`,
+        `Limpar tarefas de <strong>${esc(btn.dataset.nome)}</strong>?`,
         'Remove todas as categorias e tarefas de todas as disciplinas.',
         'Limpar',
         async () => {
@@ -371,7 +376,7 @@ function _bindPessoalActions(estudantes, dados) {
   document.querySelectorAll('.btn-limpar-notas').forEach(btn => {
     btn.addEventListener('click', () =>
       _modalConfirmar(
-        `Limpar notas de <strong>${btn.dataset.nome}</strong>?`,
+        `Limpar notas de <strong>${esc(btn.dataset.nome)}</strong>?`,
         'Apaga as anotações de todas as disciplinas.',
         'Limpar',
         async () => {
@@ -387,7 +392,7 @@ function _bindPessoalActions(estudantes, dados) {
   document.querySelectorAll('.btn-limpar-pessoal-tudo').forEach(btn => {
     btn.addEventListener('click', () =>
       _modalConfirmar(
-        `Limpar TUDO de <strong>${btn.dataset.nome}</strong>?`,
+        `Limpar TUDO de <strong>${esc(btn.dataset.nome)}</strong>?`,
         'Remove checklist, tarefas e notas de todas as disciplinas.',
         'Limpar tudo',
         async () => {
@@ -452,6 +457,7 @@ async function _carregarSrsProgress(estudantes) {
 
 function _buildSrsTable(dados) {
   if (!dados.length) return `<div class="empty-state">Nenhum dado encontrado.</div>`;
+  dados = dados.map(escDados);   // escapa todos os campos string antes de montar o HTML
   return `
     <table class="data-table">
       <thead><tr>
@@ -493,7 +499,7 @@ function _bindSrsActions(estudantes, dados) {
   document.querySelectorAll('.btn-limpar-srs').forEach(btn => {
     btn.addEventListener('click', () =>
       _modalConfirmar(
-        `Limpar SRS de <strong>${btn.dataset.nome}</strong>?`,
+        `Limpar SRS de <strong>${esc(btn.dataset.nome)}</strong>?`,
         'Zera todo o progresso de repetição espaçada do flashcard.',
         'Limpar',
         async () => {
@@ -567,6 +573,7 @@ async function _carregarVfProgress(estudantes) {
 
 function _buildVfTable(dados) {
   if (!dados.length) return `<div class="empty-state">Nenhum dado encontrado.</div>`;
+  dados = dados.map(escDados);   // escapa todos os campos string antes de montar o HTML
 
   return `
     <table class="data-table">
@@ -631,7 +638,7 @@ function _bindVfActions(estudantes, dados) {
   document.querySelectorAll('.btn-limpar-vf').forEach(btn => {
     btn.addEventListener('click', () =>
       _modalConfirmar(
-        `Limpar V/F de <strong>${btn.dataset.nome}</strong>?`,
+        `Limpar V/F de <strong>${esc(btn.dataset.nome)}</strong>?`,
         'Apaga todo o histórico de Verdadeiro ou Falso do Firestore.',
         'Limpar',
         async () => {
@@ -741,6 +748,7 @@ async function _carregarSmProgress(estudantes) {
 
 function _buildSmTable(dados) {
   if (!dados.length) return `<div class="empty-state">Nenhum dado encontrado.</div>`;
+  dados = dados.map(escDados);   // escapa todos os campos string antes de montar o HTML
 
   return `
     <table class="data-table">
@@ -836,7 +844,7 @@ function _bindSmActions(estudantes) {
   document.querySelectorAll('.btn-limpar-sm-tudo').forEach(btn => {
     btn.addEventListener('click', () =>
       _modalConfirmar(
-        `Limpar TUDO do Show do Milhão de <strong>${btn.dataset.nome}</strong>?`,
+        `Limpar TUDO do Show do Milhão de <strong>${esc(btn.dataset.nome)}</strong>?`,
         'Apaga histórico de questões E histórico de pontuações/prêmios permanentemente.',
         'Limpar tudo',
         async () => {
@@ -927,6 +935,7 @@ async function _carregarAssocProgress(estudantes) {
 
 function _buildAssocTable(dados) {
   if (!dados.length) return `<div class="empty-state">Nenhum dado encontrado.</div>`;
+  dados = dados.map(escDados);   // escapa todos os campos string antes de montar o HTML
 
   return `
     <table class="data-table">
@@ -991,7 +1000,7 @@ function _bindAssocActions(estudantes, dados) {
   document.querySelectorAll('.btn-limpar-assoc').forEach(btn => {
     btn.addEventListener('click', () =>
       _modalConfirmar(
-        `Limpar Associação de <strong>${btn.dataset.nome}</strong>?`,
+        `Limpar Associação de <strong>${esc(btn.dataset.nome)}</strong>?`,
         'Apaga todo o histórico de Associação do Firestore.',
         'Limpar',
         async () => {
@@ -1020,4 +1029,4 @@ async function _limparAssocUsuario(uid) {
   } catch (err) {
     console.error('[admin] _limparAssocUsuario erro:', err);
   }
-}
+}
