@@ -641,12 +641,15 @@ function _periodoDaHora(hora) {
 ══════════════════════════════════════════════ */
 async function _criarSessaoFirestore() {
   if (!_uid || !_sessionId) return;
+  /* Snapshot: destroy()/logout pode zerar _uid/_sessionId durante os `await`
+     abaixo; usar os valores capturados evita doc(db,'usuarios',null,...). */
+  const uid = _uid, sid = _sessionId;
   try {
     const dataKey = _dateKey(_startedAt);
     const mesKey  = _mesKey(_startedAt);
     const dia     = dataKey.slice(-2);
 
-    await setDoc(_sessaoRef(_uid, _sessionId), {
+    await setDoc(_sessaoRef(uid, sid), {
       startedAt:   _startedAt,
       endedAt:     _startedAt,
       duracao:     0,
@@ -657,11 +660,11 @@ async function _criarSessaoFirestore() {
       hourHeatmap: {},
       deviceType:  _navDeviceType,
     });
-    await setDoc(_usuarioRef(_uid), {
+    await setDoc(_usuarioRef(uid), {
       totalSessoes:    increment(1),
       ultimaAtividade: Date.now(),
     }, { merge: true });
-    await setDoc(_diarioMensalRef(_uid, mesKey), {
+    await setDoc(_diarioMensalRef(uid, mesKey), {
       mes: mesKey,
       [`dias.${dia}.sessoes`]: increment(1),
       updatedAt: Date.now(),
@@ -669,7 +672,7 @@ async function _criarSessaoFirestore() {
 
     /* Perfil de Uso Global — dispositivo é registrado no MOMENTO em
        que a sessão é criada, sem esperar nenhum tempo mínimo. */
-    await setDoc(_perfilUsoRef(_uid), {
+    await setDoc(_perfilUsoRef(uid), {
       [`deviceType.${_navDeviceType}`]: increment(1),
       lastUpdate: Date.now(),
     }, { merge: true });
@@ -684,6 +687,7 @@ async function _criarSessaoFirestore() {
 ══════════════════════════════════════════════ */
 async function _flush() {
   if (!_uid || !_sessionId) return;
+  const uid = _uid, sid = _sessionId;   // snapshot (ver _criarSessaoFirestore)
 
   const now           = Date.now();
   const dataKey       = _dateKey(_startedAt);
@@ -696,7 +700,7 @@ async function _flush() {
   _finalizarPaginaAtual();
 
   try {
-    await setDoc(_sessaoRef(_uid, _sessionId), {
+    await setDoc(_sessaoRef(uid, sid), {
       endedAt:     now,
       duracao:     activeSeconds,
       pages:       _navPages,
@@ -709,13 +713,13 @@ async function _flush() {
     if (delta > 0) {
       const batch = writeBatch(getDb());
 
-      batch.set(_diarioMensalRef(_uid, mesKey), {
+      batch.set(_diarioMensalRef(uid, mesKey), {
         mes: mesKey,
         [`dias.${dia}.tempoTotal`]: increment(delta),
         updatedAt: now,
       }, { merge: true });
 
-      batch.set(_usuarioRef(_uid), {
+      batch.set(_usuarioRef(uid), {
         tempoTotalGeral: increment(delta),
         ultimaAtividade: now,
       }, { merge: true });

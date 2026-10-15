@@ -45,7 +45,7 @@ export async function gerarHash(pin) {
 /* ── USUÁRIOS / CONFIGS / ADMIN / ÁREA PESSOAL ── */
 export {
   salvarConfigs, carregarConfigs,
-  getUsuarios, criarUsuario, removerUsuario, resetarPin, salvarAvatar,
+  getUsuarios, criarPerfilUsuario, perfilUsuarioExiste, removerUsuario, salvarAvatar,
   salvarChecklistPessoal, carregarChecklistPessoal,
   salvarCategoriasPessoal, carregarCategoriasPessoal,
   salvarNotaPessoal, carregarNotaPessoal, carregarTudoPessoal,

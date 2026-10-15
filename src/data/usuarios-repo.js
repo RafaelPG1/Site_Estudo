@@ -7,12 +7,10 @@
    Regras desta camada:
      · SEM DOM, SEM eventos de UI, SEM import de core/global.
      · uid é SEMPRE parâmetro (nunca lido de estado global).
-     · Credenciais (hash do PIN) só são lidas/escritas AQUI.
      · Contratos de retorno idênticos aos que src/firebase.js tinha.
 
-   Preparação para segurança (NÃO implementada): quando existir
-   Auth/regras, a verificação de PIN sai de autenticarUsuario()
-   para um backend/custom token sem alterar quem a chama.
+   Etapa 4: o login saiu daqui (Firebase Authentication, src/core/auth.js).
+   Este arquivo não lê nem grava PIN/senha.
    ============================================= */
 
 import {
@@ -29,35 +27,18 @@ export async function hashPin(pin) {
     .join('');
 }
 
-/* ── AUTENTICAÇÃO (somente dados; NÃO atualiza estado global) ──
-   Devolve { ok:true, usuario } ou { ok:false, erro }.
-   Quem decide guardar a sessão do usuário (setUsuario) é o chamador. */
-export async function autenticarUsuario(nome, pin) {
-  if (!nome || !pin) return { ok: false, erro: 'Preencha nome e PIN.' };
-
-  const id = nome.trim().toLowerCase();
-
+/* ── PERFIL (somente dados públicos do perfil; NÃO autentica) ──
+   A autenticação agora é do Firebase Authentication (src/core/auth.js).
+   Devolve { ok:true, perfil:{nome,avatar,foto} } ou { ok:false, erro }.
+   `admin` NÃO vem daqui: vem da claim verificada do token. */
+export async function carregarPerfilUsuario(uid) {
   try {
-    const snap = await getDoc(doc(getDb(), ...C.usuario(id)));
-
-    if (!snap.exists()) return { ok: false, erro: 'Usuário não encontrado.' };
-
-    const dados   = snap.data();
-    const hashDig = await hashPin(pin);
-
-    if (hashDig !== dados.pin) return { ok: false, erro: 'PIN incorreto.' };
-
-    const usuario = {
-      uid:    id,
-      nome:   dados.nome ?? nome,
-      avatar: dados.avatar ?? '🎓',
-      foto:   dados.foto   ?? null,
-      admin:  dados.admin  ?? false,
-    };
-    return { ok: true, usuario };
-
+    const snap = await getDoc(doc(getDb(), ...C.usuario(uid)));
+    if (!snap.exists()) return { ok: false, erro: 'Perfil do usuário não encontrado.' };
+    const d = snap.data();
+    return { ok: true, perfil: { nome: d.nome ?? uid, avatar: d.avatar ?? '🎓', foto: d.foto ?? null } };
   } catch (err) {
-    console.error('[usuarios-repo] Erro no login:', err);
+    console.error('[usuarios-repo] Erro ao carregar perfil:', err);
     return { ok: false, erro: 'Erro de conexão. Tente novamente.' };
   }
 }
@@ -101,7 +82,9 @@ export async function getUsuarios() {
   }
 }
 
-export async function criarUsuario(uid, nome, pinHash, avatar) {
+/* Cria SÓ o documento de perfil (a conta de login é criada pelo Worker, antes).
+   Não grava PIN nem senha. */
+export async function criarPerfilUsuario(uid, nome, avatar) {
   try {
     const ref  = doc(getDb(), ...C.usuario(uid));
     const snap = await getDoc(ref);
@@ -112,17 +95,22 @@ export async function criarUsuario(uid, nome, pinHash, avatar) {
 
     await setDoc(ref, {
       nome:   nome,
-      pin:    pinHash,
       avatar: avatar ?? '🎓',
       admin:  false,
     });
 
-    console.log('[firebase] criarUsuario ok →', uid);
+    console.log('[firebase] criarPerfilUsuario ok →', uid);
     return { ok: true };
   } catch (err) {
-    console.error('[firebase] criarUsuario erro:', err);
+    console.error('[firebase] criarPerfilUsuario erro:', err);
     return { ok: false, erro: err.message };
   }
+}
+
+/* Confere se o documento de perfil já existe (usado antes de criar a conta de login). */
+export async function perfilUsuarioExiste(uid) {
+  const snap = await getDoc(doc(getDb(), ...C.usuario(uid)));
+  return snap.exists();
 }
 
 /* Atualiza nome/avatar (merge). LANÇA erro em caso de falha — mesmo
@@ -152,18 +140,6 @@ export async function removerUsuario(uid) {
     return { ok: true };
   } catch (err) {
     console.error('[firebase] removerUsuario erro:', err);
-    return { ok: false };
-  }
-}
-
-export async function resetarPin(uid, novoPin) {
-  try {
-    const novoHash = await hashPin(novoPin);
-    await setDoc(doc(getDb(), ...C.usuario(uid)), { pin: novoHash }, { merge: true });
-    console.log('[firebase] resetarPin ok →', uid);
-    return { ok: true };
-  } catch (err) {
-    console.error('[firebase] resetarPin erro:', err);
     return { ok: false };
   }
 }

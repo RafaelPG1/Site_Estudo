@@ -26,10 +26,13 @@ import {
   setConfigs, getConfigs, resetConfigs,
   hydrateConfigs,
   limparDadosQuiz,
+  sessaoVerificada,
 } from './src/global.js';
 
 import { injetarLogo }                       from './shared/js/utils/logo.js';
 import { login, logout, carregarConfigs }     from './src/firebase.js';
+/* Etapa 4: troca obrigatória de senha no 1º acesso */
+import { detectarTrocaPendente, trocarSenhaInicial, SENHA_MIN, SENHA_MAX } from './src/core/auth.js';
 import { criarSemestreSelect, preencherAnos } from './shared/js/utils/dom.js';
 /* Etapa 1 (segurança): nome/avatar/foto/uid vêm do Firestore → escapados antes de ir para HTML */
 import { esc, urlImagemSegura }                 from './shared/js/utils/html-seguro.js';
@@ -103,6 +106,10 @@ _carregarIA();
 
 async function init() {
   try {
+    // Etapa 4: o usuário guardado no navegador é só cache; confere com a sessão do Firebase
+    // antes de decidir (admin vem da claim verificada, nunca do cache).
+    if (estaLogado()) await sessaoVerificada;
+
     // Redireciona admin imediatamente
     if (estaLogado() && getUsuario()?.admin) {
       window.location.replace('./admin/admin.html');
@@ -152,6 +159,11 @@ async function init() {
     await Sound.waitUntilReady();
 
     preencherAnos(['footer-year']);
+
+    // Etapa 4: sessão do Firebase com troca de senha pendente (ex.: fechou a aba no meio)
+    detectarTrocaPendente()
+      .then(pendente => { if (pendente && !estaLogado()) _abrirModalTrocaSenha(); })
+      .catch(() => {});
 
   } catch (err) {
     console.error('[init] Erro crítico na inicialização:', err);
@@ -355,8 +367,9 @@ function _dispararBloqueio(card) {
 
 /* ═══════════════════════════════════════════════
    SEÇÃO 6 — MODAL LOGIN
-   Fluxo: nome + PIN → login() → loginSuccess event
-   Modo admin detectado pelo nome 'admin'.
+   Fluxo: usuário + senha (Firebase Authentication) → login() → loginSuccess event
+   Se a conta ainda usa a senha provisória → tela de troca obrigatória.
+   Modo admin (visual) detectado pelo nome 'admin'; o acesso real vem da claim.
 ═══════════════════════════════════════════════ */
 
 function _abrirModalLogin() {
@@ -401,20 +414,20 @@ function _abrirModalLogin() {
         <div class="modal__section login-section">
 
           <div class="config-row config-row--col login-field">
-            <label for="login-nome" class="login-field__label">Nome</label>
+            <label for="login-nome" class="login-field__label">Usuário</label>
             <input type="text" id="login-nome" class="config-input login-field__input"
-              placeholder="Nome" maxlength="30"
-              autocomplete="off" autocapitalize="off" />
+              placeholder="Usuário" maxlength="30"
+              autocomplete="username" autocapitalize="off" spellcheck="false" />
           </div>
 
           <div class="config-row config-row--col login-field">
-            <label for="login-pin" class="login-field__label">PIN</label>
+            <label for="login-pin" class="login-field__label">Senha</label>
             <div class="pin-wrap">
               <input type="password" id="login-pin" class="config-input login-field__input"
-                placeholder="• • •" maxlength="3"
-                inputmode="numeric" autocomplete="off" />
+                placeholder="Sua senha" maxlength="${SENHA_MAX}"
+                autocomplete="current-password" />
               <button type="button" class="pin-eye" id="btn-pin-eye"
-                      aria-label="Mostrar PIN" tabindex="-1">
+                      aria-label="Mostrar senha" tabindex="-1">
                 <svg id="pin-eye-icon" width="16" height="16" viewBox="0 0 24 24" fill="none"
                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
@@ -450,13 +463,11 @@ function _abrirModalLogin() {
   /* Detecta modo admin pelo nome */
   inputNome.addEventListener('input', function () {
     const isAdmin = this.value.trim().toLowerCase() === 'admin';
-    inputPin.setAttribute('maxlength', isAdmin ? '9' : '3');
-    if (!isAdmin && inputPin.value.length > 3) inputPin.value = inputPin.value.slice(0, 3);
     box.classList.toggle('modal__box--admin', isAdmin);
     cards?.classList.toggle('cards-hidden', isAdmin);
   });
 
-  /* Toggle visibilidade do PIN */
+  /* Toggle visibilidade da senha */
   pinEyeBtn.addEventListener('click', () => {
     const show    = inputPin.type === 'password';
     inputPin.type = show ? 'text' : 'password';
@@ -493,12 +504,12 @@ function _abrirModalLogin() {
 
   async function _tentarLogin() {
     const nome = inputNome.value.trim();
-    const pin  = inputPin.value.trim();
+    const pin  = inputPin.value;   // senha: sem trim (espaços podem fazer parte dela)
 
     erroEl.style.display = 'none';
 
     if (!nome || !pin) {
-      erroEl.textContent   = 'Selecione seu nome e digite o PIN.';
+      erroEl.textContent   = 'Digite seu usuário e sua senha.';
       erroEl.style.display = 'block';
       return;
     }
@@ -511,39 +522,140 @@ function _abrirModalLogin() {
     btnEntrar.textContent = 'Entrar';
     btnEntrar.disabled    = false;
 
-    if (resultado.ok) {
-      if (resultado.usuario.admin) {
-        cards?.classList.remove('cards-hidden');
-        _fecharModal(modal);
-        window.location.replace('./admin/admin.html');
-        return;
-      }
-
-      limparDadosQuiz();
-
-      const configsRemota = await carregarConfigs(resultado.usuario.uid);
-      if (configsRemota) {
-        hydrateConfigs({ ...getConfigs(), ...configsRemota });
-        console.log('[login] configs mescladas com Firebase ✓');
-      } else {
-        console.log('[login] nenhuma config remota — mantendo localStorage');
-      }
-
+    if (resultado.ok && resultado.trocaSenha) {
+      // 1º acesso com senha provisória: a sessão só é publicada depois da troca
       cards?.classList.remove('cards-hidden');
       _fecharModal(modal);
-      _refreshHeader();
+      _abrirModalTrocaSenha();
+      return;
+    }
 
-      document.dispatchEvent(new CustomEvent('nexus:loginSuccess', {
-        detail: { uid: resultado.usuario.uid },
-      }));
-
-      mostrarToast(`Bem-vindo, ${resultado.usuario.nome}! ${resultado.usuario.avatar}`);
-
+    if (resultado.ok) {
+      await _finalizarLogin(resultado.usuario, modal);
     } else {
       erroEl.textContent   = resultado.erro;
       erroEl.style.display = 'block';
       inputPin.value = '';
       inputPin.focus();
+    }
+  }
+}
+
+
+/* Passos finais de um login concluído (mesmo código de antes, agora compartilhado com a troca de senha). */
+async function _finalizarLogin(usuario, modal) {
+  const cards = document.querySelector('.cards-grid');
+
+  if (usuario.admin) {
+    cards?.classList.remove('cards-hidden');
+    _fecharModal(modal);
+    window.location.replace('./admin/admin.html');
+    return;
+  }
+
+  limparDadosQuiz();
+
+  const configsRemota = await carregarConfigs(usuario.uid);
+  if (configsRemota) {
+    hydrateConfigs({ ...getConfigs(), ...configsRemota });
+    console.log('[login] configs mescladas com Firebase ✓');
+  } else {
+    console.log('[login] nenhuma config remota — mantendo localStorage');
+  }
+
+  cards?.classList.remove('cards-hidden');
+  _fecharModal(modal);
+  _refreshHeader();
+
+  document.dispatchEvent(new CustomEvent('nexus:loginSuccess', {
+    detail: { uid: usuario.uid },
+  }));
+
+  mostrarToast(`Bem-vindo, ${usuario.nome}! ${usuario.avatar}`);
+}
+
+/* ═══════════════════════════════════════════════
+   MODAL — TROCA OBRIGATÓRIA DE SENHA (1º acesso)
+   A senha nova é enviada direto ao Firebase (não passa pelo Worker).
+   Cancelar encerra a sessão (a conta continua com a senha provisória).
+═══════════════════════════════════════════════ */
+
+function _abrirModalTrocaSenha() {
+  _fecharTodosModais();
+  playSound('openModal', 'inicial');
+
+  const modal = _criarModal('troca-senha');
+  modal.innerHTML = `
+    <div class="modal__overlay" id="modal-overlay-troca"></div>
+    <div class="modal__box modal__box--sm" role="dialog" aria-modal="true" aria-label="Crie sua senha">
+
+      <div class="modal__header modal__header--normal login-hero">
+        <span class="login-hero__eyebrow">Primeiro acesso</span>
+        <h2 class="modal__title login-hero__title">Crie sua senha</h2>
+        <p class="login-hero__sub">Escolha uma senha só sua (${SENHA_MIN} a ${SENHA_MAX} caracteres)</p>
+      </div>
+
+      <div class="modal__body-scroll login-body">
+        <div class="modal__section login-section">
+          <div class="config-row config-row--col login-field">
+            <label for="troca-nova" class="login-field__label">Nova senha</label>
+            <input type="password" id="troca-nova" class="config-input login-field__input"
+              maxlength="${SENHA_MAX}" autocomplete="new-password" />
+          </div>
+          <div class="config-row config-row--col login-field">
+            <label for="troca-confirma" class="login-field__label">Repita a nova senha</label>
+            <input type="password" id="troca-confirma" class="config-input login-field__input"
+              maxlength="${SENHA_MAX}" autocomplete="new-password" />
+          </div>
+          <p id="troca-erro" class="login-erro" style="display:none"></p>
+        </div>
+      </div>
+
+      <div class="modal__footer login-footer">
+        <button class="modal-btn modal-btn--primary login-submit" id="btn-troca-salvar">Salvar e entrar</button>
+        <button class="modal-btn" id="btn-troca-cancelar" type="button">Cancelar</button>
+      </div>
+    </div>`;
+
+  document.body.appendChild(modal);
+  requestAnimationFrame(() => modal.classList.add('modal--open'));
+
+  const nova     = modal.querySelector('#troca-nova');
+  const confirma = modal.querySelector('#troca-confirma');
+  const erroEl   = modal.querySelector('#troca-erro');
+  const btnSalvar = modal.querySelector('#btn-troca-salvar');
+  const mostrarErro = (t) => { erroEl.textContent = t; erroEl.style.display = 'block'; };
+
+  nova.addEventListener('keydown', e => { if (e.key === 'Enter') confirma.focus(); });
+  confirma.addEventListener('keydown', e => { if (e.key === 'Enter') _salvar(); });
+  btnSalvar.addEventListener('click', () => { playSound('click', 'inicial'); _salvar(); });
+
+  modal.querySelector('#btn-troca-cancelar').addEventListener('click', () => {
+    playSound('closeModal', 'inicial');
+    logout();
+    _fecharModal(modal);
+    _refreshHeader();
+  });
+
+  async function _salvar() {
+    erroEl.style.display = 'none';
+    if (nova.value !== confirma.value) { mostrarErro('As duas senhas não são iguais.'); return; }
+
+    btnSalvar.textContent = 'Salvando…';
+    btnSalvar.disabled = true;
+    const res = await trocarSenhaInicial(nova.value);
+    btnSalvar.textContent = 'Salvar e entrar';
+    btnSalvar.disabled = false;
+
+    if (res.ok) {
+      await _finalizarLogin(res.usuario, modal);
+    } else {
+      mostrarErro(res.erro);
+      if (res.encerrar) {
+        setTimeout(() => { _fecharModal(modal); _refreshHeader(); }, 2500);
+      } else {
+        nova.focus();
+      }
     }
   }
 }
@@ -1123,4 +1235,4 @@ function _reposicionarToasts() {
     t.style.bottom = `${bottom}px`;
     bottom += t.offsetHeight + TOAST_OFFSET;
   });
-}
+}

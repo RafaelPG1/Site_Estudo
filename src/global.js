@@ -57,6 +57,7 @@
 
 import Storage from './storage.js';
 import { salvarConfigs } from './data/usuarios-repo.js';
+import { aguardarAuth } from './data/firebase-app.js';
 import {
   SEMESTRES, SEMESTRE_PADRAO, resolveIcone,
   getDisciplinasDeSemestre, parseSemestre, normalizarSemestre,
@@ -336,13 +337,55 @@ _aplicarConfigs(_estado.configs);
    ─────────────────────────────────────────────────────────── */
 if (_estado.usuario?.uid) {
   console.log('[global] bootstrap loginSuccess:', _estado.usuario.uid);
+  const _uidBoot = _estado.usuario.uid;
   setTimeout(() => {
-    document.dispatchEvent(new CustomEvent('nexus:loginSuccess', {
-      detail: { uid: _estado.usuario.uid },
-      // FIX 4: sem configs — audio-state busca do Firebase.
-    }));
+    // Etapa 4: o `usuario` do localStorage é só cache. O evento só é disparado
+    // DEPOIS que a sessão do Firebase confirmar esse usuário (ou quando não
+    // foi possível verificar, ex.: offline). Antes isso disparava na hora e o
+    // session-tracker/audio-state iniciavam para um cache já inválido; ao ser
+    // descartado, destroy() zerava o uid no meio das gravações (TypeError).
+    sessaoVerificada.then((status) => {
+      if (status === 'sem-sessao') return;
+      if (_estado.usuario?.uid !== _uidBoot) return;
+      document.dispatchEvent(new CustomEvent('nexus:loginSuccess', {
+        detail: { uid: _uidBoot },
+        // FIX 4: sem configs — audio-state busca do Firebase.
+      }));
+    });
   }, 0);
 }
+
+/* ══════════════════════════════════════════════════════════
+   SESSÃO VERIFICADA (Etapa 4 — Firebase Authentication)
+   O `usuario` no localStorage é só CACHE de interface (nome, avatar,
+   cabeçalho). Quem manda é a sessão do Firebase:
+     · cache sem sessão no Firebase (ou de outra conta) → descartado;
+     · conta sem "nx" ou com troca de senha pendente → descartado;
+     · `admin` é SEMPRE o da claim do token (o cache não promove ninguém).
+   Resolve com: 'ok' | 'sem-sessao' | 'nao-verificado' (Firebase não respondeu a
+   tempo / sem rede: o cache é mantido para o site seguir funcionando offline).
+   Sem usuário em cache (visitante) não consulta nada e resolve na hora.
+   ══════════════════════════════════════════════════════════ */
+
+async function _verificarSessaoFirebase() {
+  if (!_estado.usuario) return 'sem-sessao';
+  const cache = _estado.usuario;
+
+  const user = await aguardarAuth();
+  if (user === undefined) return 'nao-verificado';
+  if (!user || user.uid !== cache.uid) { setUsuario(null); return 'sem-sessao'; }
+
+  try {
+    const tk = await user.getIdTokenResult();
+    if (tk.claims.nx !== true || tk.claims.troca === true) { setUsuario(null); return 'sem-sessao'; }
+    const admin = tk.claims.admin === true;
+    if (admin !== !!cache.admin) setUsuario({ ...cache, admin });
+    return 'ok';
+  } catch (_) {
+    return 'nao-verificado';   // offline com token vencido: mantém o cache
+  }
+}
+export const sessaoVerificada = _verificarSessaoFirebase();
 
 /* ══════════════════════════════════════════════════════════
    QUIZ — limpar dados

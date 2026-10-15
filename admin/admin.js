@@ -6,15 +6,19 @@
 
 import {
   getUsuario,
+  sessaoVerificada,
 } from '../src/global.js';
 
 import {
   getUsuarios,
-  criarUsuario,
-  resetarPin,
-  hashPin,
+  criarPerfilUsuario,
+  perfilUsuarioExiste,
   logout,
 } from '../src/firebase.js';
+
+/* Etapa 4: contas de login (criar / redefinir senha / remover) passam pelo Worker, que confere
+   no servidor se quem pede é administrador. O painel nunca vê nem grava senha própria. */
+import { chamarWorker } from '../src/data/admin-api.js';
 
 /* Fase 3 — operações de dados que o painel fazia direto no Firestore */
 import { removerUsuarioCompleto, atualizarPerfilUsuario } from '../src/data/usuarios-repo.js';
@@ -57,8 +61,10 @@ let _usuarios   = [];
    ══════════════════════════════════════════════════════════ */
 
 document.addEventListener('DOMContentLoaded', async () => {
+  /* Etapa 4: admin só vale se a sessão do Firebase confirmar (claim); o cache do navegador não basta. */
+  const statusSessao = await sessaoVerificada;
   const u = getUsuario();
-  if (!u || !u.admin) {
+  if (!u || !u.admin || statusSessao !== 'ok') {
     document.getElementById('content').innerHTML = `
       <div class="init-loading">
         <p style="color:var(--rose)">⛔ Acesso negado. Faça login como administrador.</p>
@@ -97,8 +103,8 @@ function _montarSidebar(u) {
 
 /* Logout — usado pelo botão da sidebar e pelo atalho da topbar (mobile),
    para que "Sair" continue acessível mesmo com o menu fechado. */
-function _fazerLogout() {
-  logout();
+async function _fazerLogout() {
+  await logout();   // encerra a sessão do Firebase antes de sair da página
   window.location.href = '../index.html';
 }
 
@@ -184,6 +190,10 @@ export async function _getUsuarios(force = false) {
    ══════════════════════════════════════════════════════════ */
 
 async function _removerUsuarioCompleto(uid) {
+  /* 1º a conta de login (o usuário não consegue mais entrar), 2º os dados. Se algo falhar no meio,
+     repetir é seguro: o Worker é idempotente e a remoção de dados também. */
+  const conta = await chamarWorker('/admin/remover', { id: uid });
+  if (!conta.ok) return { ok: false, erro: conta.erro };
   return removerUsuarioCompleto(uid);
 }
 
@@ -319,12 +329,12 @@ function _renderUserCards(users) {
         ${u.admin ? `<span class="admin-chip">Admin</span>` : ''}
       </div>
       <div class="user-card__actions">
+        ${!u.admin ? `
         <button class="icon-btn icon-btn--blue btn-reset-pin"
                 data-uid="${esc(u.uid)}"
-                data-nome="${esc(u.nome ?? u.uid)}"
-                data-admin="${u.admin ? '1' : '0'}">
-          🔑 PIN
-        </button>
+                data-nome="${esc(u.nome ?? u.uid)}">
+          🔑 Senha
+        </button>` : ''}
         <button class="icon-btn icon-btn--gold btn-edit-user"
                 data-uid="${esc(u.uid)}"
                 data-nome="${esc(u.nome ?? u.uid)}"
@@ -345,7 +355,7 @@ function _renderUserCards(users) {
 function _bindUserCardActions() {
   document.querySelectorAll('.btn-reset-pin').forEach(btn => {
     btn.addEventListener('click', () =>
-      _modalResetPin(btn.dataset.uid, btn.dataset.nome, btn.dataset.admin === '1')
+      _modalResetSenha(btn.dataset.uid, btn.dataset.nome)
     );
   });
 
@@ -359,7 +369,7 @@ function _bindUserCardActions() {
     btn.addEventListener('click', () =>
       _modalConfirmar(
         `Remover <strong>${esc(btn.dataset.nome)}</strong>?`,
-        'Apaga o usuário e todo o progresso permanentemente.',
+        'Apaga a conta de login, o usuário e todo o progresso permanentemente.',
         'Remover',
         async () => {
           const res = await _removerUsuarioCompleto(btn.dataset.uid);
@@ -473,11 +483,10 @@ function _modalCriarUsuario() {
                maxlength="20" autocomplete="off" style="font-family:monospace">
         <small>Minúsculas, sem espaços ou acentos.</small>
       </div>
-      <div class="form-group">
-        <label>PIN (3 dígitos)</label>
-        <input class="form-input" id="mc-pin" placeholder="• • •"
-               maxlength="3" inputmode="numeric" type="password" autocomplete="off">
-      </div>
+      <p style="font-size:0.78rem;color:var(--text-3);margin:0 0 0.75rem">
+        O sistema gera uma <strong>senha provisória aleatória</strong>. Você a verá uma única vez;
+        no primeiro acesso o aluno cria a senha dele.
+      </p>
       <div class="form-group">
         <label>Avatar</label>
         <div class="avatar-picker" id="mc-avatar-picker">
@@ -502,9 +511,6 @@ function _modalCriarUsuario() {
       if (e.key === 'Enter') document.getElementById('mc-id').focus();
     });
     document.getElementById('mc-id').addEventListener('keydown', e => {
-      if (e.key === 'Enter') document.getElementById('mc-pin').focus();
-    });
-    document.getElementById('mc-pin').addEventListener('keydown', e => {
       if (e.key === 'Enter') document.getElementById('mc-save').click();
     });
     const idEl = document.getElementById('mc-id');
@@ -530,21 +536,16 @@ function _modalCriarUsuario() {
   document.getElementById('mc-save').addEventListener('click', async () => {
     const nome    = document.getElementById('mc-nome').value.trim();
     const id      = document.getElementById('mc-id').value.trim();
-    const pin     = document.getElementById('mc-pin').value.trim();
     const erro    = document.getElementById('mc-erro');
     const saveBtn = document.getElementById('mc-save');
 
     erro.style.display = 'none';
-    if (!nome || !id || !pin) {
+    if (!nome || !id) {
       erro.textContent = 'Preencha todos os campos.'; erro.style.display = 'block'; return;
-    }
-    if (!/^\d{3}$/.test(pin)) {
-      erro.textContent = 'PIN deve ter exatamente 3 dígitos.'; erro.style.display = 'block'; return;
     }
 
     saveBtn.disabled = true; saveBtn.textContent = 'Criando…';
-    const pinHash = await hashPin(pin);
-    const res = await criarUsuario(id, nome, pinHash, avatarSel);
+    const res = await _criarContaEPerfil(id, nome, avatarSel);
     saveBtn.disabled = false; saveBtn.textContent = 'Criar';
 
     if (res.ok) {
@@ -552,10 +553,55 @@ function _modalCriarUsuario() {
       overlay.remove();
       _toast('Usuário criado! 🎉');
       await _renderUsers();
+      _modalSenhaProvisoria('Usuário criado', nome, id, res.senhaProvisoria);
     } else {
       erro.textContent = res.erro ?? 'Erro ao criar usuário.';
       erro.style.display = 'block';
     }
+  });
+}
+
+/* Cria a conta de login (Worker) e o perfil (Firestore). Se o perfil falhar, desfaz a conta. */
+async function _criarContaEPerfil(id, nome, avatar) {
+  if (await perfilUsuarioExiste(id).catch(() => false)) {
+    return { ok: false, erro: `Usuário "${id}" já existe.` };
+  }
+  const conta = await chamarWorker('/admin/usuarios', { id });
+  if (!conta.ok) return { ok: false, erro: conta.erro };
+
+  const perfil = await criarPerfilUsuario(id, nome, avatar);
+  if (!perfil.ok) {
+    await chamarWorker('/admin/remover', { id });   // não deixa conta sem perfil
+    return { ok: false, erro: perfil.erro ?? 'Erro ao criar o perfil.' };
+  }
+  return { ok: true, senhaProvisoria: conta.json.senhaProvisoria };
+}
+
+/* Mostra a senha provisória UMA vez (criar e redefinir). */
+function _modalSenhaProvisoria(titulo, nome, id, senha) {
+  const overlay = _criarOverlay();
+  overlay.querySelector('.modal-box').innerHTML = `
+    <div class="modal-header">
+      <span class="modal-title">${esc(titulo)} — ${esc(nome)}</span>
+      <button class="modal-close" id="sp-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <p>Passe estes dados ao aluno. <strong>A senha não será mostrada de novo.</strong></p>
+      <div class="form-group"><label>Usuário</label>
+        <input class="form-input" readonly value="${esc(id)}" style="font-family:monospace"></div>
+      <div class="form-group"><label>Senha provisória</label>
+        <input class="form-input" id="sp-senha" readonly value="${esc(senha)}" style="font-family:monospace;font-size:1.1rem;letter-spacing:.08em"></div>
+      <small>No primeiro acesso, o aluno será obrigado a criar uma senha pessoal.</small>
+    </div>
+    <div class="modal-footer">
+      <button class="action-btn action-btn--ghost"   id="sp-copiar">Copiar senha</button>
+      <button class="action-btn action-btn--primary" id="sp-ok">Já anotei</button>
+    </div>`;
+  document.getElementById('sp-close').addEventListener('click', () => overlay.remove());
+  document.getElementById('sp-ok').addEventListener('click',    () => overlay.remove());
+  document.getElementById('sp-copiar').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(senha); _toast('Senha copiada.'); }
+    catch (_) { document.getElementById('sp-senha').select(); _toast('Selecione e copie manualmente.', true); }
   });
 }
 
@@ -630,56 +676,45 @@ function _modalEditarUsuario(uid, nome, avatarAtual) {
 }
 
 /* ══════════════════════════════════════════════════════════
-   MODAL — RESET PIN
+   MODAL — REDEFINIR SENHA (gera nova senha provisória)
    ══════════════════════════════════════════════════════════ */
 
-function _modalResetPin(uid, nome, isAdmin) {
+function _modalResetSenha(uid, nome) {
   const overlay = _criarOverlay();
-  const maxPin = isAdmin ? 9 : 3;
 
   overlay.querySelector('.modal-box').innerHTML = `
     <div class="modal-header">
-      <span class="panel-title">Resetar PIN — ${esc(nome)}</span>
+      <span class="panel-title">Redefinir senha — ${esc(nome)}</span>
       <button class="modal-close" id="rp-close">✕</button>
     </div>
     <div class="modal-body">
-      <div class="form-group">
-        <label>Novo PIN (${isAdmin ? 'até 9' : '3'} dígitos)</label>
-        <input class="form-input" id="rp-pin" placeholder="• • •"
-               maxlength="${maxPin}" inputmode="numeric" type="password" autocomplete="off">
-        <small>O PIN antigo será substituído imediatamente.</small>
-      </div>
+      <p>Será gerada uma <strong>nova senha provisória</strong>. A senha atual deixa de funcionar
+         e o aluno precisará criar uma nova no próximo acesso.</p>
       <p class="form-error" id="rp-erro" style="display:none"></p>
     </div>
     <div class="modal-footer">
       <button class="action-btn action-btn--ghost"   id="rp-cancel">Cancelar</button>
-      <button class="action-btn action-btn--primary" id="rp-save">Resetar</button>
+      <button class="action-btn action-btn--primary" id="rp-save">Redefinir</button>
     </div>`;
 
   document.getElementById('rp-close').addEventListener('click',  () => overlay.remove());
   document.getElementById('rp-cancel').addEventListener('click', () => overlay.remove());
 
   document.getElementById('rp-save').addEventListener('click', async () => {
-    const pin  = document.getElementById('rp-pin').value.trim();
     const erro = document.getElementById('rp-erro');
     const btn  = document.getElementById('rp-save');
+    erro.style.display = 'none';
 
-    const pattern = isAdmin ? /^\d{4,9}$/ : /^\d{3}$/;
-    const hint    = isAdmin ? 'PIN admin: 4 a 9 dígitos.' : 'PIN deve ter exatamente 3 dígitos.';
-
-    if (!pattern.test(pin)) {
-      erro.textContent = hint; erro.style.display = 'block'; return;
-    }
-
-    btn.disabled = true; btn.textContent = 'Resetando…';
-    const res = await resetarPin(uid, pin);
-    btn.disabled = false; btn.textContent = 'Resetar';
+    btn.disabled = true; btn.textContent = 'Redefinindo…';
+    const res = await chamarWorker('/admin/senha-provisoria', { id: uid });
+    btn.disabled = false; btn.textContent = 'Redefinir';
 
     if (res.ok) {
       overlay.remove();
-      _toast(`PIN de ${nome} resetado! 🔑`);
+      _toast(`Senha de ${nome} redefinida! 🔑`);
+      _modalSenhaProvisoria('Nova senha provisória', nome, uid, res.json.senhaProvisoria);
     } else {
-      erro.textContent = 'Erro ao resetar PIN.'; erro.style.display = 'block';
+      erro.textContent = res.erro ?? 'Erro ao redefinir a senha.'; erro.style.display = 'block';
     }
   });
 }
@@ -744,4 +779,4 @@ function iconRanking() {
 }
 function iconSessions() {
   return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="8" y1="18" x2="8" y2="18"/><line x1="12" y1="18" x2="12" y2="18"/></svg>`;
-}
+}

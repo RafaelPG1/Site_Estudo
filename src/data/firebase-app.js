@@ -15,9 +15,10 @@
    NÃO faz: regras de negócio, caminhos de coleções (colecoes.js),
             DOM, eventos de UI.
 
-   Preparação para segurança (NÃO implementada nesta fase):
-   quando houver Firebase Auth / custom token, o ponto de entrada
-   será aqui (getAuth/signIn), sem tocar nos repositórios.
+   Firebase Authentication (Etapa 4): o Auth é inicializado AQUI, no
+   mesmo app do Firestore, de forma imediata (não lazy). Assim toda
+   página que usa o Firestore (Home, Dashboard, Quiz, Admin, Games...)
+   envia automaticamente o token do usuário logado, sem mudar código.
 
    IMPORTANTE: a URL do SDK abaixo é a MESMA usada pelos demais
    arquivos (10.12.0). O navegador resolve URL idêntica para a mesma
@@ -28,6 +29,12 @@
 
 import { initializeApp, getApps, getApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { initializeFirestore } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import {
+  getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword,
+} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+/* Re-export do SDK Auth (fonte única da URL) */
+export { signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword };
 
 /* ── Re-export do SDK Firestore (fonte única da URL) ── */
 export {
@@ -48,6 +55,28 @@ const firebaseConfig = {
 };
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+
+/* ── AUTH ───────────────────────────────────────────────────────
+   getAuth(app) usa persistência local (IndexedDB/localStorage): a
+   sessão sobrevive a recarregar a página e funciona offline. Chamado
+   já aqui para o Firestore enxergar o Auth desde a primeira leitura. */
+const _auth = getAuth(app);
+export function getAuthInstance() { return _auth; }
+
+/* Espera o Auth terminar de restaurar a sessão salva (leitura local, não depende de rede).
+   Resolve com o usuário do Firebase ou null; se demorar mais que `timeoutMs`, resolve com
+   undefined (= "não deu para saber": o chamador mantém o que já tinha). */
+export function aguardarAuth(timeoutMs = 6000) {
+  return new Promise(resolve => {
+    let cancelar = null;
+    const t = setTimeout(() => { try { cancelar && cancelar(); } catch (_) {} resolve(undefined); }, timeoutMs);
+    cancelar = onAuthStateChanged(_auth, u => {
+      clearTimeout(t);
+      try { cancelar && cancelar(); } catch (_) {}
+      resolve(u);
+    });
+  });
+}
 
 /* ── CLIENTE FIRESTORE ──────────────────────────────────────────
    experimentalAutoDetectLongPolling: mantém a auto-detecção de
