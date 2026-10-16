@@ -437,6 +437,7 @@ function _abrirModalLogin() {
             </div>
           </div>
 
+          <p class="login-dica" style="font-size:12px;opacity:.7;margin:6px 0 0">Primeiro acesso? Digite o seu PIN antigo; em seguida você escolhe uma senha nova.</p>
           <p id="login-erro" class="login-erro" style="display:none"></p>
 
         </div>
@@ -977,7 +978,7 @@ function _abrirPerfilModal() {
                 </svg>
               </div>
               <div class="pm-data-content">
-                <span class="pm-data-label">PIN</span>
+                <span class="pm-data-label">Senha</span>
                 <span class="pm-data-value pm-data-value--pin">• • •</span>
               </div>
               <span class="pm-pin-admin-badge">admin</span>

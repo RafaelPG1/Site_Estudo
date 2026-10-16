@@ -22,25 +22,14 @@
    ============================================= */
 
 import { login, logout } from './core/auth.js';
-import { hashPin } from './data/usuarios-repo.js';
 
 /* As métricas [PERF] das leituras do quiz são registradas dentro de
    data/quiz-repo.js (Fase 8) — não há mais ligação a fazer aqui. */
 
 export { getDb } from './data/firebase-app.js';
 
-/* ── HASH SHA-256 ── */
-export { hashPin };
-
 /* ── LOGIN / LOGOUT (implementados em ./core/auth.js — Fase 5) ── */
 export { login, logout };
-
-/* ── GERAR HASH (utilitário de console) ── */
-export async function gerarHash(pin) {
-  const h = await hashPin(pin);
-  console.log(`PIN: ${pin}  →  hash: ${h}`);
-  return h;
-}
 
 /* ── USUÁRIOS / CONFIGS / ADMIN / ÁREA PESSOAL ── */
 export {

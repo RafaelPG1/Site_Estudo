@@ -4,5 +4,6 @@ nao_git/
 info/
 envios_R2/
 backup/
-scripts/
-testes_login/
+/testes_login/
+/scripts/
+/novas_implementações/

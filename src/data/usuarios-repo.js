@@ -18,15 +18,6 @@ import {
 } from './firebase-app.js';
 import * as C from './colecoes.js';
 
-/* ── HASH SHA-256 ── */
-export async function hashPin(pin) {
-  const encoded = new TextEncoder().encode(String(pin));
-  const buffer  = await crypto.subtle.digest('SHA-256', encoded);
-  return Array.from(new Uint8Array(buffer))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
-}
-
 /* ── PERFIL (somente dados públicos do perfil; NÃO autentica) ──
    A autenticação agora é do Firebase Authentication (src/core/auth.js).
    Devolve { ok:true, perfil:{nome,avatar,foto} } ou { ok:false, erro }.

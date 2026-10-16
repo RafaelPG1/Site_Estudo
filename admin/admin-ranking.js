@@ -228,4 +228,4 @@ async function _carregarRankingSm(estudantes) {
         ).join('')}
     ` : ''}
   </div>`;
-}
+}

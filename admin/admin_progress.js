@@ -1029,4 +1029,4 @@ async function _limparAssocUsuario(uid) {
   } catch (err) {
     console.error('[admin] _limparAssocUsuario erro:', err);
   }
-}
+}

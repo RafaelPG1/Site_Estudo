@@ -27,6 +27,11 @@ import { chamarWorker } from '../data/admin-api.js';
 export const SENHA_MIN = 6;
 export const SENHA_MAX = 30;
 const ALIAS_DOMINIO = 'nexus-study.invalid';
+/* Contas migradas do sistema de PIN foram criadas com senha = PIN antigo + "000".
+   Quem digita só o PIN antigo entra mesmo assim, mas SOMENTE se a conta ainda estiver
+   com a troca de senha obrigatória pendente (veja login()). */
+const SUFIXO_MIGRACAO = '000';
+const PIN_ANTIGO_MAX = 9;   // o PIN do "admin" tinha até 9 caracteres; os demais, 3
 
 /* ── ALIAS DE E-MAIL (igual ao do Worker) ── */
 export async function aliasEmail(id) {
@@ -47,6 +52,8 @@ export function validarSenhaNova(nova, anterior = null) {
   if (anterior && nova === anterior) return 'A nova senha precisa ser diferente da senha provisória.';
   return null;
 }
+
+const _credencialInvalida = (err) => ['auth/invalid-credential', 'auth/user-not-found', 'auth/wrong-password'].includes(err && err.code);
 
 function _erroLogin(err) {
   switch (err && err.code) {
@@ -86,9 +93,22 @@ export async function login(nome, senha) {
   const id = String(nome).trim().toLowerCase();
   const auth = getAuthInstance();
 
-  let cred;
+  const email = await aliasEmail(id);
+  const tentar = (s) => signInWithEmailAndPassword(auth, email, s);
+  let cred, senhaUsada = senha, viaPinAntigo = false;
   try {
-    cred = await signInWithEmailAndPassword(auth, await aliasEmail(id), senha);
+    if (senha.length < SENHA_MIN) {
+      // Curta demais para ser uma senha pessoal (mínimo 6): só pode ser o PIN antigo → completa com "000".
+      senhaUsada = senha + SUFIXO_MIGRACAO; viaPinAntigo = true;
+      cred = await tentar(senhaUsada);
+    } else {
+      try { cred = await tentar(senha); }
+      catch (err) {
+        if (!_credencialInvalida(err) || senha.length > PIN_ANTIGO_MAX || senha.endsWith(SUFIXO_MIGRACAO)) throw err;
+        senhaUsada = senha + SUFIXO_MIGRACAO; viaPinAntigo = true;   // PIN antigo de 6 a 9 caracteres (ex.: o do admin)
+        cred = await tentar(senhaUsada);
+      }
+    }
   } catch (err) {
     return { ok: false, erro: _erroLogin(err) };
   }
@@ -101,12 +121,16 @@ export async function login(nome, senha) {
     let tk = await user.getIdTokenResult();
     if (tk.claims.nx !== true) { await signOut(auth); return { ok: false, erro: 'Esta conta não está autorizada.' }; }
 
+    // O atalho "PIN antigo + 000" só vale para conta que ainda precisa trocar a senha; quem já tem
+    // senha pessoal (que por acaso termine em 000) não entra digitando só o começo dela.
+    if (viaPinAntigo && tk.claims.troca !== true) { await signOut(auth); return { ok: false, erro: 'Usuário ou senha incorretos.' }; }
+
     if (tk.claims.troca === true) {
       // Recuperação: se a senha já foi trocada mas a liberação não terminou, o Worker libera agora.
       const lib = await chamarWorker('/auth/senha-definida', {}, { forcar: true });
       if (lib.ok) tk = await user.getIdTokenResult(true);
       if (tk.claims.troca === true) {
-        _pendente = { uid: id, senhaAnterior: senha, senhaJaTrocada: false };
+        _pendente = { uid: id, senhaAnterior: senhaUsada, senhaJaTrocada: false };
         return { ok: true, trocaSenha: true };
       }
     }
@@ -151,8 +175,9 @@ export async function trocarSenhaInicial(nova) {
           _pendente = null; await signOut(auth).catch(() => {});
           return { ok: false, erro: 'Por segurança, entre novamente com a senha provisória.', encerrar: true };
         case 'auth/weak-password':
-        case 'auth/password-does-not-meet-requirements':
           return { ok: false, erro: `A senha deve ter de ${SENHA_MIN} a ${SENHA_MAX} caracteres.` };
+        case 'auth/password-does-not-meet-requirements':
+          return { ok: false, erro: 'Esta senha não atende à política de senha configurada no projeto (Firebase → Authentication → Configurações → Política de senha).' };
         case 'auth/network-request-failed':
           return { ok: false, erro: 'Erro de conexão. Tente novamente.' };
         default:
