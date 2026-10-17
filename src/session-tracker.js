@@ -1447,6 +1447,9 @@ document.addEventListener('nexus:logout', async () => {
   await destroy();
 });
 
+/* O logout (src/core/auth.js) chama isto ANTES do signOut para gravar o tempo pendente. */
+globalThis.__nexusEncerrarSessao = () => destroy();
+
 ;(async () => {
   await new Promise(r => setTimeout(r, 50));
   const { getUsuario: _gu } = await import('./global.js').catch(() => ({}));

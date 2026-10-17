@@ -206,8 +206,17 @@ export async function trocarSenhaInicial(nova) {
 /* ── LOGOUT ──
    Limpa o estado do app NA HORA e encerra a sessão do Firebase.
    Devolve a promise do signOut (quem for navegar para outra página deve aguardá-la). */
-export function logout() {
+export async function logout() {
   _pendente = null;
+  /* Antes de sair, o session-tracker envia o tempo de sessão que ainda não foi gravado.
+     Depois do signOut as regras do Firestore negariam esse envio. Espera no máximo 2,5 s
+     (sem rede o envio não confirma e o logout não pode travar). */
+  try {
+    const encerrar = globalThis.__nexusEncerrarSessao;
+    if (typeof encerrar === 'function') {
+      await Promise.race([Promise.resolve(encerrar()), new Promise((r) => setTimeout(r, 2500))]);
+    }
+  } catch (_) { /* segue com o logout mesmo se o envio falhar */ }
   setUsuario(null);
   return signOut(getAuthInstance()).catch(() => {});
 }

@@ -872,10 +872,10 @@ function _abrirModalConfig() {
 
   /* Logout (quando logado) */
   if (estaLogado()) {
-    modal.querySelector('#btn-logout')?.addEventListener('click', () => {
+    modal.querySelector('#btn-logout')?.addEventListener('click', async () => {
       playSound('click', 'inicial');
       limparDadosQuiz();
-      logout();
+      await logout();
       _fecharModal(modal);
       _refreshHeader();
       mostrarToast('Sessão encerrada.');
@@ -1130,10 +1130,10 @@ function _abrirPerfilModal() {
   });
 
   /* Logout */
-  modal.querySelector('#pm-btn-logout')?.addEventListener('click', () => {
+  modal.querySelector('#pm-btn-logout')?.addEventListener('click', async () => {
     playSound('click', 'inicial');
     limparDadosQuiz();
-    logout();
+    await logout();
     _fecharModal(modal);
     _refreshHeader();
     mostrarToast('Sessão encerrada.');
