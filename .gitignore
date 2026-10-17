@@ -4,6 +4,7 @@ nao_git/
 info/
 envios_R2/
 backup/
-/testes_login/
 /scripts/
+/testes_regras/
 /novas_implementações/
+firestore.rules
