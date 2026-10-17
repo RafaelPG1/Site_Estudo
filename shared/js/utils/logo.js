@@ -9,6 +9,34 @@ export { getAreaFromPath };
 /* ── Caminho da imagem resolvido uma vez, relativo ao logo.js ── */
 const _LOGO_SRC = new URL('../../img/logo.png', import.meta.url).href;
 
+/* ── Favicon: aparece em toda página que carrega o logo.js ──────
+   Usa os arquivos de shared/img/favicon_io, com caminho relativo ao logo.js
+   (funciona em localhost e no GitHub Pages, mesmo dentro de subpasta). */
+const _FAV = (arq) => new URL('../../img/favicon_io/' + arq, import.meta.url).href;
+
+function _injetarFavicons() {
+  if (typeof document === 'undefined' || !document.head) return;
+  if (document.head.querySelector('link[data-nexus-fav]')) return;
+
+  document.head
+    .querySelectorAll('link[rel~="icon"], link[rel="apple-touch-icon"], link[rel="manifest"]')
+    .forEach((l) => l.remove());
+
+  [
+    { rel: 'icon',             href: _FAV('favicon.ico'), sizes: 'any' },
+    { rel: 'icon',             href: _FAV('favicon-32x32.png'), type: 'image/png', sizes: '32x32' },
+    { rel: 'icon',             href: _FAV('favicon-16x16.png'), type: 'image/png', sizes: '16x16' },
+    { rel: 'apple-touch-icon', href: _FAV('apple-touch-icon.png'), sizes: '180x180' },
+    { rel: 'manifest',         href: _FAV('site.webmanifest') },
+  ].forEach((attrs) => {
+    const link = document.createElement('link');
+    Object.entries(attrs).forEach(([k, v]) => link.setAttribute(k, v));
+    link.setAttribute('data-nexus-fav', '');
+    document.head.appendChild(link);
+  });
+}
+_injetarFavicons();
+
 /* ── Raiz do projeto calculada a partir do logo.js ─────────────
    logo.js sempre está em: <raiz>/shared/js/utils/logo.js
    Então a raiz é tudo antes de '/shared/'.
