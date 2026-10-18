@@ -27,6 +27,13 @@
  *   provedor  = 'auto' | 'groq' | 'gemini' | 'openrouter' (vem do NexusModelPicker)
  * ← { resposta: string, fonte: string, modelo: string }
  *
+ * ── AUTENTICAÇÃO (Etapa 1 do plano de segurança 2) ───────────
+ * A requisição leva "Authorization: Bearer <ID token do Firebase>", obtido por
+ * window.NexusAuthToken() (ponte criada em src/data/firebase-app.js; este arquivo
+ * é script clássico e não importa o SDK). Sem login → aviso "Entre na sua conta"
+ * (sem chamar o Worker). 401 → renova o token e tenta uma vez. 403 "Acesso negado."
+ * → aviso de conta sem acesso. Esses avisos também não entram no histórico.
+ *
  * ── TIMEOUT E AVISOS (Fase 6) ────────────────────────────────
  * A requisição ao Worker é cancelada após TIMEOUT_MS (30 s, cobre
  * também a leitura do corpo). Timeout e HTTP 429 NÃO são respostas
@@ -89,6 +96,9 @@
   // Avisos mostrados ao usuário. NÃO são respostas da IA: não vão ao histórico.
   var MSG_RATE_LIMIT = '⚠️ Muitas perguntas agora 😅 Tente novamente em alguns segundos.';
   var MSG_TIMEOUT    = '⏱️ A IA demorou demais para responder. Tente novamente.';
+  // Etapa 1 (segurança 2): a IA exige conta logada. Também NÃO são respostas da IA.
+  var MSG_SEM_LOGIN  = '🔒 Entre na sua conta para usar a IA.';
+  var MSG_SEM_ACESSO = '🔒 Esta conta não tem acesso à IA no momento.';
 
   /* ══════════════════════════════════════════════════════════
      ESTADO INTERNO
@@ -182,6 +192,18 @@
      COMUNICAÇÃO COM O WORKER REMOTO
   ══════════════════════════════════════════════════════════ */
 
+  /* ID token do Firebase do usuário logado, pela ponte window.NexusAuthToken (src/data/firebase-app.js).
+     null = sem login (ou o Firebase ainda não carregou). */
+  async function _obterToken(forcar) {
+    try {
+      var f = window.NexusAuthToken;
+      if (typeof f !== 'function') return null;
+      return (await f(!!forcar)) || null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   async function _chamarWorker(payload) {
     var controller = new AbortController();
     _controllerAtual = controller;
@@ -195,14 +217,29 @@
     }, TIMEOUT_MS);
 
     try {
-      var res;
-      try {
-        res = await fetch(WORKER_URL, {
+      var token = await _obterToken(false);
+      if (!token) {
+        _controllerAtual = null;
+        return { semLogin: true };
+      }
+
+      function _postar(tk) {
+        return fetch(WORKER_URL, {
           method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tk },
           body:    JSON.stringify(payload),
           signal:  controller.signal,
         });
+      }
+
+      var res;
+      try {
+        res = await _postar(token);
+        // 401: o token pode ter expirado entre a leitura e o envio — pede um novo e tenta UMA vez.
+        if (res.status === 401) {
+          var novo = await _obterToken(true);
+          if (novo) res = await _postar(novo);
+        }
       } catch (err) {
         _controllerAtual = null;
         if (err && err.name === 'AbortError') {
@@ -220,6 +257,17 @@
 
       if (res.status === 429) {
         return { limite: true };
+      }
+
+      if (res.status === 401) {
+        return { semLogin: true };
+      }
+
+      if (res.status === 403) {
+        // 403 também é "origem não permitida"; só "Acesso negado." vira aviso de conta sem acesso.
+        var j403 = null;
+        try { j403 = await res.clone().json(); } catch (e) { /* corpo não-JSON */ }
+        if (j403 && j403.erro === 'Acesso negado.') return { semAcesso: true };
       }
 
       if (!res.ok) {
@@ -324,11 +372,14 @@
       return { cancelado: true };
     }
 
-    // Avisos (429 / timeout): exibidos ao usuário, mas NÃO são resposta da
-    // IA — não entram no histórico de sessão (_registrarTurno não é chamado).
-    if (resultado && (resultado.limite || resultado.timeout)) {
+    // Avisos (429 / timeout / sem login / sem acesso): exibidos ao usuário, mas NÃO são
+    // resposta da IA — não entram no histórico de sessão (_registrarTurno não é chamado).
+    if (resultado && (resultado.limite || resultado.timeout || resultado.semLogin || resultado.semAcesso)) {
       return {
-        texto:          resultado.limite ? MSG_RATE_LIMIT : MSG_TIMEOUT,
+        texto:          resultado.limite    ? MSG_RATE_LIMIT
+                      : resultado.semLogin  ? MSG_SEM_LOGIN
+                      : resultado.semAcesso ? MSG_SEM_ACESSO
+                      : MSG_TIMEOUT,
         fonte:          null,
         modelo:         null,
         turnosAoEnviar: turnosAoEnviar,
@@ -379,7 +430,7 @@
    *
    * Regras:
    *   - Ignora mensagens role:'system' (banner de boas-vindas etc.)
-   *   - Ignora pares cuja resposta seja o aviso de 429 ou de timeout
+   *   - Ignora pares cuja resposta seja o aviso de 429, timeout, sem login ou sem acesso
    *   - Converte role:'bot' → role:'assistant' (contrato do worker remoto)
    *   - Aplica o mesmo limite MAX_TURNS que _registrarTurno()
    *   - Atualiza _ultimaAtividade para evitar expiração imediata
@@ -394,7 +445,8 @@
       if (mensagens[i].role === 'user' && mensagens[i + 1].role === 'bot') {
         // Avisos de 429/timeout salvos no histórico visual não são resposta da IA.
         var textoBot = (mensagens[i + 1].text || '').trim();
-        if (textoBot === MSG_RATE_LIMIT || textoBot === MSG_TIMEOUT) { i++; continue; }
+        if (textoBot === MSG_RATE_LIMIT || textoBot === MSG_TIMEOUT ||
+            textoBot === MSG_SEM_LOGIN  || textoBot === MSG_SEM_ACESSO) { i++; continue; }
         pares.push(
           { role: 'user',      content: mensagens[i].text     || '' },
           { role: 'assistant', content: mensagens[i + 1].text || '' }

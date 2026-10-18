@@ -63,6 +63,19 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 const _auth = getAuth(app);
 export function getAuthInstance() { return _auth; }
 
+/* Ponte para scripts CLÁSSICOS (não-módulo), como shared/js/ia/core/worker.js, que não podem importar o
+   SDK: devolve o ID token do usuário logado (ou null). `forcar` pede um token novo ao Firebase.
+   O token só é enviado ao Worker da IA, que o verifica; este arquivo não decide nada. */
+globalThis.NexusAuthToken = async function (forcar = false) {
+  try {
+    if (typeof _auth.authStateReady === 'function') {
+      await Promise.race([_auth.authStateReady(), new Promise((r) => setTimeout(r, 3000))]);
+    }
+    const u = _auth.currentUser;
+    return u ? await u.getIdToken(!!forcar) : null;
+  } catch (_) { return null; }
+};
+
 /* Espera o Auth terminar de restaurar a sessão salva (leitura local, não depende de rede).
    Resolve com o usuário do Firebase ou null; se demorar mais que `timeoutMs`, resolve com
    undefined (= "não deu para saber": o chamador mantém o que já tinha). */
