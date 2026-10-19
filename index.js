@@ -581,6 +581,16 @@ async function _finalizarLogin(usuario, modal) {
    Cancelar encerra a sessão (a conta continua com a senha provisória).
 ═══════════════════════════════════════════════ */
 
+/* Ícones do botão de olho (mesmo desenho do campo de senha do login). */
+const _SVG_OLHO = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+const _SVG_OLHO_RISCADO = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+  <line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+
 function _abrirModalTrocaSenha() {
   _fecharTodosModais();
   playSound('openModal', 'inicial');
@@ -600,21 +610,29 @@ function _abrirModalTrocaSenha() {
         <div class="modal__section login-section">
           <div class="config-row config-row--col login-field">
             <label for="troca-nova" class="login-field__label">Nova senha</label>
-            <input type="password" id="troca-nova" class="config-input login-field__input"
-              maxlength="${SENHA_MAX}" autocomplete="new-password" />
+            <div class="pin-wrap">
+              <input type="password" id="troca-nova" class="config-input login-field__input"
+                maxlength="${SENHA_MAX}" autocomplete="new-password" />
+              <button type="button" class="pin-eye" data-olho="troca-nova" aria-label="Mostrar senha"
+                      aria-pressed="false" tabindex="-1">${_SVG_OLHO}</button>
+            </div>
           </div>
           <div class="config-row config-row--col login-field">
             <label for="troca-confirma" class="login-field__label">Repita a nova senha</label>
-            <input type="password" id="troca-confirma" class="config-input login-field__input"
-              maxlength="${SENHA_MAX}" autocomplete="new-password" />
+            <div class="pin-wrap">
+              <input type="password" id="troca-confirma" class="config-input login-field__input"
+                maxlength="${SENHA_MAX}" autocomplete="new-password" />
+              <button type="button" class="pin-eye" data-olho="troca-confirma" aria-label="Mostrar senha"
+                      aria-pressed="false" tabindex="-1">${_SVG_OLHO}</button>
+            </div>
           </div>
           <p id="troca-erro" class="login-erro" style="display:none"></p>
         </div>
       </div>
 
       <div class="modal__footer login-footer">
-        <button class="modal-btn modal-btn--primary login-submit" id="btn-troca-salvar">Salvar e entrar</button>
         <button class="modal-btn" id="btn-troca-cancelar" type="button">Cancelar</button>
+        <button class="modal-btn modal-btn--primary login-submit" id="btn-troca-salvar">Salvar e entrar</button>
       </div>
     </div>`;
 
@@ -626,6 +644,20 @@ function _abrirModalTrocaSenha() {
   const erroEl   = modal.querySelector('#troca-erro');
   const btnSalvar = modal.querySelector('#btn-troca-salvar');
   const mostrarErro = (t) => { erroEl.textContent = t; erroEl.style.display = 'block'; };
+
+  /* Botão de olho (mostrar/ocultar) dos dois campos de senha. Só troca o type do input: não envia o
+     formulário (type="button"), não valida nem altera nada, e a senha volta oculta sempre que o modal abre. */
+  modal.querySelectorAll('.pin-eye[data-olho]').forEach((btn) => {
+    const campo = modal.querySelector('#' + btn.dataset.olho);
+    btn.addEventListener('click', () => {
+      const mostrar = campo.type === 'password';
+      campo.type = mostrar ? 'text' : 'password';
+      btn.innerHTML = mostrar ? _SVG_OLHO_RISCADO : _SVG_OLHO;
+      btn.setAttribute('aria-pressed', String(mostrar));
+      btn.setAttribute('aria-label', mostrar ? 'Ocultar senha' : 'Mostrar senha');
+      campo.focus();
+    });
+  });
 
   nova.addEventListener('keydown', e => { if (e.key === 'Enter') confirma.focus(); });
   confirma.addEventListener('keydown', e => { if (e.key === 'Enter') _salvar(); });
