@@ -1,5 +1,5 @@
 /* ============================================================
-   NEXUS STUDY — content/game/associacao/associacao_data.js
+   NEXUS STUDY — games/jogos/associacao/associacao_data.js
 
    ESTRUTURA:
    {

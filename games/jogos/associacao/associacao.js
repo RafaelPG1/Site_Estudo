@@ -5,7 +5,8 @@
 
 import { ASSOCIACAO_DATA }                            from './associacao_data.js';
 import { saveRound, loadRound, clearRound, clearAll, salvarResultadoAssoc } from './storage_a.js';
-import { getDisciplinasDeSemestre, getUsuario }       from '../../../src/global.js';
+import { getDisciplinasDeSemestre }                   from '../../../src/global.js';
+import { resolverUid, VISITANTE }                      from '../../template/auth-gate.js';
 import { aplicarCoresDisciplina }                     from '../../../shared/js/themes/theme.js';
 import { DISC_CORES }                                 from '../../../shared/js/themes/cores.js';
 
@@ -51,6 +52,17 @@ import { DISC_CORES }                                 from '../../../shared/js/t
   /* ══════════════════════════════════════════════════════════════
      HELPERS
   ══════════════════════════════════════════════════════════════ */
+
+  /* Grava o histórico da rodada com o uid da sessão verificada.
+     Visitante (sem sessão) não grava, como já era. Nunca lança erro para o jogo. */
+  function _salvarHistorico(resultados) {
+    resolverUid()
+      .then(function (uid) {
+        if (!uid || uid === VISITANTE) return;
+        return salvarResultadoAssoc(uid, estado.discId, estado.semestre, resultados);
+      })
+      .catch(function (err) { console.warn('[associacao] Falha ao salvar histórico:', err && err.message); });
+  }
 
   function shuffle(arr) {
     const a = arr.slice();
@@ -264,16 +276,14 @@ import { DISC_CORES }                                 from '../../../shared/js/t
     if (estado.totalPontos < 0) estado.totalPontos = 0;
 
     /* Salva histórico — tempo esgotado = tudo errado */
-    const usuario = getUsuario();
-    if (usuario) {
-      const resultados = zones.map(function (zone) {
-        return {
-          id:      zone.dataset.questionId,
-          acertou: false,
-        };
-      });
-      salvarResultadoAssoc(usuario.uid, estado.discId, estado.semestre, resultados);
-    }
+    /* Identidade = sessão verificada do Firebase (auth-gate). Visitante não grava histórico (como antes). */
+    const resultados = zones.map(function (zone) {
+      return {
+        id:      zone.dataset.questionId,
+        acertou: false,
+      };
+    });
+    _salvarHistorico(resultados);
 
     showToast('⏰ Tempo esgotado! Veja as respostas corretas', 'erro');
 
@@ -782,16 +792,13 @@ import { DISC_CORES }                                 from '../../../shared/js/t
     setVerifyState(isLast ? 'finish' : 'next');
 
     /* Salva histórico */
-    const usuario = getUsuario();
-    if (usuario) {
-      const resultados = zones.map(function (zone) {
-        return {
-          id:      zone.dataset.questionId,
-          acertou: zone.classList.contains('correct'),
-        };
-      });
-      salvarResultadoAssoc(usuario.uid, estado.discId, estado.semestre, resultados);
-    }
+    const resultados = zones.map(function (zone) {
+      return {
+        id:      zone.dataset.questionId,
+        acertou: zone.classList.contains('correct'),
+      };
+    });
+    _salvarHistorico(resultados);
   }
 
   function applyVerifyFeedback() {

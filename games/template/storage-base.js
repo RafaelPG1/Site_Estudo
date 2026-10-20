@@ -33,13 +33,27 @@
    • storage.js (SRS do flashcard) e storage_vf.js / storage_sm.js
      permanecem como wrappers específicos que chamam esta base,
      adicionando apenas a lógica de domínio (ex: acumular tentativas).
+
+   v2.0 — INTEGRAÇÃO COM AUTH + REGRAS DO FIRESTORE
+   ────────────────────────────────────────────────
+   • O Firestore só é tocado quando há sessão Firebase VÁLIDA e o uid
+     pedido é o do usuário logado (template/auth-gate.js). Visitante,
+     sessão inválida ou uid diferente → só localStorage (sem erro).
+   • SDK e getDb agora vêm de src/data/firebase-app.js (fonte única
+     da URL do SDK e do init), em vez de import dinâmico do CDN.
+   • "Pendente de sincronização": se a gravação no Firestore não pôde
+     ser feita (sem rede/sessão), o patch fica guardado em
+     <chave>__pend e é enviado na próxima carga/gravação autenticada.
+     Antes, a próxima carga sobrescrevia o cache local com o remoto e
+     o progresso feito offline sumia.
+   • salvarMerge() agora devolve true/false (true = chegou ao Firestore).
 ═══════════════════════════════════════════════════════════════ */
 
-const _root = new URL('../../', import.meta.url).href;
-const { getDb } = await import(`${_root}src/firebase.js`);
-const { doc, getDoc, setDoc, deleteDoc } = await import(
-  'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js'
-);
+import { getDb, doc, getDoc, setDoc, deleteDoc } from '../../src/data/firebase-app.js';
+import { sessaoAutenticada } from './auth-gate.js';
+
+
+
 /* ══════════════════════════════════════════════════════════
    HELPERS GENÉRICOS DE localStorage
    ══════════════════════════════════════════════════════════ */
@@ -76,6 +90,11 @@ export function escreverLocal(chave, dados) {
    FÁBRICA DE STORAGE
    ══════════════════════════════════════════════════════════ */
 
+/* Garante um objeto simples e serializável (Firestore rejeita `undefined`). */
+const _limpo = (obj) => JSON.parse(JSON.stringify(obj ?? {}));
+
+const _ehVisitante = (usuario) => !usuario || usuario === 'visitante';
+
 /**
  * Cria um objeto de storage para uma coleção específica no Firestore.
  *
@@ -94,37 +113,65 @@ export function criarStorage({ colecaoFirestore, prefixoLocal, nomeSistema = 'st
   const _chaveLocal = (usuario, discId, sem) =>
     `${prefixoLocal}${separador}${usuario}${separador}${discId}${separador}${sem}`;
 
+  /* Patch ainda não enviado ao Firestore (ver "Pendente de sincronização") */
+  const _chavePend = (usuario, discId, sem) => `${_chaveLocal(usuario, discId, sem)}__pend`;
+
   /* Referência ao documento Firestore: /usuarios/{uid}/{colecao}/{sem}_{discId} */
   const _docRef = (usuario, discId, sem) =>
     doc(getDb(), 'usuarios', usuario, colecaoFirestore, `${sem}${separador}${discId}`);
 
+  /* Envia o patch pendente (se houver). true = nada pendente / enviado. */
+  async function _enviarPendente(usuario, discId, sem) {
+    const chavePend = _chavePend(usuario, discId, sem);
+    const pend = lerLocal(chavePend);
+    if (Object.keys(pend).length === 0) return true;
+    try {
+      await setDoc(_docRef(usuario, discId, sem), pend, { merge: true });
+      localStorage.removeItem(chavePend);
+      console.log(`${tag} Pendências enviadas ao Firestore: ${usuario}/${sem}${separador}${discId}`);
+      return true;
+    } catch (err) {
+      console.warn(`${tag} Não foi possível enviar pendências (ficam guardadas):`, err.message);
+      return false;
+    }
+  }
+
   /* ── CARREGAR ── */
   async function carregar(usuario, discId, sem) {
-    if (!usuario || usuario === 'visitante') {
-      return lerLocal(_chaveLocal(usuario, discId, sem));
+    const chave = _chaveLocal(usuario, discId, sem);
+
+    if (_ehVisitante(usuario) || !(await sessaoAutenticada(usuario))) {
+      return lerLocal(chave);
     }
 
     try {
-      const snap = await getDoc(_docRef(usuario, discId, sem));
+      const enviou = await _enviarPendente(usuario, discId, sem);
+      const pend   = enviou ? {} : lerLocal(_chavePend(usuario, discId, sem));
+      const snap   = await getDoc(_docRef(usuario, discId, sem));
 
       if (snap.exists()) {
-        const dados = snap.data();
-        // Atualiza o cache local com os dados do Firestore
-        escreverLocal(_chaveLocal(usuario, discId, sem), dados);
+        // Remoto + (o que ainda não conseguiu subir): nada feito offline se perde.
+        const dados = { ...snap.data(), ...pend };
+        escreverLocal(chave, dados);
         console.log(`${tag} Carregado do Firestore: ${usuario}/${sem}${separador}${discId}`);
         return dados;
       }
 
+      if (Object.keys(pend).length > 0) {
+        // Documento ainda não existe, mas há progresso pendente: mantém o local.
+        return lerLocal(chave);
+      }
+
       // Documento não existe no Firestore → zera o cache local para
       // ficar em sincronia (evita "ressuscitar" dados obsoletos locais)
-      localStorage.removeItem(_chaveLocal(usuario, discId, sem));
+      localStorage.removeItem(chave);
       console.log(`${tag} Firestore vazio → cache local zerado: ${usuario}/${sem}${separador}${discId}`);
       return {};
 
     } catch (err) {
-      // Falha de rede → usa localStorage como fallback
+      // Falha de rede/permissão → usa localStorage como fallback
       console.warn(`${tag} Firestore indisponível, usando localStorage:`, err.message);
-      return lerLocal(_chaveLocal(usuario, discId, sem));
+      return lerLocal(chave);
     }
   }
 
@@ -134,27 +181,39 @@ export function criarStorage({ colecaoFirestore, prefixoLocal, nomeSistema = 'st
    * O localStorage é sempre atualizado primeiro para garantir que o dado
    * não se perde caso o Firestore esteja indisponível.
    *
-   * @param {string} usuario
-   * @param {string} discId
-   * @param {string} sem
-   * @param {object} patch   — objeto parcial a fazer merge { [id]: { ... } }
+   * @returns {Promise<boolean>} true se o patch chegou ao Firestore
    */
   async function salvarMerge(usuario, discId, sem, patch) {
-    if (!patch || Object.keys(patch).length === 0) return;
+    if (!patch || Object.keys(patch).length === 0) return true;
+    const limpo = _limpo(patch);
 
     const chave = _chaveLocal(usuario, discId, sem);
     const atual = lerLocal(chave);
 
     // Merge local
-    Object.assign(atual, patch);
+    Object.assign(atual, limpo);
     escreverLocal(chave, atual);
 
-    if (!usuario || usuario === 'visitante') return;
+    if (_ehVisitante(usuario)) return false;
+
+    // Acumula no pendente ANTES de tentar: se a aba fechar no meio, nada se perde.
+    const chavePend = _chavePend(usuario, discId, sem);
+    const pend = lerLocal(chavePend);
+    Object.assign(pend, limpo);
+    escreverLocal(chavePend, pend);
+
+    if (!(await sessaoAutenticada(usuario))) {
+      console.warn(`${tag} Sem sessão válida — dado salvo só localmente (será enviado depois).`);
+      return false;
+    }
 
     try {
-      await setDoc(_docRef(usuario, discId, sem), patch, { merge: true });
+      await setDoc(_docRef(usuario, discId, sem), pend, { merge: true });
+      localStorage.removeItem(chavePend);
+      return true;
     } catch (err) {
-      console.warn(`${tag} Erro ao salvar no Firestore (dado salvo localmente):`, err.message);
+      console.warn(`${tag} Erro ao salvar no Firestore (dado salvo localmente e pendente):`, err.message);
+      return false;
     }
   }
 
@@ -165,10 +224,18 @@ export function criarStorage({ colecaoFirestore, prefixoLocal, nomeSistema = 'st
    * o cache local permanece e não "ressuscita" dados obsoletos na próxima carga.
    *
    * Para visitantes: remove apenas o localStorage.
+   * Usuário sem sessão válida: não dá para apagar o remoto → nada é apagado.
    */
   async function limpar(usuario, discId, sem) {
-    if (!usuario || usuario === 'visitante') {
-      localStorage.removeItem(_chaveLocal(usuario, discId, sem));
+    const chave = _chaveLocal(usuario, discId, sem);
+
+    if (_ehVisitante(usuario)) {
+      localStorage.removeItem(chave);
+      return;
+    }
+
+    if (!(await sessaoAutenticada(usuario))) {
+      console.warn(`${tag} Sem sessão válida — nada foi apagado (nem local, nem Firestore).`);
       return;
     }
 
@@ -180,7 +247,8 @@ export function criarStorage({ colecaoFirestore, prefixoLocal, nomeSistema = 'st
       return; // aborta: não apaga o local se o Firestore falhou
     }
 
-    localStorage.removeItem(_chaveLocal(usuario, discId, sem));
+    localStorage.removeItem(chave);
+    localStorage.removeItem(_chavePend(usuario, discId, sem));
   }
 
   return { carregar, salvarMerge, limpar };

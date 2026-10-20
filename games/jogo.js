@@ -18,9 +18,10 @@ import {
   audio,
   installAudioRecovery,
   playSound,
-  mountMusicBtn,
-  getMusicMode,
 } from '../shared/js/audio/audio-api.js';
+/* v2: mountMusicBtn/getMusicMode foram removidos de audio-api.js (o botão de
+   música não existe mais no site) e o import quebrava o módulo inteiro — a
+   página de jogos nem abria. O botão de som continua sendo montado por Sound.init(). */
 
 // ── Assistente Nexus ──────────────────────────────────────────
 function _loadScript(src) {
@@ -695,7 +696,6 @@ function _injetarBtnConfigJogos() {
 
 function init() {
   Sound.init();
-  mountMusicBtn();
   installAudioRecovery({ Sound, audio });
 
   injetarLogo({

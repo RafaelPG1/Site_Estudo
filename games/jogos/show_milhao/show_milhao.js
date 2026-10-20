@@ -17,7 +17,8 @@ import { Shell, Timer, shuffle }               from '../../template/game-shell.j
 import { calcularPeso, sorteiarPonderado }     from '../../template/deck.js';
 import { DISC_CORES }                          from '../../../shared/js/themes/cores.js';
 import { aplicarCoresDisciplina }             from '../../../shared/js/themes/theme.js';
-import { getUsuario, getDisciplinasDeSemestre } from '../../../src/global.js';
+import { getDisciplinasDeSemestre }             from '../../../src/global.js';
+import { resolverUid }                          from '../../template/auth-gate.js';
 import { SessionNav }                          from '../../template/session-nav.js';
 
 import {
@@ -749,7 +750,9 @@ async function init() {
   }
 
   // ── Import dinâmico de dados ──
-  const ano = sem ? sem.split('.')[0] : null;
+  // Ano validado (4 dígitos) antes de entrar no caminho do import.
+  const _anoSem = sem ? sem.split('.')[0] : null;
+  const ano = /^\d{4}$/.test(_anoSem ?? '') ? _anoSem : null;
   let banco   = [];
   let semDisp = null;
 
@@ -777,8 +780,8 @@ async function init() {
   _registrarContextoIA(banco, disc, disciplina);
 
   // ── Usuário e SessionNav ──
-  const usuarioObj = getUsuario();
-  estado.usuario   = usuarioObj?.uid ?? 'visitante';
+  // Identidade = sessão verificada do Firebase (auth-gate), nunca a URL.
+  estado.usuario   = await resolverUid();
   estado.discId    = disc;
   estado.sem       = sem;
 

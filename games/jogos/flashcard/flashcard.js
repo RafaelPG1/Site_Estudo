@@ -97,13 +97,30 @@
 /* ── 1. IMPORTS & CONSTANTES ──────────────────────────────────── */
 
 import { SessionNav }                           from '../../template/session-nav.js';
-import { getCardsData }                         from '../../../content/game/flashcards/cards_data.js';
 import { carregarPerfisSRS, salvarPerfilSRS }   from './storage.js';
 import { Shell, lerParams }                     from '../../template/game-shell.js';
-import { getUsuario, getDisciplinasDeSemestre } from '../../../src/global.js';
+import { getDisciplinasDeSemestre }             from '../../../src/global.js';
+import { resolverUid }                          from '../../template/auth-gate.js';
 import { DISC_CORES }                           from '../../../shared/js/themes/cores.js';
 import { aplicarCoresDisciplina }               from '../../../shared/js/themes/theme.js';
 import { criarUI }                              from './flashcard.ui.js';
+
+/* ── Banco de cards ───────────────────────────────────────────────
+   Os cards ficam em content/games/flashcards/{ano}/cards_data.js (a
+   pasta antiga content/game/… não existe mais, o que derrubava este
+   módulo inteiro no import estático). O ano vem do ?sem= da página
+   (ex.: 2026.2 → 2026) e é validado (4 dígitos) antes de entrar no
+   caminho. Se o arquivo não existir, o jogo abre com "sem cards" em
+   vez de quebrar. */
+let getCardsData = () => ({});
+try {
+  const _anoCards = (lerParams().sem || '').split('.')[0];
+  if (/^\d{4}$/.test(_anoCards)) {
+    ({ getCardsData } = await import(`../../../content/games/flashcards/${_anoCards}/cards_data.js`));
+  }
+} catch (err) {
+  console.warn('[flashcard] Banco de cards não encontrado para este ano:', err?.message);
+}
 
 /*
  * ANTI-FLASH SÍNCRONO
@@ -157,11 +174,11 @@ function _resolverUid(usuario) {
   return usuario;
 }
 
-// [M2] Centraliza a resolução de UID a partir da URL + fallback getUsuario().
-function _resolverUidFromUrl() {
-  return new URLSearchParams(location.search).get('user')
-      ?? getUsuario()?.uid
-      ?? 'visitante';
+// [M2] Centraliza a resolução de UID. A identidade vem SEMPRE da sessão
+// verificada do Firebase (auth-gate) — nunca de ?user= na URL, que
+// qualquer um poderia editar. Sem sessão válida → 'visitante'.
+async function _resolverUidFromUrl() {
+  return resolverUid();
 }
 
 
@@ -1310,7 +1327,7 @@ async function _introAtualizarBotaoRevisar(disc, sem, cardsData) {
     const todos = cardsData[disc] ?? [];
     if (todos.length === 0) return;
 
-    const uid = _resolverUidFromUrl();
+    const uid = await _resolverUidFromUrl();
 
     // Exibição imediata usando cache local (_srCache) — sem aguardar Firestore.
     const _atualizarBotaoComPerfis = (perfis) => {
@@ -1496,10 +1513,10 @@ function _abrirModalRevisao(comErro, perfis, disc, sem) {
   // não dispare dois initCards() concorrentes.
   // [FIX-P2] O lock _initEmAndamento em initCards() também protege este caso,
   // mas { once: true } mantém como camada de defesa adicional.
-  novoStart.addEventListener('click', () => {
+  novoStart.addEventListener('click', async () => {
     fechar();
     FcAntiFlash.mostrarTela('game');
-    const usuario = _resolverUidFromUrl();
+    const usuario = await _resolverUidFromUrl();
     initCards(disc, document.getElementById('card-root'), usuario, { modoRevisao: true, cardsRevisao: ordenados });
   }, { once: true });
 
@@ -1566,7 +1583,7 @@ async function _autoInit() {
   const { disc, sem } = lerParams();
   if (!disc) return;
 
-  const uid = _resolverUidFromUrl();
+  const uid = await _resolverUidFromUrl();
 
   _navInicializar(uid, disc, sem);
 

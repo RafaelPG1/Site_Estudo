@@ -28,7 +28,7 @@
 import { Shell, lerParams, shuffle }                    from '../../template/game-shell.js';
 import { SessionNav }                                   from '../../template/session-nav.js';
 import { carregarHistoricoCF, salvarResultadoCF }       from './storage_cf.js';
-import { getUsuario }                                   from '../../../src/global.js';
+import { resolverUid }                                  from '../../template/auth-gate.js';
 import * as UI                                          from './completar_frase.ui.js';
 
 /* ══════════════════════════════════════════════════════════
@@ -564,19 +564,21 @@ async function _init() {
   Shell.init({ icon: '✏️', nome: 'Complete a Frase' });
 
   /* ── 2. Usuário ─────────────────────────────────────────── */
-  const usuarioObj  = getUsuario();
-  Estado.usuario    = usuarioObj?.uid ?? 'visitante';
+  // Identidade = sessão verificada do Firebase (auth-gate), nunca a URL.
+  Estado.usuario    = await resolverUid();
   Estado.discId     = URL_DISC;
   Estado.sem        = URL_SEM;
 
   /* ── 3. Carrega banco de questões via import() dinâmico ─── */
-  const ano = URL_SEM ? URL_SEM.split('.')[0] : null;
+  // Ano validado (4 dígitos) antes de entrar no caminho do import.
+  const _anoSem = URL_SEM ? URL_SEM.split('.')[0] : null;
+  const ano = /^\d{4}$/.test(_anoSem ?? '') ? _anoSem : null;
   let semDisp = null;
 
   if (ano) {
     try {
       const modulo = await import(
-        `../../../content/game/completar_frase/${ano}/completar_frase_data.js`
+        `../../../content/games/completar_frase/${ano}/completar_frase_data.js`
       );
       semDisp       = modulo.COMPLETAR_FRASE_DATA?.[URL_SEM] ?? null;
       Estado.banco  = semDisp?.[URL_DISC] ?? [];

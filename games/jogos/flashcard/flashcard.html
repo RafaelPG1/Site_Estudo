@@ -92,7 +92,15 @@
         var params = new URLSearchParams(location.search);
         var disc   = params.get('disc');
         var sem    = params.get('sem') || '';
-        var uid    = params.get('user') || 'visitante';
+        // O uid NÃO vem mais de ?user= na URL: usa o usuário em cache do site
+        // (nexus_usuario). É só uma dica para evitar "flash" de tela; o uid
+        // oficial é resolvido pelo módulo (flashcard.js) a partir da sessão
+        // verificada do Firebase. Se divergir, apenas não há anti-flash.
+        var uid = 'visitante';
+        try {
+          var cache = JSON.parse(localStorage.getItem('nexus_usuario') || 'null');
+          if (cache && typeof cache.uid === 'string' && cache.uid) uid = cache.uid;
+        } catch (_) {}
         if (!disc) return;
 
         // Chave gerada pelo SessionNav: nexus_vf_sessao_{uid}_{discId}_{sem}

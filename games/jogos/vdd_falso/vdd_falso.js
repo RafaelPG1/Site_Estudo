@@ -24,7 +24,8 @@ import { Shell, shuffle }                                  from '../../template/
 import { calcularPeso, sorteiarPonderado }                 from '../../template/deck.js';
 import { aplicarCoresDisciplina }                          from '../../../shared/js/themes/theme.js';
 import { carregarHistoricoVF, salvarResultadoVF }          from './storage_vf.js';
-import { getUsuario, getDisciplinasDeSemestre }            from '../../../src/global.js';
+import { getDisciplinasDeSemestre }                        from '../../../src/global.js';
+import { resolverUid }                                     from '../../template/auth-gate.js';
 import { SessionNav }                                      from '../../template/session-nav.js';
 
 import {
@@ -1073,13 +1074,15 @@ async function init() {
 
   _preencherHeaderDisciplina(disc, sem, disciplina);
 
-  const ano = sem ? sem.split('.')[0] : null;
+  // Ano validado (4 dígitos) antes de entrar no caminho do import.
+  const _anoSem = sem ? sem.split('.')[0] : null;
+  const ano = /^\d{4}$/.test(_anoSem ?? '') ? _anoSem : null;
   let banco   = [];
   let semDisp = null;
 
   if (ano) {
     try {
-      const modulo = await import(`../../../content/game/vdd_falso/${ano}/vdd_falso_data.js`);
+      const modulo = await import(`../../../content/games/vdd_falso/${ano}/vdd_falso_data.js`);
       semDisp = modulo.VDD_FALSO_DATA?.[sem] ?? null;
       banco   = semDisp?.[disc] ?? [];
     } catch (err) {
@@ -1096,8 +1099,8 @@ async function init() {
     return;
   }
 
-  const usuarioObj   = getUsuario();
-  estado.usuario     = usuarioObj?.uid ?? 'visitante';
+  // Identidade = sessão verificada do Firebase (auth-gate), nunca a URL.
+  estado.usuario     = await resolverUid();
   estado.discId      = disc;
   estado.sem         = sem;
 

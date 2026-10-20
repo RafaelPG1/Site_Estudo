@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   NEXUS STUDY — games/jogos/show_milhao/storage_sm.js  (v5.0)
+   NEXUS STUDY — games/jogos/show_milhao/storage_sm.js  (v5.1)
 
    Persistência: localStorage (partida em curso) + Firestore (histórico)
 
@@ -22,11 +22,17 @@
      sm_pontuacoes__{uid}__{discId}__{sem}  ← cache das pontuações
 ═══════════════════════════════════════════════════════════════ */
 
-import { doc, getDoc, setDoc, arrayUnion }
+/* v5.1 — integração com Auth/regras: getDb/doc/getDoc/setDoc vêm de
+   src/data/firebase-app.js (fonte única do SDK). `arrayUnion` não é
+   reexportado ali, então continua importado da MESMA URL do SDK
+   (10.12.0 — o navegador resolve para o mesmo módulo, sem SDK duplicado).
+   Todo acesso ao Firestore passa por sessaoAutenticada() (auth-gate). */
+import { getDb, doc, getDoc, setDoc } from '../../../src/data/firebase-app.js';
+import { arrayUnion }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-import { getDb } from '../../../src/firebase.js';
 
 import { criarStorage, lerLocal, escreverLocal } from '../../template/storage-base.js';
+import { sessaoAutenticada } from '../../template/auth-gate.js';
 
 const VERSAO_SAVE = 4; // Zera saves antigos automaticamente
 
@@ -41,6 +47,8 @@ const _baseHist = criarStorage({
 /* ── Helpers de chave locais ── */
 const _chaveEstado = (uid, discId, sem) => `sm_estado__${uid}__${discId}__${sem}`;
 const _chavePont   = (uid, discId, sem) => `sm_pontuacoes__${uid}__${discId}__${sem}`;
+/* Pontuações ainda não enviadas ao Firestore (lista de entradas) */
+const _chavePontPend = (uid, discId, sem) => `${_chavePont(uid, discId, sem)}__pend`;
 
 const _docRefPont = (uid, discId, sem) =>
   doc(getDb(), 'usuarios', uid, 'sm_pontuacoes', `${discId}__${sem}`);
@@ -98,9 +106,10 @@ export async function salvarResultadoSM(usuario, discId, sem, resultados) {
   for (const { id } of validos) { if (id) patch[id] = atual[id]; }
 
   try {
-    await _baseHist.salvarMerge(usuario, discId, sem, patch);
-    smLog(`✅ Histórico salvo no Firestore! uid="${usuario}" | ${discId}__${sem}`);
-    return true;
+    const enviado = await _baseHist.salvarMerge(usuario, discId, sem, patch);
+    if (enviado) smLog(`✅ Histórico salvo no Firestore! uid="${usuario}" | ${discId}__${sem}`);
+    else         smWarn(`Histórico salvo só localmente (visitante, sem sessão ou sem rede) | ${discId}__${sem}`);
+    return enviado;
   } catch (err) {
     smError('Falha ao salvar no Firestore!', err.message);
     return false;
@@ -223,26 +232,52 @@ export async function salvarPontuacaoSM(usuario, discId, sem, entrada) {
 
   if (!usuario || usuario === 'visitante') return true;
 
+  /* Fila de pendentes: a entrada só sai da fila depois de gravada no Firestore. */
+  const chavePend = _chavePontPend(usuario, discId, sem);
+  const pend = lerLocal(chavePend);
+  const fila = Array.isArray(pend.fila) ? pend.fila : [];
+  fila.push(JSON.parse(JSON.stringify(entrada)));
+  escreverLocal(chavePend, { fila });
+
+  if (!(await sessaoAutenticada(usuario))) {
+    smWarn('Sem sessão válida — pontuação salva só localmente (será enviada depois).');
+    return false;
+  }
+  return _enviarPontuacoesPendentes(usuario, discId, sem);
+}
+
+/* Envia (em ordem) as pontuações pendentes. true = fila vazia ao final. */
+async function _enviarPontuacoesPendentes(usuario, discId, sem) {
+  const chavePend = _chavePontPend(usuario, discId, sem);
+  let fila = lerLocal(chavePend).fila;
+  if (!Array.isArray(fila) || fila.length === 0) return true;
+
   try {
-    const ref    = _docRefPont(usuario, discId, sem);
-    const snap   = await getDoc(ref);
-    const remoto = snap.exists() ? snap.data() : { melhor: null, historico: [] };
+    const ref = _docRefPont(usuario, discId, sem);
+    while (fila.length > 0) {
+      const entrada = fila[0];
+      const snap   = await getDoc(ref);
+      const remoto = snap.exists() ? snap.data() : { melhor: null, historico: [] };
 
-    const novaMelhor = !remoto.melhor || entrada.valorNum > (remoto.melhor.valorNum ?? 0)
-      ? { ...entrada }
-      : remoto.melhor;
+      const novaMelhor = !remoto.melhor || entrada.valorNum > (remoto.melhor.valorNum ?? 0)
+        ? { ...entrada }
+        : remoto.melhor;
 
-    await setDoc(ref, {
-      melhor:        novaMelhor,
-      acumulado:     (remoto.acumulado    ?? 0) + (entrada.valorNum ?? 0),
-      totalPartidas: (remoto.totalPartidas ?? 0) + 1,
-      historico:     arrayUnion(entrada),
-    }, { merge: true });
+      await setDoc(ref, {
+        melhor:        novaMelhor,
+        acumulado:     (remoto.acumulado    ?? 0) + (entrada.valorNum ?? 0),
+        totalPartidas: (remoto.totalPartidas ?? 0) + 1,
+        historico:     arrayUnion(entrada),
+      }, { merge: true });
 
-    smLog(`✅ Pontuação salva no Firestore! uid="${usuario}" | ${discId}__${sem} | ${entrada.valor}`);
+      fila = fila.slice(1);
+      if (fila.length > 0) escreverLocal(chavePend, { fila });
+      else localStorage.removeItem(chavePend);
+      smLog(`✅ Pontuação salva no Firestore! uid="${usuario}" | ${discId}__${sem} | ${entrada.valor}`);
+    }
     return true;
   } catch (err) {
-    smError('Falha ao salvar pontuação no Firestore!', err.message);
+    smError('Falha ao salvar pontuação no Firestore (fica pendente)!', err.message);
     return false;
   }
 }
@@ -251,11 +286,16 @@ export async function carregarPontuacoesSM(usuario, discId, sem) {
   const uid   = usuario ?? '_local';
   const chave = _chavePont(uid, discId, sem);
 
-  if (!usuario || usuario === 'visitante') {
+  if (!usuario || usuario === 'visitante' || !(await sessaoAutenticada(usuario))) {
     return lerLocal(chave) || { melhor: null, historico: [] };
   }
 
   try {
+    /* Pontuações feitas offline/sem sessão sobem antes de ler o remoto;
+       se ainda não der, mantém o local (que já as contém). */
+    const enviou = await _enviarPontuacoesPendentes(usuario, discId, sem);
+    if (!enviou) return lerLocal(chave) || { melhor: null, historico: [] };
+
     const snap = await getDoc(_docRefPont(usuario, discId, sem));
     if (snap.exists()) {
       const dados = snap.data();
