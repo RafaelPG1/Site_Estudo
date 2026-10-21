@@ -1,0 +1,304 @@
+/* classicos/snake/snake.css - --cell = tamanho de uma célula em px (atualizado pelo JS) */
+:root {
+  --moss-a: #15302a; --moss-b: #112821; --wall: #2e5a45; --wall-dark: #1c3a2c;
+  --menu-accent: #7ee08a; --mint: #7ee08a; --lime: #c8f26b; --berry: #ff4f7b; --gold: #ffc857; --ink: #07140f;
+  --cell: 20px; --bw: 320px;
+  /* espera do mouse antes de mostrar qualquer tooltip [data-tip] */
+}
+html, body {
+  touch-action: none; -webkit-touch-callout: none;
+}
+body {
+  font-family: "Avenir Next", "Nunito", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  color: var(--shell-text);
+}
+button { font: inherit; color: inherit; }
+
+/* Cabeçalho */
+.topbar {
+  grid-template-columns: minmax(max-content, 1fr) auto minmax(max-content, 1fr); column-gap: 12px;
+  padding: 0 clamp(8px, 3vw, 24px);   /* [marca + título] no centro exato; as laterais nunca ficam menores que o botão */
+  font-weight: 600;
+}
+.back {
+  grid-column: 1; justify-self: start; flex: none; white-space: nowrap;
+  color: var(--shell-text);
+  touch-action: manipulation;
+}
+.back:hover { border-color: rgba(126,224,138,.6); }
+.back:hover svg { color: var(--mint); }
+.back:focus-visible, .tool:focus-visible, .dir:focus-visible, .btn:focus-visible, .help-btn:focus-visible { outline: 2px solid var(--mint); outline-offset: 3px; }
+/* Botão "Como jogar": só ícone, ao lado do tabuleiro (fora do jogo, do placar e do cabeçalho) */
+.help-btn {
+  flex: none; width: 40px; height: 40px; color: var(--shell-text);
+  transition: border-color .2s, background .2s, box-shadow .25s, transform .1s;
+}
+.help-btn:hover, .help-btn[aria-expanded="true"] { border-color: rgba(126,224,138,.6); box-shadow: 0 0 0 4px rgba(126,224,138,.08); }
+.help-btn:hover svg, .help-btn[aria-expanded="true"] svg { color: var(--mint); }
+/* Palco: tabuleiro + botão "?". Desktop/espaço lateral: "?" ao lado direito do tabuleiro (o tabuleiro fica centralizado).
+   Sem espaço lateral (celular): "?" logo abaixo do tabuleiro, à direita. O JS escolhe em data-help-pos. */
+.stage { position: relative; display: flex; flex-direction: column; }
+.stage .help-btn { position: absolute; top: 0; left: calc(100% + var(--cell) * .4 + 12px); }
+.stage[data-help-pos="below"] .help-btn { position: relative; top: auto; left: auto; align-self: flex-end; margin-top: calc(var(--cell) * .4 + 10px); }
+.game-id { grid-column: 2; justify-self: center; min-width: 0; }
+.game-mark { border-radius: 9px; box-shadow: 0 0 18px rgba(126,224,138,.25); }
+.game-text strong { white-space: nowrap; }
+.game-text span { font-size: 12px; font-weight: 500; color: var(--shell-muted); }
+
+/* Arena: placar em cima, tabuleiro no meio, botões de toque embaixo */
+.arena {
+  flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 10px 8px;
+  background: radial-gradient(rgba(255,255,255,.045) 1px, transparent 1px) 0 0 / 22px 22px, var(--shell-bg);
+}
+.play { flex: 1 1 0; min-height: 0; width: 100%; display: grid; place-items: center; }
+
+/* Placar: PONTOS é um cartão cheio; RECORDE é uma pílula de contorno com troféu */
+.hud { flex: none; display: flex; align-items: stretch; gap: 8px; width: max(var(--bw), 280px); max-width: 100%; }
+.stat { display: flex; align-items: center; border-radius: 14px; line-height: 1; }
+.stat-label { font-size: 11px; font-weight: 700; letter-spacing: .12em; }
+.stat-value { font-weight: 800; font-variant-numeric: tabular-nums; }
+.stat-score { flex: 1; flex-direction: column; align-items: flex-start; justify-content: center; gap: 6px; padding: 8px 14px; background: linear-gradient(160deg, #1d4a36, #14352a); border: 1px solid rgba(126,224,138,.35); }
+.stat-score .stat-label { color: var(--mint); }
+.stat-score .stat-value { font-size: 30px; color: #fff; transform-origin: left center; }
+.stat-best { flex: none; flex-direction: column; justify-content: center; align-items: flex-start; gap: 4px; padding: 8px 12px 8px 34px; position: relative; color: var(--gold); border: 1.5px dashed rgba(255,200,87,.5); }
+.stat-best svg { position: absolute; left: 11px; top: 9px; }
+.stat-best .stat-label { color: rgba(255,200,87,.8); }
+.stat-best .stat-value { font-size: 20px; }
+.hud-actions { flex: none; display: flex; gap: 6px; }
+.tool {
+  display: grid; place-items: center; width: 44px; padding: 0; color: var(--shell-text); cursor: pointer; touch-action: manipulation;
+  background: var(--shell-surface); border: 1px solid var(--shell-line); border-radius: 12px; transition: border-color .2s, background .2s, opacity .2s, transform .1s;
+}
+.tool:hover:not(:disabled) { background: #141722; border-color: rgba(126,224,138,.6); }
+.tool:active:not(:disabled) { transform: scale(.94); }
+.tool:disabled { opacity: .35; cursor: default; }
+.tool svg { width: 20px; height: 20px; }
+.tool .icon-cross { display: none; }
+.tool.is-muted .icon-waves { display: none; }
+.tool.is-muted .icon-cross { display: inline; }
+.bump { animation: bump .32s cubic-bezier(.2,1.6,.4,1); }
+.glow { animation: glow .9s ease-out; }
+@keyframes bump { 0% { transform: scale(1); } 40% { transform: scale(1.35); color: var(--lime); } 100% { transform: scale(1); } }
+@keyframes glow { 0%, 100% { box-shadow: 0 0 0 rgba(255,200,87,0); background: transparent; } 30% { box-shadow: 0 0 22px rgba(255,200,87,.55); background: rgba(255,200,87,.12); } }
+
+/* Tabuleiro: o fundo é xadrez de musgo fixo; a cobra anda só no canvas */
+.board {
+  position: relative; width: calc(var(--cell) * 16); height: calc(var(--cell) * 20); overflow: hidden;
+  border-radius: calc(var(--cell) * .2);
+  background: repeating-conic-gradient(var(--moss-a) 0% 25%, var(--moss-b) 0% 50%) 50% 50% / calc(var(--cell) * 2) calc(var(--cell) * 2);
+  box-shadow: 0 0 0 calc(var(--cell) * .28) var(--wall), 0 0 0 calc(var(--cell) * .4) var(--wall-dark), 0 14px 40px rgba(0,0,0,.6);
+}
+.board::after { content: ""; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 calc(var(--cell) * 1.2) rgba(0,0,0,.45); }
+#game-canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; touch-action: none; }
+.board.shake { animation: shake .38s linear; }
+.board.hit { box-shadow: 0 0 0 calc(var(--cell) * .28) #c4455f, 0 0 0 calc(var(--cell) * .4) #6e1d30, 0 14px 40px rgba(0,0,0,.6); }
+@keyframes shake { 0%, 100% { transform: none; } 20% { transform: translate(-4px, 1px); } 40% { transform: translate(4px, -1px); } 60% { transform: translate(-3px, 0); } 80% { transform: translate(2px, 1px); } }
+
+.toast {
+  position: absolute; top: 6%; left: 50%; margin: 0; padding: 6px 14px; font-size: clamp(13px, calc(var(--cell) * .8), 18px); font-weight: 800;
+  color: var(--ink); background: var(--gold); border-radius: 999px; opacity: 0; transform: translate(-50%, -12px); pointer-events: none; white-space: nowrap;
+}
+.toast.show { animation: toast 1.8s ease both; }
+@keyframes toast { 0% { opacity: 0; transform: translate(-50%, -12px); } 12%, 75% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, -6px); } }
+
+/* Telas sobrepostas */
+.screen {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: calc(var(--cell) * .9);
+  padding: 0 8%; text-align: center; background: rgba(6,18,13,.62); backdrop-filter: blur(2px);
+  opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .25s ease, visibility 0s linear .25s;
+}
+.screen-ready { background: rgba(6,18,13,.8); backdrop-filter: none; }
+.is-ready .screen-ready, .is-paused .screen-paused, .is-over .screen-over, .is-countdown .screen-countdown, .screen-countdown.go { opacity: 1; visibility: visible; transition-delay: 0s; }
+.title { margin: 0; font-size: calc(var(--cell) * 2.4); font-weight: 900; letter-spacing: .02em; color: var(--mint); text-shadow: 0 calc(var(--cell) * .18) 0 #14352a, 0 0 calc(var(--cell) * 1.2) rgba(126,224,138,.4); }
+/* Indicação de início (sem botão): toque/clique ou Space */
+.hint {
+  margin: 0; display: flex; flex-direction: column; align-items: center; gap: calc(var(--cell) * .4);
+  font-size: max(14px, calc(var(--cell) * .85)); font-weight: 800; letter-spacing: .04em; line-height: 1.2; text-transform: uppercase;
+  animation: blink 1.4s ease-in-out infinite;
+}
+.hint-or { font-size: max(11px, calc(var(--cell) * .55)); letter-spacing: .1em; color: var(--shell-muted); }
+@keyframes blink { 50% { opacity: .45; } }
+.over-title { margin: 0; font-size: calc(var(--cell) * 2); font-weight: 900; color: #fff; }
+.screen-over .over-title { color: var(--berry); }
+.final { margin: 0; display: flex; align-items: baseline; gap: 8px; font-size: calc(var(--cell) * 2.6); font-weight: 900; color: var(--lime); font-variant-numeric: tabular-nums; }
+.final small { font-size: max(13px, calc(var(--cell) * .7)); font-weight: 700; color: var(--shell-muted); }
+.badge { margin: 0; padding: 5px 14px; font-size: max(13px, calc(var(--cell) * .75)); font-weight: 800; color: var(--ink); background: var(--gold); border-radius: 999px; animation: badge .6s cubic-bezier(.2,1.6,.4,1) both; }
+.badge[hidden] { display: none; }
+@keyframes badge { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.btn {
+  pointer-events: auto; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-width: calc(var(--cell) * 8); min-height: 46px; padding: 8px 22px; font-size: max(15px, calc(var(--cell) * .8)); font-weight: 800;
+  color: var(--ink); background: var(--mint); border: 0; border-radius: 14px; box-shadow: 0 4px 0 #3f9a55; cursor: pointer; touch-action: manipulation;
+}
+.btn:hover { background: #95eba0; }
+.btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #3f9a55; }
+.btn svg { flex: none; }
+
+/* Tela de pausa: título, aviso do motivo (pílula tracejada dourada, como o RECORDE) e dois botões empilhados */
+.screen-paused .over-title { font-size: calc(var(--cell) * 2); line-height: 1.05; text-wrap: balance; }
+.pause-note {
+  margin: calc(var(--cell) * -.3) 0 0; padding: 5px 13px; font-size: max(11px, calc(var(--cell) * .55)); font-weight: 700; line-height: 1.2;
+  letter-spacing: .06em; text-transform: uppercase; color: var(--gold); border: 1.5px dashed rgba(255,200,87,.5); border-radius: 999px;
+}
+.pause-note[hidden] { display: none; }
+.actions { display: flex; flex-direction: column; gap: 12px; width: max(156px, calc(var(--cell) * 9)); }
+.actions .btn { width: 100%; }
+/* Botão secundário: mesmo "keycap" do primário, porém vazado em musgo com contorno de menta */
+.btn-ghost {
+  color: var(--mint); background: rgba(17,40,33,.92); border: 1.5px solid rgba(126,224,138,.4); box-shadow: 0 4px 0 var(--wall-dark);
+  transition: background .2s, border-color .2s;
+}
+.btn-ghost:hover { background: #17382d; border-color: rgba(126,224,138,.8); }
+.btn-ghost:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--wall-dark); }
+
+/* Contagem 3 · 2 · 1 · GO!: o jogo fica visível por trás, congelado */
+.screen-countdown { background: rgba(6,18,13,.4); backdrop-filter: none; }
+.screen-countdown.go { background: transparent; transition-delay: 0s; }
+.count-num {
+  display: block; font-size: calc(var(--cell) * 6.5); font-weight: 900; line-height: 1; color: var(--mint); font-variant-numeric: tabular-nums;
+  text-shadow: 0 calc(var(--cell) * .24) 0 #14352a, 0 0 calc(var(--cell) * 1.6) rgba(126,224,138,.45);
+}
+.count-num.is-go { font-size: calc(var(--cell) * 4.4); color: var(--lime); letter-spacing: .02em; text-shadow: 0 calc(var(--cell) * .2) 0 #3d5a12, 0 0 calc(var(--cell) * 1.6) rgba(200,242,107,.5); }
+.count-num.tick { animation: count-tick .7s cubic-bezier(.2,.9,.2,1) both; }
+@keyframes count-tick { 0% { transform: scale(1.7); opacity: 0; } 22% { transform: scale(.95); opacity: 1; } 36% { transform: scale(1); } 80% { opacity: 1; } 100% { transform: scale(.9); opacity: .2; } }
+
+/* Botões de toque: só em telas de toque */
+.dpad {
+  display: none; flex: none; grid-template-columns: repeat(3, 54px); grid-template-rows: repeat(2, 50px); gap: 6px;
+  grid-template-areas: ". up ." "left down right";
+}
+.dir { display: grid; place-items: center; padding: 0; color: var(--mint); background: var(--moss-b); border: 1px solid var(--wall); border-radius: 14px; touch-action: manipulation; cursor: pointer; }
+.dir:active { background: var(--wall-dark); transform: scale(.95); }
+.dir svg { width: 24px; height: 24px; }
+.dir-up { grid-area: up; } .dir-left { grid-area: left; } .dir-down { grid-area: down; } .dir-right { grid-area: right; }
+@media (pointer: coarse) { .dpad { display: grid; } }
+
+/* Teclas (tela inicial e painel de ajuda) */
+.cap {
+  --cap: max(26px, calc(var(--cell) * 1.3));
+  display: inline-grid; place-items: center; height: var(--cap); min-width: var(--cap); padding: 0 calc(var(--cap) * .28);
+  font-family: inherit; font-size: calc(var(--cap) * .42); font-weight: 800; line-height: 1; letter-spacing: .02em; text-transform: uppercase;
+  color: var(--ink); background: #e6f7da; border: 1.5px solid #9fd88f; border-radius: 7px; box-shadow: 0 3px 0 #3f9a55;
+}
+.cap-wide { min-width: calc(var(--cap) * 2.6); }
+.cap-icon { display: block; width: calc(var(--cap) * .6); height: calc(var(--cap) * .6); }
+.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+.sr-only { margin: -1px; padding: 0; border: 0; }
+
+/* Ajuda: popover ancorado ao botão "?", fora do tabuleiro (posição calculada pelo JS) */
+.help-popover {
+  --arrow-x: 22px;
+  position: fixed; z-index: 50; width: 268px; max-width: calc(100vw - 16px); padding: 0;
+  display: flex; flex-direction: column; max-height: min(72dvh, 440px); overflow: visible !important;   /* quem rola é só o .help-scroll (o JS pode limitar a altura do popover) */
+  color: var(--shell-text); background: linear-gradient(160deg, #1d4a36, #14352a); border: 1px solid rgba(126,224,138,.4); border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.06); animation: help-in .16s ease-out;
+}
+/* Área rolável: só ela rola (a seta e o botão fechar ficam fora). Sombras de rolagem aparecem só quando há mais conteúdo. */
+.help-scroll {
+  --fade: #19402f;
+  flex: 1 1 auto; min-height: 0; padding: 16px 12px 14px 16px; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y;
+  border-radius: 13px; outline: none; -webkit-user-select: none; user-select: none;
+  scrollbar-width: thin; scrollbar-color: rgba(126,224,138,.45) transparent; scrollbar-gutter: stable;
+  background:
+    linear-gradient(var(--fade) 30%, transparent) top / 100% 22px no-repeat local,
+    linear-gradient(transparent, var(--fade) 70%) bottom / 100% 22px no-repeat local,
+    radial-gradient(farthest-side at 50% 0, rgba(0,0,0,.4), transparent) top / 100% 10px no-repeat scroll,
+    radial-gradient(farthest-side at 50% 100%, rgba(0,0,0,.4), transparent) bottom / 100% 10px no-repeat scroll;
+}
+.help-scroll:focus-visible { box-shadow: inset 0 0 0 2px rgba(126,224,138,.55); }
+.help-scroll::-webkit-scrollbar { width: 8px; }
+.help-scroll::-webkit-scrollbar-track { margin: 12px 0; background: transparent; }
+.help-scroll::-webkit-scrollbar-thumb { background: rgba(126,224,138,.35); border: 2px solid transparent; border-radius: 999px; background-clip: padding-box; }
+.help-scroll::-webkit-scrollbar-thumb:hover { background: rgba(126,224,138,.65); background-clip: padding-box; }
+.help-popover::before { left: calc(var(--arrow-x) - 7px); border: 1px solid rgba(126,224,138,.4); }
+.help-popover[data-placement="below"]::before { top: -8px; background: #1d4a36; }
+.help-popover[data-placement="above"]::before { bottom: -8px; background: #14352a; }
+.help-title { margin: 0 28px 8px 0; font-size: 17px; font-weight: 800; line-height: 1; letter-spacing: .02em; text-transform: uppercase; color: var(--mint); }
+.help-text { margin: 0 0 12px; font-size: 13px; line-height: 1.5; text-wrap: pretty; color: rgba(236,238,245,.9); }
+.help-sub { margin: 0 0 8px; padding-top: 10px; font-size: 11px; font-weight: 700; line-height: 1; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); border-top: 1.5px dashed rgba(126,224,138,.3); }
+.ctl-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.ctl-list li { display: flex; align-items: center; gap: 10px; padding: 5px 8px; background: rgba(6,18,13,.28); border-radius: 10px; }
+.ctl-keys { flex: none; display: inline-flex; align-items: center; gap: 4px; width: 108px; }
+.ctl-or { font-size: 12px; color: var(--shell-muted); }
+.ctl-label { font-size: 13px; font-weight: 600; line-height: 1.2; }
+.help-popover .cap { --cap: 24px; padding: 0 4px; }
+.help-popover .cap-icon { width: 12px; height: 12px; }
+.help-note { margin: 12px 0 0; padding: 8px 10px; font-size: 12px; line-height: 1.4; color: rgba(236,238,245,.72); background: rgba(255,200,87,.07); border: 1.5px dashed rgba(255,200,87,.3); border-radius: 10px; }
+.help-close {
+  position: absolute; z-index: 1; top: 8px; right: 8px; width: 32px; height: 32px; color: var(--shell-text);
+  border-radius: 8px; opacity: .65; touch-action: manipulation;
+}
+.help-close svg { width: 12px; height: 12px; }
+.help-close:hover { opacity: 1; background: rgba(255,255,255,.08); }
+.help-close:focus-visible { opacity: 1; outline: 2px solid var(--mint); outline-offset: -2px; }
+@keyframes help-in { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
+
+/* Tooltips: [data-tip] (+ [data-key] para a tecla de atalho). O JS cria o balão .tip; o atraso vem de --tip-delay.
+   Regras: mouse espera --tip-delay · sair/clicar/pressionar some na hora · teclado (:focus-visible) aparece na hora. */
+[data-tip] { position: relative; }
+.tip {
+  --tip-x: 0px; --tip-arrow: 50%; --tip-from: -5px;
+  position: absolute; z-index: 60; left: 50%; top: calc(100% + 10px); display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px;
+  font-family: inherit; font-size: 12px; font-weight: 700; line-height: 1; letter-spacing: .02em; text-transform: none; white-space: nowrap; pointer-events: none;
+  color: var(--shell-text); background: #0b1812; border: 1px solid rgba(126,224,138,.4); border-radius: 10px;
+  box-shadow: 0 2px 0 #050d09, 0 10px 22px rgba(0,0,0,.5);
+  opacity: 0; visibility: hidden; transform-origin: 50% 0;
+  transform: translate(calc(-50% + var(--tip-x)), var(--tip-from)) scale(.96);
+  transition: none;   /* estado oculto: some imediatamente */
+}
+.tip[data-side="top"] { top: auto; bottom: calc(100% + 10px); --tip-from: 5px; transform-origin: 50% 100%; }
+.tip::before {
+  content: ""; position: absolute; box-sizing: border-box; left: calc(var(--tip-arrow) - 4px); top: -5px; width: 8px; height: 8px;
+  background: #0b1812; border: 1px solid rgba(126,224,138,.4); border-right: 0; border-bottom: 0; transform: rotate(45deg);
+}
+.tip[data-side="top"]::before { top: auto; bottom: -5px; border: 1px solid rgba(126,224,138,.4); border-left: 0; border-top: 0; }
+.tip-key {
+  display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; font-family: inherit; font-size: 10px; font-weight: 800; line-height: 1;
+  text-transform: uppercase; color: var(--ink); background: #e6f7da; border: 1px solid #9fd88f; border-radius: 5px; box-shadow: 0 2px 0 #3f9a55;
+}
+@media (hover: hover) {
+  [data-tip]:hover:not(:disabled):not(:active):not([data-tip-off]) > .tip {
+    opacity: 1; visibility: visible; transform: translate(calc(-50% + var(--tip-x)), 0) scale(1);
+    transition: opacity .16s ease var(--tip-delay), transform .22s cubic-bezier(.2,.9,.3,1) var(--tip-delay), visibility 0s linear var(--tip-delay);
+  }
+}
+[data-tip]:focus-visible:not(:disabled):not(:active):not([data-tip-off]) > .tip {
+  opacity: 1; visibility: visible; transform: translate(calc(-50% + var(--tip-x)), 0) scale(1);
+  transition: opacity .12s ease, transform .16s cubic-bezier(.2,.9,.3,1), visibility 0s;
+}
+
+.noscript { position: fixed; }
+
+/* Cabeçalho no celular: "Catálogo" sempre inteiro e o título no centro */
+@media (max-width: 460px) {
+  .topbar { column-gap: 6px; padding: 0 8px; }
+  .back { min-height: 38px; padding: 0 10px 0 5px; gap: 2px; font-size: 12.5px; }
+  .back svg { width: 16px; height: 16px; }
+  .game-id { gap: 6px; }
+  .game-mark { width: 24px; height: 24px; }
+}
+@media (max-width: 359px) {
+  .game-mark { display: none; }   /* sem a marca, o título fica no centro exato mesmo em telas bem estreitas */
+}
+/* Celular deitado: placar à esquerda, tabuleiro no centro, botões à direita */
+@media (max-height: 500px) and (orientation: landscape) {
+  .topbar { height: 46px; } .game-text span { display: none; }
+  .arena { flex-direction: row; justify-content: center; padding: 8px 12px; }
+  .hud { flex-direction: column; width: 150px; }
+  .play { width: auto; flex: 1 1 0; height: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hint { animation: none; } .screen, .back, .back svg, .help-btn, .help-btn svg, .tool, .btn-ghost { transition: none; } .help-popover { animation: none; }
+  .bump, .glow, .board.shake, .badge, .count-num.tick { animation: none; } .toast.show { animation-duration: .01s; opacity: 1; }
+}
+/* Tooltips com movimento reduzido: nada de deslize/escala/fade, mas a espera de --tip-delay continua valendo (transição de 0s com atraso) */
+@media (prefers-reduced-motion: reduce) {
+  .tip { transform: translate(calc(-50% + var(--tip-x)), 0); }
+  .tip::before { transition: none; }
+}
+@media (hover: hover) and (prefers-reduced-motion: reduce) {
+  [data-tip]:hover:not(:disabled):not(:active):not([data-tip-off]) > .tip { transition: opacity 0s linear var(--tip-delay), visibility 0s linear var(--tip-delay); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-tip]:focus-visible:not(:disabled):not(:active):not([data-tip-off]) > .tip { transition: none; }
+}

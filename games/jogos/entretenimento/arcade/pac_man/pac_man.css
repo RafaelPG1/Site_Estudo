@@ -1,0 +1,265 @@
+/* arcade/pac_man/pac_man.css - --u = largura do palco / 288 (atualizado pelo JS) */
+:root {
+  --menu-accent: #ffd21f; --pac: #ffd21f; --pac-dark: #b38f00; --navy: #03051a; --deep: #060a2e; --wall: #2f56ff; --ice: #bcd0ff; --ghost: #ff3b30;
+  --u: 1.5px;
+}
+html, body {
+  touch-action: none;
+  -webkit-touch-callout: none;
+}
+body {
+  font-family: "Arial Black", "Trebuchet MS", "Helvetica Neue", Arial, sans-serif; font-weight: 900; color: var(--ice);
+}
+
+/* Cabeçalho (padrão da Arcádia) */
+.topbar {
+  gap: 14px;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-weight: 600;
+  color: var(--shell-text);
+}
+.back {
+  touch-action: manipulation;
+}
+.game-id { grid-column: 2; justify-self: center; min-width: 0; } /* título no centro exato da barra */
+.back { grid-column: 1; justify-self: start; white-space: nowrap; } /* botão sempre completo (ícone + "Catálogo"), inclusive no celular */
+.game-mark { border-radius: 9px; box-shadow: 0 0 18px rgba(255,210,31,.25); }
+.game-text strong { white-space: nowrap; }
+.game-text span { font-size: 12px; font-weight: 500; color: var(--shell-muted); }
+
+/* Arena e palco (proporção 288 × 512, igual aos demais jogos) */
+.arena {
+  position: relative; flex: 1 1 0; min-height: 0; display: grid; place-items: center; overflow: hidden;
+  background: radial-gradient(rgba(255,255,255,.045) 1px, transparent 1px) 0 0 / 22px 22px, var(--shell-bg);
+}
+.stage {
+  position: relative; aspect-ratio: 288 / 512; height: min(100%, calc(100vw * 512 / 288)); overflow: hidden;
+  --btn: max(40px, calc(var(--u) * 20)); --btn-top: calc(var(--u) * 8);
+  display: flex; flex-direction: column; gap: calc(var(--u) * 9);
+  padding: max(calc(var(--u) * 38), calc(var(--btn-top) + var(--btn) + var(--u) * 7)) calc(var(--u) * 12) calc(var(--u) * 12);
+  background: radial-gradient(120% 70% at 50% 30%, #0b1250, var(--navy) 70%); border-radius: calc(var(--u) * 12);
+  box-shadow: 0 0 0 calc(var(--u) * 2) #1b2a8a, 0 0 0 calc(var(--u) * 3) rgba(255,255,255,.08),
+              0 calc(var(--u) * 6) calc(var(--u) * 16) rgba(0,0,0,.55);
+}
+
+/* Botões de ícone */
+.icon-button {
+  position: absolute; top: var(--btn-top); right: calc(var(--u) * 8); z-index: 9; display: grid; place-items: center;
+  width: var(--btn); height: var(--btn); padding: 0;
+  background: var(--pac); border: calc(var(--u) * 2) solid var(--navy); border-radius: 50%;
+  box-shadow: 0 calc(var(--u) * 2) 0 var(--pac-dark); opacity: .92; cursor: pointer; touch-action: manipulation;
+}
+#pause-button { display: none; }
+.is-playing #pause-button { display: grid; }
+#pause-button .icon-play, .is-paused #pause-button .icon-pause { display: none; }
+.is-paused #pause-button .icon-play { display: block; }
+#mute-button { right: calc(var(--u) * 12 + var(--btn)); }
+.icon-button .icon-cross { display: none; }
+.icon-button.is-muted .icon-waves { display: none; }
+.icon-button.is-muted .icon-cross { display: inline; }
+.icon-button:hover, .icon-button:focus-visible { opacity: 1; }
+.icon-button:focus-visible, .btn:focus-visible, .pad-btn:focus-visible { outline: calc(var(--u) * 2) solid #4ec0e8; outline-offset: calc(var(--u) * 1); }
+.icon-button svg { width: 62%; height: 62%; }
+
+/* Painel de informações */
+.hud { display: grid; grid-template-columns: 1.3fr .95fr .7fr 1.1fr; gap: calc(var(--u) * 5); }
+.stat {
+  display: flex; flex-direction: column; justify-content: center; gap: calc(var(--u) * 3); min-width: 0;
+  min-height: calc(var(--u) * 36); padding: calc(var(--u) * 5) calc(var(--u) * 6);
+  background: rgba(0,0,0,.4); border-radius: calc(var(--u) * 4); box-shadow: inset 0 0 0 calc(var(--u) * 1.5) rgba(47,86,255,.55);
+}
+.stat span { font-size: max(8px, calc(var(--u) * 7)); letter-spacing: .03em; text-transform: uppercase; color: #7f95e6; }
+.stat strong { display: flex; align-items: center; gap: calc(var(--u) * 2); font-size: max(14px, calc(var(--u) * 16)); line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; color: #fff; }
+.stat-best strong { color: var(--pac); }
+.life {
+  flex: none; width: calc(var(--u) * 11); height: calc(var(--u) * 11); min-width: 9px; min-height: 9px; border-radius: 50%;
+  background: conic-gradient(from 135deg, var(--pac) 0 270deg, transparent 0);
+}
+
+/* Tabuleiro */
+.board {
+  position: relative; flex: none; width: 100%; aspect-ratio: 19 / 21; background: #000; border-radius: calc(var(--u) * 5);
+  box-shadow: 0 0 0 calc(var(--u) * 2) #1b2a8a, 0 0 calc(var(--u) * 10) rgba(47,86,255,.35);
+  transition: box-shadow .2s;
+}
+.is-power .board { box-shadow: 0 0 0 calc(var(--u) * 2) #6f8bff, 0 0 calc(var(--u) * 14) rgba(111,139,255,.8); }
+.canvas { display: block; width: 100%; height: 100%; border-radius: inherit; touch-action: none; }
+
+/* Controle direcional */
+.pad {
+  margin: auto; display: none; gap: calc(var(--u) * 3); /* só em telas de toque (@media abaixo): no desktop não ocupa espaço */ grid-template-columns: repeat(3, var(--pad)); grid-template-rows: repeat(2, var(--pad));
+  --pad: max(40px, calc(var(--u) * 33)); grid-template-areas: ". up ." "left down right";
+}
+@media (hover: none) and (pointer: coarse) { .pad { display: grid; } }
+.pad-up { grid-area: up; } .pad-left { grid-area: left; } .pad-right { grid-area: right; } .pad-down { grid-area: down; }
+.pad-btn {
+  display: grid; place-items: center; padding: 0; background: rgba(47,86,255,.18); border: calc(var(--u) * 2) solid #2f56ff;
+  border-radius: calc(var(--u) * 7); cursor: pointer; touch-action: none;
+}
+.pad-btn svg { width: 55%; height: 55%; fill: none; stroke: var(--pac); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.pad-btn:active { background: rgba(255,210,31,.3); transform: scale(.95); }
+
+/* Botões */
+.btn {
+  flex: none; width: 100%; max-width: calc(var(--u) * 170); min-height: max(44px, calc(var(--u) * 28)); padding: 0 calc(var(--u) * 12);
+  font: inherit; font-size: max(12px, calc(var(--u) * 12)); text-transform: uppercase; color: var(--navy); background: var(--pac);
+  border: calc(var(--u) * 2.5) solid var(--navy); border-radius: 999px; box-shadow: 0 calc(var(--u) * 3) 0 var(--pac-dark);
+  cursor: pointer; touch-action: manipulation;
+}
+.btn:hover { background: #ffe066; }
+.btn-ghost {
+  display: inline-flex; align-items: center; justify-content: center; gap: calc(var(--u) * 6); min-height: max(40px, calc(var(--u) * 24));
+  color: var(--ice); background: rgba(47,86,255,.18); border-color: var(--wall); box-shadow: 0 calc(var(--u) * 3) 0 #1b2a8a;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.btn-ghost:hover { color: #fff; background: rgba(47,86,255,.36); border-color: #6f8bff; }
+.btn-ghost svg { flex: none; width: 1.3em; height: 1.3em; fill: none; stroke: var(--pac); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; transition: transform .35s cubic-bezier(.2,.8,.2,1); }
+.btn-ghost:hover svg { transform: rotate(-90deg); }
+.btn-ghost:active { box-shadow: 0 calc(var(--u) * 1) 0 #1b2a8a; }
+.pause-actions { width: 100%; display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * 9); }
+.btn:active { transform: translateY(calc(var(--u) * 2)); box-shadow: 0 calc(var(--u) * 1) 0 var(--pac-dark); }
+
+/* Telas sobrepostas */
+.screen {
+  position: absolute; inset: 0; z-index: 8; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: calc(var(--u) * 12); padding: 0 10%; text-align: center; background: rgba(3,5,26,.93);
+  opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .25s ease, visibility 0s linear .25s;
+}
+.is-title .screen-start, .is-paused .screen-paused, .is-over .screen-over { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
+.screen-heading { margin: 0; font-size: calc(var(--u) * 30); line-height: 1; text-transform: uppercase; color: var(--pac); text-wrap: balance; }
+.screen-heading.is-long { font-size: calc(var(--u) * 26); line-height: 1.08; }
+.screen-paused { gap: calc(var(--u) * 10); }
+.screen-paused .screen-hint { margin-top: calc(var(--u) * -4); }
+.logo { margin: 0; font-size: calc(var(--u) * 44); line-height: 1; color: var(--pac); letter-spacing: .02em; text-shadow: 0 calc(var(--u) * 3) 0 #7a5f00, 0 0 calc(var(--u) * 14) rgba(255,210,31,.45); }
+/* Tela inicial: overlay opaco que cobre 100% do palco (nada do jogo aparece atrás), com o painel centralizado.
+   Ao iniciar ela some e o próprio palco passa a mostrar a partida; como é absoluta, não deixa espaço vazio. */
+.screen-start {
+  width: 100%; height: 100%; justify-content: center; gap: 0; padding: calc(var(--u) * 12); cursor: pointer;
+  background: radial-gradient(120% 70% at 50% 30%, #0b1250, var(--navy) 70%);
+}
+/* Sem caixa própria: o conteúdo fica direto sobre a tela inicial (que já é o único container) */
+.start-panel { width: 100%; height: 100%; display: grid; grid-template-rows: 1fr auto 1fr; justify-items: center; padding: 0; background: none; box-shadow: none; }
+/* Título no centro exato da tela; recorde e dica ficam na metade de baixo, logo abaixo dele */
+.start-panel .logo { grid-row: 2; }
+.start-info { grid-row: 3; align-self: start; display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * 7); margin-top: calc(var(--u) * 7); }
+.start-panel .logo { font-size: calc(var(--u) * 38); }
+.start-panel .hint { margin-top: calc(var(--u) * 3); }
+.menu-note { margin: 0; font-size: max(9px, calc(var(--u) * 8.5)); line-height: 1.3; text-transform: uppercase; color: #7f95e6; }
+.menu-note b { color: var(--pac); }
+.hint { margin: calc(var(--u) * 2) 0 0; display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * 3); font-size: max(12px, calc(var(--u) * 13)); text-transform: uppercase; color: #fff; animation: blink 1.4s ease-in-out infinite; }
+.hint-or { font-size: max(10px, calc(var(--u) * 9)); letter-spacing: .08em; color: #7f95e6; }
+.hint-keys { display: inline-flex; align-items: center; gap: calc(var(--u) * 6); }
+.hint-sep { font-size: max(12px, calc(var(--u) * 12)); color: #7f95e6; }
+.hint .cap { --cap: max(24px, calc(var(--u) * 26)); }
+.is-title .pad { visibility: hidden; } /* o controle direcional não faz sentido sob o painel inicial */
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+
+/* Teclas (tela inicial e popover "Como jogar") */
+.cap {
+  --cap: 24px; display: inline-grid; place-items: center; height: var(--cap); min-width: var(--cap); padding: 0 calc(var(--cap) * .28);
+  font-family: "Arial Black", "Trebuchet MS", Arial, sans-serif; font-size: calc(var(--cap) * .42); font-weight: 900; line-height: 1; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--navy); text-shadow: none; background: linear-gradient(180deg, #fff3a6, var(--pac) 55%, #f0b800);
+  border: 2px solid var(--navy); border-radius: calc(var(--cap) * .22);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.7), 0 3px 0 var(--pac-dark), 0 4px 0 var(--navy);
+}
+.cap-wide { min-width: calc(var(--cap) * 2.7); }
+.cap-icon { display: block; width: calc(var(--cap) * .58); height: calc(var(--cap) * .58); }
+.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+.sr-only { margin: -1px; padding: 0; border: 0; }
+
+/* Como jogar: botão só com ícone, ao lado do palco (fora do jogo). Sem espaço lateral (celular em pé) o JS usa .how-bottom:
+   o botão vai para uma faixa sob o palco e a altura do palco já descontou essa faixa. */
+.how-btn, .how-popover { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+.how-btn {
+  position: absolute; z-index: 12; top: 12px; left: calc(50% + var(--stage-w, 0px) / 2 + 16px);
+  display: grid; place-items: center; width: 44px; height: 44px; padding: 0;
+  color: var(--shell-text); background: var(--shell-surface); border: 1px solid var(--shell-line); border-radius: 50%;
+  cursor: pointer; touch-action: manipulation; transition: border-color .2s, background .2s, box-shadow .25s, transform .1s;
+}
+.how-btn svg { transition: color .2s; }
+.how-btn:hover, .how-btn[aria-expanded="true"] { background: #141722; border-color: rgba(255,200,87,.6); box-shadow: 0 0 0 4px rgba(255,200,87,.08); }
+.how-btn:hover svg, .how-btn[aria-expanded="true"] svg { color: var(--shell-accent); }
+.how-btn:active { transform: scale(.95); }
+.how-btn:focus-visible { outline: 2px solid var(--shell-accent); outline-offset: 3px; }
+.arena.how-bottom { padding-bottom: var(--how-strip, 56px); }
+.arena.how-bottom .how-btn { top: auto; bottom: 6px; left: auto; right: calc(50% - var(--stage-w, 0px) / 2); }
+
+/* O JS posiciona o popover (left/top, data-placement e --arrow-x) ancorado ao botão: abre para baixo */
+.how-popover {
+  --arrow-x: 22px; position: absolute; z-index: 40; width: 252px; display: flex; flex-direction: column; padding: 14px 16px 12px;
+  color: var(--ice); font-weight: 600; text-align: left; background: #0a1048; border: 2px solid var(--wall); border-radius: 12px;
+  box-shadow: 0 0 0 2px #1b2a8a, 0 12px 28px rgba(0,0,0,.55); animation: how-in .16s ease-out;
+}
+.how-popover[hidden] { display: none; }
+.how-popover::before { content: ""; position: absolute; width: 14px; height: 14px; background: #0a1048; border: 2px solid var(--wall); transform: rotate(45deg); }
+.how-popover[data-placement="below"]::before { left: calc(var(--arrow-x) - 7px); top: -9px; border-right: 0; border-bottom: 0; }
+.how-popover[data-placement="above"]::before { left: calc(var(--arrow-x) - 7px); bottom: -9px; border-left: 0; border-top: 0; }
+.how-body { min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; scrollbar-width: thin; }
+.how-title { margin: 0 28px 6px 0; font-family: "Arial Black", "Trebuchet MS", Arial, sans-serif; font-weight: 900; font-size: 17px; line-height: 1; text-transform: uppercase; color: var(--pac); }
+.how-text { margin: 0 0 10px; font-size: 13px; line-height: 1.35; }
+.how-sub { margin: 0 0 8px; padding-top: 10px; font-size: 11px; line-height: 1; letter-spacing: .08em; text-transform: uppercase; color: #7f95e6; border-top: 2px dashed rgba(188,208,255,.25); }
+.ctl-list { margin: 0 0 10px; padding: 0; list-style: none; display: grid; gap: 9px; }
+.ctl-list li { display: flex; align-items: center; gap: 12px; }
+.ctl-keys { flex: none; display: inline-flex; align-items: center; gap: 5px; min-width: 118px; }
+.ctl-or { font-size: 11px; }
+.ctl-label { font-size: 13px; }
+.how-tips { margin: 0; padding: 0 0 0 16px; font-size: 12.5px; line-height: 1.35; display: grid; gap: 5px; }
+.how-note { margin: 8px 0 0; font-size: 12px; line-height: 1.3; opacity: .8; }
+.how-close { position: absolute; top: 3px; right: 3px; z-index: 1; display: grid; place-items: center; width: 32px; height: 32px; padding: 0; color: var(--ice); background: transparent; border: 0; border-radius: 6px; opacity: .65; cursor: pointer; touch-action: manipulation; }
+.how-close svg { width: 12px; height: 12px; }
+.how-close:hover { opacity: 1; background: rgba(188,208,255,.12); }
+.how-close:focus-visible { opacity: 1; outline: 2px solid #4ec0e8; outline-offset: -2px; }
+@keyframes how-in { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
+
+.screen-text { margin: 0; font-size: max(12px, calc(var(--u) * 12)); line-height: 1.4; font-variant-numeric: tabular-nums; }
+.screen-text b { color: var(--pac); }
+.screen-hint { margin: 0; font-size: max(10px, calc(var(--u) * 8.5)); line-height: 1.4; letter-spacing: .06em; text-transform: uppercase; color: #7f95e6; font-weight: 700; }
+.record { margin: 0; padding: calc(var(--u) * 3) calc(var(--u) * 9); font-size: max(11px, calc(var(--u) * 10)); text-transform: uppercase; color: var(--navy); background: var(--pac); border-radius: 999px; }
+.record[hidden] { display: none; }
+.noscript { position: absolute; }
+
+/* Tooltips: [data-tip]. Aparecem após --tip-delay no hover; somem na hora ao sair/clicar; com teclado (:focus-visible) aparecem na hora. */
+[data-tip] { --tip-gap: 9px; }
+[data-tip]::before, [data-tip]::after { z-index: 60; }
+[data-tip]::after {
+  content: attr(data-tip); top: calc(100% + var(--tip-gap)); right: 0; padding: 6px 9px 5px; white-space: nowrap;
+  font: 900 10.5px/1.1 "Arial Black", "Trebuchet MS", Arial, sans-serif; letter-spacing: .06em; text-transform: uppercase; text-align: left;
+  color: var(--ice); background: #0a1048; border: 2px solid var(--wall); border-radius: 8px;
+  box-shadow: 0 0 0 1.5px #1b2a8a, 0 8px 18px rgba(0,0,0,.5); transform: translateY(-4px);
+}
+[data-tip]::before {
+  content: ""; z-index: 61; top: calc(100% + var(--tip-gap) - 5px); left: 50%; width: 10px; height: 10px; margin-left: -5px;
+  background: #0a1048; border: 2px solid var(--wall); border-right: 0; border-bottom: 0; transform: translateY(-4px) rotate(45deg);
+}
+.arena.how-bottom .how-btn::after { top: auto; bottom: calc(100% + var(--tip-gap)); transform: translateY(4px); }
+.arena.how-bottom .how-btn::before { top: auto; bottom: calc(100% + var(--tip-gap) - 5px); border: 2px solid var(--wall); border-left: 0; border-top: 0; transform: translateY(4px) rotate(45deg); }
+@media (hover: hover) {
+  [data-tip]:hover::after, [data-tip]:hover::before {
+    opacity: 1; visibility: visible;
+    transition: opacity .16s ease var(--tip-delay), transform .18s cubic-bezier(.2,.8,.2,1) var(--tip-delay), visibility 0s linear var(--tip-delay);
+  }
+  [data-tip]:hover::after { transform: none; }
+  [data-tip]:hover::before { transform: rotate(45deg); }
+}
+[data-tip]:focus-visible::after, [data-tip]:focus-visible::before { opacity: 1; visibility: visible; transition: opacity .12s ease, transform .15s cubic-bezier(.2,.8,.2,1); }
+[data-tip]:focus-visible::after { transform: none; }
+[data-tip]:focus-visible::before { transform: rotate(45deg); }
+/* Reduced motion: sem animação nem deslocamento, mas o atraso de 0,3s da aparição continua */
+@media (prefers-reduced-motion: reduce) {
+  [data-tip]::after { transform: none; }
+  [data-tip]::before { transform: rotate(45deg); }
+  .arena.how-bottom .how-btn::after { transform: none; }
+  .arena.how-bottom .how-btn::before { transform: rotate(45deg); }
+  [data-tip]:focus-visible::after, [data-tip]:focus-visible::before { transition: none; }
+}
+@media (prefers-reduced-motion: reduce) and (hover: hover) {
+  [data-tip]:hover::after, [data-tip]:hover::before { transition: opacity 0s linear var(--tip-delay), visibility 0s linear var(--tip-delay); }
+}
+/* Pressionar/clicar esconde na hora; o JS marca data-tip-off até o ponteiro sair do botão */
+[data-tip]:active::after, [data-tip]:active::before,
+[data-tip][data-tip-off]:not(:focus-visible)::after, [data-tip][data-tip-off]:not(:focus-visible)::before { opacity: 0; visibility: hidden; transition: none; }
+.how-btn[aria-expanded="true"]::after, .how-btn[aria-expanded="true"]::before { display: none; }
+
+@media (max-height: 520px) { .stage { --btn: max(36px, calc(var(--u) * 20)); gap: calc(var(--u) * 6); } .stat { min-height: calc(var(--u) * 30); } .btn { min-height: 40px; } }
+@media (max-height: 640px) { .menu-note { display: none; } .start-info { gap: calc(var(--u) * 4); } } /* telas pequenas: o recorde já aparece no placar, o painel inicial fica mais baixo */
+@media (max-height: 420px) { .topbar { height: 46px; } .game-text span { display: none; } }
+@media (prefers-reduced-motion: reduce) { .screen, .back, .back svg, .board, .how-btn, .btn-ghost, .btn-ghost svg { transition: none; } .hint, .how-popover { animation: none; } }

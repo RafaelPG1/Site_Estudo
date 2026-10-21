@@ -1,0 +1,838 @@
+/* ==========================================================================
+   arcade/tetris/tetris.css - estilos
+   Mesma identidade do Flappy Bird: cabeçalho da Arcádia, contorno escuro
+   (--ink), textos com contorno, botões laranja com borda branca e painel
+   de papel no fim da partida.
+
+   --u é a "unidade do jogo" dentro do palco (largura do tabuleiro / 160).
+   O JavaScript atualiza esse valor a cada redimensionamento, então textos
+   e painéis escalam junto com o tabuleiro.
+   ========================================================================== */
+
+:root {
+  --ink: #543847;
+  --paper: #ded895;
+  --paper-light: #f6efb4;
+  --menu-accent: #f08a24; --orange: #f08a24;
+  --orange-dark: #c9600d;
+  --red: #e5432b;
+  --white: #ffffff;
+  --board: #1c1424;                 /* fundo do tabuleiro: mais escuro que o resto */
+  --u: 1.5px;
+  --o: max(1px, calc(var(--u) * 0.9));
+}
+
+html, body {
+  touch-action: none;
+  -webkit-touch-callout: none;
+}
+
+body {
+  font-family: "Arial Black", "Trebuchet MS", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 900;
+  color: var(--white);
+}
+
+/* ---------- Cabeçalho ---------- */
+
+.topbar {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-weight: 600;
+  color: var(--shell-text);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset;
+  position: relative;
+  z-index: 3;
+}
+
+.back {
+  grid-column: 1;
+  justify-self: start;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.25s, transform 0.1s;
+}
+.back:hover {
+  box-shadow: 0 0 0 4px rgba(255, 200, 87, 0.08);
+}
+
+.game-id {
+  grid-column: 2;
+  justify-self: center;
+  min-width: 0;
+}
+.game-mark { border-radius: 9px; box-shadow: 0 0 18px rgba(78, 192, 232, 0.28); }
+.game-text strong {
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.game-text span { font-size: 12px; font-weight: 500; color: var(--shell-muted); }
+
+.icon-button {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  box-shadow: inset 0 0 0 1.5px var(--paper-light);
+  opacity: 0.85;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.icon-button:hover,
+.icon-button:focus-visible { opacity: 1; }
+.icon-button:focus-visible { outline: 2px solid var(--shell-accent); outline-offset: 2px; }
+.icon-button:active { transform: translateY(1px); }
+.icon-button svg { width: 62%; height: 62%; }
+.icon-button .icon-cross { display: none; }
+.icon-button .icon-play { display: none; }
+.icon-button.is-paused .icon-pause { display: none; }
+.icon-button.is-paused .icon-play { display: inline; }
+.icon-button.is-muted .icon-waves { display: none; }
+.icon-button.is-muted .icon-cross { display: inline; }
+
+/* A pausa só aparece durante a partida (o espaço fica reservado; em pausa continua visível) */
+#pause-button { visibility: hidden; }
+body[data-state="playing"] #pause-button,
+body[data-state="paused"] #pause-button { visibility: visible; }
+
+.help-btn {
+  width: 44px;
+  height: 44px;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.25s, transform 0.1s;
+}
+.help-btn:hover,
+.help-btn[aria-expanded="true"] {
+  box-shadow: 0 0 0 4px rgba(255, 200, 87, 0.08);
+}
+.help-btn:hover svg,
+.help-btn[aria-expanded="true"] svg { color: var(--shell-accent); }
+.help-btn:focus-visible { outline: 2px solid var(--shell-accent); outline-offset: 3px; }
+
+/* ---------- Arena: cenário atrás, jogo na frente ---------- */
+
+.arena {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+  background: radial-gradient(rgba(255,255,255,.045) 1px, transparent 1px) 0 0 / 22px 22px, var(--shell-bg);
+}
+
+/* Grade: tabuleiro + painel de informações (+ botões de toque em telas de toque) */
+.layout {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 0 0 0 155px; /* Deslocamento à direita para centralização visual do conjunto */
+  column-gap: 14px;
+  row-gap: 10px;
+  display: grid;
+  justify-content: center;
+  align-content: center;
+  align-items: center;
+  grid-template-columns: auto auto;
+  grid-template-areas: "board hud";
+}
+.board-slot {
+  grid-area: board;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+}
+.hud { grid-area: hud; align-self: stretch; }
+.touch-move { grid-area: move; display: none; }
+.touch-act { grid-area: act; display: none; }
+
+/* ---------- Palco (tabuleiro) ---------- */
+
+.stage {
+  position: relative;
+  /* Valores de reserva; o JavaScript define largura e altura exatas em px. */
+  width: 200px;
+  height: 400px;
+  overflow: hidden;
+  background: var(--board);
+  box-shadow:
+    0 0 0 calc(var(--u) * 2) var(--ink),
+    0 0 0 calc(var(--u) * 3) rgba(255, 255, 255, 0.1),
+    0 calc(var(--u) * 6) calc(var(--u) * 16) rgba(0, 0, 0, 0.55);
+}
+#board-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: crisp-edges;   /* Firefox antigo */
+  image-rendering: pixelated;     /* demais navegadores */
+}
+
+/* ---------- Textos com contorno ---------- */
+
+.title,
+.over-title,
+.hint,
+.controls,
+.badge,
+.panel-row dd,
+.hud .label,
+.hud .stat dd {
+  text-shadow:
+    calc(var(--o) * -1) calc(var(--o) * -1) 0 var(--ink),
+    var(--o) calc(var(--o) * -1) 0 var(--ink),
+    calc(var(--o) * -1) var(--o) 0 var(--ink),
+    var(--o) var(--o) 0 var(--ink),
+    0 calc(var(--o) * -1) 0 var(--ink),
+    0 var(--o) 0 var(--ink),
+    calc(var(--o) * -1) 0 0 var(--ink),
+    var(--o) 0 0 var(--ink),
+    0 calc(var(--o) * 2) 0 var(--ink);
+}
+
+/* ---------- Telas sobrepostas ao tabuleiro ---------- */
+
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--u) * 11);
+  padding: 0 6%;
+  text-align: center;
+  pointer-events: none;            /* só os botões recebem toque */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(calc(var(--u) * 8));
+  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0s linear 0.25s;
+}
+
+.stage[data-state="ready"] .screen-ready,
+.stage[data-state="paused"][data-phase="waiting"] .screen-paused,
+.stage[data-state="paused"][data-phase="counting"] .screen-count,
+.stage[data-state="over"].show-panel .screen-over {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition-delay: 0s;
+}
+
+.screen-ready { background: rgba(28, 20, 36, 0.55); }
+/* Pausa: tom roxo do tabuleiro, grade de blocos e moldura; as peças ficam só entrevistas */
+.screen-paused {
+  background:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.04) 0 calc(var(--u) * 1), transparent calc(var(--u) * 1) calc(var(--u) * 8)),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.04) 0 calc(var(--u) * 1), transparent calc(var(--u) * 1) calc(var(--u) * 8)),
+    linear-gradient(180deg, rgba(62, 36, 88, 0.84), rgba(28, 20, 36, 0.9));
+  box-shadow: inset 0 0 0 calc(var(--u) * 2) rgba(179, 91, 224, 0.35);
+}
+.screen-count { background: rgba(28, 20, 36, 0.4); gap: 0; }   /* o tabuleiro continua visível */
+.pixel-art { display: block; image-rendering: crisp-edges; image-rendering: pixelated; }
+.stage.is-recovery .screen-paused .over-title { font-size: calc(var(--u) * 17); }
+
+/* Barra de progresso da contagem: uma peça I que vai se acendendo */
+.count-bar { display: flex; gap: calc(var(--u) * 1.5); margin-top: calc(var(--u) * 12); }
+.count-bar i {
+  width: calc(var(--u) * 14);
+  height: calc(var(--u) * 14);
+  background: #4fd0ee;
+  border: calc(var(--u) * 1.2) solid var(--ink);
+  box-shadow: inset calc(var(--u) * 1.6) calc(var(--u) * 1.6) 0 #b0f2ff, inset calc(var(--u) * -1.6) calc(var(--u) * -1.6) 0 #2a96b8;
+  opacity: 0.22;
+  transition: opacity 0.15s;
+}
+.count-bar i.on { opacity: 1; }
+
+/* ---------- Tela inicial ---------- */
+
+.title {
+  margin: 0 0 calc(var(--u) * 4);
+  font-size: calc(var(--u) * 29);
+  line-height: 1;
+  letter-spacing: calc(var(--u) * 0.8);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.c-red { color: #ff6b57; }
+.c-orange { color: #f08a24; }
+.c-yellow { color: #fbd530; }
+.c-green { color: #74d160; }
+.c-cyan { color: #4fd0ee; }
+.c-purple { color: #c47cf0; }
+
+/* Indicação de início (sem botão): toque/clique ou Space */
+.hint {
+  margin: 0; display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * 6);
+  font-size: max(12px, calc(var(--u) * 8.4)); line-height: 1.25; text-transform: uppercase;
+  animation: blink 1.4s ease-in-out infinite;
+}
+.hint-or { font-size: max(10px, calc(var(--u) * 6.4)); letter-spacing: .08em; }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+
+/* Teclas (tela inicial e painel de ajuda) */
+.cap {
+  --cap: max(24px, calc(var(--u) * 15));
+  display: inline-grid; place-items: center; height: var(--cap); min-width: var(--cap);
+  padding: 0 calc(var(--cap) * .28); font-family: "Arial Black", "Trebuchet MS", Arial, sans-serif;
+  font-size: calc(var(--cap) * .44); font-weight: 900; line-height: 1; letter-spacing: .02em;
+  text-transform: uppercase; color: var(--ink); text-shadow: none; background: var(--white);
+  border: 2px solid var(--ink); border-radius: 4px; box-shadow: 0 3px 0 var(--ink);
+}
+.cap-wide { min-width: calc(var(--cap) * 2.6); }
+.cap-icon { display: block; width: calc(var(--cap) * .58); height: calc(var(--cap) * .58); }
+.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+.sr-only { margin: -1px; padding: 0; border: 0; }
+
+.controls {
+  margin: 0;
+  font-size: max(10px, calc(var(--u) * 6.4));
+  line-height: 1.5;
+  color: var(--white);
+  --o: 1px;
+}
+.only-touch { display: none; }
+
+/* ---------- Pausa e fim de partida ---------- */
+
+.over-title {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: calc(var(--u) * 23);
+  line-height: 0.98;
+  text-transform: uppercase;
+  color: #ff9a2a;
+}
+.screen-paused .over-title { font-size: calc(var(--u) * 20); }
+.over-title span:last-child { color: #ff8a1f; }
+
+.panel {
+  position: relative;
+  width: 100%;
+  max-width: calc(var(--u) * 118);
+  padding: calc(var(--u) * 8) calc(var(--u) * 10);
+  background: var(--paper);
+  border: calc(var(--u) * 2) solid var(--ink);
+  box-shadow:
+    inset 0 0 0 calc(var(--u) * 1) var(--paper-light),
+    0 calc(var(--u) * 2) 0 rgba(0, 0, 0, 0.25);
+}
+.panel-rows { margin: 0; display: grid; gap: calc(var(--u) * 5); }
+.panel-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.panel-row dt {
+  font-size: max(11px, calc(var(--u) * 7.5));
+  color: var(--orange-dark);
+  text-transform: uppercase;
+}
+.panel-row dd {
+  margin: 0;
+  font-size: calc(var(--u) * 13);
+  line-height: 1;
+  color: var(--white);
+}
+
+.badge {
+  position: absolute;
+  top: calc(var(--u) * -8);
+  right: calc(var(--u) * -5);
+  margin: 0;
+  padding: calc(var(--u) * 2) calc(var(--u) * 4);
+  font-size: max(9px, calc(var(--u) * 6));
+  text-transform: uppercase;
+  background: var(--red);
+  border: calc(var(--u) * 1.4) solid var(--ink);
+  transform: rotate(6deg);
+  text-shadow: 0 calc(var(--u) * 0.8) 0 var(--ink);
+  white-space: nowrap;
+}
+.badge[hidden] { display: none; }
+
+/* ---------- Botões ---------- */
+
+.btn {
+  pointer-events: auto;
+  min-width: calc(var(--u) * 84);
+  min-height: max(44px, calc(var(--u) * 15));
+  padding: calc(var(--u) * 3.5) calc(var(--u) * 9);
+  font: inherit;
+  font-size: max(13px, calc(var(--u) * 8.4));
+  color: var(--white);
+  text-transform: uppercase;
+  text-shadow: 0 calc(var(--u) * 1.2) 0 var(--orange-dark);
+  background: var(--orange);
+  border: calc(var(--u) * 2) solid var(--white);
+  outline: calc(var(--u) * 2) solid var(--ink);
+  box-shadow: 0 calc(var(--u) * 2.5) 0 calc(var(--u) * 2) var(--ink);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.btn:hover { background: #ff9a35; }
+.btn:active { transform: translateY(calc(var(--u) * 2)); box-shadow: 0 calc(var(--u) * 0.6) 0 calc(var(--u) * 2) var(--ink); }
+.btn:focus-visible { outline-color: #2d7be0; }
+
+/* Tela de pausa: título em destaque, ação principal num cartão de papel (como o painel de
+   fim de jogo e a ajuda) e "Reiniciar" como botão secundário, também em papel e tinta */
+.screen-paused { gap: calc(var(--u) * 7); }
+.resume-card {
+  padding: calc(var(--u) * 6) calc(var(--u) * 7);
+  background: var(--paper);
+  border: calc(var(--u) * 2) solid var(--ink);
+  box-shadow: inset 0 0 0 calc(var(--u) * 1) var(--paper-light), 0 calc(var(--u) * 2) 0 rgba(0, 0, 0, 0.3);
+}
+.resume-card .hint { gap: calc(var(--u) * 3); color: var(--ink); text-shadow: none; font-size: max(10px, calc(var(--u) * 7.2)); white-space: nowrap; }
+.resume-card .hint-or { opacity: 0.7; }
+/* Reiniciar: bloco de Tetris (mesmo bisel das peças da contagem), em vermelho para
+   diferenciar da ação principal. Sem cantos arredondados, sem cara de botão de página. */
+.btn-quit {
+  --bevel: calc(var(--u) * 2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--u) * 4);
+  min-width: calc(var(--u) * 62);
+  min-height: max(44px, calc(var(--u) * 14));
+  margin-bottom: calc(var(--u) * 2);
+  padding: calc(var(--u) * 2) calc(var(--u) * 7);
+  font-size: max(11px, calc(var(--u) * 6.6));
+  letter-spacing: 0.04em;
+  color: var(--white);
+  background: #ff6b57;
+  border: max(2px, calc(var(--u) * 1.5)) solid var(--ink);
+  outline: none;
+  text-shadow:
+    calc(var(--o) * -1) calc(var(--o) * -1) 0 var(--ink),
+    var(--o) calc(var(--o) * -1) 0 var(--ink),
+    calc(var(--o) * -1) var(--o) 0 var(--ink),
+    var(--o) var(--o) 0 var(--ink),
+    0 calc(var(--o) * 2) 0 var(--ink);
+  box-shadow:
+    inset var(--bevel) var(--bevel) 0 #ffb3a6,
+    inset calc(var(--bevel) * -1) calc(var(--bevel) * -1) 0 #c23a26,
+    0 calc(var(--u) * 2) 0 var(--ink);
+      margin-top: calc(var(--u) * 4);   /* mais longe do "SPACE" */
+  margin-bottom: calc(var(--u) * 2);
+}
+.btn-quit:hover { background: #ff7f6d; }
+/* Feedback no toque: o bloco "afunda" e o bisel inverte */
+.btn-quit:active {
+  transform: translateY(calc(var(--u) * 1.5));
+  box-shadow:
+    inset var(--bevel) var(--bevel) 0 #c23a26,
+    inset calc(var(--bevel) * -1) calc(var(--bevel) * -1) 0 #ffb3a6,
+    0 calc(var(--u) * 0.5) 0 var(--ink);
+}
+.btn-quit:focus-visible { outline: 2px solid #2d7be0; outline-offset: 3px; }
+.btn-quit svg { width: 1.5em; height: 1.5em; flex: none; }
+
+/* Dica de continuar: mesma animação `blink` da tela inicial. Só roda enquanto a tela
+   está visível, então sempre recomeça do início quando a pausa aparece. */
+.stage[data-state="paused"][data-phase="waiting"] .screen-paused .hint {
+  animation: blink 1.4s ease-in-out infinite;
+}
+.noscript {
+  position: absolute;
+  color: var(--white);
+}
+
+/* ---------- Painel de informações (fora do tabuleiro) ---------- */
+
+.hud {
+  --o: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 148px;
+}
+.hud .label {
+  display: block;
+  font-size: 12px;
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #ffe36a;
+}
+.hud-next { display: flex; flex-direction: column; gap: 6px; }
+.hud-actions { display: flex; gap: 10px; }
+.next-box {
+  width: 128px;
+  height: 96px;
+  background: var(--board);
+  border: 3px solid var(--ink);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1), 0 4px 10px rgba(0, 0, 0, 0.35);
+}
+#next-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+}
+.stats { margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.stat { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.stat dt { margin: 0; }
+.stat dd {
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.05;
+  color: var(--white);
+  white-space: nowrap;
+}
+
+/* ---------- Botões de toque ---------- */
+
+.touch-move,
+.touch-act {
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+}
+.tbtn {
+  width: var(--tb);
+  height: var(--tb);
+  margin: 3px 3px 7px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  color: var(--white);
+  background: var(--orange);
+  border: 3px solid var(--white);
+  outline: 3px solid var(--ink);
+  box-shadow: 0 4px 0 3px var(--ink);
+  cursor: pointer;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.tbtn svg { width: 58%; height: 58%; pointer-events: none; }
+.tbtn.is-down,
+.tbtn:active {
+  transform: translateY(3px);
+  background: #ff9a35;
+  box-shadow: 0 1px 0 3px var(--ink);
+}
+.tbtn-hard { background: #e5632b; }
+.tbtn:focus-visible { outline-color: #2d7be0; }
+
+/* ==========================================================================
+   Celular em pé (ou qualquer janela mais alta que larga):
+   informações em cima, tabuleiro no meio, botões embaixo
+   ========================================================================== */
+@media (orientation: portrait) {
+  .layout {
+    --tb: clamp(46px, 14vw, 68px);
+    padding: 6px 10px 10px;
+    column-gap: 10px;
+    row-gap: 8px;
+    justify-content: stretch;
+    align-content: stretch;
+    align-items: stretch;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "hud hud"
+      "board board"
+      "move act";
+  }
+  .touch-move { display: flex; justify-self: start; }
+  .touch-act { display: flex; justify-self: end; }
+  .touch-move, .touch-act { align-self: end; gap: 10px; }
+
+  /* Painel em grade: "próxima" à esquerda; pontos/recorde/nível/linhas e, logo abaixo,
+     os três botões (som, pausa, ajuda) à direita. Alvos de 42px, sem sobreposição. */
+  .hud {
+    --o: 1.5px;
+    width: 100%;
+    max-width: 400px;
+    justify-self: center;
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-content: center;
+    grid-template-areas:
+      "next stats"
+      "next actions";
+    align-items: center;
+    column-gap: 18px;
+    row-gap: 8px;
+  }
+  .hud-next { grid-area: next; align-items: center; gap: 4px; }
+  .layout .hud > .mouse-btn { grid-column: 1 / -1; justify-self: start; margin-top: 0; }
+  .hud .label { font-size: 11px; }
+  .next-box { width: 72px; height: 88px; border-width: 2px; }
+  .stats {
+    grid-area: stats;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(76px, max-content));
+    gap: 2px 14px;
+  }
+  .stat { gap: 1px; }
+  .stat dd { font-size: 19px; overflow: hidden; text-overflow: clip; }
+  .hud-actions {
+    grid-area: actions;
+    order: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+  }
+  .hud-actions .help-btn,
+  .hud-actions .icon-button { flex: none; width: 42px; height: 42px; }
+}
+
+/* ==========================================================================
+   Celular/tablet deitado (tela de toque): informações e movimento à esquerda,
+   girar/acelerar/queda à direita, tabuleiro no centro
+   ========================================================================== */
+@media (orientation: landscape) and (pointer: coarse) {
+  .layout {
+    --tb: clamp(48px, 17vh, 72px);
+    padding: 6px 12px;
+    column-gap: 14px;
+    justify-content: center;
+    align-content: stretch;
+    align-items: stretch;
+    grid-template-columns: auto auto auto;
+    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "hud board act"
+      "move board act";
+  }
+  .board-slot { align-self: center; }
+  .touch-move { display: flex; align-self: end; justify-self: center; gap: 10px; }
+  .touch-act { display: flex; flex-direction: column; align-self: center; gap: 8px; }
+
+  .hud {
+    --o: 1.5px;
+    width: 132px;
+    gap: 8px;
+    align-self: start;
+    align-items: stretch;
+  }
+  .hud-actions { justify-content: space-between; gap: 6px; }
+  .hud-actions .help-btn,
+  .hud-actions .icon-button { flex: none; width: 38px; height: 38px; }
+  .hud-next { align-items: center; gap: 3px; }
+  .hud .label { font-size: 11px; }
+  .next-box { width: 84px; height: 63px; border-width: 2px; }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 8px; }
+  .stat dd { font-size: 17px; }
+}
+
+/* ---------- Janelas largas porém baixas (computador com pouca altura) ---------- */
+@media (orientation: landscape) and (pointer: fine) and (max-height: 560px) {
+  .hud { width: 118px; gap: 8px; }
+  .next-box { width: 100px; height: 75px; }
+  .stats { gap: 6px; }
+  .stat dd { font-size: 20px; }
+}
+
+/* ---------- Telas de toque: mostra a dica de toque em vez do teclado ---------- */
+@media (pointer: coarse) {
+  .only-keys { display: none; }
+  .only-touch { display: block; }
+}
+
+/* ---------- Telas pequenas ---------- */
+/* Telas estreitas: o botão do catálogo vira só a seta (o nome segue no aria-label), para o
+   conjunto [SVG TETRIS] poder ficar no centro exato do cabeçalho sem encostar no botão. */
+@media (max-width: 460px) {
+  .topbar { column-gap: 8px; }
+  .back { padding: 0 12px 0 8px; gap: 3px; font-size: 13px; }   /* mantém o texto "Catálogo" visível */
+  .game-text strong { font-size: 14px; }
+}
+/* Só em telas bem estreitas (< 340px) o botão vira apenas a seta */
+@media (max-width: 339px) {
+  .back { width: 40px; padding: 0; justify-content: center; }
+  .back span { display: none; }
+}
+@media (max-height: 420px) {
+  .topbar { height: 46px; }
+  .game-text span { display: none; }
+}
+
+/* ---------- Movimento reduzido ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .screen { transition: none; }
+  .hint { animation: none; }
+  .help-popover { animation: none; }
+  .back, .back svg { transition: none; }
+  .help-btn { transition: none; }
+    .stage[data-state="paused"][data-phase="waiting"] .screen-paused .hint { animation: none; }
+      .screen-paused .hint > * { animation: none !important; }
+}
+
+/* ---------- Ajuda: botão "?" no painel de informações + popover ancorado ---------- */
+.help-popover {
+  --arrow-x: 22px;
+  position: fixed; z-index: 50; width: 250px; padding: 14px 16px 12px;
+  color: var(--ink); font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif; font-weight: 700;
+  text-shadow: none; background: var(--paper); border: 3px solid var(--ink);
+  box-shadow: inset 0 0 0 2px var(--paper-light), 0 4px 0 rgba(0,0,0,.35), 0 12px 28px rgba(0,0,0,.45);
+  animation: help-in .16s ease-out;
+}
+.help-popover::before {
+  left: calc(var(--arrow-x) - 7px);
+  background: var(--paper); border: 3px solid var(--ink);
+}
+.help-popover[data-placement="below"]::before { top: -10px; }
+.help-popover[data-placement="above"]::before { bottom: -10px; }
+.help-title {
+  margin: 0 28px 6px 0; font-family: "Arial Black", "Trebuchet MS", Arial, sans-serif; font-weight: 900;
+  font-size: 17px; line-height: 1; text-transform: uppercase; letter-spacing: .01em;
+}
+.help-text { margin: 0 0 10px; font-size: 13px; line-height: 1.35; }
+.help-sub {
+  margin: 0 0 8px; padding-top: 10px; font-size: 11px; line-height: 1; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--orange-dark); border-top: 2px dashed rgba(84,56,71,.35);
+}
+.ctl-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 7px; }
+.ctl-list li { display: flex; align-items: center; gap: 10px; }
+.ctl-keys { flex: none; display: inline-flex; align-items: center; gap: 4px; min-width: 150px; }
+.ctl-or { font-size: 12px; opacity: .7; }
+.ctl-label { font-size: 13px; }
+.help-popover .cap { --cap: 24px; }
+.help-note { margin: 10px 0 0; font-size: 12px; line-height: 1.3; opacity: .8; }
+.help-close {
+  position: absolute; top: 3px; right: 3px; width: 32px; height: 32px;
+  color: var(--ink); border-radius: 4px; opacity: .6; touch-action: manipulation;
+}
+.help-close svg { width: 12px; height: 12px; }
+.help-close:hover { opacity: 1; background: rgba(84,56,71,.12); }
+.help-close:focus-visible { opacity: 1; outline: 2px solid #2d7be0; outline-offset: -2px; }
+@keyframes help-in { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
+
+/* Rolagem do painel "Como jogar": só o conteúdo rola (título, botão de fechar e a setinha
+   do balão ficam fixos). Barra fina no estilo papel e tinta, igual ao resto do jogo. */
+.help-popover {
+  display: flex;
+  flex-direction: column;
+  width: min(340px, calc(100vw - 24px));     /* mais largo: a lista cabe sem rolagem lateral */
+  max-height: min(560px, calc(100dvh - 24px));
+}
+.help-title { flex: none; }
+.help-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin-right: -8px;
+  padding-right: 10px;
+  overflow-x: hidden;                        /* nunca rola de lado */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;                       /* o body bloqueia gestos; aqui o toque pode rolar */
+  scrollbar-width: thin;                     /* Firefox */
+  scrollbar-color: rgba(84, 56, 71, 0.45) transparent;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
+}
+.help-scroll:focus-visible { outline: 2px solid #2d7be0; outline-offset: 2px; border-radius: 4px; }
+
+/* Barra fina e arredondada: trilho invisível, "pílula" na cor da tinta que acende em laranja */
+.help-scroll::-webkit-scrollbar { width: 8px; }
+.help-scroll::-webkit-scrollbar-track { background: transparent; margin: 2px 0; }
+.help-scroll::-webkit-scrollbar-thumb {
+  background: rgba(84, 56, 71, 0.4);
+  background-clip: padding-box;
+  border: 2px solid transparent;             /* deixa a pílula mais fina que a faixa */
+  border-radius: 999px;
+  transition: background-color 0.2s;
+}
+.help-scroll::-webkit-scrollbar-thumb:hover { background-color: var(--orange); background-clip: padding-box; }
+.help-scroll::-webkit-scrollbar-thumb:active { background-color: var(--orange-dark); background-clip: padding-box; }
+
+/* Linhas de controle sem estourar a largura: teclas e rótulo podem quebrar de linha */
+.ctl-list li { gap: 8px; }
+.ctl-keys { min-width: 0; flex: none; flex-wrap: nowrap; }   /* rótulo logo depois das teclas */
+.ctl-label { min-width: 0; overflow-wrap: anywhere; }
+.help-text, .help-note { overflow-wrap: anywhere; }
+
+/* Pausa: o piscar vai nos itens da dica (texto, "ou" e tecla), em vez de no contêiner,
+   e com !important para não ser anulado por outras regras ou por estilos inline. */
+@keyframes pause-blink { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+
+.screen-paused .hint {
+  animation: none !important;       /* evita piscar duas vezes (contêiner + itens) */
+}
+.screen-paused .hint > * {
+  animation: pause-blink 1.4s ease-in-out infinite !important;
+}
+
+@keyframes screen-ready { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+
+.screen-ready .hint {
+  animation: none !important;       /* evita piscar duas vezes (contêiner + itens) */
+}
+.screen-ready .hint > * {
+  animation: screen-ready 1.4s ease-in-out infinite !important;
+}
+
+/* ==========================================================================
+   Botão de controle pelo mouse (painel de informações) + tooltips do jogo
+   ========================================================================== */
+
+/* Botão no fim do painel (rente à base do tabuleiro), como nos outros jogos */
+.hud > .mouse-btn { margin-top: auto; align-self: flex-start; }
+
+/* Mouse desligado: ícone apagado com risco vermelho. Ligado: ícone dourado, sem risco, ponto verde. */
+.help-btn.mouse-btn { position: relative; color: var(--shell-muted); }
+.help-btn.mouse-btn.is-on { color: var(--shell-accent); background: #141722; border-color: rgba(255, 200, 87, 0.75); box-shadow: 0 0 0 4px rgba(255, 200, 87, 0.1); }
+.mouse-btn.is-on .mouse-slash { display: none; }
+.mouse-dot {
+  position: absolute; top: 3px; right: 3px; width: 10px; height: 10px; border-radius: 50%;
+  background: #4a5088; border: 2px solid var(--shell-surface);
+}
+.mouse-btn.is-on .mouse-dot { background: #4fd36b; box-shadow: 0 0 6px rgba(79, 211, 107, 0.8); }
+@media (hover: none) and (pointer: coarse) { .mouse-btn { display: none; } }   /* telas só de toque não têm mouse */
+
+/* Tooltips (data-tip): balão de papel com contorno de tinta, cantos em escadinha, laje de sombra embaixo e
+   seta em degraus: a mesma linguagem dos botões de papel, do painel de ajuda e do Game Over.
+   Hover: aparece depois de --tip-delay. Apertar o botão ou sair dele: some na hora (o JS marca data-tip-off
+   até o ponteiro sair). Teclado (:focus-visible): aparece sem espera. Telas de toque não têm hover. */
+/* <<< TEMPO ATÉ O TOOLTIP APARECER NO HOVER (mude aqui) */
+[data-tip] {
+  position: relative;
+  --t: 3px;                                  /* "pixel" do tooltip */
+  --tip-gap: 14px; --tip-face: var(--paper-light); --tip-shade: var(--paper); --tip-ink: var(--ink);
+}
+[data-tip]::before, [data-tip]::after { z-index: 60; }
+[data-tip]::after {
+  content: attr(data-tip); top: calc(100% + var(--tip-gap)); left: 50%; transform: translateX(-50%);
+  padding: 7px 10px 8px; white-space: nowrap;
+  font-family: "Arial Black", "Trebuchet MS", Arial, sans-serif; font-weight: 900; font-size: 11.5px; line-height: 1;
+  letter-spacing: 0.06em; text-transform: uppercase; text-shadow: none; color: var(--tip-ink); background: var(--tip-face);
+  box-shadow: inset 0 calc(var(--t) * -1) 0 0 var(--tip-shade),
+    0 calc(var(--t) * -1) 0 0 var(--tip-ink), calc(var(--t) * -1) 0 0 0 var(--tip-ink), var(--t) 0 0 0 var(--tip-ink),
+    0 calc(var(--t) * 2) 0 0 var(--tip-ink), calc(var(--t) * -1) var(--t) 0 0 var(--tip-ink), var(--t) var(--t) 0 0 var(--tip-ink);
+}
+/* seta em degraus (ponta de 1 bloco, depois 3) apontando para o botão, com o miolo de papel furando o contorno do balão */
+[data-tip]::before {
+  content: ""; width: var(--t); height: var(--t); background: var(--tip-ink);
+  left: calc(50% - var(--t) / 2); top: calc(100% + var(--tip-gap) - var(--t) * 3);
+  box-shadow: 0 var(--t) 0 0 var(--tip-face),
+    calc(var(--t) * -1) calc(var(--t) * 2) 0 0 var(--tip-face), 0 calc(var(--t) * 2) 0 0 var(--tip-face), var(--t) calc(var(--t) * 2) 0 0 var(--tip-face),
+    calc(var(--t) * -1) var(--t) 0 0 var(--tip-ink), var(--t) var(--t) 0 0 var(--tip-ink);
+}
+@media (hover: hover) and (pointer: fine) {
+  [data-tip]:hover:not([data-tip-off]):not(:active)::before, [data-tip]:hover:not([data-tip-off]):not(:active)::after {
+    visibility: visible; opacity: 1;
+    transition: visibility 0s linear var(--tip-delay), opacity 0.12s steps(2) var(--tip-delay);
+  }
+}
+[data-tip]:focus-visible:not([data-tip-off]):not(:active)::before, [data-tip]:focus-visible:not([data-tip-off]):not(:active)::after { visibility: visible; opacity: 1; }
+@media (prefers-reduced-motion: reduce) and (hover: hover) and (pointer: fine) {
+  [data-tip]:hover:not([data-tip-off]):not(:active)::before, [data-tip]:hover:not([data-tip-off]):not(:active)::after {
+    transition: visibility 0s linear var(--tip-delay), opacity 0s linear var(--tip-delay);
+  }
+}
+
+/* Tooltip do botão do mouse: fica rente à borda de baixo, então o balão abre para CIMA e para a direita */
+.hud > .mouse-btn[data-tip]::after { top: auto; bottom: calc(100% + var(--tip-gap)); left: 0; transform: none; }
+.hud > .mouse-btn[data-tip]::before {
+  top: auto; bottom: calc(100% + var(--tip-gap) - var(--t) * 3);
+  box-shadow: 0 calc(var(--t) * -1) 0 0 var(--tip-face),
+    calc(var(--t) * -1) calc(var(--t) * -2) 0 0 var(--tip-face), 0 calc(var(--t) * -2) 0 0 var(--tip-face), var(--t) calc(var(--t) * -2) 0 0 var(--tip-face),
+    calc(var(--t) * -1) calc(var(--t) * -1) 0 0 var(--tip-ink), var(--t) calc(var(--t) * -1) 0 0 var(--tip-ink);
+}

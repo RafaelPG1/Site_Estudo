@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="tips-css">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#07080c">
+  <title>Quebra-Blocos · Nexus Study</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="../../base/base.css?v=2">
+  <link rel="stylesheet" href="../../base/ui.css?v=2">
+  <link rel="stylesheet" href="breakout.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="back" href="../../../../jogo.html" aria-label="Voltar para a central de jogos">
+      <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false">
+        <path d="M12 4l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Jogos</span>
+    </a>
+    <div class="game-id">
+      <svg class="game-mark" viewBox="0 0 32 32" width="28" height="28" aria-hidden="true" focusable="false">
+        <rect width="32" height="32" rx="9" fill="#10133a"/>
+        <rect x="5" y="6" width="6" height="4" fill="#ff4d5e"/><rect x="13" y="6" width="6" height="4" fill="#ffd23f"/><rect x="21" y="6" width="6" height="4" fill="#33c7e8"/>
+        <rect x="5" y="12" width="6" height="4" fill="#ff8c2e"/><rect x="13" y="12" width="6" height="4" fill="#4fd36b"/>
+        <circle cx="20" cy="21" r="2.2" fill="#fff"/>
+        <rect x="9" y="25" width="14" height="3" rx="1" fill="#c7ceef"/>
+      </svg>
+      <div class="game-text"><strong>Quebra-Blocos</strong></div>
+    </div>
+  </header>
+
+  <!-- Ícones das setas, usados nas teclas do painel de ajuda -->
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <symbol id="icon-left" viewBox="0 0 16 16"><path d="M13 8H3.5M7.6 3.8L3.4 8l4.2 4.2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" stroke-linejoin="miter"/></symbol>
+    <symbol id="icon-right" viewBox="0 0 16 16"><path d="M3 8h9.5M8.4 3.8L12.6 8l-4.2 4.2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" stroke-linejoin="miter"/></symbol>
+  </svg>
+
+  <div id="arena" class="arena">
+    <main id="stage" class="stage is-ready" aria-label="Quebra-Blocos">
+      <canvas id="game-canvas" aria-label="Área do jogo"></canvas>
+
+      <div class="hud" aria-label="Placar">
+        <div class="hud-cell">
+          <span class="hud-label">Pontos</span>
+          <strong id="hud-score" class="hud-value">00000</strong>
+        </div>
+        <div class="hud-cell">
+          <span class="hud-label">Fase</span>
+          <strong id="hud-level" class="hud-value">1</strong>
+        </div>
+        <div class="hud-cell">
+          <span class="hud-label">Vidas</span>
+          <span id="hud-lives" class="lives" role="img" aria-label="3 vidas"><i class="life"></i><i class="life"></i><i class="life"></i></span>
+        </div>
+      </div>
+
+      <p class="serve-hint">Espaço ou toque para lançar</p>
+
+      <button id="mute-button" class="icon-button" type="button" aria-pressed="false" aria-label="Silenciar efeitos sonoros" data-tip="Som (M)" data-tip-pos="below-end">
+  <svg viewBox="0 0 256 256" aria-hidden="true" focusable="false">
+    
+    <!-- Ícone COM VOLUME (Visível quando o som está ativado) -->
+    <g class="icon-waves" fill="#543847">
+      <path d="M160,32V224L88,168H40a8,8,0,0,1-8-8V96a8,8,0,0,1,8-8H88Z" opacity="0.2"></path>
+      <path d="M163.51,24.81a8,8,0,0,0-8.42.88L85.25,80H40A16,16,0,0,0,24,96v64a16,16,0,0,0,16,16H85.25l69.84,54.31A8,8,0,0,0,168,224V32A8,8,0,0,0,163.51,24.81ZM152,207.64,92.91,161.69A7.94,7.94,0,0,0,88,160H40V96H88a7.94,7.94,0,0,0,4.91-1.69L152,48.36ZM208,104v48a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm32-16v80a8,8,0,0,1-16,0V88a8,8,0,0,1,16,0Z"></path>
+    </g>
+
+    <!-- Ícone SEM SOM (Visível quando o som está mutado) -->
+    <g class="icon-cross">
+      <!-- Sombra e base do megafone (Em marrom) -->
+      <path fill="#543847" d="M160,32V224L88,168H40a8,8,0,0,1-8-8V96a8,8,0,0,1,8-8H88Z" opacity="0.2"></path>
+      <path fill="#543847" d="M163.51,24.81a8,8,0,0,0-8.42.88L85.25,80H40A16,16,0,0,0,24,96v64a16,16,0,0,0,16,16H85.25l69.84,54.31A8,8,0,0,0,168,224V32A8,8,0,0,0,163.51,24.81ZM152,207.64,92.91,161.69A7.94,7.94,0,0,0,88,160H40V96H88a7.94,7.94,0,0,0,4.91-1.69L152,48.36Z"></path>
+      
+      <!-- O "X" isolado e convertido (Em vermelho) -->
+      <path fill="#e5432b" d="M253.66,146.34a8,8,0,0,1-11.32,11.32L224,139.31l-18.34,18.35a8,8,0,0,1-11.32-11.32L212.69,128l-18.35-18.34a8,8,0,0,1,11.32-11.32L224,116.69l18.34-18.35a8,8,0,0,1,11.32,11.32L235.31,128Z"></path>
+    </g>
+
+  </svg>
+      </button>
+
+      <button id="pause-button" class="icon-button" type="button" aria-label="Pausar" data-tip="Pausar (P)" data-tip-pos="below-end">
+  <svg viewBox="0 0 256 256" aria-hidden="true" focusable="false" fill="#543847">
+    
+    <!-- Ícone de PAUSA -->
+    <g class="icon-pause">
+      <path d="M208,48V208a8,8,0,0,1-8,8H160a8,8,0,0,1-8-8V48a8,8,0,0,1,8-8h40A8,8,0,0,1,208,48ZM96,40H56a8,8,0,0,0-8,8V208a8,8,0,0,0,8,8H96a8,8,0,0,0,8-8V48A8,8,0,0,0,96,40Z" opacity="0.2"></path>
+      <path d="M200,32H160a16,16,0,0,0-16,16V208a16,16,0,0,0,16,16h40a16,16,0,0,0,16-16V48A16,16,0,0,0,200,32Zm0,176H160V48h40ZM96,32H56A16,16,0,0,0,40,48V208a16,16,0,0,0,16,16H96a16,16,0,0,0,16-16V48A16,16,0,0,0,96,32Zm0,176H56V48H96Z"></path>
+    </g>
+    
+    <!-- Ícone de PLAY -->
+    <g class="icon-play">
+      <path d="M228.23,134.69,84.15,222.81A8,8,0,0,1,72,216.12V39.88a8,8,0,0,1,12.15-6.69l144.08,88.12A7.82,7.82,0,0,1,228.23,134.69Z" opacity="0.2"></path>
+      <path d="M232.4,114.49,88.32,26.35a16,16,0,0,0-16.2-.3A15.86,15.86,0,0,0,64,39.87V216.13A15.94,15.94,0,0,0,80,232a16.07,16.07,0,0,0,8.36-2.35L232.4,141.51a15.81,15.81,0,0,0,0-27ZM80,215.94V40l143.83,88Z"></path>
+    </g>
+    
+  </svg>
+      </button>
+
+      <!-- Escolher fase: botão sempre visível, só com ícone (degraus + bandeira); o painel mostra todas as fases em páginas -->
+      <button id="level-button" class="icon-button" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="level-menu" aria-label="Escolher fase" data-tip="Escolher fase" data-tip-pos="below-end">
+<svg viewBox="0 0 256 256" aria-hidden="true" focusable="false">
+  
+  <!-- DEGRAUS EM DUOTONE -->
+  <!-- 1. Fundo dos degraus (20% de opacidade) -->
+  <g fill="#543847" opacity="0.2">
+    <rect x="32" y="168" width="48" height="64" rx="8" />
+    <rect x="104" y="120" width="48" height="112" rx="8" />
+    <rect x="176" y="72" width="48" height="160" rx="8" />
+  </g>
+  
+  <!-- 2. Contornos dos degraus (Sólidos) -->
+  <g fill="none" stroke="#543847" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="32" y="168" width="48" height="64" rx="8" />
+    <rect x="104" y="120" width="48" height="112" rx="8" />
+    <rect x="176" y="72" width="48" height="160" rx="8" />
+  </g>
+
+  <!-- MASTRO E BANDEIRA (Clássicos e Sólidos) -->
+  <!-- Mastro (Topo reto) -->
+  <line x1="200" y1="72" x2="200" y2="16" stroke="#543847" stroke-width="16" />
+
+  <!-- Bandeira (Retângulo sólido) -->
+  <rect x="208" y="16" width="36" height="28" fill="#e5432b" />
+  
+</svg>
+      </button>
+      <div id="level-menu" class="level-menu" role="dialog" aria-labelledby="level-menu-title" hidden>
+        <div class="level-card">
+          <div class="level-head">
+            <h2 id="level-menu-title" class="level-menu-title">Escolher fase</h2>
+            <button id="level-close" class="level-close" type="button" aria-label="Fechar">
+              <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square"/></svg>
+            </button>
+          </div>
+          <div id="level-grid" class="level-grid"></div>
+          <nav class="level-pages" aria-label="Páginas de fases">
+            <button id="level-prev" class="page-btn page-arrow" type="button" aria-label="Página anterior">
+              <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square" stroke-linejoin="miter"/></svg>
+            </button>
+            <div id="level-page-list" class="page-list"></div>
+            <button id="level-next" class="page-btn page-arrow" type="button" aria-label="Próxima página">
+              <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square" stroke-linejoin="miter"/></svg>
+            </button>
+          </nav>
+          <p id="level-count" class="level-count"></p>
+        </div>
+      </div>
+
+      <section class="screen screen-ready" aria-live="polite">
+        <h1 class="title" aria-label="Quebra-Blocos">
+          <span class="title-row" aria-hidden="true"><span class="tile t1" style="--i:0">Q</span><span class="tile t2" style="--i:1">U</span><span class="tile t3" style="--i:2">E</span><span class="tile t4" style="--i:3">B</span><span class="tile t5" style="--i:4">R</span><span class="tile t6" style="--i:5">A</span></span>
+          <span class="title-row" aria-hidden="true"><span class="tile t7" style="--i:6">B</span><span class="tile t8" style="--i:7">L</span><span class="tile t1" style="--i:8">O</span><span class="tile t2" style="--i:9">C</span><span class="tile t3" style="--i:10">O</span><span class="tile t4" style="--i:11">S</span></span>
+        </h1>
+        <p class="ready-best">Fase mais alta: <strong id="title-level">1</strong></p>
+        <p class="hint">
+          <span class="hint-text">Toque para iniciar</span>
+          <span class="hint-or">ou</span>
+          <kbd class="cap cap-wide">Space</kbd>
+        </p>
+      </section>
+
+      <section class="screen screen-paused" role="dialog" aria-labelledby="pause-title">
+        <h2 id="pause-title" class="over-title">Pausado</h2>
+        <p id="pause-note" class="pause-note" hidden></p>
+        <div class="pause-actions">
+          <button id="resume-button" class="btn" type="button">Continuar</button>
+          <button id="pause-restart-button" class="btn btn-alt" type="button" aria-label="Reiniciar a partida e voltar à tela inicial">
+            <span id="pause-restart-label">Reiniciar</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="screen screen-won" role="dialog" aria-labelledby="won-title">
+        <h2 id="won-title" class="over-title is-win">Vitória!</h2>
+        <p class="stats"><span>Pontos <b id="won-score">0</b></span><span>Fase <b id="won-level">1</b></span></p>
+        <button id="next-button" class="btn" type="button">Próxima fase</button>
+      </section>
+
+      <section class="screen screen-over" role="dialog" aria-labelledby="over-title">
+        <h2 id="over-title" class="over-title is-lose">Game Over</h2>
+        <p class="stats"><span>Pontos <b id="over-score">0</b></span><span>Fase <b id="over-level">1</b></span></p>
+        <button id="restart-button" class="btn" type="button">Jogar novamente</button>
+      </section>
+
+      <!-- Contagem ao continuar: 3 · 2 · 1 · GO! em blocos coloridos (o JS troca o texto e a cor) -->
+      <div class="countdown" role="status" aria-live="assertive"><span id="count-tile" class="count-tile t1">3</span></div>
+
+      <noscript><p class="noscript">Ative o JavaScript para jogar.</p></noscript>
+    </main>
+
+    <button id="help-toggle" class="help-toggle" type="button" aria-expanded="false" aria-controls="help-panel" aria-label="Mostrar ajuda dos efeitos" data-tip="Ajuda dos efeitos" data-tip-pos="right">
+      <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
+        <rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor"/>
+        <rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor"/>
+      </svg>
+      <span>Efeitos</span>
+    </button>
+    <aside id="help-panel" class="help-panel" aria-label="Ajuda dos efeitos">
+      <header class="help-head">
+        <h2 class="help-title">Efeitos e blocos</h2>
+        <p class="help-sub">A cor do bloco é a da linha; o efeito é o ícone.</p>
+      </header>
+      <div id="help-list" class="help-groups"></div>
+    </aside>
+
+    <!-- Controle pelo mouse: fora do palco, embaixo ao lado dele. Começa desligado. -->
+    <button id="mouse-button" class="mouse-btn" type="button" aria-pressed="false" aria-label="Controle pelo mouse: desligado" data-tip="Mouse: desligado" data-tip-pos="above-end">
+      <svg viewBox="0 0 20 20" width="22" height="22" aria-hidden="true" focusable="false">
+        <rect x="5" y="2.5" width="10" height="15" rx="5" fill="none" stroke="currentColor" stroke-width="2"/>
+        <path d="M10 2.8v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path class="mouse-slash" d="M3 17 17 3" fill="none" stroke="#ff4d5e" stroke-width="2.4" stroke-linecap="round"/>
+      </svg>
+      <span class="mouse-dot" aria-hidden="true"></span>
+    </button>
+
+    <!-- Como jogar: botão só com ícone, fora do palco, acima do botão de efeitos + popover ancorado a ele -->
+    <button id="how-button" class="how-btn" type="button"
+            aria-haspopup="dialog" aria-expanded="false" aria-controls="how-popover"
+            aria-label="Como jogar" data-tip="Como jogar" data-tip-pos="below-end">
+      <svg viewBox="0 0 20 20" width="22" height="22" aria-hidden="true" focusable="false">
+        <circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="2"/>
+        <path d="M7.7 7.8a2.4 2.4 0 1 1 3.6 2.1c-.9.5-1.3 1-1.3 1.9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="10" cy="14.6" r="1.1" fill="currentColor"/>
+      </svg>
+    </button>
+    <div id="how-popover" class="how-popover" role="dialog" aria-labelledby="how-title" data-placement="below" hidden>
+      <button id="how-close" class="how-close" type="button" aria-label="Fechar">
+        <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+          <path d="M3.5 3.5l9 9M12.5 3.5l-9 9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square"/>
+        </svg>
+      </button>
+      <div class="how-body">
+        <h2 id="how-title" class="how-title">Como jogar</h2>
+        <p class="how-text">Rebata a bola com a barra e quebre todos os blocos. Se a bola cair, você perde uma vida.</p>
+        <h3 class="how-sub">Controles</h3>
+        <ul class="ctl-list">
+          <li><span class="ctl-keys"><kbd class="cap"><svg class="cap-icon" aria-hidden="true" focusable="false"><use href="#icon-left"/></svg><span class="sr-only">Seta para a esquerda</span></kbd><kbd class="cap"><svg class="cap-icon" aria-hidden="true" focusable="false"><use href="#icon-right"/></svg><span class="sr-only">Seta para a direita</span></kbd><span class="ctl-or">/</span><kbd class="cap">A</kbd><kbd class="cap">D</kbd></span><span class="ctl-label">Mover</span></li>
+          <li><span class="ctl-keys"><kbd class="cap cap-wide">Space</kbd></span><span class="ctl-label">Lançar a bola</span></li>
+          <li><span class="ctl-keys"><kbd class="cap">P</kbd><span class="ctl-or">/</span><kbd class="cap">Esc</kbd></span><span class="ctl-label">Pausar</span></li>
+          <li><span class="ctl-keys"><kbd class="cap">M</kbd></span><span class="ctl-label">Som</span></li>
+        </ul>
+        <h3 class="how-sub">Dicas</h3>
+        <ul class="how-tips">
+          <li>O ponto onde a bola toca a barra muda o ângulo.</li>
+          <li>Blocos com ícone soltam poderes e armadilhas: pegue-os com a barra.</li>
+        </ul>
+        <p class="how-note">No celular: arraste para mover e toque para lançar.</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="breakout_storage.js"></script>
+  <script src="breakout_game.js"></script>
+  <script src="breakout.js"></script>
+</body>
+</html>

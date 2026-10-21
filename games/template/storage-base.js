@@ -6,7 +6,7 @@
 
    COMO USAR num jogo específico:
    ──────────────────────────────
-     import { criarStorage } from '../../template/storage-base.js';
+     import { criarStorage } from '../../../template/storage-base.js';
 
      const Storage = criarStorage({
        colecaoFirestore: 'vf_historico',    // subcoleção em /usuarios/{uid}/

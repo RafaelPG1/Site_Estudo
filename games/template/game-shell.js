@@ -4,7 +4,7 @@
    Módulo base compartilhado por todos os jogos.
    Cada jogo importa as funções que precisa:
 
-     import { Shell, Timer } from '../../template/game-shell.js';
+     import { Shell, Timer } from '../../../template/game-shell.js';
 
    O que este módulo fornece:
      • Shell   — inicialização do header (nome, disciplina, semestre)
@@ -17,7 +17,7 @@
      • Conteúdo (perguntas/termos)
 
 Como um jogo usa:
-     import { Shell, Timer, Result, shuffle } from '../../template/game-shell.js';
+     import { Shell, Timer, Result, shuffle } from '../../../template/game-shell.js';
 
 const { disc, sem } = Shell.init({ icon: '🔤', nome: 'Forca' });
 const timer = Timer.criar({ total: 60, onEnd: () => encerrarJogo() });
@@ -120,7 +120,7 @@ export const Shell = {
     /* ── Botão voltar (por ID — padrão dos jogos) ── */
     const backBtn = document.getElementById('shell-back-btn');
     if (backBtn) {
-      backBtn.href = `../../jogo.html${sem ? `?sem=${sem}` : ''}`;
+      backBtn.href = `../../../jogo.html${sem ? `?sem=${sem}` : ''}`;
     }
 
     return { disc, sem, cores, disciplina };
@@ -278,7 +278,7 @@ export const Result = {
     const { disc, sem } = lerParams();
     const btnSair = document.getElementById('result-btn-sair');
     if (btnSair) {
-      btnSair.href = `../../jogo.html${sem ? `?sem=${sem}` : ''}`;
+      btnSair.href = `../../../jogo.html${sem ? `?sem=${sem}` : ''}`;
     }
 
     overlay.classList.remove('hidden');

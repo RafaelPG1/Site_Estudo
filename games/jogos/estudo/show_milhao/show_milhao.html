@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Show do Milhão — Nexus Study</title>
+
+  <!--
+    REFATORAÇÃO v3.0
+    ─────────────────
+    • Adiciona bloco "Revisar Erros" na intro (#sm-btn-revisar-erros)
+    • Adiciona bloco "Revisar Erros" na tela de resultado
+    • Adiciona #score-total para atualizarContadores()
+    • Adiciona #continuar-info dentro de #intro-continuar
+    • Remove dependência da chave sm_saiu_voluntario__*
+  -->
+  <link rel="stylesheet" href="../../../template/game-shell.css" />
+  <link rel="stylesheet" href="show_milhao.css" />
+  <link rel="stylesheet" href="../../../../shared/css/audio/audio-btns.css" />
+    <link rel="stylesheet" href="../../../../shared/css/ia/ia.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=DM+Sans:wght@400;500;600;700&family=Exo+2:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- Background — definido em game-shell.css -->
+<div class="bg-grid"></div>
+<div class="bg-orb bg-orb--1"></div>
+<div class="bg-orb bg-orb--2"></div>
+
+<!-- ══ CABEÇALHO — estrutura definida em game-shell.css ══ -->
+<header class="game-header">
+  <a id="shell-back-btn" class="game-header__back" href="../../../jogo.html">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M13 16l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span>Voltar</span>
+  </a>
+
+  <div class="game-header__identity">
+    <div class="game-header__icon" id="shell-icon">🃏</div>
+    <div class="game-header__info">
+      <div class="game-header__name" id="shell-game-name">Show do Milhão</div>
+      <div class="game-header__meta">
+        <span id="shell-disc-name">—</span>
+        <span class="game-header__meta-sep">·</span>
+        <span id="shell-sem">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Controles: pausar / menu — ocultos até o jogo começar -->
+  <div class="game-header__controls" id="header-controls">
+<button id="btn-pause" class="sm-ctrl-btn sm-ctrl-btn--pause">
+  <svg id="pause-icon" viewBox="0 0 24 24" fill="currentColor" width="13" height="13">
+    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+  </svg>
+  <span id="pause-label">Pausar</span>
+</button>
+<button id="btn-voltar-intro" class="sm-ctrl-btn sm-ctrl-btn--menu">
+  <svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13">
+    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+  </svg>
+  Menu
+</button>
+  </div>
+</header>
+
+<!-- ── TELA LOADING ── -->
+<div id="screen-loading" class="tela ativa" style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem;">
+  <div style="font-size:2.5rem;animation:spin 1.2s linear infinite;">⭐</div>
+  <p style="color:var(--cor-texto-2,#aaa);font-family:'DM Sans',sans-serif;font-size:.95rem;">Carregando...</p>
+</div>
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<!-- ── TELA INTRO ── -->
+<div id="screen-intro" class="tela hidden">
+  <div class="logo-wrapper">
+    <div class="logo-estrela">⭐</div>
+    <h1 class="titulo-jogo">Show do<br><span>Milhão</span></h1>
+    <p class="subtitulo">Você tem coragem de chegar ao topo?</p>
+  </div>
+
+  <div class="sm-chips">
+    <span class="sm-chip sm-chip--disc">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 13A6 6 0 1 1 8 2a6 6 0 0 1 0 12z"/>
+      </svg>
+      <span id="intro-disc-name">—</span>
+    </span>
+    <span class="sm-chip sm-chip--sem">
+      <span id="intro-sem-label">—</span>
+    </span>
+  </div>
+
+  <p class="sm-intro-info">
+    <span id="intro-total-questoes">10</span> perguntas · 30 segundos cada · Sem segunda chance
+  </p>
+
+  <button class="btn-jogar sm-btn-nova" id="btn-start">
+  <svg class="btn-jogar__icon" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true">
+    <path d="M6 4.5v15l13-7.5L6 4.5Z"/>
+  </svg>
+  JOGAR AGORA
+</button>
+
+  <!-- Botão continuar — aparece quando há sessão salva -->
+  <div id="intro-continuar" class="sm-intro-continuar" style="display:none;">
+    <button class="btn-jogar sm-btn-continuar" id="btn-continuar">
+      <svg class="sm-btn-continuar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16" style="width:16px;height:16px;flex-shrink:0;" aria-hidden="true">
+        <path d="M20 12a8 8 0 1 1-2.4-6.5"/>
+        <polyline points="20.5 3 20.5 8.5 15 8.5"/>
+      </svg>
+      Continuar
+    </button>
+    <div class="sm-continuar-info" id="continuar-info"></div>
+  </div>
+
+  <!-- Botão Revisar Erros — aparece quando há erros no histórico -->
+  <div id="sm-revisar-wrapper" class="sm-revisar-wrapper" style="display:none;">
+    <button class="sm-btn-revisar-erros hidden" id="sm-btn-revisar-erros">
+      <span class="sm-revisar-inner">
+        <svg class="sm-revisar-icon" viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true">
+          <path d="M12 2L1 21h22L12 2zm0 3.5L20.5 19h-17L12 5.5zM11 10v4h2v-4h-2zm0 6v2h2v-2h-2z"/>
+        </svg>
+        Revisar Erros
+      </span>
+      <span class="sm-revisar-badge" id="sm-revisar-count">0</span>
+    </button>
+  </div>
+
+  <div class="rodape-inicio">Boa sorte! ✨</div>
+</div>
+
+<!-- ── TELA JOGO ── -->
+<div id="screen-question" class="tela hidden">
+
+  <div class="hud">
+    <div class="hud-item">
+      <span class="hud-label">PERGUNTA</span>
+      <span class="hud-valor" id="num-pergunta">1/10</span>
+    </div>
+    <div class="timer-container">
+      <svg class="timer-svg" viewBox="0 0 100 100">
+        <circle class="timer-bg" cx="50" cy="50" r="44"/>
+        <circle class="timer-arco" id="timer-arco" cx="50" cy="50" r="44"/>
+      </svg>
+      <span class="timer-numero" id="timer-numero">30</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">PONTUAÇÃO</span>
+      <span class="hud-valor" id="pontuacao-hud">R$ 0</span>
+    </div>
+  </div>
+
+  <!-- Barra de timer -->
+  <div class="sm-progress-wrap">
+    <div id="progress-fill" class="game-timer-bar game-timer-bar--green"></div>
+  </div>
+
+  <!-- Bolinhas de progresso -->
+  <div id="sm-dots" class="sm-dots-container"></div>
+
+  <!-- Pergunta -->
+  <div class="card-pergunta">
+
+    <!-- Badge de histórico por questão -->
+    <div class="sm-hist-badge" id="sm-hist-badge" aria-live="polite" hidden>
+      <span class="sm-hist-badge__seg">
+        <svg class="sm-hist-badge__ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+          <circle cx="8" cy="8" r="6"/>
+          <path d="M5.5 8l1.5 1.5 3.5-3.5" stroke-linecap="round"/>
+        </svg>
+        <span id="sm-hist-tentativas">0</span>
+        <span aria-hidden="true"> tent.</span>
+      </span>
+      <span class="sm-hist-badge__div" aria-hidden="true"></span>
+      <span class="sm-hist-badge__seg">
+        <svg class="sm-hist-badge__ico" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM7.25 10.5V7h1.5v3.5h-1.5zm0-4.5V4.5h1.5V6h-1.5z"/>
+        </svg>
+        <span id="sm-hist-taxa">0%</span>
+        <span aria-hidden="true"> acerto</span>
+      </span>
+      <span class="sm-hist-badge__div" aria-hidden="true"></span>
+      <span class="sm-hist-badge__status" id="sm-hist-status"></span>
+    </div>
+
+    <div class="pergunta-nivel" id="pergunta-nivel">Nível 1</div>
+    <p class="pergunta-texto" id="pergunta-texto">Carregando pergunta...</p>
+  </div>
+
+  <!-- Alternativas -->
+  <div class="alternativas" id="alternativas">
+    <button class="alt-btn" id="alt-a" data-letra="A">
+      <span class="alt-letra">A</span>
+      <span class="alt-texto" id="texto-a"></span>
+    </button>
+    <button class="alt-btn" id="alt-b" data-letra="B">
+      <span class="alt-letra">B</span>
+      <span class="alt-texto" id="texto-b"></span>
+    </button>
+    <button class="alt-btn" id="alt-c" data-letra="C">
+      <span class="alt-letra">C</span>
+      <span class="alt-texto" id="texto-c"></span>
+    </button>
+    <button class="alt-btn" id="alt-d" data-letra="D">
+      <span class="alt-letra">D</span>
+      <span class="alt-texto" id="texto-d"></span>
+    </button>
+  </div>
+
+  <!-- Feedback -->
+  <div class="feedback-box" id="feedback-box">
+    <div class="feedback-icone" id="feedback-icone"></div>
+    <div class="feedback-msg"   id="feedback-msg"></div>
+    <div class="feedback-resposta" id="feedback-resposta"></div>
+  </div>
+
+  <!-- Navegação -->
+  <div class="sm-nav-row">
+    <button class="btn-proxima sm-nav-btn--secondary" id="btn-anterior">← Anterior</button>
+    <button class="btn-proxima sm-nav-btn--proxima"   id="btn-proxima" disabled>PRÓXIMA →</button>
+  </div>
+
+  <!-- Premiação lateral -->
+  <div class="premiacao-lateral" id="premiacao-lateral">
+    <div class="premia-titulo">PREMIAÇÃO</div>
+    <div id="lista-premios"></div>
+  </div>
+</div>
+
+<!-- ── TELA RESULTADO ── -->
+<div id="screen-result" class="tela hidden">
+  <div class="fim-container resultado-nucleo">
+    <div class="fim-icone"  id="resultado-simbolo">🏆</div>
+    <h2 class="fim-titulo"  id="resultado-titulo">Parabéns!</h2>
+    <div class="fim-valor"  id="resultado-valor">R$ 0</div>
+    <div class="fim-melhor" id="resultado-melhor" style="display:none;"></div>
+
+    <div class="sm-stats-grid">
+      <div class="sm-stat-item">
+        <div class="sm-stat-num sm-stat-num--acertos" id="resultado-acertos">0</div>
+        <div class="sm-stat-label">ACERTOS</div>
+      </div>
+      <div class="sm-stat-item">
+        <div class="sm-stat-num sm-stat-num--erros" id="resultado-erros">0</div>
+        <div class="sm-stat-label">ERROS</div>
+      </div>
+      <div class="sm-stat-item">
+        <div class="sm-stat-num sm-stat-num--precisao" id="resultado-precisao">0%</div>
+        <div class="sm-stat-label">PRECISÃO</div>
+      </div>
+      <div class="sm-stat-item">
+        <div class="sm-stat-num sm-stat-num--tempo" id="resultado-tempo">0:00</div>
+        <div class="sm-stat-label">TEMPO</div>
+      </div>
+    </div>
+
+    <div class="sm-result-btns">
+      <button class="btn-jogar"  id="resultado-btn-rejogo">JOGAR NOVAMENTE</button>
+      <button class="btn-proxima sm-nav-btn--secondary" id="resultado-btn-sair">← Voltar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TELA VAZIA ── -->
+<div id="screen-empty" class="tela hidden">
+  <div class="fim-container">
+    <div class="fim-icone">📭</div>
+    <h2 class="fim-titulo" id="empty-title">Sem perguntas</h2>
+    <p  class="fim-msg"    id="empty-desc">Não encontramos questões para esta disciplina ainda.</p>
+    <a  class="btn-jogar"  id="btn-empty-back" href="#">← Voltar</a>
+  </div>
+</div>
+
+<script type="module" src="show_milhao.js"></script>
+</body>
+</html>

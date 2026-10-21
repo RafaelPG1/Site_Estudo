@@ -1,0 +1,335 @@
+/* puzzle/sokoban/sokoban.css - casca externa no padrão da Arcádia; --u = largura do palco / 288 (atualizado pelo JS) */
+:root {
+  --ink: #0f1320; --cream: #f1e9d2; --amber: #ffc857; --amber-dark: #b8841a; --felt: #1c2233; --tray: #121726;
+  --muted: #9aa6c9; --good: #5ac26a; --line: #3a4466;
+  --floor: #2a3350; --floor-alt: #2e3757; --wall: #66729a; --wall-hi: #8793bb; --wall-lo: #3f4a6e;
+  --wood: #d29a4c; --wood-edge: #6b3f1a; --done: #86d494; --done-edge: #2f6b3a;
+  --u: 1.5px;
+}
+html, body {
+  touch-action: none;
+  -webkit-touch-callout: none;
+}
+body {
+  font-family: "Arial Black", "Trebuchet MS", "Helvetica Neue", Arial, sans-serif; font-weight: 900; color: var(--cream);
+}
+
+/* Cabeçalho (padrão da Arcádia) */
+.topbar {
+  gap: 10px;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-weight: 600;
+  color: var(--shell-text);
+}
+.back {
+  grid-column: 1; justify-self: start; flex: none; white-space: nowrap; min-width: max-content;
+  touch-action: manipulation;
+}
+.game-id { grid-column: 2; justify-self: center; }   /* centro exato: colunas laterais iguais (1fr) */
+.game-mark { border-radius: 9px; box-shadow: 0 0 18px rgba(210,154,76,.25); }
+.game-text h1 { margin: 0; font-size: 15px; font-weight: 700; white-space: nowrap; }
+.game-text span { font-size: 12px; font-weight: 500; color: var(--shell-muted); }
+
+/* Arena e palco (mesma proporção 288 × 512 dos outros jogos) */
+.arena {
+  position: relative; flex: 1 1 0; min-height: 0; display: grid; place-items: center; overflow: hidden;
+  background: radial-gradient(rgba(255,255,255,.045) 1px, transparent 1px) 0 0 / 22px 22px, var(--shell-bg);
+}
+.stage-wrap { position: relative; aspect-ratio: 288 / 512; height: min(100%, calc(100vw * 512 / 288)); }
+.stage {
+  position: relative; width: 100%; height: 100%; overflow: hidden;
+  --btn: max(40px, calc(var(--u) * 20)); --btn-top: calc(var(--u) * 8);
+  display: flex; flex-direction: column; gap: calc(var(--u) * 7);
+  padding: max(calc(var(--u) * 38), calc(var(--btn-top) + var(--btn) + var(--u) * 7)) calc(var(--u) * 12) calc(var(--u) * 12);
+  background: repeating-linear-gradient(45deg, rgba(255,255,255,.02) 0 calc(var(--u) * 2), transparent 0 calc(var(--u) * 5)), var(--felt);
+  box-shadow: 0 0 0 calc(var(--u) * 2) #05060a, 0 0 0 calc(var(--u) * 3) rgba(255,255,255,.08), 0 calc(var(--u) * 6) calc(var(--u) * 16) rgba(0,0,0,.55);
+}
+.icon-button {
+  position: absolute; top: var(--btn-top); right: calc(var(--u) * 8); z-index: 5; display: grid; place-items: center;
+  width: var(--btn); height: var(--btn); padding: 0; background: var(--cream); border: calc(var(--u) * 2) solid var(--ink);
+  border-radius: calc(var(--u) * 4); box-shadow: 0 calc(var(--u) * 2) 0 #b5ab8c; opacity: .92; cursor: pointer; touch-action: manipulation;
+}
+#mute-button { right: calc(var(--u) * 12 + var(--btn)); }
+#pause-button { right: calc(var(--u) * 16 + var(--btn) * 2); }
+.icon-button:disabled { opacity: .4; cursor: default; }
+.icon-button .icon-cross { display: none; }
+.icon-button.is-muted .icon-waves { display: none; }
+.icon-button.is-muted .icon-cross { display: inline; }
+.icon-button:hover, .icon-button:focus-visible { opacity: 1; }
+.icon-button:focus-visible, .btn:focus-visible, .pad:focus-visible, .lv:focus-visible, .pager-btn:focus-visible, .help-button:focus-visible { outline: calc(var(--u) * 2) solid #4ec0e8; outline-offset: calc(var(--u) * 1); }
+.start:focus-visible { outline: calc(var(--u) * 2) solid #4ec0e8; outline-offset: calc(var(--u) * -4); }
+.icon-button svg { width: 62%; height: 62%; }
+
+/* Painel */
+.hud { display: grid; grid-template-columns: .8fr 1fr 1.1fr; gap: calc(var(--u) * 6); margin-right: calc(var(--btn) + var(--u) * 4); }
+.stat {
+  display: flex; flex-direction: column; justify-content: center; gap: calc(var(--u) * 2); min-width: 0; min-height: calc(var(--u) * 40);
+  padding: calc(var(--u) * 5) calc(var(--u) * 7); background: rgba(0,0,0,.26); border-radius: calc(var(--u) * 4);
+  box-shadow: inset 0 0 0 calc(var(--u) * 1.5) var(--line);
+}
+.stat span { font-size: max(8px, calc(var(--u) * 7.5)); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+.stat strong { font-size: max(15px, calc(var(--u) * 19)); line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.stat-best strong { font-size: max(12px, calc(var(--u) * 14)); color: var(--amber); }
+
+/* Tabuleiro: casa quadrada = largura da bandeja / max(colunas, linhas); o mapa é centralizado */
+.board {
+  position: relative; flex: none; width: 100%; aspect-ratio: 1; padding: calc(var(--u) * 6); background: var(--tray);
+  border-radius: calc(var(--u) * 6); box-shadow: inset 0 calc(var(--u) * 3) calc(var(--u) * 6) rgba(0,0,0,.5), 0 0 0 calc(var(--u) * 2) #05060a;
+}
+.board > .map { position: absolute; inset: calc(var(--u) * 6); }
+.map { --n: 8; --cols: 8; --rows: 8; }
+.grid-box { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: calc(100% * var(--cols) / var(--n)); height: calc(100% * var(--rows) / var(--n)); }
+.t, .e {
+  position: absolute; left: 0; top: 0; width: calc(100% / var(--cols)); height: calc(100% / var(--rows));
+  transform: translate(calc(var(--c) * 100%), calc(var(--r) * 100%));
+}
+.t { background: var(--floor); }
+.t.alt { background: var(--floor-alt); }
+.t.wall {
+  background: linear-gradient(180deg, transparent 48%, rgba(0,0,0,.22) 48% 52%, transparent 52%), var(--wall);
+  box-shadow: inset 0 calc(var(--u) * 2) 0 var(--wall-hi), inset 0 calc(var(--u) * -3) 0 var(--wall-lo), inset 0 0 0 calc(var(--u) * .5) rgba(0,0,0,.25);
+}
+.t.goal::after {
+  content: ""; position: absolute; inset: 33%; border-radius: 50%; border: calc(var(--u) * 2) solid var(--amber);
+  box-shadow: 0 0 calc(var(--u) * 5) rgba(255,200,87,.35); background: rgba(255,200,87,.16);
+}
+
+/* Entidades (animam por transform; a lógica não espera a animação) */
+.e { z-index: 2; transition: transform .1s cubic-bezier(.3,.7,.3,1); pointer-events: none; }
+.box .face {
+  position: absolute; inset: 8%; border-radius: calc(var(--u) * 2); border: calc(var(--u) * 2) solid var(--wood-edge);
+  background: linear-gradient(45deg, transparent 45%, var(--wood-edge) 45% 55%, transparent 55%),
+              linear-gradient(-45deg, transparent 45%, var(--wood-edge) 45% 55%, transparent 55%), var(--wood);
+  box-shadow: 0 calc(var(--u) * 2.5) 0 #3d2410, inset 0 calc(var(--u) * 1.5) 0 rgba(255,255,255,.35), 0 calc(var(--u) * 4) calc(var(--u) * 3) rgba(0,0,0,.35);
+  transition: background-color .2s, border-color .2s;
+}
+.box.done .face {
+  border-color: var(--done-edge); background-color: var(--done);
+  background-image: linear-gradient(45deg, transparent 45%, var(--done-edge) 45% 55%, transparent 55%), linear-gradient(-45deg, transparent 45%, var(--done-edge) 45% 55%, transparent 55%);
+  box-shadow: 0 calc(var(--u) * 2.5) 0 #1c4527, inset 0 calc(var(--u) * 1.5) 0 rgba(255,255,255,.5), 0 0 calc(var(--u) * 6) rgba(90,194,106,.55);
+}
+
+/* Personagem: três vistas em SVG (frente, costas, perfil; o perfil é espelhado no JS para a esquerda).
+   data-face escolhe a vista; data-anim (walkA/walkB/pushA/pushB) dispara a animação do último passo. Tudo fica dentro da casa. */
+.player { z-index: 3; }
+.player svg { position: absolute; inset: 6%; width: 88%; height: 88%; overflow: visible; }
+.player .v { display: none; }
+.player[data-face="down"] .v-down, .player[data-face="up"] .v-up, .player[data-face="left"] .v-side, .player[data-face="right"] .v-side { display: inline; }
+.player[data-face="up"] { --lx: 0px; --ly: -1.8px; }
+.player[data-face="down"] { --lx: 0px; --ly: 1.8px; }
+.player[data-face="left"] { --lx: -1.8px; --ly: 0px; }
+.player[data-face="right"] { --lx: 1.8px; --ly: 0px; }
+.player .pl, .player .ft1, .player .ft2, .player .arm { transform-box: view-box; transform-origin: 16px 16px; }
+.player .arm-l { transform-box: view-box; transform-origin: 7.7px 16px; }
+.player .arm-r { transform-box: view-box; transform-origin: 24.3px 16px; }
+.player[data-anim="walkA"] .pl, .player[data-anim="pushA"] .pl { animation: bobA .12s ease-out; }
+.player[data-anim="walkB"] .pl, .player[data-anim="pushB"] .pl { animation: bobB .12s ease-out; }
+.player[data-anim="pushA"] .pl { animation: leanA .15s ease-out; }
+.player[data-anim="pushB"] .pl { animation: leanB .15s ease-out; }
+.player[data-anim="walkA"] .ft1, .player[data-anim="pushA"] .ft1, .player[data-anim="walkB"] .ft2, .player[data-anim="pushB"] .ft2 { animation: footUp .12s ease-out; }
+.player[data-anim="walkA"] .ft2, .player[data-anim="pushA"] .ft2, .player[data-anim="walkB"] .ft1, .player[data-anim="pushB"] .ft1 { animation: footDown .12s ease-out; }
+.player[data-anim="pushA"] .arm { animation: armPushA .15s ease-out; }
+.player[data-anim="pushB"] .arm { animation: armPushB .15s ease-out; }
+.player[data-anim="pushA"] .arm-l { animation: armOutLA .15s ease-out; }
+.player[data-anim="pushB"] .arm-l { animation: armOutLB .15s ease-out; }
+.player[data-anim="pushA"] .arm-r { animation: armOutRA .15s ease-out; }
+.player[data-anim="pushB"] .arm-r { animation: armOutRB .15s ease-out; }
+@keyframes bobA { 0% { transform: translateY(0); } 35% { transform: translateY(-1.2px); } 100% { transform: translateY(0); } }
+@keyframes bobB { 0% { transform: translateY(0); } 35% { transform: translateY(-1.2px); } 100% { transform: translateY(0); } }
+@keyframes leanA { 0% { transform: translate(0, 0); } 40% { transform: translate(var(--lx), var(--ly)); } 100% { transform: translate(0, 0); } }
+@keyframes leanB { 0% { transform: translate(0, 0); } 40% { transform: translate(var(--lx), var(--ly)); } 100% { transform: translate(0, 0); } }
+@keyframes footUp { 0% { transform: translateY(0); } 45% { transform: translateY(-2px); } 100% { transform: translateY(0); } }
+@keyframes footDown { 0% { transform: translateY(0); } 45% { transform: translateY(.6px); } 100% { transform: translateY(0); } }
+@keyframes armPushA { 0% { transform: rotate(0); } 40% { transform: rotate(-78deg); } 100% { transform: rotate(0); } }
+@keyframes armPushB { 0% { transform: rotate(0); } 40% { transform: rotate(-78deg); } 100% { transform: rotate(0); } }
+@keyframes armOutLA { 0% { transform: rotate(0); } 40% { transform: rotate(22deg); } 100% { transform: rotate(0); } }
+@keyframes armOutLB { 0% { transform: rotate(0); } 40% { transform: rotate(22deg); } 100% { transform: rotate(0); } }
+@keyframes armOutRA { 0% { transform: rotate(0); } 40% { transform: rotate(-22deg); } 100% { transform: rotate(0); } }
+@keyframes armOutRB { 0% { transform: rotate(0); } 40% { transform: rotate(-22deg); } 100% { transform: rotate(0); } }
+.player.on-goal::before { content: ""; position: absolute; inset: 12%; border-radius: 50%; box-shadow: 0 0 0 calc(var(--u) * 2) var(--amber); }
+.status { margin: 0; min-height: calc(var(--u) * 10); font-size: max(9px, calc(var(--u) * 8)); line-height: 1.3; text-align: center; color: var(--muted); }
+
+/* Botões */
+.actions, .row { display: flex; gap: calc(var(--u) * 8); }
+.btn {
+  flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: calc(var(--u) * 5); min-width: 0;
+  min-height: max(40px, calc(var(--u) * 26)); padding: 0 calc(var(--u) * 8); font: inherit; font-size: max(11px, calc(var(--u) * 11));
+  text-transform: uppercase; color: var(--ink); background: var(--amber); border: calc(var(--u) * 2.5) solid var(--ink);
+  border-radius: calc(var(--u) * 5); box-shadow: 0 calc(var(--u) * 3) 0 var(--amber-dark); cursor: pointer; touch-action: manipulation;
+}
+.btn svg { width: calc(var(--u) * 13); min-width: 14px; height: auto; flex: none; }
+.btn:hover { background: #ffd57f; }
+.btn:active { transform: translateY(calc(var(--u) * 2)); box-shadow: 0 calc(var(--u) * 1) 0 var(--amber-dark); }
+.btn-alt { color: var(--cream); background: transparent; box-shadow: none; border-color: var(--line); }
+.btn-alt:hover { background: rgba(255,255,255,.06); border-color: var(--muted); }
+.btn:disabled { opacity: .4; cursor: default; pointer-events: none; }
+
+/* Controles de toque */
+.dpad {
+  margin: auto; display: grid; grid-template-columns: repeat(3, var(--pad)); grid-template-rows: repeat(2, var(--pad)); gap: calc(var(--u) * 6);
+  --pad: max(44px, calc(var(--u) * 38));
+}
+.pad {
+  display: grid; place-items: center; padding: 0; color: var(--cream); background: rgba(255,255,255,.07); cursor: pointer; touch-action: manipulation;
+  border: calc(var(--u) * 2) solid var(--line); border-radius: calc(var(--u) * 7); box-shadow: 0 calc(var(--u) * 2.5) 0 rgba(0,0,0,.4);
+  transition: background .08s, transform .08s;
+}
+.dpad { display: none; }   /* setas na tela só em dispositivos de toque; no desktop o jogo usa o teclado */
+@media (hover: none), (pointer: coarse) { .dpad { display: grid; } }
+.pad svg { width: 50%; height: 50%; }
+.pad:active, .pad.is-down { background: rgba(255,200,87,.25); border-color: var(--amber); transform: translateY(calc(var(--u) * 2)); }
+.pad-up { grid-column: 2; grid-row: 1; } .pad-left { grid-column: 1; grid-row: 2; } .pad-down { grid-column: 2; grid-row: 2; } .pad-right { grid-column: 3; grid-row: 2; }
+
+/* Botão ? (fora do palco). Desktop ("side"): ao lado, popover abre para baixo. Celular ("bottom"): embaixo do palco, alinhado à direita, popover abre para cima (drop-up), alinhados à direita do palco. */
+.help { position: absolute; z-index: 20; width: 42px; height: 42px; }
+.stage-wrap[data-help="side"] .help { left: calc(100% + 10px); top: 0; }
+.stage-wrap[data-help="bottom"] .help { right: 0; top: calc(100% + 10px); }
+.help-button {
+  position: relative; display: grid; place-items: center; width: 42px; height: 42px; padding: 0; color: var(--shell-text); background: var(--shell-surface);
+  border: 1px solid var(--shell-line); border-radius: 50%; cursor: pointer; touch-action: manipulation; transition: border-color .2s, background .2s, color .2s, transform .1s;
+}
+.help-button svg { width: 58%; height: 58%; }
+.help-button:hover, .help-button[aria-expanded="true"] { color: var(--shell-accent); background: #141722; border-color: rgba(255,200,87,.6); }
+.help-button:active { transform: scale(.95); }
+.help-pop {
+  position: absolute; top: calc(100% + 8px); right: 0; width: min(250px, calc(100vw - 20px)); padding: 14px 14px 12px; text-align: left;
+  font-size: 13px; font-weight: 700; line-height: 1.4; color: var(--cream); background: var(--felt); border: 2px solid var(--line); border-radius: 12px;
+  box-shadow: 0 10px 28px rgba(0,0,0,.55); animation: pop-in .14s ease-out;
+}
+.help-pop[hidden] { display: none; }
+.help-pop p { margin: 0 0 8px; }
+.help-title { margin: 0 0 6px; font-size: 14px; text-transform: uppercase; color: var(--amber); }
+.help-keys { margin: 0 0 8px; padding: 0; list-style: none; display: grid; gap: 6px; color: var(--muted); font-size: 12px; }
+.help-touch { margin: 0 !important; font-size: 12px; color: var(--muted); }
+.help-pop .keycaps { display: inline-flex; gap: 2px; }
+.help-pop kbd {
+  display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 4px; font: inherit; font-size: 11px; color: var(--ink);
+  background: var(--cream); border: 1px solid var(--ink); border-radius: 4px; box-shadow: 0 2px 0 #b5ab8c;
+}
+/* Seta do popover: aponta para o botão (para cima quando abre para baixo; para baixo quando abre para cima) */
+.help-pop::after {
+  content: ""; position: absolute; top: -7px; right: 15px; width: 12px; height: 12px; transform: rotate(45deg);
+  background: var(--felt); border: solid var(--line); border-width: 2px 0 0 2px;
+}
+.stage-wrap[data-help="bottom"] .help-pop { top: auto; bottom: calc(100% + 12px); right: 0; animation-name: pop-up; }
+.stage-wrap[data-help="bottom"] .help-pop::after { top: auto; bottom: -7px; border-width: 0 2px 2px 0; }
+@keyframes pop-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@keyframes pop-up { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* Tooltips dos controles só com ícone: um único sistema (data-tip). Mouse: 300 ms de hover; teclado (:focus-visible): imediato;
+   saindo ou clicando: some na hora (.tip-off, via JS); touch: sem hover, nada fica preso. Ancorado à direita, abre para baixo. */
+[data-tip]::after {
+  content: attr(data-tip); position: absolute; top: calc(100% + var(--u) * 6); right: 0; z-index: 30; padding: calc(var(--u) * 4) calc(var(--u) * 7);
+  font-family: "Arial Black", "Trebuchet MS", "Helvetica Neue", Arial, sans-serif; font-weight: 900; font-size: max(11px, calc(var(--u) * 9)); line-height: 1.2;
+  text-transform: none; white-space: nowrap; color: var(--ink); background: var(--cream); border: calc(var(--u) * 2) solid var(--ink);
+  border-radius: calc(var(--u) * 4); box-shadow: 0 calc(var(--u) * 2) 0 #b5ab8c; opacity: 0; visibility: hidden; pointer-events: none; transition: none;
+}
+/* Botão ? embaixo do palco: dica aparece acima dele, com seta apontando para baixo */
+.stage-wrap[data-help="bottom"] .help-button::after { top: auto; bottom: calc(100% + 10px); right: 0; }
+.stage-wrap[data-help="bottom"] .help-button[data-tip]::before {
+  content: ""; position: absolute; bottom: calc(100% + 10px); right: 21px; z-index: 31; width: 9px; height: 9px;
+  transform: translate(50%, 50%) rotate(45deg); background: var(--cream); border: solid var(--ink); border-width: 0 2px 2px 0;
+  opacity: 0; visibility: hidden; pointer-events: none; transition: none;
+}
+/* Botões do palco: tooltip embaixo do botão, com seta (triângulo) apontando para ele. O balão do último botão alinha à borda direita
+   para não ser cortado pelo palco; a seta continua centralizada no botão. */
+.icon-button[data-tip]::after { top: calc(100% + var(--u) * 8); left: 50%; right: auto; transform: translateX(-50%); }
+#levels-button::after { left: auto; right: 0; transform: none; }
+.icon-button[data-tip]::before {
+  content: ""; position: absolute; top: calc(100% + var(--u) * 8); left: 50%; z-index: 31; width: calc(var(--u) * 7); height: calc(var(--u) * 7);
+  transform: translate(-50%, -50%) rotate(45deg); background: var(--cream); border: solid var(--ink); border-width: calc(var(--u) * 2) 0 0 calc(var(--u) * 2);
+  opacity: 0; visibility: hidden; pointer-events: none; transition: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  [data-tip]:hover::after, [data-tip]:hover::before { opacity: 1; visibility: visible; transition: opacity .12s ease var(--tip-delay), visibility 0s linear var(--tip-delay); }
+}
+[data-tip]:focus-visible::after, [data-tip]:focus-visible::before { opacity: 1; visibility: visible; transition: none; }
+[data-tip].tip-off::after, [data-tip].tip-off::before, [data-tip].tip-off:focus-visible::after, [data-tip].tip-off:focus-visible::before { opacity: 0 !important; visibility: hidden !important; transition: none !important; }
+
+/* Tela inicial: ocupa 100% do palco e cobre o tabuleiro (nada do gameplay aparece atrás) */
+.start {
+  position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; padding: 0 calc(var(--u) * 14); cursor: pointer; outline: none;
+  background: repeating-linear-gradient(45deg, rgba(255,255,255,.02) 0 calc(var(--u) * 2), transparent 0 calc(var(--u) * 5)), var(--felt);
+  opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .25s ease, visibility 0s linear .25s;
+}
+.is-ready .start { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
+.start-card { width: 100%; display: flex; flex-direction: column; align-items: center; gap: calc(var(--u) * 6); text-align: center; }
+.start p, .start h2 { margin: 0; }
+.start-mark { width: calc(var(--u) * 34); height: calc(var(--u) * 34); filter: drop-shadow(0 calc(var(--u) * 2) 0 rgba(0,0,0,.4)); }
+.start-title { font-size: calc(var(--u) * 28); line-height: 1; text-transform: uppercase; color: var(--amber); }
+.start-level { font-size: max(11px, calc(var(--u) * 11)); text-transform: uppercase; color: var(--cream); }
+.start-progress { font-size: max(9px, calc(var(--u) * 8)); line-height: 1.3; color: var(--muted); }
+.start-touch { margin-top: calc(var(--u) * 6) !important; font-size: max(13px, calc(var(--u) * 14)); text-transform: uppercase; color: var(--amber); animation: blink 1.6s ease-in-out infinite; }
+.start-or { font-size: max(9px, calc(var(--u) * 8)); text-transform: uppercase; color: var(--muted); }
+.spacebar {
+  display: inline-grid; place-items: center; min-width: calc(var(--u) * 110); height: max(30px, calc(var(--u) * 28)); padding: 0 calc(var(--u) * 12); font: inherit; font-size: max(11px, calc(var(--u) * 11));
+  letter-spacing: .2em; color: var(--ink); background: linear-gradient(180deg, #fbf6e6, var(--cream)); border: calc(var(--u) * 2.5) solid var(--ink); border-radius: calc(var(--u) * 6);
+  box-shadow: inset 0 calc(var(--u) * 2) 0 rgba(255,255,255,.85), inset 0 calc(var(--u) * -3) 0 rgba(0,0,0,.1), 0 calc(var(--u) * 4) 0 #b5ab8c, 0 calc(var(--u) * 4) 0 calc(var(--u) * 2.5) var(--ink);
+  margin-bottom: calc(var(--u) * 4); animation: keypress 1.6s ease-in-out infinite;
+}
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }
+@keyframes keypress { 0%, 60%, 100% { transform: none; } 75% { transform: translateY(calc(var(--u) * 3)); } }
+
+/* Telas sobrepostas */
+.screen {
+  position: absolute; inset: 0; z-index: 8; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: calc(var(--u) * 12); padding: 0 8%; text-align: center; background: rgba(14,19,33,.95);
+  opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .25s ease, visibility 0s linear .25s;
+}
+.screen .btn { flex: none; width: 100%; max-width: calc(var(--u) * 170); }
+.screen .row { flex-direction: column; width: 100%; align-items: center; }
+.is-levels .screen-levels, .is-won .screen-won, .is-paused .screen-pause { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
+.is-won .screen-won { transition-delay: .45s; }
+.screen-pause .screen-text { max-width: calc(var(--u) * 200); font-size: max(11px, calc(var(--u) * 11)); color: var(--muted); }
+
+/* Aviso discreto de "Partida retomada" */
+.toast {
+  position: absolute; left: 50%; bottom: calc(var(--u) * 12); z-index: 10; margin: 0; padding: calc(var(--u) * 4) calc(var(--u) * 10); transform: translateX(-50%);
+  font-size: max(10px, calc(var(--u) * 9)); text-transform: uppercase; white-space: nowrap; color: var(--ink); background: var(--cream);
+  border-radius: 999px; pointer-events: none; animation: toast-in .2s ease-out;
+}
+.toast[hidden] { display: none; }
+@keyframes toast-in { from { opacity: 0; } to { opacity: 1; } }
+.screen-title { margin: 0; font-size: calc(var(--u) * 30); line-height: 1; text-transform: uppercase; color: var(--amber); }
+.screen-text { margin: 0; font-size: max(13px, calc(var(--u) * 14)); line-height: 1.35; font-variant-numeric: tabular-nums; }
+.record { margin: 0; padding: calc(var(--u) * 3) calc(var(--u) * 9); font-size: max(11px, calc(var(--u) * 10)); text-transform: uppercase; color: var(--ink); background: var(--good); border-radius: 999px; }
+.record[hidden], .screen-text[hidden], .btn[hidden] { display: none; }
+
+/* Seleção de fases: grade paginada (colunas e linhas calculadas no JS conforme o espaço) */
+.screen-levels { justify-content: safe center; overflow-y: auto; gap: calc(var(--u) * 9); }
+.group-name { margin: 0; font-size: max(11px, calc(var(--u) * 11)); letter-spacing: .04em; text-transform: uppercase; color: var(--cream); }
+.level-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: calc(var(--u) * 6); width: 100%; }
+.lv {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: calc(var(--u) * 2); aspect-ratio: 1; min-width: 0; padding: 0;
+  font: inherit; font-size: max(14px, calc(var(--u) * 15)); font-variant-numeric: tabular-nums; color: var(--cream); background: rgba(255,255,255,.06);
+  border: calc(var(--u) * 2) solid var(--line); border-radius: calc(var(--u) * 5); cursor: pointer; touch-action: manipulation;
+}
+.lv:hover:not(:disabled) { border-color: var(--muted); }
+.lv.is-done { border-color: rgba(90,194,106,.5); }
+.lv.is-current { color: var(--amber); border-color: var(--amber); background: rgba(255,200,87,.14); box-shadow: 0 0 calc(var(--u) * 8) rgba(255,200,87,.35); }
+.lv .chk { position: absolute; top: calc(var(--u) * 3); right: calc(var(--u) * 3); width: max(11px, calc(var(--u) * 11)); height: auto; color: var(--good); }
+.lv.is-locked { color: var(--muted); background: rgba(0,0,0,.3); border-style: dashed; cursor: not-allowed; }
+.lv.is-locked .num { opacity: .55; }
+.lv .lock { width: max(12px, calc(var(--u) * 13)); height: auto; color: var(--muted); }
+.pager { display: flex; align-items: center; justify-content: center; gap: calc(var(--u) * 12); width: 100%; }
+.pager-btn {
+  display: grid; place-items: center; width: max(44px, calc(var(--u) * 30)); height: max(44px, calc(var(--u) * 30)); padding: 0; color: var(--cream); background: rgba(255,255,255,.07);
+  border: calc(var(--u) * 2) solid var(--line); border-radius: calc(var(--u) * 5); cursor: pointer; touch-action: manipulation;
+}
+.pager-btn svg { width: 50%; height: 50%; }
+.pager-btn:hover:not(:disabled) { border-color: var(--muted); }
+.pager-btn:disabled { opacity: .3; cursor: default; }
+.page-label { min-width: calc(var(--u) * 56); font-size: max(13px, calc(var(--u) * 13)); font-variant-numeric: tabular-nums; text-align: center; color: var(--cream); }
+.levels-progress { margin: 0; font-size: max(9px, calc(var(--u) * 8)); color: var(--muted); }
+.noscript { position: absolute; }
+
+@media (max-width: 360px) { .topbar { gap: 6px; } .back { padding: 0 12px 0 8px; font-size: 13px; } .game-id { gap: 6px; } .game-mark { width: 24px; height: 24px; } .game-text h1 { font-size: 14px; } }
+@media (max-height: 520px) { .stage { --btn: max(36px, calc(var(--u) * 20)); gap: calc(var(--u) * 5); } .status { display: none; } .stat { min-height: calc(var(--u) * 34); } .btn { min-height: 36px; } .dpad { --pad: max(36px, calc(var(--u) * 34)); } .screen { gap: calc(var(--u) * 8); } }
+@media (max-height: 420px) { .topbar { height: 46px; } .game-text span { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .e, .box .face, .screen, .start, .pad, .back, .back svg, .help-button { transition: none; }
+  .start-touch, .spacebar, .help-pop, .toast { animation: none; }
+  [data-tip]:hover::after, [data-tip]:hover::before { transition: opacity 0s linear var(--tip-delay), visibility 0s linear var(--tip-delay); }
+  [data-tip]:focus-visible::after, [data-tip]:focus-visible::before { transition: none; }
+  .player .pl, .player .ft1, .player .ft2, .player .arm, .player .arm-l, .player .arm-r { animation: none !important; }
+}

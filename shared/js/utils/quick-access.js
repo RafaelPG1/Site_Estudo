@@ -125,6 +125,14 @@
       match: /^\/?(?:[^/]*\/)?index\.html$|\/$/,
     },
     {
+      id:    'pessoal',
+      icon:  QA_ICONS.pessoal,
+      label: 'Pessoal',
+      title: 'Pessoal',
+      href:  `${BASE_URL}/dashboard/dashboard.html`,
+      match: /\/dashboard\//,
+    },
+    {
       id:    'resumos',
       icon:  QA_ICONS.resumos,
       label: 'Resumos',
@@ -140,14 +148,6 @@
       href:  `${BASE_URL}/quiz/quiz.html`,
       match: /\/quiz\//,
     },
-    // {
-    //   id:    'jogos',
-    //   icon:  QA_ICONS.jogos,
-    //   label: 'Jogos',
-    //   title: 'Jogos',
-    //   href:  `${BASE_URL}/games/jogo.html`,
-    //   match: /\/games\//,
-    // },
     {
       id:    'atlas',
       icon:  QA_ICONS.atlas,
@@ -157,12 +157,12 @@
       match: /\/atlas\//,
     },
     {
-      id:    'pessoal',
-      icon:  QA_ICONS.pessoal,
-      label: 'Pessoal',
-      title: 'Pessoal',
-      href:  `${BASE_URL}/dashboard/dashboard.html`,
-      match: /\/dashboard\//,
+      id:    'jogos',
+      icon:  QA_ICONS.jogos,
+      label: 'Jogos',
+      title: 'Jogos',
+      href:  `${BASE_URL}/games/jogo.html`,
+      match: /\/games\//,
     },
   ];
 

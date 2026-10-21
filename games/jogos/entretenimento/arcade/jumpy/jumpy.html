@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="tips-css">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#07080c">
+  <title>Pulo Alto · Nexus Study</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="../../base/base.css?v=2">
+  <link rel="stylesheet" href="../../base/ui.css?v=2">
+  <link rel="stylesheet" href="jumpy.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="back" href="../../../../jogo.html" aria-label="Voltar para a central de jogos">
+      <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true" focusable="false">
+        <path d="M12 4l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Jogos</span>
+    </a>
+    <div class="game-id">
+      <svg class="game-mark" viewBox="0 0 32 32" width="28" height="28" aria-hidden="true" focusable="false">
+        <rect width="32" height="32" rx="9" fill="#4ec0e8"/>
+        <rect x="9" y="8" width="14" height="14" fill="#ff6b57" stroke="#543847" stroke-width="2"/>
+        <rect x="12" y="12" width="3" height="4" fill="#fff"/><rect x="18" y="12" width="3" height="4" fill="#fff"/>
+        <rect x="6" y="25" width="20" height="3" fill="#74d160" stroke="#543847" stroke-width="1.5"/>
+      </svg>
+      <div class="game-text"><strong>Pulo Alto</strong></div>
+    </div>
+  </header>
+
+  <!-- Ícones das setas, usados nas teclas do painel de ajuda -->
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <symbol id="icon-left" viewBox="0 0 16 16"><path d="M13 8H3.5M7.6 3.8L3.4 8l4.2 4.2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" stroke-linejoin="miter"/></symbol>
+    <symbol id="icon-right" viewBox="0 0 16 16"><path d="M3 8h9.5M8.4 3.8L12.6 8l-4.2 4.2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" stroke-linejoin="miter"/></symbol>
+  </svg>
+
+  <div id="arena" class="arena">
+    <!-- Mesma caixa do palco: o botão de ajuda fica pendurado ao lado dele, fora da área jogável -->
+    <div id="stage-wrap" class="stage-wrap">
+      <main id="stage" class="stage is-ready" aria-label="Pulo Alto">
+        <canvas id="game-canvas" aria-label="Área do jogo"></canvas>
+
+        <button id="mute-button" class="icon-button" type="button" aria-pressed="false" aria-label="Silenciar efeitos sonoros" data-tip="Som (M)">
+  <svg viewBox="0 0 256 256" aria-hidden="true" focusable="false">
+    
+    <!-- Ícone COM VOLUME (Visível quando o som está ativado) -->
+    <g class="icon-waves" fill="#543847">
+      <path d="M160,32V224L88,168H40a8,8,0,0,1-8-8V96a8,8,0,0,1,8-8H88Z" opacity="0.2"></path>
+      <path d="M163.51,24.81a8,8,0,0,0-8.42.88L85.25,80H40A16,16,0,0,0,24,96v64a16,16,0,0,0,16,16H85.25l69.84,54.31A8,8,0,0,0,168,224V32A8,8,0,0,0,163.51,24.81ZM152,207.64,92.91,161.69A7.94,7.94,0,0,0,88,160H40V96H88a7.94,7.94,0,0,0,4.91-1.69L152,48.36ZM208,104v48a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm32-16v80a8,8,0,0,1-16,0V88a8,8,0,0,1,16,0Z"></path>
+    </g>
+
+    <!-- Ícone SEM SOM (Visível quando o som está mutado) -->
+    <g class="icon-cross">
+      <!-- Sombra e base do megafone (Em marrom) -->
+      <path fill="#543847" d="M160,32V224L88,168H40a8,8,0,0,1-8-8V96a8,8,0,0,1,8-8H88Z" opacity="0.2"></path>
+      <path fill="#543847" d="M163.51,24.81a8,8,0,0,0-8.42.88L85.25,80H40A16,16,0,0,0,24,96v64a16,16,0,0,0,16,16H85.25l69.84,54.31A8,8,0,0,0,168,224V32A8,8,0,0,0,163.51,24.81ZM152,207.64,92.91,161.69A7.94,7.94,0,0,0,88,160H40V96H88a7.94,7.94,0,0,0,4.91-1.69L152,48.36Z"></path>
+      
+      <!-- O "X" isolado e convertido (Em vermelho) -->
+      <path fill="#e5432b" d="M253.66,146.34a8,8,0,0,1-11.32,11.32L224,139.31l-18.34,18.35a8,8,0,0,1-11.32-11.32L212.69,128l-18.35-18.34a8,8,0,0,1,11.32-11.32L224,116.69l18.34-18.35a8,8,0,0,1,11.32,11.32L235.31,128Z"></path>
+    </g>
+
+  </svg>
+        </button>
+
+        <button id="pause-button" class="icon-button" type="button" aria-label="Pausar" data-tip="Pausar (P)">
+  <svg viewBox="0 0 256 256" aria-hidden="true" focusable="false" fill="#543847">
+    
+    <!-- Ícone de PAUSA -->
+    <g class="icon-pause">
+      <path d="M208,48V208a8,8,0,0,1-8,8H160a8,8,0,0,1-8-8V48a8,8,0,0,1,8-8h40A8,8,0,0,1,208,48ZM96,40H56a8,8,0,0,0-8,8V208a8,8,0,0,0,8,8H96a8,8,0,0,0,8-8V48A8,8,0,0,0,96,40Z" opacity="0.2"></path>
+      <path d="M200,32H160a16,16,0,0,0-16,16V208a16,16,0,0,0,16,16h40a16,16,0,0,0,16-16V48A16,16,0,0,0,200,32Zm0,176H160V48h40ZM96,32H56A16,16,0,0,0,40,48V208a16,16,0,0,0,16,16H96a16,16,0,0,0,16-16V48A16,16,0,0,0,96,32Zm0,176H56V48H96Z"></path>
+    </g>
+    
+    <!-- Ícone de PLAY -->
+    <g class="icon-play">
+      <path d="M228.23,134.69,84.15,222.81A8,8,0,0,1,72,216.12V39.88a8,8,0,0,1,12.15-6.69l144.08,88.12A7.82,7.82,0,0,1,228.23,134.69Z" opacity="0.2"></path>
+      <path d="M232.4,114.49,88.32,26.35a16,16,0,0,0-16.2-.3A15.86,15.86,0,0,0,64,39.87V216.13A15.94,15.94,0,0,0,80,232a16.07,16.07,0,0,0,8.36-2.35L232.4,141.51a15.81,15.81,0,0,0,0-27ZM80,215.94V40l143.83,88Z"></path>
+    </g>
+    
+  </svg>
+        </button>
+
+        <!-- Tela inicial: só o nome do jogo e a indicação de início -->
+        <section class="screen screen-ready" aria-live="polite">
+          <h1 class="title" aria-label="Pulo Alto"><span class="title-main" aria-hidden="true">Pulo</span><span class="title-sub" aria-hidden="true">Alto</span></h1>
+          <p id="ready-best" class="ready-best" hidden>Recorde: <strong id="ready-best-value">0</strong></p>
+          <p class="hint">
+            <span class="hint-text">Toque para iniciar</span>
+            <span class="hint-or">ou</span>
+            <kbd class="cap cap-wide">Space</kbd>
+          </p>
+        </section>
+
+        <!-- Tela de pausa ÚNICA (botão, P/Esc, ajuda, troca de aba, F5): mesma estrutura e animação da tela inicial -->
+        <section class="screen screen-paused" role="dialog" aria-labelledby="pause-title">
+          <p id="pause-title" class="pause-label">Pausado</p>
+          <p class="hint">
+            <span class="hint-text">Toque para iniciar</span>
+            <span class="hint-or">ou</span>
+            <kbd class="cap cap-wide">Space</kbd>
+          </p>
+          <!-- Reiniciar: descarta a partida em andamento e volta para a tela inicial -->
+          <button id="pause-restart" class="pause-restart" type="button" aria-label="Reiniciar partida e voltar ao início" >
+            <span class="pr-label">Reiniciar</span>
+          </button>
+        </section>
+
+        <!-- Retomada depois de F5/recarregar: pausa de 3 s com contagem 3, 2, 1, GO! -->
+        <section id="recovery-screen" class="screen screen-recovery" aria-live="assertive" aria-atomic="true">
+          <p class="recovery-label">Partida retomada</p>
+          <p id="recovery-count" class="recovery-count"></p>
+        </section>
+
+        <section class="screen screen-over" role="dialog" aria-labelledby="over-title">
+          <h2 id="over-title" class="over-title">Game Over</h2>
+          <p class="final">Score: <span id="over-score">0</span></p>
+          <button id="restart-button" class="btn" type="button">Jogar novamente</button>
+        </section>
+
+        <noscript><p class="noscript">Ative o JavaScript para jogar.</p></noscript>
+      </main>
+
+      <!-- Ajuda: botão só com ícone + popover pequeno ancorado a ele (fora do jogo) -->
+      <div class="help">
+        <button id="help-button" class="help-btn" type="button"
+                aria-haspopup="dialog" aria-expanded="false" aria-controls="help-popover"
+                aria-label="Como jogar" data-tip="Como jogar">
+          <svg viewBox="0 0 20 20" width="22" height="22" aria-hidden="true" focusable="false">
+            <circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="2"/>
+            <path d="M7.7 7.8a2.4 2.4 0 1 1 3.6 2.1c-.9.5-1.3 1-1.3 1.9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="10" cy="14.6" r="1.1" fill="currentColor"/>
+          </svg>
+        </button>
+
+        <div id="help-popover" class="help-popover" role="dialog" aria-labelledby="help-title" data-placement="below" hidden>
+          <button id="help-close" class="help-close" type="button" aria-label="Fechar">
+            <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+              <path d="M3.5 3.5l9 9M12.5 3.5l-9 9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square"/>
+            </svg>
+          </button>
+
+          <h2 id="help-title" class="help-title">Como jogar</h2>
+          <p class="help-text">Pule de plataforma em plataforma e suba o mais alto que puder. Os pulos são automáticos, e quem sai por um lado da tela volta pelo outro.</p>
+
+          <h3 class="help-sub">Controles</h3>
+          <ul class="ctl-list">
+            <li><span class="ctl-keys"><kbd class="cap"><svg class="cap-icon" aria-hidden="true" focusable="false"><use href="#icon-left"/></svg><span class="sr-only">Seta para a esquerda</span></kbd><kbd class="cap"><svg class="cap-icon" aria-hidden="true" focusable="false"><use href="#icon-right"/></svg><span class="sr-only">Seta para a direita</span></kbd></span><span class="ctl-label">Mover</span></li>
+            <li><span class="ctl-keys"><kbd class="cap">A</kbd><kbd class="cap">D</kbd></span><span class="ctl-label">Mover</span></li>
+            <li><span class="ctl-keys"><kbd class="cap cap-wide">Space</kbd></span><span class="ctl-label">Iniciar / continuar</span></li>
+            <li><span class="ctl-keys"><kbd class="cap">P</kbd><kbd class="cap">Esc</kbd></span><span class="ctl-label">Pausar</span></li>
+            <li><span class="ctl-keys"><kbd class="cap">M</kbd></span><span class="ctl-label">Som</span></li>
+          </ul>
+          <p class="help-note">No celular, toque e arraste o dedo para a esquerda ou direita para mover.</p>
+          <p class="help-note">No computador, o botão do mouse ao lado do jogo liga o controle por arrasto com o mouse (começa bloqueado; o teclado sempre funciona).</p>
+          <p class="help-note">Com esta ajuda aberta o jogo fica pausado. Toque na tela do jogo ou pressione Space para continuar (3, 2, 1, GO!).</p>
+        </div>
+      </div>
+
+      <!-- Controle pelo mouse: botão só com ícone, embaixo ao lado do palco (fora do jogo); some em telas só de toque -->
+      <div class="mouse-slot">
+        <button id="mouse-button" class="help-btn mouse-btn" type="button" aria-pressed="false"
+                aria-label="Controle pelo mouse: bloqueado" data-tip="Mouse: bloqueado">
+          <svg viewBox="0 0 20 20" width="22" height="22" aria-hidden="true" focusable="false">
+            <rect x="5" y="2.5" width="10" height="15" rx="5" fill="none" stroke="currentColor" stroke-width="2"/>
+            <path d="M10 2.8v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path class="mouse-slash" d="M3 17 17 3" fill="none" stroke="#ff4d5e" stroke-width="2.4" stroke-linecap="round"/>
+          </svg>
+          <span class="mouse-dot" aria-hidden="true"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="jumpy_storage.js"></script>
+  <script src="jumpy.js"></script>
+</body>
+</html>

@@ -9,7 +9,7 @@
 
    COMO USAR:
    ──────────
-     import { calcularPeso, sorteiarPonderado } from '../../template/deck.js';
+     import { calcularPeso, sorteiarPonderado } from '../../../template/deck.js';
 
      const candidatos = banco.map(q => ({
        item: q,
