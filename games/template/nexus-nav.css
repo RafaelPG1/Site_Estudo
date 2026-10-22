@@ -1,0 +1,74 @@
+/* ═══════════════════════════════════════════════════════════════
+   NEXUS STUDY — games/template/nexus-nav.css   (NOVO)
+
+   Grupo de navegação do topo dos jogos: [Voltar] + [Nexus].
+     · Voltar  → continua levando ao menu de jogos (função inalterada).
+     · Nexus   → ícone oficial (shared/img/logo.png) que leva à PÁGINA
+                 INICIAL GERAL do site (index.html da raiz).
+   Usado pelos 5 jogos de estudo e pelos 16 de entretenimento.
+
+   Também define o desenho PADRÃO do botão Voltar dos jogos de
+   entretenimento, igual ao dos jogos de estudo (mesmos valores do
+   .game-header__back / .back-btn: .82rem, peso 500, padding 8×18,
+   raio 10, borda e fundo translúcidos, seta 14 px).
+═══════════════════════════════════════════════════════════════ */
+
+.nx-nav {
+  display: inline-flex;
+  align-items: stretch;      /* o botão Nexus acompanha a altura do Voltar */
+  gap: 8px;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.nx-nav__home {
+  display: inline-flex; align-items: center; justify-content: center;
+  aspect-ratio: 1 / 1;
+  min-width: 34px;
+  padding: 0;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.05);
+  transition: background .2s, border-color .2s, transform .1s;
+  text-decoration: none;
+  overflow: hidden;
+}
+.nx-nav__home img {
+  display: block;
+  width: 24px; height: 24px;
+  border-radius: 6px;
+  object-fit: cover;
+  transition: transform .2s;
+}
+.nx-nav__home:hover { background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.3); }
+.nx-nav__home:hover img { transform: scale(1.08); }
+.nx-nav__home:active { transform: scale(.96); }
+.nx-nav__home:focus-visible { outline: 2px solid #4dd9b4; outline-offset: 3px; }
+
+/* ── Voltar dos jogos de ENTRETENIMENTO = mesmo desenho do Voltar dos de estudo ── */
+.topbar .nx-nav .back {
+  display: inline-flex; align-items: center; gap: 7px;
+  min-height: 0; height: auto; width: auto; min-width: 0;
+  box-shadow: none; position: static; letter-spacing: 0;
+  font-family: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: .82rem; font-weight: 500; line-height: 1;
+  color: #f0ede6;
+  padding: 8px 18px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.05);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background .2s, border-color .2s;
+}
+.topbar .nx-nav .back svg { width: 14px; height: 14px; transition: none; }
+.topbar .nx-nav .back:hover { background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.3); }
+.topbar .nx-nav .back:hover svg { transform: none; color: inherit; }
+.topbar .nx-nav .back:active { transform: none; }
+.topbar .nx-nav .back:focus-visible { outline: 2px solid #4dd9b4; outline-offset: 3px; }
+
+/* Telas pequenas: o Voltar fica só com a seta (como nos jogos de estudo) */
+@media (max-width: 680px) {
+  .topbar .nx-nav .back { padding: 8px 12px; }
+  .topbar .nx-nav .back span { display: none; }
+}

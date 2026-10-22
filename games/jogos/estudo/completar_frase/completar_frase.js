@@ -29,6 +29,8 @@ import { Shell, lerParams, shuffle }                    from '../../../template/
 import { SessionNav }                                   from '../../../template/session-nav.js';
 import { carregarHistoricoCF, salvarResultadoCF }       from './storage_cf.js';
 import { resolverUid }                                  from '../../../template/auth-gate.js';
+import { carregarConteudo, mostrarMensagemConteudo } from '../../../template/conteudo-loader.js';
+import '../../../../src/session-tracker.js';   // tempo de estudo do dashboard (mecanismo existente; sem contador novo)
 import { iniciarIAJogos, registrarContextoJogo }        from '../../../template/ia-games.js';
 
 iniciarIAJogos();   // chat da IA (hub e jogos usam o mesmo ponto de entrada)
@@ -572,24 +574,11 @@ async function _init() {
   Estado.discId     = URL_DISC;
   Estado.sem        = URL_SEM;
 
-  /* ── 3. Carrega banco de questões via import() dinâmico ─── */
-  // Ano validado (4 dígitos) antes de entrar no caminho do import.
-  const _anoSem = URL_SEM ? URL_SEM.split('.')[0] : null;
-  const ano = /^\d{4}$/.test(_anoSem ?? '') ? _anoSem : null;
-  let semDisp = null;
-
-  if (ano) {
-    try {
-      const modulo = await import(
-        `../../../../content/games/completar_frase/${ano}/completar_frase_data.js`
-      );
-      semDisp       = modulo.COMPLETAR_FRASE_DATA?.[URL_SEM] ?? null;
-      Estado.banco  = semDisp?.[URL_DISC] ?? [];
-    } catch (err) {
-      console.warn(`[completar_frase] Arquivo de dados não encontrado para ${ano}:`, err.message);
-      Estado.banco = [];
-    }
-  }
+  /* ── 3. Conteúdo: carregador único (content/games/completar_frase/<semestre>/<AP>/) ─── */
+  const carga = await carregarConteudo({ jogo: 'completar_frase', sem: URL_SEM, ap: new URLSearchParams(location.search).get('ap'), disc: URL_DISC });
+  Estado.banco  = carga.ok ? carga.banco : [];
+  const semDisp = carga.dados ?? null;
+  if (!carga.ok) console.warn(`[completar_frase] Conteúdo indisponível (${carga.codigo}):`, carga.caminho ?? '');
 
   /* ── 4. SessionNav ─────────────────────────────────────── */
   Estado._nav = SessionNav.criar({
@@ -604,6 +593,11 @@ async function _init() {
   /* ── 5. Banco vazio → tela empty ───────────────────────── */
   if (Estado.banco.length === 0) {
     UI.mostrarTelaVazia({ disc: URL_DISC, sem: URL_SEM, semDisp });
+    // A tela vazia deste jogo reaproveita a introdução: escreve a mensagem do carregador nela.
+    if (!carga.ok) {
+      const d = document.querySelector('.cf-intro-card__desc');
+      if (d) d.innerHTML = `<strong>${carga.titulo}</strong><br>${carga.mensagem}`;
+    }
     Estado._nav.pronto();
     return;
   }

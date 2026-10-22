@@ -26,6 +26,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Flashcards — Nexus Study</title>
+  <link rel="icon" type="image/x-icon" href="../../../../shared/img/favicons/games/estudos/estudos.ico" sizes="16x16 24x24 32x32 48x48 64x64 128x128 256x256" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -41,6 +42,10 @@
 
   <link rel="stylesheet" href="../../../template/game-shell.css" />
   <link rel="stylesheet" href="flashcard.css?v=7" />
+  <link rel="stylesheet" href="../../../template/nexus-nav.css" />
+  <link rel="stylesheet" href="../../../template/game-header-center.css" />
+  <link rel="stylesheet" href="../../../../shared/css/audio/audio-btns.css" />
+  <link rel="stylesheet" href="../../../template/game-botoes-flutuantes.css" />
 
   <!--
     ANTI-FLASH PARA FLASHCARD
@@ -135,7 +140,7 @@
   </script>
 </head>
 
-<body>
+<body class="nx-jogos">
 
   <!-- Background — definido em game-shell.css -->
   <div class="bg-orb bg-orb--1" aria-hidden="true"></div>
@@ -145,12 +150,15 @@
 
   <header class="header">
 
-    <a id="shell-back-btn" href="../../../jogo.html" class="back-btn" aria-label="Voltar aos jogos">
+    <div class="nx-nav">
+      <a id="shell-back-btn" href="../../../jogo.html" class="back-btn" aria-label="Voltar aos jogos">
       <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M13 16l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
       <span>Voltar</span>
     </a>
+      <a class="nx-nav__home" href="../../../../index.html" aria-label="Nexus Study — página inicial" title="Página inicial do Nexus"><img src="../../../../shared/img/logo.png" alt="" width="24" height="24" decoding="async" /></a>
+    </div>
 
     <div class="header__identity">
       <div class="header__icon" id="header-icon">🃏</div>

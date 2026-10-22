@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Show do Milhão — Nexus Study</title>
+  <link rel="icon" type="image/x-icon" href="../../../../shared/img/favicons/games/estudos/estudos.ico" sizes="16x16 24x24 32x32 48x48 64x64 128x128 256x256" />
 
   <!--
     REFATORAÇÃO v3.0
@@ -16,12 +17,15 @@
   -->
   <link rel="stylesheet" href="../../../template/game-shell.css" />
   <link rel="stylesheet" href="show_milhao.css" />
+  <link rel="stylesheet" href="../../../template/nexus-nav.css" />
+  <link rel="stylesheet" href="../../../template/game-header-center.css" />
   <link rel="stylesheet" href="../../../../shared/css/audio/audio-btns.css" />
+  <link rel="stylesheet" href="../../../template/game-botoes-flutuantes.css" />
     <link rel="stylesheet" href="../../../../shared/css/ia/ia.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=DM+Sans:wght@400;500;600;700&family=Exo+2:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="nx-jogos">
 
 <!-- Background — definido em game-shell.css -->
 <div class="bg-grid"></div>
@@ -30,12 +34,15 @@
 
 <!-- ══ CABEÇALHO — estrutura definida em game-shell.css ══ -->
 <header class="game-header">
-  <a id="shell-back-btn" class="game-header__back" href="../../../jogo.html">
+  <div class="nx-nav">
+    <a id="shell-back-btn" class="game-header__back" href="../../../jogo.html">
     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
       <path d="M13 16l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
     <span>Voltar</span>
   </a>
+    <a class="nx-nav__home" href="../../../../index.html" aria-label="Nexus Study — página inicial" title="Página inicial do Nexus"><img src="../../../../shared/img/logo.png" alt="" width="24" height="24" decoding="async" /></a>
+  </div>
 
   <div class="game-header__identity">
     <div class="game-header__icon" id="shell-icon">🃏</div>

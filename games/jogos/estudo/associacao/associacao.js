@@ -3,7 +3,16 @@
    associacao.js  (v4.1 — histórico + timer regressivo)
 ════════════════════════════════════════════════════════════════ */
 
-import { ASSOCIACAO_DATA }                            from './associacao_data.js';
+import { carregarConteudo }                            from '../../../template/conteudo-loader.js';
+import '../../../../src/session-tracker.js';   // tempo de estudo do dashboard (mecanismo existente; sem contador novo)
+
+/* Conteúdo: carregador único (content/games/associacao/<semestre>/<AP>/associacao_data.js).
+   ASSOCIACAO_DATA mantém o formato antigo { [semestre]: { [disc]: { questao_N: [...] } } },
+   então o restante do jogo não muda. Sem conteúdo → objeto vazio + mensagem clara (cargaAssoc). */
+const _pA = new URLSearchParams(location.search);
+const cargaAssoc = await carregarConteudo({ jogo: 'associacao', sem: _pA.get('sem'), ap: _pA.get('ap'), disc: _pA.get('disc') });
+if (!cargaAssoc.ok) console.warn(`[associacao] Conteúdo indisponível (${cargaAssoc.codigo}):`, cargaAssoc.caminho ?? '');
+const ASSOCIACAO_DATA = cargaAssoc.dados ? { [cargaAssoc.semestre]: cargaAssoc.dados } : {};
 import { saveRound, loadRound, clearRound, clearAll, salvarResultadoAssoc } from './storage_a.js';
 import { getDisciplinasDeSemestre }                   from '../../../../src/global.js';
 import { resolverUid, VISITANTE }                      from '../../../template/auth-gate.js';
@@ -389,7 +398,7 @@ iniciarIAJogos();   // chat da IA (hub e jogos usam o mesmo ponto de entrada)
         return (d.id === discParam || d.arquivo === discParam) && semData[d.arquivo ?? d.id];
       });
     }
-    if (!discObj) {
+    if (!discObj && !discParam) {
       discObj = disciplinas.find(function (d) { return semData[d.arquivo ?? d.id]; });
     }
     if (!discObj) return false;
@@ -1496,7 +1505,8 @@ iniciarIAJogos();   // chat da IA (hub e jogos usam o mesmo ponto de entrada)
      INIT
   ══════════════════════════════════════════════════════════════ */
 
-  document.addEventListener('DOMContentLoaded', function () {
+  // Com top-level await (carregador de conteúdo) o módulo pode terminar depois do DOMContentLoaded.
+  function _iniciarAssociacao() {
     initDOM();
     bindEvents();
 
@@ -1505,11 +1515,19 @@ iniciarIAJogos();   // chat da IA (hub e jogos usam o mesmo ponto de entrada)
       if (!ok) {
         _resolverIdentidadeSemDados();
         mostrarTela('screenEmpty');
+        if (!cargaAssoc.ok) {
+          const t = document.querySelector('.assoc-empty__title');
+          const d = document.querySelector('.assoc-empty__sub');
+          if (t) t.textContent = cargaAssoc.titulo;
+          if (d) d.innerHTML = cargaAssoc.mensagem;
+        }
         return;
       }
       aplicarTema(estado.discId);
       mostrarIntro();
     }, 300);
-  });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _iniciarAssociacao);
+  else _iniciarAssociacao();
 
 })();

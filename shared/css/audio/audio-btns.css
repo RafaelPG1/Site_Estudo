@@ -341,3 +341,38 @@
   .abtn-label { transition: none; }
   .abtn .ripple { animation: none !important; }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   SEÇÃO 8 — ACABAMENTO DE ESTADOS (v2)
+   Incorporado do redesign dos jogos de estudo (antes vivia em
+   games/template/game-sound.css, já removido). Vale para TODAS as
+   páginas que usam o botão SFX. Não muda nenhum comportamento de
+   áudio: só o visual dos estados definidos em [data-state].
+     normal → som ativado (azul) · low → reduzido (verde-água)
+     mute   → mudo (vermelho, ícone riscado)
+══════════════════════════════════════════════════════════════ */
+
+/* Preenchimento tingido: o botão "acende" com som e escurece/avermelha no mudo */
+.abtn[data-state="normal"] .body { background: radial-gradient(circle at 35% 30%, rgba(64,130,255,.22), rgba(10,12,24,.96) 70%); }
+.abtn[data-state="low"]    .body { background: radial-gradient(circle at 35% 30%, rgba(0,224,184,.18), rgba(10,12,24,.96) 70%); }
+.abtn[data-state="mute"]   .body { background: radial-gradient(circle at 35% 30%, rgba(255,77,94,.20), rgba(18,8,12,.96) 70%); }
+.abtn[data-state="mute"] .ic.on  { opacity: .95; }
+
+/* Indicador de estado: bolinha no canto superior direito, na cor do estado */
+.abtn::after {
+  content: '';
+  position: absolute;
+  top: 1px; right: 1px;
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  background: rgb(var(--abtn-rgb));
+  border: 2px solid #070b14;
+  box-shadow: 0 0 8px rgba(var(--abtn-rgb), .7);
+  z-index: 3;
+  pointer-events: none;
+  transition: background .25s ease, box-shadow .25s ease;
+}
+.abtn[data-state="mute"]::after { box-shadow: none; }
+
+/* Foco de teclado mais evidente */
+.abtn:focus-visible .body { box-shadow: 0 0 0 3px rgba(var(--abtn-rgb), .55), 0 2px 10px rgba(0,0,0,.55); }

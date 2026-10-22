@@ -1,0 +1,111 @@
+/* ═══════════════════════════════════════════════════════════════
+   NEXUS STUDY — games/template/game-header-center.css   (NOVO)
+
+   Centraliza o nome do jogo no cabeçalho dos 5 jogos de estudo.
+
+   POR QUE EXISTE
+   Os cinco cabeçalhos eram flex com [voltar][identidade que ocupa o
+   resto][slot direito]. Como a identidade era "flex: 1" alinhada à
+   esquerda, o título ficava colado no botão Voltar e qualquer coisa à
+   direita (cronômetro, controles) o empurrava de lado.
+
+   COMO FUNCIONA
+   Grade de 3 colunas simétricas: [1fr][auto][1fr].
+     · coluna 1: botão Voltar (alinhado à esquerda)
+     · coluna 2: identidade (ícone + nome + disciplina/semestre), no meio
+     · coluna 3: cronômetro / controles / pontuação (alinhado à direita)
+   As duas colunas laterais têm sempre a mesma largura, então o título
+   fica no centro da tela mesmo quando só um dos lados tem conteúdo
+   (ex.: Flashcard, que não tem nada à direita) ou quando o cronômetro
+   aparece/desaparece (Show do Milhão).
+   O ícone fica ao lado esquerdo do nome (fora do fluxo), então o TEXTO
+   — e não o conjunto ícone+texto — cai no centro.
+   Algumas folhas de jogo (ex.: Show do Milhão) usam !important; por isso
+   as regras estruturais daqui também usam.
+
+   Carregue DEPOIS do CSS do jogo (mesma especificidade, vence pela ordem).
+   Não altera cores, fontes, ícones nem o resto da identidade de cada jogo.
+═══════════════════════════════════════════════════════════════ */
+
+.game-header,
+body > header.header,
+.assoc-topbar {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) !important;
+  align-items: center !important;
+  column-gap: 12px !important;
+}
+
+/* Coluna 1 — Voltar */
+.game-header > :first-child,
+body > header.header > :first-child,
+.assoc-topbar > :first-child {
+  grid-column: 1 !important;
+  justify-self: start !important;
+}
+
+/* Coluna 2 — Identidade.
+   O ícone sai do fluxo e fica ao LADO ESQUERDO do bloco de texto
+   (position:absolute; right:100%), então só o TEXTO ocupa a coluna do meio
+   e cai exatamente no centro, qualquer que seja o tamanho do ícone. */
+.game-header__identity,
+.header__identity,
+.assoc-topbar__identity {
+  --hc-gap: 12px;
+  position: relative !important;
+  grid-column: 2 !important;
+  justify-self: center !important;
+  flex: none !important;
+  width: auto !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+.game-header__icon,
+.header__icon,
+.assoc-topbar__icon {
+  position: absolute !important;
+  right: 100% !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  margin: 0 var(--hc-gap) 0 0 !important;
+}
+
+.game-header__info,
+.header__info,
+.assoc-topbar__info { text-align: center !important; min-width: 0 !important; }
+
+.game-header__name,
+.header__name,
+.assoc-topbar__name { text-align: center !important; max-width: 100% !important; }
+
+.game-header__meta,
+.header__meta,
+.assoc-topbar__meta { justify-content: center !important; }
+
+/* Coluna 3 — cronômetro / controles / pontuação */
+.game-header__score-slot,
+.game-header__controls,
+.assoc-timer-slot {
+  grid-column: 3 !important;
+  justify-self: end !important;
+  margin-left: 0 !important;
+}
+
+/* Celular: o ícone some para o nome ter espaço e continuar no centro */
+@media (max-width: 560px) {
+  .game-header,
+  body > header.header,
+  .assoc-topbar { column-gap: 8px !important; }
+  .game-header__icon,
+  .header__icon,
+  .assoc-topbar__icon { display: none !important; }
+}
+
+/* Celular: o Flashcard (que não escondia o texto do Voltar) fica só com a seta,
+   como os demais, para sobrar espaço ao botão Nexus ao lado. */
+@media (max-width: 680px) {
+  .back-btn span { display: none !important; }
+  .back-btn { padding-left: 12px !important; padding-right: 12px !important; }
+}

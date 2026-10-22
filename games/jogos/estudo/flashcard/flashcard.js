@@ -98,6 +98,8 @@
 
 import { SessionNav }                           from '../../../template/session-nav.js';
 import { carregarPerfisSRS, salvarPerfilSRS }   from './storage.js';
+import { carregarConteudo } from '../../../template/conteudo-loader.js';
+import '../../../../src/session-tracker.js';   // tempo de estudo do dashboard (mecanismo existente; sem contador novo)
 import { Shell, lerParams }                     from '../../../template/game-shell.js';
 import { getDisciplinasDeSemestre }             from '../../../../src/global.js';
 import { resolverUid }                          from '../../../template/auth-gate.js';
@@ -107,21 +109,13 @@ import { aplicarCoresDisciplina }               from '../../../../shared/js/them
 import { criarUI }                              from './flashcard.ui.js';
 
 /* ── Banco de cards ───────────────────────────────────────────────
-   Os cards ficam em content/games/flashcards/{ano}/cards_data.js (a
-   pasta antiga content/game/… não existe mais, o que derrubava este
-   módulo inteiro no import estático). O ano vem do ?sem= da página
-   (ex.: 2026.2 → 2026) e é validado (4 dígitos) antes de entrar no
-   caminho. Se o arquivo não existir, o jogo abre com "sem cards" em
-   vez de quebrar. */
-let getCardsData = () => ({});
-try {
-  const _anoCards = (lerParams().sem || '').split('.')[0];
-  if (/^\d{4}$/.test(_anoCards)) {
-    ({ getCardsData } = await import(`../../../../content/games/flashcards/${_anoCards}/cards_data.js`));
-  }
-} catch (err) {
-  console.warn('[flashcard] Banco de cards não encontrado para este ano:', err?.message);
-}
+   Carregador único: content/games/flashcards/<semestre>/<AP>/cards_data.js
+   (semestre e AP vêm de ?sem=2026.2-AP1). Se não houver conteúdo, o jogo
+   abre com a mensagem clara do carregador (cargaCards) em vez de quebrar. */
+const _pQ = new URLSearchParams(location.search);
+const cargaCards = await carregarConteudo({ jogo: 'flashcard', sem: _pQ.get('sem'), ap: _pQ.get('ap'), disc: _pQ.get('disc') });
+if (!cargaCards.ok) console.warn(`[flashcard] Conteúdo indisponível (${cargaCards.codigo}):`, cargaCards.caminho ?? '');
+const getCardsData = () => cargaCards.dados ?? {};
 
 /*
  * ANTI-FLASH SÍNCRONO
@@ -1012,7 +1006,7 @@ export async function initCards(discId, panelEl, nomeUsuario, opcoes = {}) {
       vazio.innerHTML    = `
         <div class="cards-empty">
           <i class="fas fa-layer-group" aria-hidden="true"></i>
-          <p>Nenhum card disponível para esta disciplina ainda.</p>
+          <p>${cargaCards.ok ? 'Nenhum card disponível para esta disciplina ainda.' : `<strong>${cargaCards.titulo}</strong><br>${cargaCards.mensagem}`}</p>
         </div>`;
       panelEl.appendChild(vazio);
       return;
@@ -1200,6 +1194,20 @@ async function _introPreencherDados(disc, sem) {
     const total   = cardsData[disc]?.length ?? 0;
     const countEl = document.getElementById('intro-card-count');
     if (countEl) countEl.textContent = total > 0 ? String(total) : '—';
+    // Conteúdo ausente: mensagem clara na introdução e "Começar" desativado (nada de deck vazio em silêncio).
+    if (!cargaCards.ok) {
+      const info = document.querySelector('.intro-info');
+      if (info && !document.getElementById('intro-conteudo-aviso')) {
+        const aviso = document.createElement('p');
+        aviso.id = 'intro-conteudo-aviso';
+        aviso.setAttribute('role', 'alert');
+        aviso.style.cssText = 'margin:0 0 12px;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,181,71,.35);background:rgba(255,181,71,.08);font-size:14px;line-height:1.5;text-align:center;';
+        aviso.innerHTML = `<strong>${cargaCards.titulo}</strong><br>${cargaCards.mensagem}`;
+        info.before(aviso);
+      }
+      const st = document.getElementById('intro-start-btn');
+      if (st) { st.disabled = true; st.setAttribute('aria-disabled', 'true'); }
+    }
   } catch (err) {
     console.warn('[flashcard] Não foi possível carregar contagem de cards:', err.message);
   }

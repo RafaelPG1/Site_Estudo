@@ -1,0 +1,36 @@
+/* ═══════════════════════════════════════════════════════════════
+   NEXUS STUDY — games/template/game-botoes-flutuantes.css   (NOVO)
+
+   Tamanho dos botões flutuantes de IA (#nexus-fab) e de efeito sonoro
+   (.abtn) DENTRO dos jogos de estudo. O desenho de cada botão continua
+   vindo dos arquivos compartilhados (shared/css/ia/btn-ia.css e
+   shared/css/audio/audio-btns.css); aqui só se ajusta a escala.
+
+   REFERÊNCIA = tela inicial de Games (jogo.html). Lá a página recebe o
+   zoom da área "game" (80 %, por shared/js/utils/zoom.js), então os
+   botões aparecem com 48 px × 0,8 = 38,4 px. Os jogos não importam o
+   zoom.js (aplicá-lo mudaria o tamanho de TODA a interface do jogo),
+   por isso apareciam com 48 px — grandes demais.
+
+   REGRA: tamanho de referência (38,4 px) + 2 px = 40,4 px
+          → zoom = 40,4 / 48 = 0,8417 (escala também o ícone, anéis,
+          tooltip e os afastamentos, mantendo alinhamento e proporção).
+   O alinhamento em coluna (SFX acima da IA), o espaçamento e os
+   breakpoints para telas pequenas continuam os dos arquivos
+   compartilhados.
+
+   Ativado pela classe  nx-jogos  no <body> das páginas dos jogos de estudo.
+═══════════════════════════════════════════════════════════════ */
+
+body.nx-jogos #nexus-fab,
+body.nx-jogos .abtn,
+body.nx-jogos #abtn-unlock-hint {
+  zoom: 0.8417;
+}
+
+/* Celular: o rótulo e a dica de "ativar o som" ficariam sobre os botões
+   de ação do jogo; o estado continua visível pela cor e pela bolinha. */
+@media (max-width: 560px) {
+  body.nx-jogos .abtn-label,
+  body.nx-jogos #abtn-unlock-hint { display: none !important; }
+}

@@ -160,7 +160,7 @@
       id:    'jogos',
       icon:  QA_ICONS.jogos,
       label: 'Jogos',
-      title: 'Jogos',
+      title: 'Jogos de estudo e diversão',
       href:  `${BASE_URL}/games/jogo.html`,
       match: /\/games\//,
     },

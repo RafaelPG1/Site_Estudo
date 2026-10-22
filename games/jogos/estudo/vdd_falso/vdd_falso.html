@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Verdadeiro ou Falso — Nexus Study</title>
+  <link rel="icon" type="image/x-icon" href="../../../../shared/img/favicons/games/estudos/estudos.ico" sizes="16x16 24x24 32x32 48x48 64x64 128x128 256x256" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -13,8 +14,12 @@
 
   <link rel="stylesheet" href="../../../../shared/css/themes/fundo.css" />
   <link rel="stylesheet" href="vdd_falso.css" />
+  <link rel="stylesheet" href="../../../template/nexus-nav.css" />
+  <link rel="stylesheet" href="../../../template/game-header-center.css" />
+  <link rel="stylesheet" href="../../../../shared/css/audio/audio-btns.css" />
+  <link rel="stylesheet" href="../../../template/game-botoes-flutuantes.css" />
 </head>
-<body>
+<body class="nx-jogos">
 
 <!-- ══════════════════════════════════════════════════════
      BACKGROUND
@@ -31,12 +36,15 @@
   <header class="game-header">
 
     <!-- Botão voltar -->
-    <a id="shell-back-btn" class="game-header__back" href="../../../jogo.html">
+    <div class="nx-nav">
+      <a id="shell-back-btn" class="game-header__back" href="../../../jogo.html">
       <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M13 16l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
       <span>Voltar</span>
     </a>
+      <a class="nx-nav__home" href="../../../../index.html" aria-label="Nexus Study — página inicial" title="Página inicial do Nexus"><img src="../../../../shared/img/logo.png" alt="" width="24" height="24" decoding="async" /></a>
+    </div>
 
     <!-- Ícone + título + disciplina · semestre -->
     <div class="game-header__identity">

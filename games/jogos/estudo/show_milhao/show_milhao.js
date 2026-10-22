@@ -19,6 +19,8 @@ import { DISC_CORES }                          from '../../../../shared/js/theme
 import { aplicarCoresDisciplina }             from '../../../../shared/js/themes/theme.js';
 import { getDisciplinasDeSemestre }             from '../../../../src/global.js';
 import { resolverUid }                          from '../../../template/auth-gate.js';
+import { carregarConteudo, mostrarMensagemConteudo } from '../../../template/conteudo-loader.js';
+import '../../../../src/session-tracker.js';   // tempo de estudo do dashboard (mecanismo existente; sem contador novo)
 import { iniciarIAJogos, registrarContextoJogo, limparContextoJogo } from '../../../template/ia-games.js';
 import { SessionNav }                          from '../../../template/session-nav.js';
 
@@ -702,28 +704,18 @@ async function init() {
     }
   }
 
-  // ── Import dinâmico de dados ──
-  // Ano validado (4 dígitos) antes de entrar no caminho do import.
-  const _anoSem = sem ? sem.split('.')[0] : null;
-  const ano = /^\d{4}$/.test(_anoSem ?? '') ? _anoSem : null;
-  let banco   = [];
-  let semDisp = null;
-
-  if (ano) {
-    try {
-      const modulo = await import(`../../../../content/games/show_milhao/${ano}/show_milhao_data.js`);
-      semDisp = modulo.SHOW_MILHAO_DATA?.[sem] ?? null;
-      banco   = semDisp?.[disc] ?? [];
-    } catch (err) {
-      smWarn(`Arquivo de dados não encontrado para o ano ${ano}:`, err.message);
-    }
-  }
+  // ── Conteúdo: carregador único (content/games/show_milhao/<semestre>/<AP>/) ──
+  const carga = await carregarConteudo({ jogo: 'show_milhao', sem, ap: new URLSearchParams(location.search).get('ap'), disc });
+  const banco   = carga.ok ? carga.banco : [];
+  const semDisp = carga.dados ?? null;
+  if (!carga.ok) smWarn(`Conteúdo indisponível (${carga.codigo}):`, carga.caminho ?? '');
 
   estado.banco = banco;
   smLog(`Banco carregado: ${banco.length} questão(ões) para ${disc}/${sem}`);
 
   if (banco.length === 0) {
     uiMostrarTelaVazia({ semDisp, sem, disc });
+    mostrarMensagemConteudo(carga);
     return;
   }
 

@@ -86,8 +86,8 @@ html { scrollbar-color: var(--surface-3) transparent; }
 #sidebar-logo-wrap .nexus-logo__texto { width: 100%; }
 #sidebar-logo-wrap .nexus-logo__link { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
 #sidebar-logo-wrap .nexus-logo__texto { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-#sidebar-logo-wrap .nexus-logo__img  { border-radius: 22%; transition: transform var(--t) var(--out); }
-#sidebar-logo-wrap .nexus-logo__link:hover .nexus-logo__img { transform: scale(1.06); }
+/* Ícone: mesmo componente do Quiz — o brilho (glow), a borda e o hover vêm de shared/css/themes/logo.css + borda do quiz. Aqui só a borda fina igual ao quiz. */
+#sidebar-logo-wrap .nexus-logo__img  { border: 1px solid rgba(255,255,255,.12); }
 #sidebar-logo-wrap .nexus-logo__titulo { font-family: var(--font-b); font-size: .78rem; font-weight: 600; line-height: 1; color: var(--t1); white-space: nowrap; }
 #sidebar-logo-wrap .nexus-logo__sub    { font-size: 7px; font-weight: 700; line-height: 1; letter-spacing: .18em; padding-left: .18em; text-transform: uppercase; color: var(--marca); white-space: nowrap; }
 

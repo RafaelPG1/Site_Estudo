@@ -26,6 +26,8 @@ import { aplicarCoresDisciplina }                          from '../../../../sha
 import { carregarHistoricoVF, salvarResultadoVF }          from './storage_vf.js';
 import { getDisciplinasDeSemestre }                        from '../../../../src/global.js';
 import { resolverUid }                                     from '../../../template/auth-gate.js';
+import { carregarConteudo, mostrarMensagemConteudo } from '../../../template/conteudo-loader.js';
+import '../../../../src/session-tracker.js';   // tempo de estudo do dashboard (mecanismo existente; sem contador novo)
 import { iniciarIAJogos, registrarContextoJogo }           from '../../../template/ia-games.js';
 
 iniciarIAJogos();   // chat da IA (hub e jogos usam o mesmo ponto de entrada)
@@ -1077,21 +1079,11 @@ async function init() {
 
   _preencherHeaderDisciplina(disc, sem, disciplina);
 
-  // Ano validado (4 dígitos) antes de entrar no caminho do import.
-  const _anoSem = sem ? sem.split('.')[0] : null;
-  const ano = /^\d{4}$/.test(_anoSem ?? '') ? _anoSem : null;
-  let banco   = [];
-  let semDisp = null;
-
-  if (ano) {
-    try {
-      const modulo = await import(`../../../../content/games/vdd_falso/${ano}/vdd_falso_data.js`);
-      semDisp = modulo.VDD_FALSO_DATA?.[sem] ?? null;
-      banco   = semDisp?.[disc] ?? [];
-    } catch (err) {
-      console.warn(`[vdd_falso] Arquivo de dados não encontrado para o ano ${ano}:`, err.message);
-    }
-  }
+  // Conteúdo: carregador único (content/games/vdd_falso/<semestre>/<AP>/)
+  const carga = await carregarConteudo({ jogo: 'vdd_falso', sem, ap: new URLSearchParams(location.search).get('ap'), disc });
+  const banco   = carga.ok ? carga.banco : [];
+  const semDisp = carga.dados ?? null;
+  if (!carga.ok) console.warn(`[vdd_falso] Conteúdo indisponível (${carga.codigo}):`, carga.caminho ?? '');
 
   estado.banco = banco;
 
@@ -1099,6 +1091,7 @@ async function init() {
     mostrarTela('empty', false);
     estado._nav?.pronto();
     _configurarTelaVazia(disc, sem, semDisp);
+    mostrarMensagemConteudo(carga);
     return;
   }
 

@@ -24,6 +24,7 @@ import {
 import { sincronizarSemNaURL } from '../shared/js/utils/url.js';
 import { preencherAnos, criarSemestreSelect } from '../shared/js/utils/dom.js';
 import { injetarLogo }         from '../shared/js/utils/logo.js';
+import '../src/session-tracker.js';   // tempo de estudo do dashboard (mesmo mecanismo do Resumo/Quiz; sobe sozinho, sem contador novo)
 import { iniciarIAJogos }      from './template/ia-games.js';
 import { arteSvg, ICONE }      from './jogo-arte.js';
 import {

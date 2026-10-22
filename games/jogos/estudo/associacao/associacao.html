@@ -4,14 +4,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Associação — Nexus Study</title>
+  <link rel="icon" type="image/x-icon" href="../../../../shared/img/favicons/games/estudos/estudos.ico" sizes="16x16 24x24 32x32 48x48 64x64 128x128 256x256" />
   <link
     href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;500;600;700&display=swap"
     rel="stylesheet"
   />
   <link rel="stylesheet" href="associacao.css" />
+  <link rel="stylesheet" href="../../../template/nexus-nav.css" />
+  <link rel="stylesheet" href="../../../template/game-header-center.css" />
+  <link rel="stylesheet" href="../../../../shared/css/audio/audio-btns.css" />
+  <link rel="stylesheet" href="../../../template/game-botoes-flutuantes.css" />
 </head>
 
-<body>
+<body class="nx-jogos">
 
 <!-- Fundo decorativo -->
 <div class="assoc-bg-grid" aria-hidden="true"></div>
@@ -23,13 +28,16 @@
   <!-- ── TOPBAR ── -->
   <header class="assoc-topbar">
 
-    <button class="assoc-back-btn" id="btn-back" type="button" aria-label="Voltar">
+    <div class="nx-nav">
+      <button class="assoc-back-btn" id="btn-back" type="button" aria-label="Voltar">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <polyline points="15 18 9 12 15 6"/>
       </svg>
       Voltar
     </button>
+      <a class="nx-nav__home" href="../../../../index.html" aria-label="Nexus Study — página inicial" title="Página inicial do Nexus"><img src="../../../../shared/img/logo.png" alt="" width="24" height="24" decoding="async" /></a>
+    </div>
 
     <div class="assoc-topbar__identity">
       <div class="assoc-topbar__icon" aria-hidden="true">🔗</div>
