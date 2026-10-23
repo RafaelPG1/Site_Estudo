@@ -64,7 +64,7 @@ def aplicar():
         else: print('  =', rel, '(já estava certo)')
     print(f'\n{ok} página(s) alterada(s).')
 
-TEXTOS = ('.html', '.js', '.css', '.json', '.webmanifest', '.md', '.txt', '.py', '.xml', '.yml', '.yaml')
+TEXTOS = ('.html', '.js', '.css', '.json', '.webmanifest', '.xml', '.yml', '.yaml')  # .md/.txt/.py ignorados: relatórios só citam o nome
 IGNORAR = {'.git', 'node_modules', '.venv', 'venv', '__pycache__', 'testes', 'ferramentas'}
 def procurar(termo):
     ach = []

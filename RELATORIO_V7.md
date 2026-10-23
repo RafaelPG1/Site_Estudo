@@ -29,3 +29,9 @@ Abra o terminal **na raiz do projeto** (a pasta onde está o `index.html`; no VS
 **Alterados:** `shared/js/utils/logo.js`, `index.html`, `ferramentas/favicons_migrar.py` (agora também cobre admin/atlas/pessoal e avisa de páginas sem favicon), `testes/t_v4.py`, `testes/t_estatico.py`.
 **Inalterados em relação à v6 (não repeti):** `games/`, `shared/img/favicons/`. **Removidos:** `shared/img/favicon_io` (pelo comando `apagar`, no seu PC).
 **Pendências:** rodar os 4 comandos acima no seu projeto; conferir as abas no navegador; "Limpar SRS" e `cf_historico`/`vf_historico` (antigas).
+
+## Correção (v7.1) — por que o `apagar` recusou no seu PC
+O `verificar` listava 12 "referências" a `favicon_io`, **todas em `RELATORIO_V6.md` e `RELATORIO_V7.md`** (textos meus que citam o nome). Nenhuma página, CSS ou JS usava a pasta. Era defeito do script: ele lia também `.md`. Agora `favicons_migrar.py` só procura em `.html .js .css .json .webmanifest .xml .yml .yaml`.
+**O que fazer:** substitua `ferramentas/favicons_migrar.py` pelo deste pacote e, na raiz do projeto, rode de novo `python ferramentas/favicons_migrar.py verificar` (esperado: `0 falha(s); 0 referência(s)`) e então `python ferramentas/favicons_migrar.py apagar` (esperado: `✔ shared/img/favicon_io apagada.`).
+Aviso informativo `info/info.html` sem favicon: não é erro. Se quiser o ícone geral nela, diga que eu incluo.
+Testado: com `favicon_io` existente e um `.md` citando o nome, `verificar` deu 0 referências e `apagar` removeu a pasta.
