@@ -20,7 +20,13 @@ def alvos():
          ('quiz/quiz.html', 'quiz/quiz.ico', 'ico'),
          ('quiz/disciplinas/disciplina.html', 'quiz/quiz.ico', 'ico'),
          ('quiz/template/template.html', 'quiz/quiz.ico', 'ico'),
-         ('dashboard/dashboard.html', 'dashboard/dashboard.ico', 'ico')]
+         ('dashboard/dashboard.html', 'dashboard/dashboard.ico', 'ico'),
+         # páginas que antes recebiam o favicon do logo.js (injeção automática removida na v2.3) → ícone geral do Nexus
+         ('admin/admin.html', 'favicon.ico', 'raiz'),
+         ('atlas/atlas.html', 'favicon.ico', 'raiz'),
+         ('pessoal/pessoal.html', 'favicon.ico', 'raiz'),
+         ('pessoal/anotacoes/anotacoes.html', 'favicon.ico', 'raiz'),
+         ('pessoal/calendar/calendar.html', 'favicon.ico', 'raiz')]
     if GAMES:
         t.append((f'{GAMES}/jogo.html', 'games/games.ico', 'ico'))
         for p in sorted((RAIZ/GAMES/'jogos'/'estudo').glob('*/*.html')):
@@ -43,7 +49,7 @@ def aplicar():
         base = f'{prefixo}{FAV}'
         for rx in (LINK_ICONE, LINK_PNG, LINK_OUTROS): s = rx.sub('', s)
         if tipo == 'raiz':
-            bloco = (f'  <link rel="icon" href="{base}/favicon.ico" sizes="any" data-nexus-fav />\n'
+            bloco = (f'  <link rel="icon" href="{base}/favicon.ico" sizes="any" />\n'
                      f'  <link rel="icon" type="image/png" sizes="32x32" href="{base}/favicon-32x32.png" />\n'
                      f'  <link rel="icon" type="image/png" sizes="16x16" href="{base}/favicon-16x16.png" />\n'
                      f'  <link rel="apple-touch-icon" sizes="180x180" href="{base}/apple-touch-icon.png" />\n'
@@ -85,6 +91,13 @@ def verificar():
         prefixo = '../'*(len(pathlib.PurePosixPath(rel).parts)-1); esperado = f'{prefixo}{FAV}/{ico}'
         if esperado not in p.read_text(encoding='utf8'): falhas += 1; print('  ✘ referência ausente/errada em', rel, '(esperado', esperado + ')')
         elif not (p.parent/esperado).resolve().exists(): falhas += 1; print('  ✘ caminho não resolve em', rel)
+    # informativo: páginas .html sem nenhum <link rel="icon"> (não é falha; o navegador usa o padrão dele)
+    sem = []
+    for p in sorted(RAIZ.rglob('*.html')):
+        rel = str(p.relative_to(RAIZ)).replace('\\', '/')
+        if set(p.relative_to(RAIZ).parts) & (IGNORAR | {'content', 'novas_implementações'}): continue
+        if 'rel="icon"' not in p.read_text(encoding='utf8', errors='ignore'): sem.append(rel)
+    if sem: print('  ℹ páginas sem favicon declarado (informativo):', ', '.join(sem))
     ref = procurar('favicon_io')
     for a, n, l in ref: print(f'  ⚠ ainda referencia favicon_io: {a}:{n}  {l}')
     print(f'\nverificação: {falhas} falha(s); {len(ref)} referência(s) restante(s) a favicon_io.')

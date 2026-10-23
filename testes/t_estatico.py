@@ -50,5 +50,9 @@ for pg in sorted((jogos/'jogos'/'estudo').glob('*/*.html'))+sorted((jogos/'jogos
     s=pg.read_text(encoding='utf8'); nome=str(pg.relative_to(jogos))
     chk('nx-nav__home' in s and 'nexus-nav.css' in s,f'{nome}: sem botão Nexus/CSS')
     if 'entretenimento' in nome: chk('<span>Voltar</span>' in s and '<span>Jogos</span>' not in s,f'{nome}: texto do Voltar')
+# logo.js não pode mais trocar favicons (cada página declara o seu)
+lj=raiz/'shared'/'js'/'utils'/'logo.js'
+if lj.exists():
+    t=lj.read_text(encoding='utf8'); chk('function _injetarFavicons' not in t and '_injetarFavicons();' not in t and 'favicon_io' not in t and 'export function injetarLogo' in t,'logo.js: ainda injeta favicons / referencia favicon_io / perdeu injetarLogo')
 print(f'\nRESULTADO ESTÁTICO: {ok} verificações OK, {fail} falhas ({len(paginas)} páginas analisadas)')
 sys.exit(1 if fail else 0)

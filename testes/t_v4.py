@@ -135,6 +135,7 @@ async def main():
         F='shared/img/favicons/'
         areas=[('index (geral)','index.html',F+'favicon.ico'),('resumo','resumo/resumo.html',F+'resumo/resumo.ico'),('quiz','quiz/quiz.html',F+'quiz/quiz.ico'),
                ('dashboard','dashboard/dashboard.html',F+'dashboard/dashboard.ico'),('games (hub)','games/jogo.html?sem=2026.2-AP1',F+'games/games.ico')]
+        areas+=[(n,pth,F+'favicon.ico') for n,pth in [('admin','admin/admin.html'),('atlas','atlas/atlas.html'),('pessoal','pessoal/pessoal.html'),('pessoal/anotacoes','pessoal/anotacoes/anotacoes.html'),('pessoal/calendar','pessoal/calendar/calendar.html')] if os.path.exists(os.path.join(SITE,pth))]
         areas+=[(f'estudo/{g}',url(g,'2026.2-AP1'),F+'games/estudos/estudos.ico') for g in G]
         areas+=[('entretenimento/'+os.path.basename(e)[:-5],os.path.relpath(e,SITE).replace(os.sep,'/'),F+'games/entretenimentos/entretenimentos.ico') for e in ent]
         for nome,path,ico in areas:
