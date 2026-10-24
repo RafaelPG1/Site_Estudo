@@ -28,6 +28,10 @@ body.nx-jogos #abtn-unlock-hint {
   zoom: 0.8417;
 }
 
+/* Sem o botão da IA (jogos de entretenimento): o de som ocupa o canto, no lugar da IA.
+   (zoom 0,8417 é aplicado ao botão; 24 px ÷ 0,8417 mantém a distância de 24 px da borda.) */
+body.nx-jogos.nx-sem-ia .abtn { bottom: calc(24px / 0.8417); }
+
 /* Celular: o rótulo e a dica de "ativar o som" ficariam sobre os botões
    de ação do jogo; o estado continua visível pela cor e pela bolinha. */
 @media (max-width: 560px) {
