@@ -16,14 +16,15 @@
 .nx-nav {
   display: inline-flex;
   align-items: stretch;      /* o botão Nexus acompanha a altura do Voltar */
-  gap: 8px;
+  gap: 18px;            /* afastamento maior: o brilho do Nexus não pode tocar no Voltar */
   flex-shrink: 0;
   min-width: 0;
 }
 
-/* Botão Nexus = MESMO desenho do ícone Nexus da área de Games (shared/css/themes/logo.css → .nexus-logo__img):
-   cantos 22%, borda fina, brilho (glow) verde permanente e, no hover, brilho maior + leve aumento.
-   Se mudar o logo.css, mude aqui também (o teste t_v4.py compara os dois e avisa se ficarem diferentes). */
+/* Botão Nexus = desenho do ícone Nexus da área de Games (shared/css/themes/logo.css → .nexus-logo__img):
+   cantos 22%, borda fina, brilho (glow) verde e, no hover, brilho maior + leve aumento.
+   O brilho aqui é MAIS SUAVE que o do hub (o do hub é 0 0 12px/.35 + 0 0 28px/.15) porque, colado ao Voltar no topo
+   do jogo, o brilho forte ficava pesado. Para ajustar a intensidade, mude os valores de rgba(77, 217, 180, …). */
 .nx-nav__home {
   display: inline-flex; align-items: center; justify-content: center;
   width: 34px; height: 34px;     /* mesma altura do botão Voltar */
@@ -43,19 +44,19 @@
   border-radius: 22%;
   border: 1px solid rgba(255,255,255,.12);
   box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.45),
-    0 0 12px rgba(77, 217, 180, 0.35),
-    0 0 28px rgba(77, 217, 180, 0.15);
+    0 2px 6px rgba(0, 0, 0, 0.40),
+    0 0 6px rgba(77, 217, 180, 0.22),
+    0 0 14px rgba(77, 217, 180, 0.08);
   mix-blend-mode: normal;
   transition: filter .25s ease, transform .25s ease, box-shadow .25s ease;
 }
 .nx-nav__home:hover img {
-  filter: drop-shadow(0 0 6px rgba(77, 217, 180, 0.7));
+  filter: drop-shadow(0 0 3px rgba(77, 217, 180, 0.45));
   transform: scale(1.06);
   box-shadow:
-    0 2px 12px rgba(0, 0, 0, 0.5),
-    0 0 18px rgba(77, 217, 180, 0.55),
-    0 0 40px rgba(77, 217, 180, 0.25);
+    0 2px 8px rgba(0, 0, 0, 0.45),
+    0 0 9px rgba(77, 217, 180, 0.35),
+    0 0 20px rgba(77, 217, 180, 0.14);
 }
 .nx-nav__home:active { transform: scale(.96); }
 .nx-nav__home:focus-visible { outline: 2px solid #4dd9b4; outline-offset: 3px; }
