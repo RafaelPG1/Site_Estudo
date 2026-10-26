@@ -31,6 +31,8 @@ import { bindModal, bindTocChrome, bindCopyButton, bindThemeToggle } from './js/
 import { initPdfModal } from './js/pdf/resumo-pdf.js';
 import { initBusca, limparBusca, atualizarContextoBusca, definirEscopoInicial } from './js/resumo-busca.js';
 import { initFormatador, fechar as fecharFormatador } from './js/formatador/formatador.js';
+import { abrirModal, abrirModalResumao, abrirModalProfessor } from './js/resumo-reader.js';
+import { renderContinuar, consumirRetomadaDaURL, limparUltimaLeitura } from './js/resumo-continuar.js';
 
 injetarLogo('#header-logo-wrap');
 
@@ -106,6 +108,36 @@ function irParaHome() {
   if (State.disciplinas.length > 1) definirEscopoInicial('todas');
 }
 
+/* ── "Continuar lendo" (v10) ─────────────────────────────────
+   O botão da Home leva a ?sem=&disc=&retomar=1. Ao carregar a
+   disciplina, abre o mesmo tipo de conteúdo e a mesma aula (achada
+   pelo título, não pela posição). Se a aula não existe mais, não
+   quebra: fica na listagem da disciplina e esquece o registro. */
+let _retomarPendente = null;
+
+function _aplicarRetomada(r) {
+  const fontes = { completo: State.aulas, sintese: State.simplificado, resumao: State.resumao, professor: State.professor };
+  const arr = fontes[r.modo] ?? [];
+  let i = arr.findIndex(x => x && String(x.aula) === r.aula);
+  if (i < 0 && r.modo !== 'completo') {
+    // Síntese/Resumão/Nota alinham por posição com as aulas: tenta pelo título da aula-base
+    const base = State.aulas.findIndex(x => x && String(x.aula) === r.aula);
+    if (base >= 0 && arr[base]) i = base;
+  }
+  if (i < 0 || !arr[i]) { limparUltimaLeitura(); return; }
+  setModo(r.modo);
+  if (r.modo === 'resumao')        abrirModalResumao(arr[i], i);
+  else if (r.modo === 'professor') abrirModalProfessor(arr[i], i);
+  else                             abrirModal(arr[i], i);
+}
+
+window.addEventListener('nexus:resumoConteudoPronto', () => {
+  if (!_retomarPendente) return;
+  const r = _retomarPendente;
+  _retomarPendente = null;
+  try { _aplicarRetomada(r); } catch (e) { console.warn('[resumo] retomada falhou:', e); }
+});
+
 document.addEventListener('DOMContentLoaded', async () => {
   setPagina('RESUMO');
   preencherAnos();
@@ -155,7 +187,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // disciplina "atual" de verdade para restringir a busca a ela.
   if (State.emHome) definirEscopoInicial('todas');
   _initProgressBar();
+  _retomarPendente = consumirRetomadaDaURL();
   if (!State.emHome) carregarConteudo();
+  renderContinuar();
 
   document.getElementById('btn-back')?.addEventListener('mouseenter', () => playSound('hover', 'resumos'));
   document.getElementById('btn-back')?.addEventListener('click',      () => playSound('click', 'resumos'));

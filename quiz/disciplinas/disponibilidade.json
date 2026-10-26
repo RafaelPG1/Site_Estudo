@@ -1,0 +1,21 @@
+{
+  "2026.1-AP1": {
+    "banco_dados": {"revisao": 0, "ava": 0, "questoes": 80, "enade": 0, "fixacao": 0},
+    "design": {"revisao": 0, "ava": 0, "questoes": 80, "enade": 0, "fixacao": 0},
+    "poo": {"revisao": 0, "ava": 15, "questoes": 40, "enade": 0, "fixacao": 0},
+    "redes": {"revisao": 0, "ava": 20, "questoes": 80, "enade": 0, "fixacao": 0}
+  },
+  "2026.1-AP2": {
+    "banco_dados": {"revisao": 0, "ava": 0, "questoes": 70, "enade": 70, "fixacao": 70},
+    "design": {"revisao": 0, "ava": 0, "questoes": 70, "enade": 70, "fixacao": 70},
+    "poo": {"revisao": 0, "ava": 0, "questoes": 20, "enade": 20, "fixacao": 20},
+    "redes": {"revisao": 0, "ava": 0, "questoes": 50, "enade": 50, "fixacao": 50}
+  },
+  "2026.2-AP1": {
+    "analise_projeto": {"revisao": 20, "ava": 35, "questoes": 90, "enade": 80, "fixacao": 80},
+    "estruturas_dados": {"revisao": 10, "ava": 0, "questoes": 80, "enade": 80, "fixacao": 80},
+    "legislacao": {"revisao": 0, "ava": 10, "questoes": 60, "enade": 60, "fixacao": 60},
+    "psicologia_organizacional": {"revisao": 0, "ava": 20, "questoes": 80, "enade": 80, "fixacao": 80},
+    "redes2": {"revisao": 15, "ava": 0, "questoes": 60, "enade": 60, "fixacao": 60}
+  }
+}

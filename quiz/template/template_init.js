@@ -220,8 +220,35 @@ function _atualizarBackBtn(urlBack) {
    `disc` e `sem` que os cards de modo já usam.
    ══════════════════════════════════════════════════════════ */
 function _montarUrlBack(semestre, arquivo) {
-  return '../disciplinas/disciplina.html?sem=' + encodeURIComponent(semestre) +
+  /* v11: o "Voltar" não passa mais por disciplinas/disciplina.html.
+     Volta para a tela de disciplinas do Quiz (quiz.html) no MESMO
+     semestre, já com o painel de modos da disciplina aberta (?disc=). */
+  return '../quiz.html?sem=' + encodeURIComponent(semestre) +
          '&disc=' + encodeURIComponent(arquivo);
+}
+
+/* Atalho "Quiz" da barra lateral (quick-access.js): dentro de uma sessão
+   ele leva à tela de disciplinas do semestre/disciplina atuais, em vez de
+   quiz.html "puro". Só altera clique simples; abrir em nova aba mantém o
+   href (também atualizado abaixo). */
+function _vincularAtalhoQuiz(urlBack) {
+  function _ajustarHref() {
+    var a = document.getElementById('qa-btn-quiz');
+    if (a) { a.setAttribute('href', urlBack); return true; }
+    return false;
+  }
+  if (!_ajustarHref() && typeof MutationObserver !== 'undefined') {
+    var obs = new MutationObserver(function () { if (_ajustarHref()) obs.disconnect(); });
+    obs.observe(document.documentElement, { childList: true, subtree: true });
+    setTimeout(function () { obs.disconnect(); }, 15000);
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest ? e.target.closest('#qa-btn-quiz') : null;
+    if (!a || e.button || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    window.location.href = urlBack;
+  }, true);
 }
 
 function _montarVisual(params, info, modoConfig) {
@@ -232,6 +259,7 @@ function _montarVisual(params, info, modoConfig) {
   var urlBack = _montarUrlBack(params.semestre, info.arquivo);
   window.NEXUS_URL_BACK = urlBack;
   _atualizarBackBtn(urlBack);
+  _vincularAtalhoQuiz(urlBack);
 
   document.body.dataset.disciplina = info.arquivo;
   document.body.dataset.modo       = params.modo;
@@ -422,8 +450,10 @@ function _injetarNavFloat() {
   nav.setAttribute('aria-label', 'Navegação rápida');
 
   nav.innerHTML =
+    /* v13: atalhos enxutos — Cima, Baixo, Reiniciar, Revelar, Step/Lista, Info.
+       "Voltar" (já existe no cabeçalho) e "Filtro" (as aulas agora se ativam
+       pelos botões da barra de aulas) saíram da barra. */
     _criarBotaoNav('btn-up',        'Ir ao topo',        'fas fa-arrow-up')    +
-    _criarBotaoNav('btn-left',      'Voltar',            'fas fa-rotate-left') +
     _criarBotaoNav('btn-down',      'Ir ao final',       'fas fa-arrow-down')  +
     '<div class="nav-divider" aria-hidden="true"></div>'                        +
     '<button id="restartButton" class="nav-btn" title="Reiniciar" type="button">' +
@@ -440,9 +470,6 @@ function _injetarNavFloat() {
     '<div class="nav-divider" aria-hidden="true"></div>'                        +
     '<button id="btn-toggle-modo" class="nav-btn btn-toggle-modo" title="Modo Step" type="button">' +
       '<i class="fas fa-layer-group" aria-hidden="true"></i></button>'          +
-    '<div class="nav-divider" aria-hidden="true"></div>'                        +
-    '<button id="btn-filtro-aulas" class="nav-btn btn-filtro-aulas" title="Filtrar aulas" type="button">' +
-      '<i class="fas fa-filter" aria-hidden="true"></i></button>'               +
     '<div class="nav-divider" aria-hidden="true"></div>'                        +
     '<button id="btn-legenda" class="nav-btn btn-legenda" title="Informações" type="button">' +
       '<i class="fas fa-circle-info" aria-hidden="true"></i></button>'          +
@@ -484,9 +511,9 @@ function _injetarNavFloat() {
    ══════════════════════════════════════════════════════════ */
 
 var _IDS_NAV_FLOAT = [
-  'btn-up', 'btn-left', 'btn-down',
+  'btn-up', 'btn-down',
   'restartButton', 'revealButton',
-  'btn-toggle-modo', 'btn-filtro-aulas', 'btn-legenda',
+  'btn-toggle-modo', 'btn-legenda',
 ];
 
 function _vincularSomBotao(id) {

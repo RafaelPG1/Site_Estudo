@@ -705,6 +705,160 @@ input:focus-visible {
   color: var(--card-accent);
 }
 
+/* ── v10: escolha do modo direto no card ─────────────────────
+   O card agora é um <div>; a área clicável principal
+   (.disc-card__main) é um <a> (início direto), um <button>
+   (expande a lista de modos) ou um <div> (sem conteúdo ainda). */
+
+.disc-card__main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.disc-card__main:focus-visible {
+  outline: 2px solid var(--card-accent);
+  outline-offset: -2px;
+  border-radius: var(--r-md);
+}
+.disc-card__arrow-wrap svg { transition: transform 0.25s var(--ease-out); }
+
+/* Disciplina sem nenhum modo com questões */
+.disc-card--vazio, .disc-card--vazio .disc-card__main { cursor: default; }
+.disc-card--vazio { opacity: 0.6; }
+.disc-card--vazio:hover { transform: none; border-color: var(--border); background: var(--surface); }
+.disc-card--vazio:hover::before { width: 3px; opacity: 0.5; }
+.disc-card--vazio:hover .disc-card__title,
+.disc-card--vazio:hover .disc-card__tag { color: inherit; }
+.disc-card--vazio:active { transform: none; }
+.disc-card--vazio .disc-card__arrow-wrap { display: none; }
+
+/* ── v11: painel de modos (janela no computador / folha inferior no celular) ── */
+.disc-card__mini { display: inline-flex; gap: 0.3rem; margin-left: auto; margin-right: 0.6rem; color: var(--card-accent); opacity: 0.85; }
+.disc-card__mini span { display: inline-flex; }
+.disc-card__mini span[data-modo="revisao"]  { color: #f97316; }
+.disc-card__mini span[data-modo="ava"]      { color: #6c63ff; }
+.disc-card__mini span[data-modo="questoes"] { color: #3dd9c2; }
+.disc-card__mini span[data-modo="enade"]    { color: #f7c948; }
+.disc-card__mini span[data-modo="fixacao"]  { color: #ff6b8a; }
+.disc-card__mini svg { width: 14px; height: 14px; }
+.disc-card--destaque { border-color: var(--card-accent); box-shadow: 0 0 0 2px rgba(var(--card-accent-rgb),0.35); }
+.disc-card--lista .disc-card__arrow-wrap svg { transform: none; }
+
+body.mp-aberto { overflow: hidden; }
+.mp {
+  position: fixed; inset: 0; z-index: 9500;
+  display: flex; align-items: center; justify-content: center;
+  padding: 1.25rem;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.mp--aberto { opacity: 1; pointer-events: auto; }
+.mp__fundo { position: absolute; inset: 0; background: rgba(4,7,18,0.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.mp__caixa {
+  position: relative;
+  width: min(640px, 100%);
+  max-height: min(88vh, 720px);
+  overflow-y: auto;
+  padding: 1.4rem 1.4rem 1.5rem;
+  border-radius: 20px;
+  border: 1px solid rgba(var(--card-accent-rgb),0.35);
+  background: linear-gradient(180deg, rgba(var(--card-accent-rgb),0.10), rgba(12,18,40,0.98) 140px), var(--ink-2);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+  transform: translateY(14px) scale(0.98);
+  transition: transform 0.28s var(--ease-out);
+}
+.mp--aberto .mp__caixa { transform: none; }
+.mp__alca { display: none; }
+.mp__topo { display: flex; align-items: center; gap: 0.9rem; }
+.mp__icone {
+  width: 46px; height: 46px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--r-sm);
+  background: var(--card-accent-d); color: var(--card-accent);
+  border: 1px solid rgba(255,255,255,0.08);
+  font-size: 1.3rem;
+}
+.mp__icone svg { width: 1em; height: 1em; }
+.mp__titulos { flex: 1; min-width: 0; }
+.mp__titulo { font-family: var(--f-display); font-size: 1.3rem; font-weight: 600; line-height: 1.15; color: var(--text-1); }
+.mp__sub { font-size: 0.76rem; color: var(--text-2); margin-top: 0.2rem; line-height: 1.35; }
+.mp__fechar {
+  width: 38px; height: 38px; flex-shrink: 0; border-radius: 50%;
+  border: 1px solid var(--border); background: transparent; color: var(--text-2); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color 0.2s, color 0.2s;
+}
+.mp__fechar:hover, .mp__fechar:focus-visible { border-color: var(--card-accent); color: var(--text-1); outline: none; }
+.mp__dica { margin: 1.1rem 0 0.7rem; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); }
+.mp__grade { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.65rem; }
+.mp__grade li:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.mp-modo {
+  display: flex; align-items: flex-start; gap: 0.8rem; height: 100%;
+  padding: 0.85rem 0.9rem; border-radius: 14px;
+  border: 1px solid var(--border); background: rgba(255,255,255,0.035);
+  color: var(--text-1); text-decoration: none;
+  transition: border-color 0.2s, background 0.2s, transform 0.2s var(--ease-out);
+}
+/* Cor própria de cada modo (as mesmas de antes: Revisão laranja, AVA violeta, Questões ciano, ENADE âmbar, Fixação rosa) */
+.mp-modo { --mc: var(--card-accent); --mc-rgb: var(--card-accent-rgb); }
+.mp-modo[data-modo="revisao"]  { --mc: #f97316; --mc-rgb: 249,115,22; }
+.mp-modo[data-modo="ava"]      { --mc: #6c63ff; --mc-rgb: 108,99,255; }
+.mp-modo[data-modo="questoes"] { --mc: #3dd9c2; --mc-rgb: 61,217,194; }
+.mp-modo[data-modo="enade"]    { --mc: #f7c948; --mc-rgb: 247,201,72; }
+.mp-modo[data-modo="fixacao"]  { --mc: #ff6b8a; --mc-rgb: 255,107,138; }
+a.mp-modo { cursor: pointer; }
+a.mp-modo:hover, a.mp-modo:focus-visible {
+  border-color: rgba(var(--mc-rgb),0.75);
+  background: rgba(var(--mc-rgb),0.10);
+  transform: translateY(-2px); outline: none;
+}
+.mp-modo__icone {
+  width: 36px; height: 36px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 10px; background: rgba(var(--mc-rgb),0.14); color: var(--mc);
+}
+.mp-modo__icone svg { width: 19px; height: 19px; }
+.mp-modo__texto { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; flex: 1; }
+.mp-modo__nome { font-family: var(--f-display); font-size: 0.98rem; font-weight: 600; }
+.mp-modo__desc { font-size: 0.72rem; line-height: 1.4; color: var(--text-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.mp-modo__info { margin-top: 0.25rem; font-size: 0.72rem; font-weight: 600; color: var(--mc); }
+.mp-modo__ir { align-self: center; color: var(--mc); display: flex; }
+/* Indisponível: tracejado, apagado, sem seta, sem hover — o motivo está escrito. */
+.mp-modo--off { cursor: not-allowed; border-style: dashed; background: transparent; }
+.mp-modo--off .mp-modo__icone { background: transparent; color: var(--text-3); }
+.mp-modo--off .mp-modo__nome { color: var(--text-3); text-decoration: line-through; text-decoration-color: rgba(255,255,255,0.18); font-weight: 500; }
+.mp-modo--off .mp-modo__desc { display: none; }
+.mp-modo--off .mp-modo__info { color: var(--text-3); font-weight: 500; }
+
+@media (max-width: 600px) {
+  .mp { align-items: flex-end; padding: 0; }
+  .mp__caixa {
+    width: 100%; max-height: 86vh;
+    border-radius: 22px 22px 0 0;
+    padding: 0.6rem 1.1rem 1.4rem;
+    transform: translateY(100%);
+  }
+  .mp__alca { display: block; width: 40px; height: 4px; border-radius: 4px; background: var(--border-hi); margin: 0 auto 0.9rem; }
+  .mp__grade { grid-template-columns: 1fr; }
+  .mp__grade li:last-child:nth-child(odd) { grid-column: auto; }
+  .mp-modo--off { padding-top: 0.7rem; padding-bottom: 0.7rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mp, .mp__caixa, .mp-modo { transition: none; }
+}
+
+
 /* ══════════════════════════════════════════════
    MODAL (configurações do quiz)
 ══════════════════════════════════════════════ */

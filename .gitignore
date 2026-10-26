@@ -5,6 +5,11 @@ info/
 envios_R2/
 backup/
 /scripts/
-/testes_regras/
 /novas_implementações/
 firestore.rules
+
+# Bloqueia a pasta ferramentas apenas na raiz do projeto
+/ferramentas/
+
+# Bloqueia qualquer pasta que contenha o termo "testes" em qualquer lugar
+*testes*/

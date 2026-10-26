@@ -131,8 +131,12 @@
 
     function _strParaRespostas(str) {
       var resps = {};
+      /* '' (documento de reset), 'null' e qualquer valor não numérico = sem
+         resposta. Antes, '' virava NaN e marcava a questão 1 como respondida
+         em TODA abertura depois de um "Reiniciar". */
       str.split(',').forEach(function (v, i) {
-        if (v !== 'null') resps[i] = parseInt(v);
+        var n = parseInt(v, 10);
+        if (v !== 'null' && v !== '' && !isNaN(n)) resps[i] = n;
       });
       return resps;
     }
@@ -443,14 +447,15 @@ function _dispararFinalizacao(reveladoPorBotao) {
      ANTES de qualquer revelação. O snapshot é feito sobre
      _respostasReais, que nunca é tocado por revelar(). */
   var respostasBrutas = {};
+  /* v12: só entram as aulas ATIVAS (as desativadas não fazem parte desta sessão). */
   Object.keys(_respostasReais).forEach(function (qi) {
-    respostasBrutas[parseInt(qi)] = _respostasReais[qi];
+    if (_ativaPos(parseInt(qi))) respostasBrutas[parseInt(qi)] = _respostasReais[qi];
   });
   /* Gabarito bruto: índice da alternativa correta por questão.
      O intelligence.js cruzará respostasBrutas x gabarito. */
   var gabarito = {};
   questoes.forEach(function (q, qi) {
-    gabarito[qi] = q.answer;
+    if (_ativaPos(qi)) gabarito[qi] = q.answer;
   });
 
   var payload = {
@@ -459,7 +464,7 @@ function _dispararFinalizacao(reveladoPorBotao) {
     modo:          _modo,
     semestre:      _semestre,
     /* Dados brutos — apenas o que o usuário respondeu */
-    totalQuestoes:   questoes.length,
+    totalQuestoes:   Object.keys(gabarito).length,
     respostasBrutas: respostasBrutas,
     gabarito:        gabarito,
     /* Timestamps */
@@ -472,7 +477,7 @@ function _dispararFinalizacao(reveladoPorBotao) {
   try {
     window.dispatchEvent(new CustomEvent('nexus:quizFinalizado', { detail: payload }));
     console.log('[quiz_engine] nexus:quizFinalizado disparado —',
-      questoes.length + ' questões | respondidas=' +
+      Object.keys(gabarito).length + ' questões | respondidas=' +
       Object.keys(respostasBrutas).length + ' | revealed=' + payload.revealed);
   } catch (e) {
     console.warn('[quiz_engine] falha ao disparar nexus:quizFinalizado:', e);
@@ -485,6 +490,8 @@ function _dispararFinalizacao(reveladoPorBotao) {
       var salvoLocal = _Storage.loadProgress(_discUid(), _modo, _semestre);
       var fbDados    = window.__NEXUS_FIREBASE_RESPOSTAS__ || null;
       var salvo      = salvoLocal;
+
+      if (fbDados && fbDados._limpo) fbDados = null;   /* reset intencional: não há progresso a restaurar */
 
       if (fbDados) {
         var tsLocal = salvoLocal ? (salvoLocal.savedAt || 0) : 0;
@@ -520,6 +527,11 @@ if (!salvo || !salvo.respostas) return null;
 
       Object.keys(salvo.respostas).forEach(function (qi) {
         var idx = parseInt(qi);
+        /* ignora lixo de progresso antigo (null/NaN/fora do intervalo) em vez
+           de marcar a questão como respondida */
+        var val = salvo.respostas[qi];
+        if (isNaN(idx) || idx < 0 || val === null || val === undefined || isNaN(parseInt(val))) return;
+        salvo.respostas[qi] = parseInt(val);
         respostas[idx] = salvo.respostas[qi];
 
         /* Sincroniza o espelho imutável com o progresso restaurado.
@@ -550,16 +562,140 @@ if (!salvo || !salvo.respostas) return null;
 
     var savedShuffleMap = _restaurar();
 
-    var questoes = criarCopiaEmbaralhada(questoesBase, savedShuffleMap);
+    /* ══════════════════════════════════════════════════════════
+       SESSÃO POR AULA (v12) — aulas ATIVAS escolhidas livremente
+
+       `questoesTodas` é a lista COMPLETA, embaralhada exatamente
+       como antes (mesmas posições, mesmo shuffleMap salvo) e
+       `questoes` aponta SEMPRE para ela inteira: nenhuma posição
+       muda nunca, então as respostas salvas (local e Firestore,
+       indexadas pela posição) continuam válidas e não há como
+       duplicar questão.
+       O que muda é só QUAIS aulas aparecem: `sessaoAtivos[gi]`.
+       Aula desativada fica escondida (as respostas dela ficam
+       guardadas); ativar de novo mostra como estava.
+       Os modos com 1 grupo (ex.: Revisão) não têm esse controle.
+    ══════════════════════════════════════════════════════════ */
+    var questoesTodas   = criarCopiaEmbaralhada(questoesBase, savedShuffleMap);
+    var questoes        = questoesTodas;
+    var sessaoGrupos    = [];   /* [{ aula, ini, fim }] sobre questoesTodas */
+    var sessaoAtivos    = [];   /* [bool] por grupo: aula ativa (visível)  */
+    var _giPos          = [];   /* posição da questão -> índice do grupo   */
+
+    function _libKey() {
+      return 'quiz_lib_' + _uid() + '_' + _disc + '_' + _modo + '_' + _semestre;
+    }
+
+    function _calcularSessaoGrupos() {
+      sessaoGrupos = [];
+      _giPos = [];
+      var ultima;
+      questoesTodas.forEach(function (q, qi) {
+        var a = q.aula !== undefined ? q.aula : null;
+        if (qi === 0 || a !== ultima) {
+          sessaoGrupos.push({ aula: a, ini: qi, fim: qi + 1 });
+          ultima = a;
+        } else {
+          sessaoGrupos[sessaoGrupos.length - 1].fim = qi + 1;
+        }
+        _giPos[qi] = sessaoGrupos.length - 1;
+      });
+    }
+
+    function _progressivo()    { return sessaoGrupos.length >= 2; }
+    function _ativaPos(qi)     { return !_progressivo() || sessaoAtivos[_giPos[qi]] !== false; }
+    function _todasAtivas()    {
+      for (var i = 0; i < sessaoAtivos.length; i++) if (!sessaoAtivos[i]) return false;
+      return true;
+    }
+    function _qtdAtivas() {
+      var n = 0;
+      for (var qi = 0; qi < questoes.length; qi++) if (_ativaPos(qi)) n++;
+      return n;
+    }
+    function _respAtivas() {
+      var n = 0;
+      Object.keys(respostas).forEach(function (k) {
+        var qi = parseInt(k);
+        if (qi >= 0 && qi < questoes.length && _ativaPos(qi)) n++;
+      });
+      return n;
+    }
+    /* Próxima/anterior posição ATIVA a partir de `de` (ou -1). */
+    function _posAtivaDepois(de) {
+      for (var qi = de + 1; qi < questoes.length; qi++) if (_ativaPos(qi)) return qi;
+      return -1;
+    }
+    function _posAtivaAntes(de) {
+      for (var qi = de - 1; qi >= 0; qi--) if (_ativaPos(qi)) return qi;
+      return -1;
+    }
+
+    function _aplicarAtivos(arr) {
+      sessaoAtivos = sessaoGrupos.map(function (_, gi) { return arr[gi] !== false && !!arr[gi]; });
+      if (sessaoGrupos.length && !sessaoAtivos.some(Boolean)) sessaoAtivos[0] = true;
+      if (_disc && _Storage) {
+        if (_progressivo()) {
+          var lista = [];
+          sessaoAtivos.forEach(function (v, gi) { if (v) lista.push(gi); });
+          _Storage.set(_libKey(), lista);
+        } else {
+          _Storage.remove(_libKey());
+        }
+      }
+      _atualizarMetaTotal();
+    }
+
+    /* Quais aulas ficam ativas ao abrir: exatamente as que o aluno deixou ativas
+       neste aparelho; sem isso (outro aparelho, progresso antigo) derivam-se das
+       respostas existentes, e sem respostas fica só a Aula 1. */
+    function _ativosIniciais() {
+      var n = sessaoGrupos.length || 1;
+      var ativos = [];
+      for (var i = 0; i < n; i++) ativos.push(!_progressivo() || revelado);
+      if (!_progressivo() || revelado) return ativos;
+      Object.keys(respostas).forEach(function (k) {
+        var gi = _giPos[parseInt(k)];
+        if (gi !== undefined) ativos[gi] = true;
+      });
+      var salvo = _Storage ? _Storage.get(_libKey(), null) : null;
+      if (Array.isArray(salvo)) {
+        var so = [];
+        for (var k = 0; k < n; k++) so.push(false);
+        salvo.forEach(function (gi) { if (gi >= 0 && gi < n) so[gi] = true; });
+        if (so.some(Boolean)) return so;
+      } else if (salvo && parseInt(salvo) > 0) {            /* formato antigo (v10): aulas 1..n */
+        for (var j = 0; j < Math.min(parseInt(salvo), n); j++) ativos[j] = true;
+      }
+      if (!ativos.some(Boolean)) ativos[0] = true;
+      return ativos;
+    }
+
+    function _atualizarMetaTotal() {
+      var metaTotal = document.getElementById('meta-total');
+      if (!metaTotal) return;
+      var span = metaTotal.querySelector('span');
+      if (!span) return;
+      span.textContent = (_progressivo() && !_todasAtivas())
+        ? _qtdAtivas() + ' de ' + questoesTodas.length + ' questões'
+        : questoes.length + ' questões';
+    }
+
+    /* Troca a lista completa (reiniciar / novo filtro) e volta à 1ª aula. */
+    function _definirQuestoesTodas(lista) {
+      questoesTodas = lista;
+      questoes = questoesTodas;
+      _calcularSessaoGrupos();
+      if (_disc && _Storage) _Storage.remove(_libKey());
+      var ini = sessaoGrupos.map(function (_, gi) { return gi === 0 || !_progressivo(); });
+      _aplicarAtivos(ini);
+    }
+
+    _calcularSessaoGrupos();
+    _aplicarAtivos(_ativosIniciais());
 
     if (savedShuffleMap === null && _disc && _Storage) {
       _salvarShuffleMap();
-    }
-
-    var metaTotal = document.getElementById('meta-total');
-    if (metaTotal) {
-      var span = metaTotal.querySelector('span');
-      if (span) span.textContent = questoes.length + ' questões';
     }
 
     /* ── 5. FEEDBACK E CORPO DA QUESTÃO ───────────────────── */
@@ -661,7 +797,7 @@ if (!salvo || !salvo.respostas) return null;
       var pct = r.total > 0 ? Math.round((r.respondidas / r.total) * 100) : 0;
 
       if (r.respondidas < r.total) {
-        el.className = 'subject-result subject-result--progress';
+        el.className = 'subject-result subject-result--progress' + (_progressivo() && !sessaoAtivos[gi] ? ' aula-off' : '');
         el.innerHTML =
           '<div style="width:42px;height:42px;border-radius:12px;flex-shrink:0;' +
           'background:' + _AZUL_BG + ';border:1px solid ' + _AZUL_ICON_BD + ';' +
@@ -681,7 +817,7 @@ if (!salvo || !salvo.respostas) return null;
         var pctA        = r.total > 0 ? Math.round((r.acertos / r.total) * 100) : 0;
         var successColor = pctA >= 70 ? '#4ADE80' : '#FACC15';
 
-        el.className = 'subject-result subject-result--progress';
+        el.className = 'subject-result subject-result--progress' + (_progressivo() && !sessaoAtivos[gi] ? ' aula-off' : '');
         el.innerHTML =
           '<div style="width:42px;height:42px;border-radius:12px;flex-shrink:0;' +
           'background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.2);' +
@@ -705,11 +841,273 @@ if (!salvo || !salvo.respostas) return null;
       return -1;
     }
 
+    /* ══════════════════════════════════════════════════════════
+       INTERFACE DA SESSÃO PROGRESSIVA (v10)
+       Barra de aulas (progresso por aula + total) no topo da lista
+       e painel "Próxima aula" depois da última aula liberada.
+       Só existe quando o modo tem 2+ grupos (aulas/atividades).
+    ══════════════════════════════════════════════════════════ */
+
+    var _SESSAO_CSS =
+      '.sessao-ui{font-family:var(--font-body,inherit);color:var(--text-1,#e8e6f0)}' +
+      '#sessao-nav{margin:0 0 1rem;padding:.9rem 1rem;border:1px solid var(--border,rgba(255,255,255,.08));' +
+        'border-radius:var(--radius-card,16px);background:var(--surface,rgba(255,255,255,.035))}' +
+      '.sessao-resumo{font-size:.82rem;color:var(--text-2,#acaac2);margin-bottom:.6rem;line-height:1.4}' +
+      '.sessao-resumo strong{color:var(--text-1,#e8e6f0)}' +
+      '.sessao-chips{display:flex;flex-wrap:wrap;gap:.45rem}' +
+      '.sessao-chip{display:inline-flex;align-items:center;gap:.4rem;min-height:36px;padding:.35rem .7rem;' +
+        'border-radius:999px;border:1px solid var(--border,rgba(255,255,255,.12));background:transparent;' +
+        'color:var(--text-1,#e8e6f0);font:600 .76rem var(--font-body,inherit);cursor:pointer;transition:border-color .2s,background .2s}' +
+      '.sessao-chip small{font-weight:500;opacity:.75}' +
+      '.sessao-chip:hover:not(:disabled){border-color:rgba(var(--accent-rgb,108,99,255),.6)}' +
+      '.sessao-chip--atual{border-color:rgba(var(--accent-rgb,108,99,255),.7);background:rgba(var(--accent-rgb,108,99,255),.14)}' +
+      '.sessao-chip--done{border-color:rgba(74,222,128,.45)}' +
+      '.sessao-chip--off{border-style:dashed;color:var(--text-3,#5a5775)}' +
+      '.sessao-chip--off:hover{color:var(--text-1,#e8e6f0)}' +
+      '.sessao-chip--tudo{border-style:solid;background:rgba(var(--accent-rgb,108,99,255),.08);color:var(--text-2,#acaac2)}' +
+      '.sessao-dica{margin-top:.55rem;font-size:.72rem;color:var(--text-3,#7c7a95);line-height:1.4}' +
+      '.aula-off{display:none!important}' +
+      '#sessao-proxima{margin:1.2rem 0 .4rem;padding:1.1rem 1.2rem;border:1px solid rgba(var(--accent-rgb,108,99,255),.3);' +
+        'border-radius:var(--radius-card,16px);background:rgba(var(--accent-rgb,108,99,255),.07);' +
+        'display:flex;flex-wrap:wrap;align-items:center;gap:.8rem 1rem;justify-content:space-between}' +
+      '#sessao-proxima .sessao-txt{flex:1 1 220px;font-size:.9rem;line-height:1.45}' +
+      '#sessao-proxima .sessao-txt small{display:block;color:var(--text-2,#acaac2);font-size:.78rem;margin-top:.15rem}' +
+      '.sessao-acoes{display:flex;flex-wrap:wrap;gap:.5rem}' +
+      '.sessao-btn{min-height:44px;padding:.55rem 1.1rem;border-radius:var(--radius-btn,10px);' +
+        'border:1px solid rgba(var(--accent-rgb,108,99,255),.5);background:rgba(var(--accent-rgb,108,99,255),.18);' +
+        'color:var(--text-1,#fff);font:700 .85rem var(--font-body,inherit);cursor:pointer}' +
+      '.sessao-btn:hover:not(:disabled){background:rgba(var(--accent-rgb,108,99,255),.3)}' +
+      '.sessao-btn:disabled{opacity:.4;cursor:not-allowed}' +
+      '.sessao-btn--sec{background:transparent;border-color:var(--border-mid,rgba(255,255,255,.18))}' +
+      '@media (max-width:480px){#sessao-proxima{padding:1rem}.sessao-btn{flex:1 1 100%}}';
+
+    function _injetarCssSessao() {
+      if (document.getElementById('nx-sessao-css')) return;
+      var st = document.createElement('style');
+      st.id = 'nx-sessao-css';
+      st.textContent = _SESSAO_CSS;
+      document.head.appendChild(st);
+    }
+
+    function _rotuloCurto(aula, gi) {
+      if (aula === null || aula === undefined) return 'Parte ' + (gi + 1);
+      var t = String(aula).trim();
+      var m = t.match(/^(.*?)\s+(?:[—–-]\s|:\s)/);
+      var c = m ? m[1] : t;
+      return c.length > 26 ? c.slice(0, 25) + '…' : c;
+    }
+
+    /* Rótulo do botão conforme o conteúdo REAL do próximo grupo
+       (Aula / Capítulo / Atividade) — sem forçar "aula" onde não é aula. */
+    function _rotuloProximo(aula) {
+      var t = String(aula === null || aula === undefined ? '' : aula).toLowerCase();
+      if (/^cap[ií]tulo/.test(t)) return { botao: 'Próximo capítulo', nome: 'capítulo' };
+      if (/^atividade/.test(t))   return { botao: 'Próxima atividade', nome: 'atividade' };
+      if (/^aula/.test(t))        return { botao: 'Próxima aula', nome: 'aula' };
+      return { botao: 'Próxima parte', nome: 'parte' };
+    }
+
+    function _statGrupo(gi) {
+      var g = sessaoGrupos[gi], resp = 0, ac = 0;
+      for (var qi = g.ini; qi < g.fim; qi++) {
+        if (respostas[qi] !== undefined) {
+          resp++;
+          if (parseInt(respostas[qi]) === questoesTodas[qi].answer) ac++;
+        }
+      }
+      return { total: g.fim - g.ini, resp: resp, ac: ac, ativo: !!sessaoAtivos[gi] };
+    }
+
+    /* Primeira aula desativada depois da última ativa (senão a primeira desativada). */
+    function _proximoGrupoInativo() {
+      var ult = -1;
+      sessaoAtivos.forEach(function (v, gi) { if (v) ult = gi; });
+      for (var gi = ult + 1; gi < sessaoGrupos.length; gi++) if (!sessaoAtivos[gi]) return gi;
+      for (var g2 = 0; g2 < sessaoGrupos.length; g2++) if (!sessaoAtivos[g2]) return g2;
+      return -1;
+    }
+
+    function _montarSessaoUI() {
+      var antigoNav = document.getElementById('sessao-nav');
+      var antigoBox = document.getElementById('sessao-proxima');
+      if (antigoNav) antigoNav.remove();
+      if (antigoBox) antigoBox.remove();
+      if (!_progressivo()) return;
+      _injetarCssSessao();
+
+      var nav = document.createElement('div');
+      nav.id = 'sessao-nav';
+      nav.className = 'sessao-ui';
+      container.insertBefore(nav, container.firstChild);
+
+      var box = document.createElement('div');
+      box.id = 'sessao-proxima';
+      box.className = 'sessao-ui';
+      container.appendChild(box);
+    }
+
+    function _irParaGrupo(gi) {
+      var g = sessaoGrupos[gi];
+      if (!g || !sessaoAtivos[gi]) return;
+      if (modoStep) { irParaQuestao(g.ini); return; }
+      var alvo = document.getElementById('aula-titulo-' + gi) || document.getElementById('q-' + g.ini);
+      if (alvo && alvo.scrollIntoView) alvo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function _atualizarSessaoUI() {
+      var nav = document.getElementById('sessao-nav');
+      var box = document.getElementById('sessao-proxima');
+      if (!_progressivo() || !nav || !box) return;
+      /* No Modo Step o contador e o botão dependem das aulas ativas. */
+      if (modoStep && stepWrapper) _atualizarControlesStep();
+
+      var respondidas = _respAtivas();
+      var nAtivas = sessaoAtivos.filter(Boolean).length;
+      var todas = _todasAtivas();
+      nav.innerHTML =
+        '<div class="sessao-resumo"><strong>Aulas ativas: ' + nAtivas + ' de ' + sessaoGrupos.length + '</strong> · ' +
+        _qtdAtivas() + ' de ' + questoesTodas.length + ' questões · ' +
+        respondidas + ' respondidas</div>' +
+        '<div class="sessao-chips" role="group" aria-label="Aulas"></div>' +
+        '<div class="sessao-dica">Toque numa aula para ativar ou desativar. As respostas ficam salvas.</div>';
+      var chips = nav.querySelector('.sessao-chips');
+      sessaoGrupos.forEach(function (g, gi) {
+        var st = _statGrupo(gi);
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.dataset.gi = gi;
+        b.setAttribute('aria-pressed', st.ativo ? 'true' : 'false');
+        var cls = 'sessao-chip';
+        var info;
+        if (!st.ativo) {
+          cls += ' sessao-chip--off';
+          info = st.resp ? st.resp + '/' + st.total + ' · off' : 'desativada';
+          b.title = 'Ativar ' + _rotuloCurto(g.aula, gi);
+        } else if (st.resp === st.total) {
+          cls += ' sessao-chip--done'; info = '✓ ' + st.ac + '/' + st.total;
+          b.title = 'Desativar ' + _rotuloCurto(g.aula, gi);
+        } else {
+          cls += ' sessao-chip--atual'; info = st.resp + '/' + st.total;
+          b.title = 'Desativar ' + _rotuloCurto(g.aula, gi);
+        }
+        b.className = cls;
+        b.innerHTML = _rotuloCurto(g.aula, gi) + ' <small>' + info + '</small>';
+        b.addEventListener('click', function () { _alternarGrupo(gi); });
+        chips.appendChild(b);
+      });
+      if (!todas) {
+        var bt = document.createElement('button');
+        bt.type = 'button';
+        bt.className = 'sessao-chip sessao-chip--tudo';
+        bt.id = 'sessao-ativar-todas';
+        bt.textContent = 'Ativar todas';
+        bt.addEventListener('click', function () { _definirAtivos(sessaoGrupos.map(function () { return true; })); });
+        chips.appendChild(bt);
+      }
+
+      /* Painel de baixo */
+      var gi2 = _proximoGrupoInativo();
+      var totalResp = Object.keys(respostas).length;
+      if (gi2 !== -1) {
+        var prox = sessaoGrupos[gi2];
+        var rot  = _rotuloProximo(prox.aula);
+        var nNovas = prox.fim - prox.ini;
+        box.innerHTML =
+          '<div class="sessao-txt">' +
+            '<strong>' + rot.botao + ': ' + _rotuloCurto(prox.aula, gi2) + '</strong>' +
+            '<small>+' + nNovas + ' questões. Você pode ativar quando quiser — não precisa terminar a anterior.</small>' +
+          '</div>' +
+          '<div class="sessao-acoes"><button type="button" class="sessao-btn" id="sessao-proxima-btn">' +
+            rot.botao + '</button></div>';
+        var btn = document.getElementById('sessao-proxima-btn');
+        if (btn) btn.addEventListener('click', _avancarAula);
+        box.style.display = '';
+      } else if (totalResp === questoes.length) {
+        var erros = _contarErros();
+        box.innerHTML =
+          '<div class="sessao-txt"><strong>Sessão concluída.</strong>' +
+          '<small>' + questoes.length + ' questões respondidas em ' + sessaoGrupos.length + ' partes.</small></div>' +
+          '<div class="sessao-acoes">' +
+            '<button type="button" class="sessao-btn" id="sessao-resultado-btn">Ver resultado final</button>' +
+            '<button type="button" class="sessao-btn sessao-btn--sec" id="sessao-erros-btn"' +
+              (erros === 0 ? ' disabled aria-disabled="true"' : '') + '>' +
+              (erros === 0 ? 'Sem erros!' : 'Revisar erros (' + erros + ')') + '</button>' +
+          '</div>';
+        var rb = document.getElementById('sessao-resultado-btn');
+        if (rb) rb.addEventListener('click', function () {
+          var r = document.getElementById('results');
+          if (r && r.scrollIntoView) r.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+        var eb = document.getElementById('sessao-erros-btn');
+        if (eb) eb.addEventListener('click', function () {
+          var e = document.getElementById('errors');
+          if (e && !e.classList.contains('active')) verErros();
+        });
+        box.style.display = '';
+      } else {
+        box.innerHTML = '';
+        box.style.display = 'none';
+      }
+    }
+
+    /* Aplica um novo conjunto de aulas ativas SEM tocar nas respostas:
+       só muda o que aparece. A tentativa continua a mesma. */
+    function _definirAtivos(arr, irPara) {
+      if (!_progressivo()) return;
+      var estavaStep = modoStep;
+      var _y = window.pageYOffset || document.documentElement.scrollTop || 0;
+      if (estavaStep) _sairModoStep();
+
+      _aplicarAtivos(arr);
+
+      var errBtn = document.getElementById('errors');
+      mostrandoSoErros = false;
+      if (errBtn) errBtn.classList.remove('active');
+
+      renderizar({ manterTentativa: true });
+      atualizarResultados();
+
+      if (estavaStep) {
+        _entrarModoStep();
+      } else {
+        /* só libera/oculta a aula: a tela fica onde o aluno estava */
+        var _volta = function () { window.scrollTo(0, _y); };
+        _volta();
+        requestAnimationFrame(function () { _volta(); setTimeout(_volta, 80); });
+      }
+    }
+
+    /* Clique numa aula: ativa se estava desativada, desativa se estava ativa
+       (sempre sobra pelo menos uma aula ativa). */
+    function _alternarGrupo(gi) {
+      var novo = sessaoAtivos.slice();
+      if (novo[gi]) {
+        if (novo.filter(Boolean).length <= 1) return;     /* a única ativa não desativa */
+        novo[gi] = false;
+        _definirAtivos(novo);
+      } else {
+        novo[gi] = true;
+        _definirAtivos(novo, gi);
+      }
+    }
+
+    /* "Próxima aula": ativa a próxima aula desativada. */
+    function _avancarAula() {
+      if (!_progressivo()) return;
+      var gi = _proximoGrupoInativo();
+      if (gi === -1) return;
+      var novo = sessaoAtivos.slice();
+      novo[gi] = true;
+      _definirAtivos(novo, gi);
+    }
+
     /* ── 7. RENDERIZAÇÃO ──────────────────────────────────── */
 
-    function renderizar() {
-      /* Registra início da nova tentativa — timestamp bruto, sem cálculo */
-      _registrarInicioTentativa();
+    function renderizar(opts) {
+      /* Registra início da nova tentativa — timestamp bruto, sem cálculo.
+         v10: ao liberar a próxima aula (ou revelar tudo) a MESMA tentativa
+         continua — não se reinicia o relógio nem a trava de finalização. */
+      if (!(opts && opts.manterTentativa)) _registrarInicioTentativa();
 
       if (modoStep) _sairModoStep();
       container.innerHTML = '';
@@ -727,7 +1125,9 @@ if (!salvo || !salvo.respostas) return null;
           if (aulaAtual !== null) {
             var titleEl = document.createElement('div');
             titleEl.className   = 'subject-title';
+            titleEl.id          = 'aula-titulo-' + (aulaGrupos.length - 1);
             titleEl.textContent = aulaAtual.toUpperCase();
+            if (!_ativaPos(qi)) titleEl.classList.add('aula-off');
             container.appendChild(titleEl);
           }
         }
@@ -737,7 +1137,7 @@ if (!salvo || !salvo.respostas) return null;
         }
 
         var card = document.createElement('div');
-        card.className = 'question-container';
+        card.className = 'question-container' + (_ativaPos(qi) ? '' : ' aula-off');
         card.id = 'q-' + qi;
 
         var num = document.createElement('div');
@@ -776,7 +1176,7 @@ if (!salvo || !salvo.respostas) return null;
           var gi = aulaGrupos.length - 1;
           var resultEl = document.createElement('div');
           resultEl.id        = 'aula-result-' + gi;
-          resultEl.className = 'subject-result subject-result--progress';
+          resultEl.className = 'subject-result subject-result--progress' + (_ativaPos(qi) ? '' : ' aula-off');
           container.appendChild(resultEl);
           if (!modoStep) _atualizarResultadoAula(gi);
         }
@@ -790,6 +1190,9 @@ if (!salvo || !salvo.respostas) return null;
         container.appendChild(resultEl2);
         if (!modoStep) _atualizarResultadoAula(0);
       }
+
+      _montarSessaoUI();
+      _atualizarSessaoUI();
 
       container.querySelectorAll('.assertion-chk').forEach(function (btn) {
         btn.addEventListener('click', function (e) {
@@ -862,6 +1265,8 @@ if (!salvo || !salvo.respostas) return null;
       if (_disc && _Storage) {
         var total       = questoes.length;
         var respondidas = Object.keys(respostas).length;
+        /* "finalizado" só quando a lista INTEIRA foi respondida (todas as aulas,
+           ativas ou não) — terminar a Aula 1 de 3 não finaliza a sessão. */
         var finalizado  = respondidas === total;
         _Storage.saveProgress(_discUid(), _modo, _semestre, respostas, revelado, finalizado);
         _salvarShuffleMap();
@@ -875,12 +1280,115 @@ if (!salvo || !salvo.respostas) return null;
       }
     }
 
-   function revelar() {
+    /* ── Mini modal "Revelar respostas?" (substitui o window.confirm) ── */
+    var _RV_CSS =
+      '.nx-rv{position:fixed;inset:0;z-index:9600;display:flex;align-items:center;justify-content:center;padding:1.25rem;opacity:0;transition:opacity .2s ease}' +
+      '.nx-rv.nx-rv--on{opacity:1}' +
+      '.nx-rv__fundo{position:absolute;inset:0;background:rgba(4,7,18,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}' +
+      '.nx-rv__caixa{position:relative;width:min(420px,100%);padding:1.5rem 1.4rem 1.3rem;border-radius:20px;' +
+        'border:1px solid rgba(var(--accent-rgb,108,99,255),.4);' +
+        'background:linear-gradient(180deg,rgba(var(--accent-rgb,108,99,255),.12),rgba(12,18,40,.98) 120px),var(--ink-2,#0c1228);' +
+        'box-shadow:0 24px 80px rgba(0,0,0,.6);color:var(--text-1,#e8e6f0);font-family:var(--font-body,inherit);' +
+        'transform:translateY(12px) scale(.98);transition:transform .25s cubic-bezier(.22,1,.36,1)}' +
+      '.nx-rv--on .nx-rv__caixa{transform:none}' +
+      '.nx-rv__icone{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;' +
+        'background:rgba(var(--accent-rgb,108,99,255),.16);color:rgb(var(--accent-rgb,108,99,255));border:1px solid rgba(255,255,255,.08);margin-bottom:.9rem}' +
+      '.nx-rv__titulo{font:600 1.2rem var(--font-display,inherit);margin:0 0 .45rem}' +
+      '.nx-rv__txt{font-size:.88rem;line-height:1.5;color:var(--text-2,#acaac2);margin:0}' +
+      '.nx-rv__aviso{margin:.8rem 0 0;padding:.6rem .75rem;border-radius:10px;font-size:.78rem;line-height:1.45;' +
+        'background:rgba(247,201,72,.08);border:1px solid rgba(247,201,72,.25);color:#f7c948}' +
+      '.nx-rv__acoes{display:flex;gap:.6rem;margin-top:1.2rem}' +
+      '.nx-rv__btn{flex:1;min-height:46px;padding:.6rem 1rem;border-radius:12px;font:700 .88rem var(--font-body,inherit);cursor:pointer;' +
+        'border:1px solid var(--border-mid,rgba(255,255,255,.18));background:transparent;color:var(--text-1,#e8e6f0);transition:border-color .2s,background .2s,transform .15s}' +
+      '.nx-rv__btn:hover,.nx-rv__btn:focus-visible{border-color:rgba(var(--accent-rgb,108,99,255),.8);outline:none}' +
+      '.nx-rv__btn--ok{background:rgba(var(--accent-rgb,108,99,255),.22);border-color:rgba(var(--accent-rgb,108,99,255),.6)}' +
+      '.nx-rv__btn--ok:hover,.nx-rv__btn--ok:focus-visible{background:rgba(var(--accent-rgb,108,99,255),.34)}' +
+      '.nx-rv__btn:active{transform:scale(.98)}' +
+      '@media (max-width:480px){.nx-rv{align-items:flex-end;padding:0}.nx-rv__caixa{width:100%;border-radius:22px 22px 0 0;transform:translateY(100%)}.nx-rv__acoes{flex-direction:column-reverse}}' +
+      '@media (prefers-reduced-motion:reduce){.nx-rv,.nx-rv__caixa{transition:none}}';
+
+    var _rvAberto = null;
+
+    function _confirmarRevelar(aoConfirmar) {
+      if (_rvAberto) return;
+      if (!document.getElementById('nx-rv-css')) {
+        var st = document.createElement('style');
+        st.id = 'nx-rv-css'; st.textContent = _RV_CSS;
+        document.head.appendChild(st);
+      }
+      var inativas = _progressivo() && !_todasAtivas();
+      var focoAntes = document.activeElement;
+      var el = document.createElement('div');
+      el.className = 'nx-rv';
+      el.innerHTML =
+        '<div class="nx-rv__fundo" data-rv="cancelar"></div>' +
+        '<div class="nx-rv__caixa" role="alertdialog" aria-modal="true" aria-labelledby="nx-rv-t" aria-describedby="nx-rv-d">' +
+          '<div class="nx-rv__icone" aria-hidden="true"><i class="fas fa-eye"></i></div>' +
+          '<h2 class="nx-rv__titulo" id="nx-rv-t">Revelar as respostas?</h2>' +
+          '<p class="nx-rv__txt" id="nx-rv-d">Todas as respostas corretas e os comentários vão aparecer. ' +
+            'Esta tentativa será encerrada e as questões que você não respondeu ficam sem contar.</p>' +
+          (inativas
+            ? '<p class="nx-rv__aviso">As aulas desativadas também serão ativadas e reveladas.</p>'
+            : '') +
+          '<div class="nx-rv__acoes">' +
+            '<button type="button" class="nx-rv__btn" data-rv="cancelar">Cancelar</button>' +
+            '<button type="button" class="nx-rv__btn nx-rv__btn--ok" data-rv="ok">Revelar respostas</button>' +
+          '</div>' +
+        '</div>';
+      document.body.appendChild(el);
+      _rvAberto = el;
+
+      function fechar(confirmou) {
+        document.removeEventListener('keydown', onKey, true);
+        _rvAberto = null;
+        el.classList.remove('nx-rv--on');
+        setTimeout(function () { el.remove(); }, 200);
+        if (confirmou) aoConfirmar();
+        else if (focoAntes && focoAntes.focus) focoAntes.focus();
+      }
+      function onKey(e) {
+        if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); fechar(false); return; }
+        if (e.key === 'Tab') {
+          var f = el.querySelectorAll('button');
+          var p = f[0], u = f[f.length - 1];
+          if (e.shiftKey && document.activeElement === p) { e.preventDefault(); u.focus(); }
+          else if (!e.shiftKey && document.activeElement === u) { e.preventDefault(); p.focus(); }
+        }
+      }
+      document.addEventListener('keydown', onKey, true);
+      el.addEventListener('click', function (e) {
+        var alvo = e.target.closest('[data-rv]');
+        if (!alvo) return;
+        var snd = window.__nexusPlaySound;
+        if (typeof snd === 'function') snd('click', 'quiz');
+        fechar(alvo.dataset.rv === 'ok');
+      });
+      requestAnimationFrame(function () {
+        el.classList.add('nx-rv--on');
+        var cancelar = el.querySelector('[data-rv="cancelar"].nx-rv__btn');
+        if (cancelar) cancelar.focus({ preventScroll: true });   /* foco no seguro: Enter não revela sem querer */
+      });
+    }
+
+    function revelar() {
+      if (revelado) { _executarRevelar(); return; }
+      _confirmarRevelar(_executarRevelar);
+    }
+
+    function _executarRevelar() {
       /* _dispararFinalizacao deve ser chamada ANTES de qualquer mutação
          visual em respostas[], para que o payload capture apenas o que
          o usuário realmente respondeu até este momento. */
       if (_disc && _Storage) {
         _dispararFinalizacao(true);
+      }
+
+      /* v10: "Revelar" continua revelando a tentativa INTEIRA. Se ainda há
+         aulas bloqueadas, avisa e libera todas antes de preencher. (O payload
+         de finalização acima já foi tirado só com o que o aluno respondeu.) */
+      if (_progressivo() && !_todasAtivas()) {
+        _aplicarAtivos(sessaoGrupos.map(function () { return true; }));
+        renderizar({ manterTentativa: true });
       }
 
       revelado = true;
@@ -933,7 +1441,7 @@ if (!salvo || !salvo.respostas) return null;
         }
       }
 
-      questoes = criarCopiaEmbaralhada(questoesBase);
+      _definirQuestoesTodas(criarCopiaEmbaralhada(questoesBase));
       if (_disc && _Storage) _salvarShuffleMap();
 
       var resultsEl = document.getElementById('results');
@@ -975,7 +1483,7 @@ if (!salvo || !salvo.respostas) return null;
       questoesBase = _buildBaseQuestoes();
       if (questoesBase.length === 0) questoesBase = _listaCompleta;
 
-      questoes = criarCopiaEmbaralhada(questoesBase);
+      _definirQuestoesTodas(criarCopiaEmbaralhada(questoesBase));
       if (_disc && _Storage) _salvarShuffleMap();
 
       var resultsEl = document.getElementById('results');
@@ -1026,6 +1534,7 @@ if (!salvo || !salvo.respostas) return null;
 
       _atualizarBotaoErros();
       if (!modoStep) _atualizarTodosResultadosAula();
+      _atualizarSessaoUI();
     }
 
     /* ── 10. VER ERROS ────────────────────────────────────── */
@@ -1033,7 +1542,7 @@ if (!salvo || !salvo.respostas) return null;
     function _contarErros() {
       var count = 0;
       Object.keys(respostas).forEach(function (qi) {
-        if (parseInt(respostas[qi]) !== questoes[qi].answer) count++;
+        if (_ativaPos(parseInt(qi)) && parseInt(respostas[qi]) !== questoes[qi].answer) count++;
       });
       return count;
     }
@@ -1041,8 +1550,8 @@ if (!salvo || !salvo.respostas) return null;
     function _atualizarBotaoErros() {
       var errorsBtn = document.getElementById('errors');
       if (!errorsBtn) return;
-      var respondidas = Object.keys(respostas).length;
-      if (respondidas < questoes.length) {
+      var respondidas = _respAtivas();
+      if (respondidas < _qtdAtivas()) {
         errorsBtn.classList.remove('visible', 'active');
         return;
       }
@@ -1072,7 +1581,7 @@ if (!salvo || !salvo.respostas) return null;
     function verErros() {
       var erros = [];
       Object.keys(respostas).forEach(function (qi) {
-        if (parseInt(respostas[qi]) !== questoes[qi].answer) erros.push(parseInt(qi));
+        if (_ativaPos(parseInt(qi)) && parseInt(respostas[qi]) !== questoes[qi].answer) erros.push(parseInt(qi));
       });
 
       var errorsBtn = document.getElementById('errors');
@@ -1094,9 +1603,11 @@ if (!salvo || !salvo.respostas) return null;
         errorsBtn.classList.remove('active');
         var s2 = errorsBtn.querySelector('span');
         if (s2) s2.textContent = 'Ver erros (' + erros.length + ')';
-        document.querySelectorAll('.question-container').forEach(function (c) { c.style.display = ''; });
+        document.querySelectorAll('.question-container').forEach(function (c) { c.style.display = ''; });  /* aulas desativadas continuam escondidas pela classe .aula-off */
         document.querySelectorAll('[id^="aula-result-"]').forEach(function (el) { el.style.display = ''; });
         document.querySelectorAll('.subject-title').forEach(function (el) { el.style.display = ''; });
+        document.querySelectorAll('.sessao-ui').forEach(function (el) { el.style.display = ''; });
+        _atualizarSessaoUI();
       } else {
         mostrandoSoErros = true;
         errorsBtn.classList.add('active');
@@ -1117,6 +1628,7 @@ if (!salvo || !salvo.respostas) return null;
         document.querySelectorAll('[id^="aula-result-"]').forEach(function (el) {
           el.style.display = 'none';
         });
+        document.querySelectorAll('.sessao-ui').forEach(function (el) { el.style.display = 'none'; });
 
         var titleEls = document.querySelectorAll('.subject-title');
         titleEls.forEach(function (el, idx) {
@@ -1159,19 +1671,30 @@ if (!salvo || !salvo.respostas) return null;
     }
 
     function _atualizarControlesStep() {
-      var total = questoes.length;
+      /* v12: o Step percorre só as questões das aulas ATIVAS. `ativos` guarda
+         as posições reais (as respostas continuam indexadas pela posição). */
+      var ativos = [];
+      for (var p = 0; p < questoes.length; p++) if (_ativaPos(p)) ativos.push(p);
+      var total = ativos.length;
       var gi    = stepAtual;
+      var ordem = ativos.indexOf(gi);               /* posição entre as ativas */
+      if (ordem < 0) ordem = 0;
 
       var counter = document.getElementById('step-counter');
-      if (counter) counter.textContent = (gi + 1) + ' / ' + total;
+      if (counter) {
+        var _giAula = _progressivo() ? _grupoDeQuestao(gi) : -1;
+        counter.textContent = (_giAula >= 0 ? 'Aula ' + (_giAula + 1) + '/' + sessaoGrupos.length + ' · ' : '') +
+                              (ordem + 1) + ' / ' + total;
+      }
 
       var fill = document.getElementById('step-progress-fill');
-      if (fill) fill.style.width = (((gi + 1) / total) * 100) + '%';
+      if (fill) fill.style.width = (total ? (((ordem + 1) / total) * 100) : 0) + '%';
 
       var badges = document.getElementById('step-score-badges');
       if (badges) {
         var acertos = 0, erros = 0;
         Object.keys(respostas).forEach(function (idx) {
+          if (!_ativaPos(parseInt(idx))) return;
           if (parseInt(respostas[idx]) === questoes[idx].answer) acertos++; else erros++;
         });
         badges.innerHTML =
@@ -1181,7 +1704,7 @@ if (!salvo || !salvo.respostas) return null;
 
       var dotsEl = document.getElementById('step-dots');
       if (dotsEl) {
-        var range = _getDotsRange(gi, total, 9);
+        var range = _getDotsRange(ordem, total, 9).map(function (o) { return ativos[o]; });
         dotsEl.innerHTML = range.map(function (idx) {
           var cls = 'step-dot';
           if (idx === gi) {
@@ -1202,15 +1725,21 @@ if (!salvo || !salvo.respostas) return null;
       }
 
       var prevBtn = document.getElementById('step-prev');
-      if (prevBtn) prevBtn.disabled = gi === 0;
+      if (prevBtn) prevBtn.disabled = _posAtivaAntes(gi) === -1;
 
       var nextBtn = document.getElementById('step-next');
       if (nextBtn) {
-        var isLast = gi === total - 1;
-        nextBtn.innerHTML    = isLast
-          ? '<i class="fas fa-flag-checkered"></i> Finalizar'
-          : 'Avançar <i class="fas fa-arrow-right"></i>';
-        nextBtn.dataset.finalize = isLast ? '1' : '0';
+        var isLast = _posAtivaDepois(gi) === -1;
+        /* Na última questão das aulas ativas, se ainda há aula desativada, o
+           botão ativa a próxima e o Modo Step continua (sem exigir terminar a aula). */
+        var _prox = (isLast && _progressivo()) ? _proximoGrupoInativo() : -1;
+        var _avanca = _prox !== -1;
+        nextBtn.innerHTML    = _avanca
+          ? _rotuloProximo(sessaoGrupos[_prox].aula).botao + ' <i class="fas fa-arrow-right"></i>'
+          : isLast
+            ? '<i class="fas fa-flag-checkered"></i> Finalizar'
+            : 'Avançar <i class="fas fa-arrow-right"></i>';
+        nextBtn.dataset.finalize = _avanca ? '2' : (isLast ? '1' : '0');
         nextBtn.disabled         = false;
       }
     }
@@ -1261,7 +1790,9 @@ if (!salvo || !salvo.respostas) return null;
       document.getElementById('step-prev').addEventListener('click', questaoAnterior);
       document.getElementById('step-next').addEventListener('click', function () {
         var btn = document.getElementById('step-next');
-        if (btn && btn.dataset.finalize === '1') {
+        if (btn && btn.dataset.finalize === '2') {
+          _avancarAula();
+        } else if (btn && btn.dataset.finalize === '1') {
           _sairModoStep();
           renderizar();
           atualizarResultados();
@@ -1275,12 +1806,13 @@ if (!salvo || !salvo.respostas) return null;
     function _entrarModoStep() {
       modoStep = true;
 
-      var primeiraSemResposta = 0;
+      var primeiraSemResposta = -1, ultimaAtiva = 0;
       for (var i = 0; i < questoes.length; i++) {
+        if (!_ativaPos(i)) continue;
+        ultimaAtiva = i;
         if (respostas[i] === undefined) { primeiraSemResposta = i; break; }
-        primeiraSemResposta = questoes.length - 1;
       }
-      stepAtual = primeiraSemResposta;
+      stepAtual = primeiraSemResposta !== -1 ? primeiraSemResposta : ultimaAtiva;
 
       if (!container.querySelector('.question-container')) renderizar();
 
@@ -1294,7 +1826,7 @@ if (!salvo || !salvo.respostas) return null;
         var wrapper = document.createElement('div');
         wrapper.className = 'step-quiz-wrapper';
 
-        container.querySelectorAll('.subject-title, .subject-result, [id^="aula-result-"]')
+        container.querySelectorAll('.subject-title, .subject-result, [id^="aula-result-"], #sessao-nav, #sessao-proxima')
           .forEach(function (el) { el.classList.add('step-structural-hidden'); });
 
         Array.from(container.querySelectorAll('.question-container'))
@@ -1409,7 +1941,7 @@ if (!salvo || !salvo.respostas) return null;
     }
 
     function irParaQuestao(index) {
-      if (index < 0 || index >= questoes.length) return;
+      if (index < 0 || index >= questoes.length || !_ativaPos(index)) return;
       var direcao = index > stepAtual ? 'forward' : 'back';
 
       if (direcao === 'forward' && aulaGrupos.length > 1) {
@@ -1427,8 +1959,8 @@ if (!salvo || !salvo.respostas) return null;
       _salvarEstadoStep();
     }
 
-    function proximaQuestao()  { irParaQuestao(stepAtual + 1); }
-    function questaoAnterior() { irParaQuestao(stepAtual - 1); }
+    function proximaQuestao()  { var p = _posAtivaDepois(stepAtual); if (p !== -1) irParaQuestao(p); }
+    function questaoAnterior() { var p = _posAtivaAntes(stepAtual);  if (p !== -1) irParaQuestao(p); }
 
     /* ── 12. BINDS E INICIALIZAÇÃO ────────────────────────── */
 

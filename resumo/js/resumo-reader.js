@@ -10,6 +10,7 @@
 import { playSound } from '../../shared/js/audio/audio-api.js';
 import { State, esc, parseInline, smoothScrollTo } from './resumo-utils.js';
 import { imgBase, imgBasePasta, encodePath } from './media-config.js';
+import { registrarLeitura } from './resumo-continuar.js';
 
 /* Instância ativa do sistema de leitura (scroll-spy + navegação
    programática) — ver initReadingScrollSystem. Usada só dentro deste
@@ -623,6 +624,7 @@ function _renderBloco(b) {
    MODAL — abrir/fechar o modo de leitura
 ══════════════════════════════════════════════ */
 export function abrirModalResumao(res, idx) {
+  registrarLeitura('resumao', idx, res);
   playSound('click', 'resumos');
   playSound('openModal', 'resumos');
 
@@ -661,6 +663,7 @@ export function abrirModalResumao(res, idx) {
 }
 
 export function abrirModalProfessor(prof, idx) {
+  registrarLeitura('professor', idx, prof);
   playSound('click', 'resumos');
   playSound('openModal', 'resumos');
 
@@ -731,6 +734,7 @@ export function buildModalBody(aula, idx) { return _buildReaderBody(aula, idx); 
 export function ativarSecao() {}
 
 export function abrirModal(aula, idx) {
+  registrarLeitura(State.modo === 'sintese' ? 'sintese' : 'completo', idx, aula);
   playSound('click', 'resumos');
   playSound('openModal', 'resumos');
 

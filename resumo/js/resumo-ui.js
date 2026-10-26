@@ -865,6 +865,7 @@ export function carregarConteudo() {
       mostrarEstadoSemConteudo();
       _atualizarModoSidebar();
       renderProfessorSidebar();
+      window.dispatchEvent(new CustomEvent('nexus:resumoConteudoPronto'));
       return;
     }
 
@@ -872,6 +873,8 @@ export function carregarConteudo() {
     _atualizarModoSidebar();
     renderProfessorSidebar();
     renderGrid();
+    /* v10: avisa quem precisa agir depois do conteúdo carregado (ex.: "Continuar lendo"). */
+    window.dispatchEvent(new CustomEvent('nexus:resumoConteudoPronto'));
   };
 
   script.onerror = () => {

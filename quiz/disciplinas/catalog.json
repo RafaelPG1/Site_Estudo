@@ -3,10 +3,10 @@
 
 
   "2026.1-AP1": {
-    "poo":          { "ava": true, "questoes": false, "enade": false, "fixacao": false },
+    "poo":          { "ava": true, "questoes": true, "enade": false, "fixacao": false },
     "banco_dados":  { "ava": false,  "questoes": true,  "enade": false, "fixacao": false },
     "design":       { "ava": false,  "questoes": true,  "enade": false, "fixacao": false },
-    "redes":        { "ava": true, "questoes": false, "enade": false, "fixacao": false }
+    "redes":        { "ava": true, "questoes": true, "enade": false, "fixacao": false }
   },
 
   "2026.1-AP2": {

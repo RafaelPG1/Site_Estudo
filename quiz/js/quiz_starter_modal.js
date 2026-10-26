@@ -728,7 +728,15 @@
       window.__nexusPreCarregarConteudo();
     }
 
-    if (_temProgresso()) {
+    /* v10 — o modal "Todas as aulas / Filtrar aulas" deixou de ser
+       obrigatório: o quiz começa direto com as questões do modo
+       escolhido. O filtro de aulas continua disponível, de forma
+       opcional, pelo botão "Filtrar aulas" da barra do quiz.
+       Para voltar ao comportamento anterior, troque a chave abaixo
+       para true (todo o código do modal foi mantido). */
+    var EXIGIR_MODAL_INICIAL = false;
+
+    if (!EXIGIR_MODAL_INICIAL || _temProgresso()) {
       _pularModal();
     } else {
       _exibirModal();
