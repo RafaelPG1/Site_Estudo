@@ -1427,7 +1427,10 @@ a { text-decoration: none; color: inherit; }
 .step-hidden            { display: none !important; }
 .step-structural-hidden { display: none !important; }
 
-#quiz-container.modo-step { overflow-x: hidden; overflow-y: visible; }
+/* v14: sem barra de rolagem interna — a questão aparece inteira e a página rola.
+   (overflow-x:hidden + overflow-y:visible vira "auto" no eixo Y; clip não.) */
+#quiz-container.modo-step { overflow-x: clip; overflow-y: visible; height: auto !important; }
+.step-quiz-wrapper { height: auto !important; }
 
 .step-quiz-wrapper {
   display: block;

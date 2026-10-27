@@ -652,8 +652,8 @@ if (!salvo || !salvo.respostas) return null;
     function _ativosIniciais() {
       var n = sessaoGrupos.length || 1;
       var ativos = [];
-      for (var i = 0; i < n; i++) ativos.push(!_progressivo() || revelado);
-      if (!_progressivo() || revelado) return ativos;
+      for (var i = 0; i < n; i++) ativos.push(!_progressivo());
+      if (!_progressivo()) return ativos;
       Object.keys(respostas).forEach(function (k) {
         var gi = _giPos[parseInt(k)];
         if (gi !== undefined) ativos[gi] = true;
@@ -1060,6 +1060,18 @@ if (!salvo || !salvo.respostas) return null;
 
       _aplicarAtivos(arr);
 
+      /* tentativa já revelada: a aula recém-ativada aparece revelada também */
+      if (revelado) {
+        questoes.forEach(function (q, qi) {
+          if (_ativaPos(qi) && respostas[qi] === undefined) respostas[qi] = q.answer;
+        });
+        if (_disc && _Storage) {
+          var _tudo2 = Object.keys(respostas).length === questoes.length;
+          _Storage.saveProgress(_discUid(), _modo, _semestre, respostas, true, _tudo2);
+          _salvarFirebase(_tudo2);
+        }
+      }
+
       var errBtn = document.getElementById('errors');
       mostrandoSoErros = false;
       if (errBtn) errBtn.classList.remove('active');
@@ -1284,11 +1296,11 @@ if (!salvo || !salvo.respostas) return null;
     var _RV_CSS =
       '.nx-rv{position:fixed;inset:0;z-index:9600;display:flex;align-items:center;justify-content:center;padding:1.25rem;opacity:0;transition:opacity .2s ease}' +
       '.nx-rv.nx-rv--on{opacity:1}' +
-      '.nx-rv__fundo{position:absolute;inset:0;background:rgba(4,7,18,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}' +
+      '.nx-rv__fundo{position:absolute;inset:0;background:transparent}' +   /* sem escurecer: só captura o clique fora */
       '.nx-rv__caixa{position:relative;width:min(420px,100%);padding:1.5rem 1.4rem 1.3rem;border-radius:20px;' +
         'border:1px solid rgba(var(--accent-rgb,108,99,255),.4);' +
         'background:linear-gradient(180deg,rgba(var(--accent-rgb,108,99,255),.12),rgba(12,18,40,.98) 120px),var(--ink-2,#0c1228);' +
-        'box-shadow:0 24px 80px rgba(0,0,0,.6);color:var(--text-1,#e8e6f0);font-family:var(--font-body,inherit);' +
+        'box-shadow:0 18px 60px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.04);color:var(--text-1,#e8e6f0);font-family:var(--font-body,inherit);' +
         'transform:translateY(12px) scale(.98);transition:transform .25s cubic-bezier(.22,1,.36,1)}' +
       '.nx-rv--on .nx-rv__caixa{transform:none}' +
       '.nx-rv__icone{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;' +
@@ -1303,36 +1315,37 @@ if (!salvo || !salvo.respostas) return null;
       '.nx-rv__btn:hover,.nx-rv__btn:focus-visible{border-color:rgba(var(--accent-rgb,108,99,255),.8);outline:none}' +
       '.nx-rv__btn--ok{background:rgba(var(--accent-rgb,108,99,255),.22);border-color:rgba(var(--accent-rgb,108,99,255),.6)}' +
       '.nx-rv__btn--ok:hover,.nx-rv__btn--ok:focus-visible{background:rgba(var(--accent-rgb,108,99,255),.34)}' +
+      '.nx-rv--perigo .nx-rv__caixa{border-color:rgba(255,107,138,.45);background:linear-gradient(180deg,rgba(255,107,138,.12),rgba(12,18,40,.98) 120px),var(--ink-2,#0c1228)}' +
+      '.nx-rv--perigo .nx-rv__icone{background:rgba(255,107,138,.16);color:#ff6b8a}' +
+      '.nx-rv--perigo .nx-rv__btn--ok{background:rgba(255,107,138,.2);border-color:rgba(255,107,138,.6)}' +
+      '.nx-rv--perigo .nx-rv__btn--ok:hover,.nx-rv--perigo .nx-rv__btn--ok:focus-visible{background:rgba(255,107,138,.34)}' +
       '.nx-rv__btn:active{transform:scale(.98)}' +
       '@media (max-width:480px){.nx-rv{align-items:flex-end;padding:0}.nx-rv__caixa{width:100%;border-radius:22px 22px 0 0;transform:translateY(100%)}.nx-rv__acoes{flex-direction:column-reverse}}' +
       '@media (prefers-reduced-motion:reduce){.nx-rv,.nx-rv__caixa{transition:none}}';
 
     var _rvAberto = null;
 
-    function _confirmarRevelar(aoConfirmar) {
+    /* Mini modal de confirmação (Revelar / Reiniciar). Não escurece a tela. */
+    function _confirmarAcao(cfg, aoConfirmar) {
       if (_rvAberto) return;
       if (!document.getElementById('nx-rv-css')) {
         var st = document.createElement('style');
         st.id = 'nx-rv-css'; st.textContent = _RV_CSS;
         document.head.appendChild(st);
       }
-      var inativas = _progressivo() && !_todasAtivas();
       var focoAntes = document.activeElement;
       var el = document.createElement('div');
-      el.className = 'nx-rv';
+      el.className = 'nx-rv' + (cfg.perigo ? ' nx-rv--perigo' : '');
       el.innerHTML =
         '<div class="nx-rv__fundo" data-rv="cancelar"></div>' +
         '<div class="nx-rv__caixa" role="alertdialog" aria-modal="true" aria-labelledby="nx-rv-t" aria-describedby="nx-rv-d">' +
-          '<div class="nx-rv__icone" aria-hidden="true"><i class="fas fa-eye"></i></div>' +
-          '<h2 class="nx-rv__titulo" id="nx-rv-t">Revelar as respostas?</h2>' +
-          '<p class="nx-rv__txt" id="nx-rv-d">Todas as respostas corretas e os comentários vão aparecer. ' +
-            'Esta tentativa será encerrada e as questões que você não respondeu ficam sem contar.</p>' +
-          (inativas
-            ? '<p class="nx-rv__aviso">As aulas desativadas também serão ativadas e reveladas.</p>'
-            : '') +
+          '<div class="nx-rv__icone" aria-hidden="true"><i class="fas ' + cfg.icone + '"></i></div>' +
+          '<h2 class="nx-rv__titulo" id="nx-rv-t">' + cfg.titulo + '</h2>' +
+          '<p class="nx-rv__txt" id="nx-rv-d">' + cfg.texto + '</p>' +
+          (cfg.aviso ? '<p class="nx-rv__aviso">' + cfg.aviso + '</p>' : '') +
           '<div class="nx-rv__acoes">' +
             '<button type="button" class="nx-rv__btn" data-rv="cancelar">Cancelar</button>' +
-            '<button type="button" class="nx-rv__btn nx-rv__btn--ok" data-rv="ok">Revelar respostas</button>' +
+            '<button type="button" class="nx-rv__btn nx-rv__btn--ok" data-rv="ok">' + cfg.ok + '</button>' +
           '</div>' +
         '</div>';
       document.body.appendChild(el);
@@ -1372,7 +1385,32 @@ if (!salvo || !salvo.respostas) return null;
 
     function revelar() {
       if (revelado) { _executarRevelar(); return; }
-      _confirmarRevelar(_executarRevelar);
+      var inativas = _progressivo() && !_todasAtivas();
+      _confirmarAcao({
+        icone: 'fa-eye',
+        titulo: 'Revelar as respostas?',
+        texto: inativas
+          ? 'As respostas e os comentários das aulas ATIVAS vão aparecer. Esta tentativa será encerrada e as questões que você não respondeu ficam sem contar.'
+          : 'Todas as respostas corretas e os comentários vão aparecer. Esta tentativa será encerrada e as questões que você não respondeu ficam sem contar.',
+        aviso: inativas ? 'As aulas desativadas continuam escondidas. Se você ativar uma depois, ela já aparece revelada.' : '',
+        ok: 'Revelar respostas'
+      }, _executarRevelar);
+    }
+
+    /* "Reiniciar" SEMPRE pede confirmação (mesmo sem respostas, ele
+       embaralha as questões de novo e limpa o progresso salvo). */
+    function pedirReiniciar() {
+      var temResp = Object.keys(respostas).length > 0 || revelado;
+      _confirmarAcao({
+        icone: 'fa-rotate-right',
+        titulo: 'Reiniciar o quiz?',
+        texto: temResp
+          ? 'Todas as respostas serão apagadas, o progresso salvo será limpo e as questões serão embaralhadas de novo. Não dá para desfazer.'
+          : 'As questões serão embaralhadas de novo e o progresso salvo será limpo. Não dá para desfazer.',
+        aviso: '',
+        ok: 'Reiniciar',
+        perigo: true
+      }, reiniciar);
     }
 
     function _executarRevelar() {
@@ -1383,20 +1421,16 @@ if (!salvo || !salvo.respostas) return null;
         _dispararFinalizacao(true);
       }
 
-      /* v10: "Revelar" continua revelando a tentativa INTEIRA. Se ainda há
-         aulas bloqueadas, avisa e libera todas antes de preencher. (O payload
-         de finalização acima já foi tirado só com o que o aluno respondeu.) */
-      if (_progressivo() && !_todasAtivas()) {
-        _aplicarAtivos(sessaoGrupos.map(function () { return true; }));
-        renderizar({ manterTentativa: true });
-      }
-
+      /* v14: "Revelar" revela só as aulas ATIVAS — aulas desativadas continuam
+         escondidas (e, se o aluno ativar uma depois, ela já aparece revelada).
+         Só revela tudo se o aluno tiver ativado todas as aulas. */
       revelado = true;
 
       /* A partir daqui, respostas[] recebe as respostas corretas apenas
          para fins visuais (UI, feedback, resultado por aula).
          _respostasReais[] permanece intocado — foi snapshot antes. */
       questoes.forEach(function (q, qi) {
+        if (!_ativaPos(qi)) return;
         if (respostas[qi] === undefined) respostas[qi] = q.answer;
         _atualizarOpcoes(qi);
         var card = document.getElementById('q-' + qi);
@@ -1406,9 +1440,10 @@ if (!salvo || !salvo.respostas) return null;
       if (modoStep) { _sairModoStep(); renderizar(); }
 
       if (_disc && _Storage) {
-        _Storage.saveProgress(_discUid(), _modo, _semestre, respostas, true, true);
+        var _tudo = Object.keys(respostas).length === questoes.length;
+        _Storage.saveProgress(_discUid(), _modo, _semestre, respostas, true, _tudo);
         _salvarShuffleMap();
-        _salvarFirebase(true);
+        _salvarFirebase(_tudo);
       }
 
       _atualizarTodosResultadosAula();
@@ -1441,7 +1476,9 @@ if (!salvo || !salvo.respostas) return null;
         }
       }
 
+      var _ativosAntes = sessaoAtivos.slice();
       _definirQuestoesTodas(criarCopiaEmbaralhada(questoesBase));
+      if (_ativosAntes.length === sessaoGrupos.length) _aplicarAtivos(_ativosAntes);   /* mantém as aulas que estavam ativas */
       if (_disc && _Storage) _salvarShuffleMap();
 
       var resultsEl = document.getElementById('results');
@@ -1643,16 +1680,11 @@ if (!salvo || !salvo.respostas) return null;
     /* ── 11. MODO STEP ────────────────────────────────────── */
 
     function _sincronizarAlturaStep() {
+      /* v14: a questão do Modo Step aparece INTEIRA (sem barra de rolagem
+         interna): nada de altura fixa — a página rola normalmente. */
       if (!modoStep || !stepWrapper) return;
-      var cards = stepWrapper.querySelectorAll('.question-container');
-      var atual = cards[stepAtual];
-      if (!atual) return;
-      stepWrapper.style.height = 'auto';
-      container.style.height   = 'auto';
-      void atual.offsetHeight;
-      var h = atual.getBoundingClientRect().height;
-      stepWrapper.style.height = h + 'px';
-      container.style.height   = h + 'px';
+      stepWrapper.style.height = '';
+      container.style.height   = '';
     }
 
     function _getDotsRange(current, total, maxVisible) {
@@ -1973,7 +2005,7 @@ if (!salvo || !salvo.respostas) return null;
 
     ['restart', 'restartButton'].forEach(function (id) {
       var el = document.getElementById(id);
-      if (el) el.addEventListener('click', reiniciar);
+      if (el) el.addEventListener('click', pedirReiniciar);
     });
 
     ['reveal', 'revealButton'].forEach(function (id) {
