@@ -111,6 +111,12 @@ export async function renderContinuar(onClick) {
   a.className = 'resumo-continuar__btn';
   a.href = hrefRetomada(r);
   a.id = 'resumo-continuar-btn';
+  /* cor da disciplina (a mesma dos cards e da lista de disciplinas) */
+  const cores = State.DISC_CORES?.[disc.arquivo];
+  if (cores?.corTemaRgb) {
+    a.style.setProperty('--cc',     cores.corTema);
+    a.style.setProperty('--cc-rgb', cores.corTemaRgb);
+  }
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   a.innerHTML =
     '<span class="resumo-continuar__icone" aria-hidden="true">' +
