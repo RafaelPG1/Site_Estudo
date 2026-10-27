@@ -1085,7 +1085,7 @@ if (!salvo || !salvo.respostas) return null;
         /* só libera/oculta a aula: a tela fica onde o aluno estava */
         var _volta = function () { window.scrollTo(0, _y); };
         _volta();
-        requestAnimationFrame(function () { _volta(); setTimeout(_volta, 80); });
+        requestAnimationFrame(function () { _volta(); setTimeout(_volta, 80); setTimeout(_volta, 300); });
       }
     }
 
@@ -1294,14 +1294,14 @@ if (!salvo || !salvo.respostas) return null;
 
     /* ── Mini modal "Revelar respostas?" (substitui o window.confirm) ── */
     var _RV_CSS =
-      '.nx-rv{position:fixed;inset:0;z-index:9600;display:flex;align-items:center;justify-content:center;padding:1.25rem;opacity:0;transition:opacity .2s ease}' +
+      '.nx-rv{position:fixed;inset:0;z-index:9600;opacity:0;transition:opacity .2s ease}' +
       '.nx-rv.nx-rv--on{opacity:1}' +
       '.nx-rv__fundo{position:absolute;inset:0;background:transparent}' +   /* sem escurecer: só captura o clique fora */
-      '.nx-rv__caixa{position:relative;width:min(420px,100%);padding:1.5rem 1.4rem 1.3rem;border-radius:20px;' +
+      '.nx-rv__caixa{position:fixed;left:50%;top:50%;width:min(360px,calc(100vw - 24px));box-sizing:border-box;padding:1.2rem 1.15rem 1.1rem;border-radius:18px;' +
         'border:1px solid rgba(var(--accent-rgb,108,99,255),.4);' +
         'background:linear-gradient(180deg,rgba(var(--accent-rgb,108,99,255),.12),rgba(12,18,40,.98) 120px),var(--ink-2,#0c1228);' +
         'box-shadow:0 18px 60px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.04);color:var(--text-1,#e8e6f0);font-family:var(--font-body,inherit);' +
-        'transform:translateY(12px) scale(.98);transition:transform .25s cubic-bezier(.22,1,.36,1)}' +
+        'transform:translateX(10px) scale(.97);transition:transform .22s cubic-bezier(.22,1,.36,1)}' +
       '.nx-rv--on .nx-rv__caixa{transform:none}' +
       '.nx-rv__icone{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;' +
         'background:rgba(var(--accent-rgb,108,99,255),.16);color:rgb(var(--accent-rgb,108,99,255));border:1px solid rgba(255,255,255,.08);margin-bottom:.9rem}' +
@@ -1320,12 +1320,44 @@ if (!salvo || !salvo.respostas) return null;
       '.nx-rv--perigo .nx-rv__btn--ok{background:rgba(255,107,138,.2);border-color:rgba(255,107,138,.6)}' +
       '.nx-rv--perigo .nx-rv__btn--ok:hover,.nx-rv--perigo .nx-rv__btn--ok:focus-visible{background:rgba(255,107,138,.34)}' +
       '.nx-rv__btn:active{transform:scale(.98)}' +
-      '@media (max-width:480px){.nx-rv{align-items:flex-end;padding:0}.nx-rv__caixa{width:100%;border-radius:22px 22px 0 0;transform:translateY(100%)}.nx-rv__acoes{flex-direction:column-reverse}}' +
+      '@media (max-width:360px){.nx-rv__acoes{flex-direction:column-reverse}}' +
       '@media (prefers-reduced-motion:reduce){.nx-rv,.nx-rv__caixa{transition:none}}';
 
     var _rvAberto = null;
+    var _ancoraModal = null;   /* botão que abriu o modal */
 
     /* Mini modal de confirmação (Revelar / Reiniciar). Não escurece a tela. */
+    /* Coloca a caixa encostada no botão que a abriu (à esquerda dele, pois a barra
+       de atalhos fica na lateral direita); se não couber, à direita; sempre dentro da tela. */
+    function _posicionarPerto(caixa, ancora) {
+      if (!caixa) return;
+      var vw = window.innerWidth, vh = window.innerHeight, M = 10, G = 12;
+      /* mede sem a animação de entrada; `z` corrige páginas com zoom CSS
+         (as coordenadas de getBoundingClientRect vêm em pixels de tela) */
+      var tr = caixa.style.transition;
+      caixa.style.transition = 'none'; caixa.style.transform = 'none';
+      var cr = caixa.getBoundingClientRect();
+      var z = caixa.offsetWidth ? cr.width / caixa.offsetWidth : 1;
+      if (!z || !isFinite(z)) z = 1;
+      var w = cr.width, h = cr.height, left, top;
+      if (ancora && ancora.getBoundingClientRect) {
+        var r = ancora.getBoundingClientRect();
+        if (r.width || r.height) {
+          left = r.left - G - w;
+          if (left < M) left = r.right + G;
+          if (left + w > vw - M) left = Math.max(M, Math.min(vw - w - M, r.left + r.width / 2 - w / 2));
+          top = r.top + r.height / 2 - h / 2;
+          if (left + w > r.left - 1 && left < r.right + 1) top = r.bottom + G;   /* sem espaço ao lado: abaixo do botão */
+        }
+      }
+      if (left === undefined) { left = (vw - w) / 2; top = (vh - h) / 2; }
+      top = Math.max(M, Math.min(vh - h - M, top));
+      caixa.style.left = Math.round(left / z) + 'px';
+      caixa.style.top  = Math.round(top / z) + 'px';
+      void caixa.offsetWidth;
+      caixa.style.transform = ''; caixa.style.transition = tr;
+    }
+
     function _confirmarAcao(cfg, aoConfirmar) {
       if (_rvAberto) return;
       if (!document.getElementById('nx-rv-css')) {
@@ -1350,6 +1382,7 @@ if (!salvo || !salvo.respostas) return null;
         '</div>';
       document.body.appendChild(el);
       _rvAberto = el;
+      _posicionarPerto(el.querySelector('.nx-rv__caixa'), cfg.ancora);
 
       function fechar(confirmou) {
         document.removeEventListener('keydown', onKey, true);
@@ -1387,6 +1420,7 @@ if (!salvo || !salvo.respostas) return null;
       if (revelado) { _executarRevelar(); return; }
       var inativas = _progressivo() && !_todasAtivas();
       _confirmarAcao({
+        ancora: _ancoraModal,
         icone: 'fa-eye',
         titulo: 'Revelar as respostas?',
         texto: inativas
@@ -1402,6 +1436,7 @@ if (!salvo || !salvo.respostas) return null;
     function pedirReiniciar() {
       var temResp = Object.keys(respostas).length > 0 || revelado;
       _confirmarAcao({
+        ancora: _ancoraModal,
         icone: 'fa-rotate-right',
         titulo: 'Reiniciar o quiz?',
         texto: temResp
@@ -2005,12 +2040,12 @@ if (!salvo || !salvo.respostas) return null;
 
     ['restart', 'restartButton'].forEach(function (id) {
       var el = document.getElementById(id);
-      if (el) el.addEventListener('click', pedirReiniciar);
+      if (el) el.addEventListener('click', function (e) { _ancoraModal = e.currentTarget; pedirReiniciar(); });
     });
 
     ['reveal', 'revealButton'].forEach(function (id) {
       var el = document.getElementById(id);
-      if (el) el.addEventListener('click', revelar);
+      if (el) el.addEventListener('click', function (e) { _ancoraModal = e.currentTarget; revelar(); });
     });
 
     var errorsBtn = document.getElementById('errors');
