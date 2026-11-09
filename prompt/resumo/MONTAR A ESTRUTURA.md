@@ -1,3 +1,5 @@
+# MONTAR A ESTRUTURA
+
 Você receberá o conteúdo completo de UMA aula.
 Sua tarefa é organizar esse conteúdo EXATAMENTE na estrutura JavaScript de objeto de aula mostrada abaixo.
 
@@ -34,16 +36,17 @@ Monte uma lista interna com **todas** as imagens relevantes encontradas, contend
 
 Revise essa lista **uma segunda vez antes de perguntar**, conferindo se não ficou nenhuma referência visual para trás em partes do conteúdo que você já leu.
 
-### O que perguntar ao usuário
-- Se **houver** uma ou mais imagens relevantes identificadas:
+### A PASTA (campo `pasta`) — se você não souber, PEÇA
+O campo `pasta` segue o padrão `"imagens_<disciplina>/aula_<N>"` (ex: `"imagens_psicologia_organizacional/aula_01"`).
+- Se o usuário **já informou** o valor da pasta (na mensagem atual ou antes na conversa), use exatamente esse valor, sem perguntar de novo.
+- Se o usuário **não informou** e houver uma ou mais imagens relevantes:
   - **PARE** e **não gere o objeto ainda**.
   - Liste **todas** as imagens encontradas (não apenas a primeira), numeradas, cada uma com sua breve descrição e localização.
-  - Pergunte o valor exato do campo `pasta` a ser usado (padrão `"imagens_<disciplina>/aula_<N>"`) — normalmente uma pasta única vale para todas as imagens da aula, mas confirme com o usuário se alguma imagem deve usar uma pasta diferente.
+  - Peça ao usuário o valor exato do campo `pasta` (normalmente uma pasta única vale para todas as imagens da aula, mas confirme se alguma imagem deve usar pasta diferente).
   - Só prossiga para gerar o objeto da aula depois que o usuário responder.
-- Se **não houver** nenhuma menção a imagem/figura relevante no conteúdo:
-  - Prossiga normalmente, sem usar o bloco `tipo: "imagem"` e sem perguntar nada sobre pasta.
+- Se **não houver** nenhuma imagem relevante: prossiga normalmente, sem usar o bloco `tipo: "imagem"` e sem perguntar nada sobre pasta.
 
-⚠️ Nunca invente, estime ou deixe um valor padrão/placeholder para o campo `pasta`. Esse dado deve vir sempre do usuário.
+⚠️ Nunca invente, estime, deduza a partir do título da aula ou deixe um valor padrão/placeholder para o campo `pasta`. Se você não tem certeza do valor, você NÃO sabe — pergunte.
 ⚠️ Nunca informe "1 imagem identificada" se houver mais de uma no material — a lista deve refletir o total real encontrado na varredura completa.
 
 ═══════════════════ CONTRATO DE SAÍDA (MAIS IMPORTANTE DE TUDO) ═══════════════════
@@ -145,18 +148,19 @@ citacao — use APENAS quando o conteúdo original trouxer uma fala/trecho LITER
   autor: "opcional — nome da pessoa/fonte exatamente como identificada no material"
 }
 
-imagem — use APENAS quando o conteúdo mencionar explicitamente uma figura/imagem relevante, E APENAS depois de o usuário ter informado a pasta no Passo 0:
+imagem — use APENAS quando o conteúdo mencionar explicitamente uma figura/imagem relevante (conforme os critérios do Passo 0), E APENAS depois de ter o valor da pasta (informado pelo usuário):
 {
   tipo: "imagem",
-  id: "identificador_unico_em_snake_case",
   src: "nome_do_arquivo.png",
   pasta: "imagens_<disciplina>/aula_<N>",
   alt: "descrição da imagem",
   num: 1
 }
-- O campo `id` é obrigatório em todo bloco de imagem, mesmo quando a figura não tem número ou título formal no material. Deve ser único, curto, em snake_case, baseado no número/título original quando existir, ou na descrição objetiva quando não existir (ex: `figura_1_modelo_cascata`, `imagem_comparacao_requisitos_funcionais_nao_funcionais`).
-- O campo `pasta` SEMPRE deve seguir o padrão "imagens_<disciplina>/aula_<N>" (ex: "imagens_design/aula_12") e deve ser exatamente o valor informado pelo usuário no Passo 0 — nunca inventado.
+- O campo `src` é o nome do arquivo da imagem, com extensão `.png`, em snake_case e sem acentos. Se o material já trouxer um nome de arquivo ou identificador explícito para a figura, use-o. Se não trouxer, crie um nome curto a partir do número/título da figura ou da sua descrição objetiva (ex: `figura_1_modelo_cascata.png`, `representacao_visual_abordagens_psicologicas.png`). Cada `src` deve ser único dentro da aula.
+- O campo `pasta` SEMPRE deve seguir o padrão "imagens_<disciplina>/aula_<N>" (ex: "imagens_design/aula_12") e deve ser exatamente o valor informado pelo usuário no Passo 0 — nunca inventado. Se você não souber o valor, pare e peça.
+- O campo `alt` é a descrição fiel da imagem.
 - `num` é o número sequencial da figura dentro da aula (1, 2, 3…), na ordem em que aparecem no conteúdo — não pule números nem repita.
+- O bloco de imagem tem exatamente estes 5 campos: `tipo`, `src`, `pasta`, `alt`, `num`. Não adicione `id` nem outros.
 
 ═══════════════════ REGRAS DE CONTEÚDO ═══════════════════
 ✅ OBRIGATÓRIO preservar:
@@ -178,8 +182,8 @@ Transformar explicações detalhadas em tópicos vagos
 
 ═══════════════════ VERIFICAÇÃO ANTES DE RESPONDER ═══════════════════
 Antes de gerar a saída, confirme mentalmente:
-0. Refiz a varredura completa do conteúdo (do início ao fim) e tenho certeza de que identifiquei TODAS as imagens que realmente precisam de bloco `imagem` (informação visual/espacial não capturável em texto), sem contar as que já viraram tabela/lista/texto completos? Se havia imagem(ns) pendente(s), já perguntei e recebi a pasta do usuário antes de gerar o objeto?
-0.1. Cada bloco de imagem tem um `id` único preenchido?
+0. Refiz a varredura completa do conteúdo (do início ao fim) e tenho certeza de que identifiquei TODAS as imagens que realmente precisam de bloco `imagem` (informação visual/espacial não capturável em texto), sem contar as que já viraram tabela/lista/texto completos? Se havia imagem(ns) e eu NÃO tinha o valor de `pasta`, já perguntei e recebi do usuário antes de gerar o objeto?
+0.1. Cada bloco de imagem tem exatamente `tipo`, `src` (com .png), `pasta` (valor dado pelo usuário), `alt` e `num` sequencial?
 1. Todo parágrafo do conteúdo original foi mapeado para algum bloco?
 2. Todos os exemplos foram incluídos com seus detalhes?
 3. Todas as listas estão completas, com todos os itens?
