@@ -47,6 +47,8 @@
    FIX 2 — setConfigs() exclui audioState do save no Firebase.
    FIX 3 — hydrateConfigs() sem write-back no Firebase.
 
+   v2.6 — semestre: novo login/entrada no site abre no mais atual (SEMESTRE_PADRAO).
+
    v2.5 — Fase 5 (Core), sem mudança de lógica:
    · catálogo de semestres/disciplinas/ícones movido para
      src/core/disciplinas.js e reexportado aqui (API idêntica);
@@ -139,8 +141,17 @@ function _defaultConfigs() {
 let _estado = {
   pagina:     'HOME',
   semestre: (() => {
+    /* v2.6 — ao ENTRAR no site (aba/janela nova, sem marca de sessão) o
+       semestre volta a ser o mais atual, em vez do último que ficou salvo
+       de uma visita antiga. Dentro da mesma aba, a escolha feita no seletor
+       continua valendo ao navegar entre as páginas. */
+    let jaNestaSessao = false;
+    try { jaNestaSessao = sessionStorage.getItem('nexus_sem_sessao') === '1'; } catch (_) {}
     const raw = normalizarSemestre(Storage.get('semestre_atual') || '');
-    return SEMESTRES.includes(raw) ? raw : SEMESTRE_PADRAO;
+    if (jaNestaSessao && SEMESTRES.includes(raw)) return raw;
+    try { sessionStorage.setItem('nexus_sem_sessao', '1'); } catch (_) {}
+    Storage.set('semestre_atual', SEMESTRE_PADRAO);
+    return SEMESTRE_PADRAO;
   })(),
   disciplina: null,
   usuario:    Storage.get('usuario', null),
@@ -216,6 +227,8 @@ export function setUsuario(usuario) {
     // Só dispara loginSuccess se realmente trocou de usuário
     // (evita disparo duplicado em atualizações de avatar/configs)
     if (anterior?.uid !== usuario.uid) {
+      /* v2.6 — novo login: começa no semestre mais atual. */
+      setSemestre(SEMESTRE_PADRAO);
       setTimeout(() => {
         document.dispatchEvent(new CustomEvent('nexus:loginSuccess', {
           detail: { uid: usuario.uid },
@@ -423,4 +436,4 @@ window.__nexusCtx = {
 ──────────────────────────────────────────────────────────── */
 if (typeof window.__NEXUS_CONTEXT__ === 'undefined') {
   window.__NEXUS_CONTEXT__ = { tipos: [] };
-}
+}

@@ -36,6 +36,7 @@ export function normalizarSemestre(s) {
 
 
 export const SEMESTRES = [
+  '2026.2-AP2',
   '2026.2-AP1',
   '2026.1-AP2',
   '2026.1-AP1'
