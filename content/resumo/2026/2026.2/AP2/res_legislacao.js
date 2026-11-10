@@ -800,6 +800,315 @@ window.__nexusConteudo = {
   ]
 },
 
+//aula 11
+{
+  aula: "Falência",
+  ideia_central: "A falência é o instituto do direito empresarial, regulado pela Lei nº 11.101/2005, aplicável ao devedor empresário e à sociedade empresária insolvente, que afasta o devedor de suas atividades para preservar e otimizar a utilização produtiva dos bens, ativos e recursos, pagando os credores conforme a ordem legal de preferência.",
+  secoes: [
+    {
+      id: "objetivos_introducao",
+      titulo: "Objetivos de Aprendizagem e Introdução",
+      blocos: [
+        {
+          tipo: "lista",
+          titulo: "Objetivos de Aprendizagem",
+          itens: [
+            "Conhecer sobre o instituto da falência dentro do direito empresarial;",
+            "aprender sobre aplicação, órgãos e procedimento;",
+            "dominar seus institutos e diferenciar a falência da recuperação judicial."
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "Temas",
+          itens: [
+            "Introdução",
+            "1 Falência: definição, aplicação e regulamentação",
+            "1.1 Princípios da falência",
+            "1.2 Falência x recuperação judicial",
+            "1.3 Juízo falimentar e sujeitos",
+            "1.4 Pressupostos para a falência",
+            "1.5 Do termo legal da falência, da suspensão das ações e da administração da falência",
+            "1.6 Dos efeitos da sentença que decreta a falência, da restituição dos bens de terceiros e da liquidação",
+            "1.7 Dos órgãos da falência",
+            "1.8 Ordem de preferência dos créditos e encerramento da falência",
+            "Considerações finais",
+            "Referências"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Iniciando o nosso estudo jurídico sobre a falência, iremos começar a tratar e dar continuidade ao aprendizado sobre o direito empresarial, essa ciência que nasceu da simples, mas edificante necessidade humana, que é o contato com o outro. Para que seu raciocínio seja formado com acontecimentos e institutos que possuem uma cronologia de informações, é muito importante que você acompanhe os artigos citados e até mesmo quando eles não estiverem expressos, que você possa fazer a leitura complementar da legislação referida proposta no texto. Boa leitura!"
+        }
+      ]
+    },
+    {
+      id: "definicao_aplicacao",
+      titulo: "1 Falência: definição, aplicação e regulamentação",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "A **falência** é o instituto do direito empresarial cabível tão somente à figura dos devedores empresários e à sociedade empresária na mesma situação. O professor André Luiz Santa Cruz Ramos¹ anota que o direito falimentar é extremamente complexo, por isso, o arcabouço jurídico-processual reserva o concurso de credores não estando estes submetidos à legislação falimentar."
+        },
+        {
+          tipo: "texto",
+          texto: "Tal instituto visa a um plano acessível à organização financeira do devedor insolvente que, já está falido, mas como possuí obrigações pecuniárias, recorre à falência para que seus credores não saiam da relação totalmente no prejuízo. Existe a lei 11.101/2005 que trata das regras que norteiam essa prática."
+        },
+        {
+          tipo: "texto",
+          texto: "Citando a literalidade no que é descrito no Art. 75 da Lei nº 11.105/76², que é muito feliz em seu posicionamento ao expressar que o objetivo primordial do processo falimentar é promover o afastamento do devedor de suas atividades visando preservar e otimizar a utilização produtiva dos bens, ativos e recursos produtivos, inclusive os intangíveis da empresa."
+        },
+        {
+          tipo: "texto",
+          texto: "¹ Ramos (2014, p. 630). ² Art. 75 [...] § A falência, ao promover o afastamento do devedor de suas atividades."
+        },
+        {
+          tipo: "destaque",
+          texto: "Saiba Mais: Diante de tudo que já foi exposto, vale te apresentar que a falência é usada como mecanismo de controle da economia e que visa à exclusão de empresários com insucesso que passaram por ela."
+        },
+        {
+          tipo: "destaque",
+          texto: "Parada Obrigatória: As obrigações do falido são extintas mesmo que as dívidas não sejam totalmente quitadas."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "1.1 Princípios da falência"
+        },
+        {
+          tipo: "texto",
+          texto: "Nós já tratamos em outros módulos sobre a importância que os princípios possuem para a ciência jurídica, aqui na esfera empresarial, o raciocínio continua o mesmo, pois os princípios guiam a justificativa das decisões tomadas. E, o direito falimentar possui, de igual maneira, este fundamento, dos quais são princípios que integram a esfera falimentar:"
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "***Par conditio creditorium*:** este princípio motiva o tratamento igualitário entre todos os credores, igualdade de condições para receber (ou, no mínimo, pleiteá-los);",
+            "**Princípio da maximização dos ativos:** deve-se objetivar a maior quantia possível, com a finalidade - como conversamos acima - de preservar e otimizar a utilização dos bens, ativos recursos produtivos, inclusive os intangíveis.",
+            "**Princípio da celeridade e da economia processual:** organizando o processo falimentar, e visando ser algo positivo por parte da satisfação dos credores e boa índole do devedor ao agir de boa-fé, a universalidade do juízo falimentar para que tudo relacionado à matéria seja tratado por só um profissional e a publicidade ser mais eficaz, principalmente quando se tem muitos credores, uns ajudam (de maneira inerente) a manter o outro informado sobre o processo de falência;",
+            "**Princípio da vinculação patrimonial:** todos os bens e direitos do devedor ficam comprometidos com a destinação para o pagamento de credores."
+          ]
+        },
+        {
+          tipo: "subtitulo",
+          texto: "1.2 Falência x recuperação judicial"
+        },
+        {
+          tipo: "texto",
+          texto: "Para que não haja mais dúvidas e/ou confusão sobre estes dois institutos, segue uma pequena tabela diferenciadora para lhe ajudar a sintetizar e sistematizar as informações acerca de cada um, a saber:"
+        },
+        {
+          tipo: "tabela",
+          titulo: "Quadro 1 – Falência X Recuperação judicial",
+          colunas: ["FALÊNCIA", "RECUPERAÇÃO JUDICIAL"],
+          linhas: [
+            ["Gera o fim da atividade", "Possibilita a continuidade da atividade"],
+            ["O devedor perde o direito de administrar seus bens e deles dispor em prol da honradez de suas dívidas.", "O devedor e os administradores são mantidos, mas ficam sob fiscalização do comitê, e do administrador, se houver essa figura."]
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Fonte: Autora."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "1.3 Juízo falimentar e sujeitos"
+        },
+        {
+          tipo: "texto",
+          texto: "Quando nos referimos ao juízo de algo na ciência jurídica, estamos nos referindo a quem tem competência/que pode/é investido para resolver sobre aquela temática."
+        },
+        {
+          tipo: "texto",
+          texto: "Com o juízo falimentar, o raciocínio é o mesmo e ele possui alguns atributos que trataremos agora:"
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "**O juízo falimentar é indivisível:** via de regra, todas as ações referentes a bens, interesses e negócios serão julgados pelo juízo falimentar. Mas, como toda regra possui exceções, e elas são as seguintes: as causas trabalhistas, as causas fiscais, as ações que demandem quantias ilícitas, ações pelas quais o falido seja autor ou litisconsorte ativo, não regulados pela LRE;",
+            "**O juízo falimentar é universal:** possui tão somente uma única regra para os credores, pela qual todos terão que se sujeitar (Art. 76 da LRE);",
+            "O foro para ajuizamento do pedido de falência é o juízo do local principal do devedor ou filial de empresa com sede no exterior."
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Saiba Mais: Como sabemos, em uma demanda jurídica, temos dois lados, a saber: o passivo e o ativo. No processo falimentar, o **polo ativo** faz referência a quem pode requerer a falência do devedor, dos quais³:"
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "o próprio devedor (chamamos de autofalência);",
+            "o cônjuge sobrevivente;",
+            "o herdeiro;",
+            "o inventariante;",
+            "o quotista ou acionista;",
+            "“qualquer credor”, desde que prove que o credor é empresário legitimando a regularidade de sua atividade (essa lista é trazida pelo Art. 97 da LRE)."
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Já o **polo passivo** - conforme o preceituado pelo Art. 1º da LRE - somente os empresários/sociedades empresárias se sujeitam às regras da lei falimentar."
+        },
+        {
+          tipo: "texto",
+          texto: "³ Art. 97 […] § Podem requerer a falência do devedor."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "1.4 Pressupostos para a falência"
+        },
+        {
+          tipo: "texto",
+          texto: "Para a instauração da falência existe algumas condições em que o empresário deve estar inserido para que ela defina, que são: o devedor ser empresário, estar em situação de insolvência e ter sentença declaratória de falência. Trataremos cada um separadamente, apresentando suas nuances."
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "**Devedor empresário:** a lei falimentar se aplicará ao empresário/sociedade empresário como tratamos um pouco acima. Porém, aqui vamos destacar as hipóteses em que a lei de falências **não será aplicada**⁴: para as sociedades simples, cooperativas, consórcios, cooperativas de crédito, instituições financeiras, operadoras de planos de saúde, sociedades de capitalização, profissionais liberais, empresas públicas, seguradoras, sociedades de economia mista, sociedade de advogados, entidades de previdência complementar, conforme os expressos nos incisos do Art. 2 da LRE.",
+            "**Insolvência:** é a incapacidade de pagar pelas dívidas adquiridas e tem caráter jurídico. A insolvência tem alguns requisitos para que se caracterize, que são estes: impontualidade justificada, atos de falência e execução frustrada.",
+            "**Sentença declaratória de falência:** que deve fixar o termo legal da falência, suspender todas as ações/execuções contra o falido, proibir a prática de qualquer ato de disposição/oneração de bens do falido, ordenar ao registro que procede a anotação da falência, como falido."
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "⁴ Art. 2 [...] § Esta Lei não se aplica. Ver mais em: http://www.planalto.gov.br/ccivil_03/_Ato2004-2006/2005/Lei/L11101.htm."
+        },
+        {
+          tipo: "destaque",
+          texto: "Saiba Mais: DECISÃO → DECRETA A FALÊNCIA → CABE AGRAVO DE INSTRUMENTO. SENTENÇA → JULGA IMPROCEDENTE O PEDIDO → CABE APELAÇÃO."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "1.5 Do termo legal da falência, da suspensão das ações e da administração da falência"
+        },
+        {
+          tipo: "texto",
+          texto: "O **termo de falência** é o momento que define o estado de falência do devedor, como bem preceitua o Art. 99 da LRE, pelo qual os atos praticados pelo devedor, a partir de então, podem vir a ser considerados ineficazes,"
+        },
+        {
+          tipo: "texto",
+          texto: "O termo da falência firmará o período máximo de 90 dias do pedido de falência, do pedido de recuperação judicial e do protesto por falta de pagamento. Esse termo é fixado pelo juiz."
+        },
+        {
+          tipo: "texto",
+          texto: "Os Arts. 129 e 130 da LRE trazem as hipóteses dos atos ineficazes antes da falência, que são os seguintes:"
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "O pagamento de dívidas vincendas;",
+            "O pagamento de dívidas vencidas e exigíveis por forma não prevista em contrato;",
+            "Constituição de direito real de garantia de dívida contraída anteriormente;",
+            "Prática de atos gratuitos (até 2 anos antes da decretação de falência);",
+            "Renúncia à herança/legado (até 2 anos antes da decretação da falência);",
+            "Venda/transferência de estabelecimento sem consentimento expresso ou pagamento de todos os credores (se não restarem bens suficientes);",
+            "Decretação envolvendo imóveis (salvo se tiver havido prenotação anterior)."
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Já sobre a **suspensão das ações** na falência, conforme trata o inciso III do Art. 52 da LRE⁵, a decretação da falência suspende o curso da prescrição de todas as ações e as execuções em face do devedor, inclusive aquelas dos credores particulares do sócio secundário."
+        },
+        {
+          tipo: "texto",
+          texto: "Sobre a **administração da falência**, temos algumas figuras que possuem seus encargos dentro do processo falimentar, que são as seguintes:"
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "**Magistrado:** que conduz o processo em si, que pode autorizar a venda antecipada de bens e nomear o administrador judicial para a aprovação de suas contas;",
+            "**Ministério Público:** que age como fiscal da lei."
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Sobre os órgãos da falência em si, teremos um tópico especial para tratarmos deles, mas para que você vá se familiarizando com os termos, são estes: administrador judicial, comitê de credores e assembleia geral de credores."
+        },
+        {
+          tipo: "texto",
+          texto: "⁵ Art. 52 [...] § Estando em termos a documentação exigida no art. 51 desta Lei, o juiz deferirá o processamento da recuperação judicial."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "1.6 Dos efeitos da sentença que decreta a falência, da restituição dos bens de terceiros e da liquidação"
+        },
+        {
+          tipo: "texto",
+          texto: "Da sentença, proferida pelo juiz resultará na falência dos sócios com responsabilidade ilimitada, perda do direito do devedor de administrar seus bens ou deles dispor e, em sua inabilitação para atividade empresariais, conforme ensina os Arts. 102 e 103 da LRE."
+        },
+        {
+          tipo: "texto",
+          texto: "Depois de prolatada a sentença de falência, existe uma fase chamada **restituição de bens de terceiros**, que é a possibilidade de o proprietário pedir a restituição de seus bens que estiverem em poder do devedor na data de decretação da falência. Também pode ser pedida a restituição de coisa vendida a crédito e entregue ao devedor nos 15 dias antecedentes ao requerimento da falência, ou em seu valor em dinheiro se o bem não mais existir. Pode ser pedida a restituição do adiantamento a contrato de câmbio para exportação, e pedida a restituição dos valores entregues pelo contratante de boa-fé, no caso de revogação ou ineficácia do contrato."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "1.7 Dos órgãos da falência"
+        },
+        {
+          tipo: "texto",
+          texto: "Para facilitar sua compreensão, segue um esquema para sintetizar seu aprendizado:"
+        },
+        {
+          tipo: "imagem",
+          src: "figura_1_orgaos_da_falencia.png",
+          pasta: "imagens_legislacao/aula_11",
+          alt: "Figura 1 – Órgãos da falência: mapa conceitual com três órgãos. Assembleia geral de credores: órgão colegiado que delibera sobre matérias que afetam os interesses dos credores; presidida pelo administrador judicial; classes de credores (titulares de crédito): 1 – derivados da legislação do trabalho ou de acidentes de trabalho, 2 – com garantia real, 3 – quirografários + com privilégio (geral ou especial) + subordinados, 4 – enquadrados como microempresa (ME) ou empresa de pequeno porte (EPP); quóruns: 1ª convocação: maior que 1/2 dos créditos de cada classe, 2ª convocação: qualquer quantidade; aprovação (regra geral): maior que 1/2 dos votos presentes (voto proporcional ao crédito). Comitê de credores: é facultativo; composição: representante indicado pela classe de credores (trabalhistas; com garantia real + privilégio especial; quirografários + com privilégio geral; enquadrados como ME ou EPP); principais atribuições: fiscalizar as atividades e examinar as contas do administrador judicial e zelar pelo bom andamento do processo e cumprimento da lei. Administrador judicial: órgão auxiliar do juiz; preferencialmente advogados, administradores, contadores, pessoa jurídica autorizada; remuneração fixada pelo juiz, observados a capacidade de pagamento do devedor, complexidade do trabalho e valores de mercado (créditos devidos ao administrador judicial e seus auxiliares serão extraconcursais); funções: na falência, administrar a sociedade (o devedor é afastado); na recuperação judicial, fiscalizar as atividades da empresa e o cumprimento da recuperação judicial. Fonte: Adaptado de Ramos (2014).",
+          num: 1
+        },
+        {
+          tipo: "texto",
+          texto: "Fonte: Adaptado de Ramos (2014)."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "1.8 Ordem de preferência dos créditos e encerramento da falência"
+        },
+        {
+          tipo: "texto",
+          texto: "Conforme o Art. 83 da LSA preceitua, o pagamento dos créditos obedece a uma ordem para serem realizados, que é⁶:"
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "Créditos extraconcursais: aqueles que surgem no decorrer da falência;",
+            "Créditos da legislação do trabalho: menor ou igual a 150 salários mínimos por credor) e acidentes do trabalho;",
+            "Bens com garantia real (até o limite do bem gravado);",
+            "Créditos tributários, com exceção das multas;",
+            "Créditos com privilégio especial;",
+            "Créditos com privilégio geral;",
+            "Créditos quirografários;",
+            "Multas contratuais + penas pecuniárias (penais, administrativas e tributárias);",
+            "Créditos subordinados."
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "⁶ Art. 83 [...] § A classificação dos créditos na falência. Ver mais em: Lei nº 11.101 (planalto.gov.br)."
+        },
+        {
+          tipo: "texto",
+          texto: "Quanto ao **encerramento da falência**, ele será concluído da realização do ativo e da realização do pagamento dos credores, logo após é feito o relatório do administrador judicial e o juiz, por sua vez, encerra a falência por meio de sentença."
+        },
+        {
+          tipo: "texto",
+          texto: "O prazo prescricional para a realização das obrigações do falido recomeça a correr no dia em que transitar em julgado a sentença de encerramento da falência."
+        }
+      ]
+    },
+    {
+      id: "consideracoes_finais",
+      titulo: "Considerações Finais",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Continuando o estudo do fim das empresas, chegamos ao módulo que trata sobre a possibilidade do instituto da falência, que possui regimento em lei específica própria e é a saída encontrada por tantos credores como medida de haver algum tipo de retorno sobre a prestação de serviço ou outra atividade desenvolvida, prestada, mas não debitada em seu valor."
+        },
+        {
+          tipo: "texto",
+          texto: "Aqui podemos ter a ideia de como acontece, em linhas gerais, um processo falimentar, quais os órgãos, atribuições, direitos e funções de cada um ligado a este exercício. Iremos, no próximo módulo, explanar os últimos institutos relativos ao direito empresarial em nossos encontros. Bons estudos!"
+        }
+      ]
+    }
+  ]
+},
 
    ],
 };

@@ -208,6 +208,17 @@ function _initReadingScrollSystem(scrollEl) {
 
   let lastTop   = scrollEl.scrollTop;
   let ticking   = false;
+
+  // v18 — anti-tremor do header: encolher/expandir o header muda a altura
+  // da área de rolagem, o que faz o navegador reajustar o scrollTop e
+  // inverter a "direção" detectada → o header alternava sem parar.
+  // Correções: (1) desliga o scroll anchoring desta área; (2) só troca de
+  // estado após rolar uma distância mínima na mesma direção (histerese);
+  // (3) trava novas trocas até a transição de altura terminar.
+  scrollEl.style.overflowAnchor = 'none';
+  let barLockUntil = 0;
+  let barAcc       = 0;   // deslocamento acumulado na direção atual (px)
+  const BAR_DOWN_PX = 28, BAR_UP_PX = 48, BAR_LOCK_MS = 450;
   let activeIdx = -1;
 
   // Autoridade da seleção: true = um clique no índice está no controle
@@ -281,10 +292,11 @@ function _initReadingScrollSystem(scrollEl) {
 
   function update() {
     ticking = false;
-    const top = scrollEl.scrollTop;
-    const goingDown = top > lastTop + 2;
-    const goingUp   = top < lastTop - 2;
+    const top   = scrollEl.scrollTop;
+    const delta = top - lastTop;
     lastTop = top;
+    // acumula só movimento na mesma direção; inverteu → recomeça
+    barAcc = (delta !== 0 && Math.sign(delta) !== Math.sign(barAcc)) ? delta : barAcc + delta;
 
     if (fill) {
       const total = scrollEl.scrollHeight - scrollEl.clientHeight;
@@ -294,10 +306,17 @@ function _initReadingScrollSystem(scrollEl) {
     // O header cheio/compacto continua reagindo à posição do scroll
     // mesmo durante navegação programática — isso é intencional e
     // preserva o comportamento já corrigido do header inteligente.
-    if (bar) {
-      if (top < 32) bar.classList.remove('reader__bar--compact');
-      else if (goingDown && top > 140) bar.classList.add('reader__bar--compact');
-      else if (goingUp) bar.classList.remove('reader__bar--compact');
+    if (bar && performance.now() >= barLockUntil) {
+      const compacto = bar.classList.contains('reader__bar--compact');
+      let mudou = false;
+      if (top < 32) {
+        if (compacto) { bar.classList.remove('reader__bar--compact'); mudou = true; }
+      } else if (!compacto && top > 140 && barAcc >= BAR_DOWN_PX) {
+        bar.classList.add('reader__bar--compact'); mudou = true;
+      } else if (compacto && barAcc <= -BAR_UP_PX) {
+        bar.classList.remove('reader__bar--compact'); mudou = true;
+      }
+      if (mudou) { barLockUntil = performance.now() + BAR_LOCK_MS; barAcc = 0; }
     }
 
     // Só a SELEÇÃO (qual item do índice está ativo) fica suspensa

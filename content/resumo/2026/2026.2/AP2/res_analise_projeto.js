@@ -526,7 +526,7 @@ aulas: [
 
 // aula 10
 {
-  aula: "Diagramas UML I",
+  aula: "Diagramas Estruturais",
   ideia_central: "Aplicar a UML, com a linguagem PlantUML, na modelagem de um sistema fictício, o Sistema de Controle de Biblioteca (SCB), partindo do documento de visão e das User Stories para construir os diagramas de caso de uso, de classes e de sequência.",
   secoes: [
     {
@@ -1500,7 +1500,7 @@ aulas: [
 
 // aula 11
 {
-  aula: "Diagramas UML II e Implementação Básica",
+  aula: "Diagramas Comportamentais",
   ideia_central: "Completar a modelagem UML do Sistema de Controle de Biblioteca (SCB) com os diagramas de Estados, Atividades e Componentes e mostrar como traduzir os modelos em uma implementação inicial em Node.js, organizada no padrão MVC.",
   secoes: [
     {
@@ -1872,7 +1872,7 @@ aulas: [
 
 // aula 12
 {
-  aula: "Introdução a Padrões de Projetos",
+  aula: "Introdução",
   ideia_central: "Os Padrões de Projeto são soluções reutilizáveis para problemas recorrentes no design de software, catalogadas pelo Gang of Four em 23 padrões divididos em três categorias (Criacionais, Estruturais e Comportamentais), com o Singleton como exemplo prático.",
   secoes: [
     {
