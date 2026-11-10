@@ -42,21 +42,39 @@ export const SEMESTRES = [
   '2026.1-AP1'
 ];
 
-/* Semestre padrão — usado quando não há `semestre_atual` salvo no
-   localStorage desta origem (ex.: primeiro acesso, ou acesso a
-   partir de uma origem diferente da usada em testes locais, como
-   GitHub Pages vs Live Server — localStorage não é compartilhado
-   entre origens).
+/* Semestre padrão — SEMPRE o mais atual de SEMESTRES[], calculado
+   automaticamente (não precisa mais editar à mão).
 
-   IMPORTANTE: este valor é INDEPENDENTE da ordem de SEMESTRES[].
-   Antes, o fallback usava `SEMESTRES[0]` — ou seja, o padrão
-   mudava silenciosamente toda vez que a lista era reordenada ou
-   um semestre novo era adicionado no topo (foi exatamente isso
-   que fez o fallback virar "2026.2-AP2" ao adicionar esse
-   semestre à lista, mesmo sem nenhum checklist_data.js configurado
-   para ele ainda). Ajuste este valor manualmente quando o
-   semestre corrente do curso mudar. */
-export const SEMESTRE_PADRAO = '2026.1-AP2';
+   Critério de "mais atual", nesta ordem:
+     1) maior ANO            (2027 > 2026)
+     2) maior SEMESTRE       (.2 > .1)
+     3) maior AP             (AP2 > AP1)
+
+   Independe da ordem em que SEMESTRES[] está escrito: basta
+   adicionar o semestre novo à lista (em qualquer posição) que ele
+   vira o padrão sozinho. Valores fora do formato "AAAA.N-APN" são
+   ignorados na comparação. */
+function _chaveSemestre(s) {
+  const m = /^(\d{4})\.(\d+)-AP(\d+)$/i.exec(String(s || '').trim());
+  return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : null;
+}
+
+export function semestreMaisAtual(lista = SEMESTRES) {
+  let melhor = null, chaveMelhor = null;
+  for (const s of lista) {
+    const k = _chaveSemestre(s);
+    if (!k) continue;
+    if (!chaveMelhor ||
+        k[0] > chaveMelhor[0] ||
+        (k[0] === chaveMelhor[0] && (k[1] > chaveMelhor[1] ||
+        (k[1] === chaveMelhor[1] && k[2] > chaveMelhor[2])))) {
+      melhor = s; chaveMelhor = k;
+    }
+  }
+  return melhor || lista[0];
+}
+
+export const SEMESTRE_PADRAO = semestreMaisAtual(SEMESTRES);
 
 
 
