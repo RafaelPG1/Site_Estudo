@@ -178,3 +178,43 @@ export function renderSemestreBadge({ onChange } = {}) {
     document.dispatchEvent(new CustomEvent('nexus:semestreChanged', { detail: sem }));
   });
 }
+
+/* ══════════════════════════════════════════════
+   v19 — NUMERAÇÃO CONTÍNUA AP1 → AP2
+   AP2 continua o conteúdo da AP1: se a AP1 tem 4 aulas, a AP2 mostra
+   5, 6, 7, 8 (e não 1, 2, 3, 4). O deslocamento = nº de aulas do mesmo
+   arquivo na AP1. Só vale quando os dados da AP2 reiniciam em "Aula 1"
+   (ou não numeram); se já vêm como "Aula 5", nada muda.
+   shortcut: lê o arquivo da AP1 com fetch + new Function (sem tocar em
+   window.__nexusConteudo); se o arquivo não for só dados, o deslocamento
+   fica 0 e a AP2 aparece como antes.
+══════════════════════════════════════════════ */
+const _cacheAP1 = new Map();
+export function contarAulasAP1(ano, periodo, ap, arquivo) {
+  if (!/^AP2$/i.test(ap ?? '')) return Promise.resolve(0);
+  const src = `../content/resumo/${ano}/${periodo}/AP1/res_${arquivo}.js`;
+  if (!_cacheAP1.has(src)) {
+    _cacheAP1.set(src, fetch(src)
+      .then(r => (r.ok ? r.text() : ''))
+      .then(txt => {
+        if (!txt) return 0;
+        const w = {};
+        try { new Function('window', txt)(w); } catch { return 0; }
+        return Array.isArray(w.__nexusConteudo?.aulas) ? w.__nexusConteudo.aulas.length : 0;
+      })
+      .catch(() => 0));
+  }
+  return _cacheAP1.get(src);
+}
+
+export function aplicarNumeracaoAP(dados, offset) {
+  if (!offset) return 0;
+  const m = String(dados.aulas?.[0]?.aula ?? '').match(/^Aula\s*(\d+)/i);
+  if (m && Number(m[1]) > 1) return 0;   // já vem continuado
+  const shift = s => s.replace(/^(Aula\s*)([\d\/]+)/i,
+    (_, a, n) => a + n.replace(/\d+/g, d => String(Number(d) + offset)));
+  for (const k of ['aulas', 'simplificado', 'resumao', 'professor']) {
+    (dados[k] ?? []).forEach(x => { if (x && typeof x.aula === 'string') x.aula = shift(x.aula); });
+  }
+  return offset;
+}

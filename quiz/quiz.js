@@ -355,13 +355,10 @@ import { carregarIA } from '../shared/js/ia/carregar-ia.js';
   /* ══════════════════════════════════════════════
      DISPONIBILIDADE REAL DOS MODOS (v10)
 
-     Fonte principal: disciplinas/disponibilidade.json, gerado a
-     partir dos arquivos de conteúdo reais (ques_*.js) por
-     ferramentas/quiz_disponibilidade.py — contém quantas questões
-     UTILIZÁVEIS cada modo tem por semestre/disciplina.
-     Fallback: catalog.json (booleanos cadastrados à mão).
-     Sem nenhuma das duas fontes, o card volta a ser um link para
-     a página da disciplina (navegação anterior, inalterada).
+     Fonte única: disciplinas/catalog.json (booleanos por modo, por
+     semestre e disciplina). disponibilidade.json NÃO é mais usado.
+     Sem o catálogo, o card volta a ser um link para a página da
+     disciplina (navegação anterior, inalterada).
   ══════════════════════════════════════════════ */
   let _dispPromise = null;
 
@@ -374,10 +371,8 @@ import { carregarIA } from '../shared/js/ia/carregar-ia.js';
         .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
         .finally(() => clearTimeout(t));
     };
-    _dispPromise = buscar(new URL('./disciplinas/disponibilidade.json', import.meta.url).href)
-      .then(d => ({ fonte: 'contagem', dados: d }))
-      .catch(() => buscar(new URL('./disciplinas/catalog.json', import.meta.url).href)
-        .then(d => ({ fonte: 'catalogo', dados: d })))
+    _dispPromise = buscar(new URL('./disciplinas/catalog.json', import.meta.url).href)
+      .then(d => ({ fonte: 'catalogo', dados: d }))
       .catch(() => ({ fonte: 'nenhuma', dados: null }));
     return _dispPromise;
   }
@@ -390,10 +385,6 @@ import { carregarIA } from '../shared/js/ia/carregar-ia.js';
       let n = null, ok = false, motivo = '';
       if (!entrada) {
         motivo = 'Conteúdo ainda não publicado';
-      } else if (disp.fonte === 'contagem') {
-        n = Number(entrada[m.id]) || 0;
-        ok = n > 0;
-        if (!ok) motivo = 'Sem questões neste semestre';
       } else {
         ok = entrada[m.id] === true;
         if (!ok) motivo = 'Sem questões neste semestre';

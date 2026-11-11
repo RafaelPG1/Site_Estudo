@@ -9,7 +9,7 @@
 
 import { resolveIcone, parseSemestre } from '../../src/global.js';
 import { playSound } from '../../shared/js/audio/audio-api.js';
-import { State, esc, parseInline } from './resumo-utils.js';
+import { State, esc, parseInline, contarAulasAP1, aplicarNumeracaoAP } from './resumo-utils.js';
 import { abrirModal, abrirModalResumao, abrirModalProfessor } from './resumo-reader.js';
 import { renderExtra, temExtra } from './resumo-extra.js';
 
@@ -535,7 +535,7 @@ function _criarCard(aula, idx) {
   const m       = aulaStr.match(/^(Aula\s*[\d\/]+)\s*[—–-]\s*(.+)$/i);
   const aulaNum = m ? m[1] : aulaStr;
   const aulaTit = m ? m[2] : '';
-  const numPad  = String(idx + 1).padStart(2, '0');
+  const numPad  = String(idx + 1 + (State.aulaOffset || 0)).padStart(2, '0');
 
   // Título real do card: "Aula N — Título" vira Título; sem esse
   // prefixo, o texto inteiro já é o título.
@@ -591,7 +591,7 @@ function _criarCardSintese(aula, idx) {
   const temSint = !!(sint && (sint.ideia_central || (sint.secoes ?? []).length > 0));
   const preview = sint?.ideia_central ?? null;
   const numSec  = (sint?.secoes ?? []).length;
-  const numPad  = String(idx + 1).padStart(2, '0');
+  const numPad  = String(idx + 1 + (State.aulaOffset || 0)).padStart(2, '0');
 
   // Título real do card; a etiqueta "Aula N · Síntese" só aparece
   // quando traz informação distinta do título — evita repetir o
@@ -639,7 +639,7 @@ function _criarCardResumao(res, idx) {
   const aulaTit = m ? m[2] : '';
   const preview = res.ideia_central ?? null;
   const numSec  = (res.secoes ?? []).length;
-  const numPad  = String(idx + 1).padStart(2, '0');
+  const numPad  = String(idx + 1 + (State.aulaOffset || 0)).padStart(2, '0');
 
   const tituloCard    = aulaTit || aulaStr;
   const aulaLabelCard = (aulaNum && aulaNum !== tituloCard) ? `${aulaNum} · Resumão` : null;
@@ -684,7 +684,7 @@ function _criarCardProfessor(prof, idx) {
   const aulaTit = m ? m[2] : '';
   const preview = prof.ideia_central ?? null;
   const numSec  = (prof.secoes ?? []).length;
-  const numPad  = String(idx + 1).padStart(2, '0');
+  const numPad  = String(idx + 1 + (State.aulaOffset || 0)).padStart(2, '0');
 
   const tituloCard    = aulaTit || aulaStr;
   const aulaLabelCard = (aulaNum && aulaNum !== tituloCard) ? `${aulaNum} · Revisão do Professor` : null;
@@ -841,14 +841,20 @@ export function carregarConteudo() {
   const apPath = ap ? `/${ap}` : '';
   const src = `../content/resumo/${ano}/${periodo}${apPath}/res_${disc.arquivo}.js`;
 
+  const offsetP = contarAulasAP1(ano, periodo, ap, disc.arquivo);   // v19: AP2 continua a AP1
+  State.aulaOffset = 0;
+
   const script = document.createElement('script');
   script.src = src;
   script.id  = 'nexus-conteudo-script';
 
-  script.onload = () => {
+  script.onload = async () => {
     if (State.disciplina?.id !== disc.id) return;
 
     const dados = _lerDados();
+    const offset = await offsetP;
+    if (State.disciplina?.id !== disc.id) return;
+    State.aulaOffset = aplicarNumeracaoAP(dados, offset);
     State.discVerificadas.add(disc.id);
     State.aulas        = dados.aulas;
     State.simplificado = dados.simplificado;

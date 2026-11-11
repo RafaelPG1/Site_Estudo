@@ -489,7 +489,7 @@ function _buildReaderBody(aula, idx) {
   // usa a posição real da aula na lista (idx) em vez de deixar o
   // número grande simplesmente sumir. Number.isInteger(idx) cobre o
   // caso de _buildReaderBody ser chamado sem idx (compatibilidade).
-  const aulaNumero = aulaNum.replace(/\D/g, '') || (Number.isInteger(idx) ? String(idx + 1) : '');
+  const aulaNumero = aulaNum.replace(/\D/g, '') || (Number.isInteger(idx) ? String(idx + 1 + (State.aulaOffset || 0)) : '');
 
   // Título do resumo — conteúdo principal desta tela.
   const tituloResumo = aulaTit || aulaStr;

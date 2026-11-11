@@ -43,7 +43,7 @@
 
 import { resolveIcone, parseSemestre } from '../../src/global.js';
 import { playSound } from '../../shared/js/audio/audio-api.js';
-import { State, esc } from './resumo-utils.js';
+import { State, esc, contarAulasAP1, aplicarNumeracaoAP } from './resumo-utils.js';
 import { abrirResultadoBusca } from './resumo-reader.js';
 
 /* ══════════════════════════════════════════════
@@ -135,7 +135,7 @@ function _carregarDados(disc) {
   const p = _fila.then(() => new Promise(resolve => {
     const script = document.createElement('script');
     script.src = src;
-    const finalizar = () => {
+    const finalizar = async () => {
       const raw = window.__nexusConteudo ?? null;
       const dados = {
         aulas:        Array.isArray(raw?.aulas)        ? raw.aulas        : [],
@@ -145,6 +145,7 @@ function _carregarDados(disc) {
       };
       window.__nexusConteudo = null;
       script.remove();
+      dados.offset = aplicarNumeracaoAP(dados, await contarAulasAP1(ano, periodo, ap, disc.arquivo));   // v19
       Busca.dados.set(key, dados);
       Busca.pending.delete(key);
       resolve(dados);
@@ -172,11 +173,11 @@ async function _indiceDe(disc) {
    INDEXAÇÃO — achata cada tópico em "campos" de texto
    Campo: { t: texto limpo, n: normalizado, kind, sub, codigo }
 ══════════════════════════════════════════════ */
-function _tituloAula(str, idx) {
+function _tituloAula(str, idx, off = 0) {
   const s = String(str ?? '');
   const m = s.match(/^Aula\s*([\d\/]+)\s*[—–-]\s*(.+)$/i);
   if (m) return { num: /^\d+$/.test(m[1]) ? m[1].padStart(2, '0') : m[1], titulo: m[2] };
-  return { num: String(idx + 1).padStart(2, '0'), titulo: s };
+  return { num: String(idx + 1 + off).padStart(2, '0'), titulo: s };
 }
 
 function _campo(texto, kind = 'corpo', sub = '', codigo = false) {
@@ -266,7 +267,7 @@ function _indexar(disc, dados) {
 
       const tituloBruto = c.aula || dados.aulas[idx]?.aula || '';
       const conteudo    = c.aula ? c : { ...c, aula: tituloBruto };   // só para o leitor; não muta o original
-      const { num, titulo } = _tituloAula(tituloBruto, idx);
+      const { num, titulo } = _tituloAula(tituloBruto, idx, dados.offset || 0);
       const base = { disc, discOrd, tipo, tOrd, idx, num, titulo: _limpar(titulo), conteudo };
 
       // "Visão geral": título da aula + ideia central
