@@ -42,6 +42,7 @@ export const SEMESTRES = [
   '2026.1-AP1'
 ];
 
+
 /* Semestre padrão — SEMPRE o mais atual de SEMESTRES[], calculado
    automaticamente (não precisa mais editar à mão).
 
