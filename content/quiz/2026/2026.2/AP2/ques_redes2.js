@@ -168,7 +168,6 @@ window.questoes = {
 },
 
 
-
 // aula 7
 // 1 - Categorias multimídia
 {
@@ -495,7 +494,364 @@ window.questoes = {
 
   ],
 
+  fixacao: [
+
+// 51 - Vulnerabilidade x Ameaça x Ataque
+{
+  aula: "aula 6 - Introdução à Segurança de Redes",
+  tipo: "Contexto",
+  texto: "Um servidor corporativo está rodando um sistema operacional desatualizado há meses, e um vírus conhecido que explora justamente essa falha acaba infectando a máquina.",
+  question: "Nesse cenário, o que representa o software desatualizado?",
+  options: [
+    "A ameaça",
+    "A vulnerabilidade",
+    "O ataque",
+    "A mitigação"
+  ],
+  answer: 1,
+  feedback: "O software desatualizado é a vulnerabilidade, ou seja, a fraqueza existente no sistema. O vírus representa a ameaça, e a infecção efetiva é o ataque, quando a ameaça explora a vulnerabilidade."
+},
+
+// 52 - Tipos de hackers
+{
+  aula: "aula 6 - Introdução à Segurança de Redes",
+  tipo: "Direta",
+  texto: "Existem diferentes categorias de hackers, de acordo com suas intenções e limites éticos.",
+  question: "Qual tipo de hacker utiliza suas habilidades para encontrar falhas de segurança com a permissão dos proprietários dos sistemas?",
+  options: [
+    "Black Hat",
+    "Grey Hat",
+    "White Hat",
+    "Script Kiddie"
+  ],
+  answer: 2,
+  feedback: "Os hackers White Hat, também chamados de hackers éticos, utilizam suas habilidades para proteger sistemas e encontrar falhas de segurança com a permissão dos proprietários."
+},
+
+// 53 - Tipos de ataques
+{
+  aula: "aula 6 - Introdução à Segurança de Redes",
+  tipo: "Aplicação",
+  texto: "Um site de comércio eletrônico começa a receber um volume anormalmente alto de requisições vindas de diversos locais simultaneamente, tornando o serviço indisponível para os clientes legítimos.",
+  question: "Esse cenário descreve qual tipo de ataque?",
+  options: [
+    "SQL Injection",
+    "Ataque de Força Bruta",
+    "Ataque de Negação de Serviço (DDoS)",
+    "Man-in-the-Middle"
+  ],
+  answer: 2,
+  feedback: "No ataque de Negação de Serviço (DDoS), o atacante sobrecarrega o servidor ou a rede com um grande volume de tráfego, tornando o serviço indisponível para usuários legítimos."
+},
+
+// 54 - Legislação brasileira
+{
+  aula: "aula 6 - Introdução à Segurança de Redes",
+  tipo: "Direta",
+  texto: "A legislação brasileira possui leis específicas relacionadas a crimes cibernéticos e proteção de dados.",
+  question: "Qual lei introduziu no Código Penal o crime de invasão de dispositivo de informática?",
+  options: [
+    "LGPD",
+    "Lei Carolina Dieckmann",
+    "Lei nº 14.811/2024",
+    "Lei nº 14.155/2021"
+  ],
+  answer: 1,
+  feedback: "A Lei Carolina Dieckmann (Lei nº 12.737/2012) introduziu no Código Penal o crime de invasão de dispositivo de informática."
+},
+
+// 55 - WannaCry
+{
+  aula: "aula 6 - Introdução à Segurança de Redes",
+  tipo: "Contexto",
+  texto: "Em maio de 2017, um ataque cibernético global criptografou arquivos de centenas de milhares de computadores em diversos países, exigindo pagamento em criptomoeda para liberar o acesso.",
+  question: "Qual vulnerabilidade específica foi explorada por esse ataque para se espalhar automaticamente?",
+  options: [
+    "Uma falha no protocolo HTTPS",
+    "A vulnerabilidade EternalBlue no protocolo SMBv1 do Windows",
+    "Uma falha de configuração em firewalls corporativos",
+    "Uma vulnerabilidade no algoritmo RSA"
+  ],
+  answer: 1,
+  feedback: "O WannaCry se espalhou explorando a vulnerabilidade EternalBlue, uma falha no protocolo SMBv1 do Windows, que havia sido descoberta pela NSA e vazado pelo grupo Shadow Brokers."
+},
+
+// 56 - Criptografia simétrica x assimétrica
+{
+  aula: "aula 6 - Introdução à Segurança de Redes",
+  tipo: "Aplicação",
+  texto: "Um servidor precisa enviar uma chave secreta para um cliente de forma segura pela internet, utilizando um par de chaves em que uma pode ser divulgada publicamente e a outra deve permanecer em sigilo.",
+  question: "Esse mecanismo de troca de chaves está associado a qual tipo de criptografia?",
+  options: [
+    "Criptografia simétrica de bloco",
+    "Criptografia simétrica de fluxo",
+    "Criptografia assimétrica",
+    "Função hash"
+  ],
+  answer: 2,
+  feedback: "A criptografia assimétrica utiliza um par de chaves — uma pública e uma privada — permitindo que a chave pública seja compartilhada livremente, enquanto a chave privada permanece em sigilo, sendo comumente usada para trocar chaves simétricas com segurança."
+},
+
+// 57 - AES e DES
+{
+  aula: "aula 6 - Introdução à Segurança de Redes",
+  tipo: "Direta",
+  texto: "Diferentes algoritmos de criptografia simétrica de bloco foram desenvolvidos ao longo do tempo, com níveis distintos de segurança.",
+  question: "Qual característica torna o DES considerado inseguro atualmente?",
+  options: [
+    "Ele não realiza permutação dos bits",
+    "O tamanho pequeno da chave, facilmente quebrável por força bruta",
+    "Ele não utiliza blocos de dados",
+    "Ele depende exclusivamente de chaves assimétricas"
+  ],
+  answer: 1,
+  feedback: "O DES é considerado inseguro hoje principalmente devido ao tamanho pequeno de sua chave (56 bits efetivos), o que o torna vulnerável a ataques de força bruta com o poder computacional atual."
+},
+
+// 58 - Funções hash e assinaturas digitais
+{
+  aula: "aula 6 - Introdução à Segurança de Redes",
+  tipo: "Contexto",
+  texto: "Um destinatário recebe uma mensagem assinada digitalmente e, ao recalcular o hash da mensagem recebida e compará-lo com o hash decifrado da assinatura, percebe que os valores são diferentes.",
+  question: "O que essa diferença de hashes indica?",
+  options: [
+    "Que a mensagem é autêntica e íntegra",
+    "Que a mensagem foi alterada ou a assinatura é falsa",
+    "Que a chave pública do remetente expirou",
+    "Que o algoritmo de hash utilizado é inválido"
+  ],
+  answer: 1,
+  feedback: "Se os hashes não coincidirem, isso indica que a mensagem foi alterada durante a transmissão ou que a assinatura digital é falsa, comprometendo a integridade e a autenticidade da comunicação."
+},
+
+// 59 - Firewalls
+{
+  aula: "aula 6 - Introdução à Segurança de Redes",
+  tipo: "Aplicação",
+  texto: "Uma empresa deseja proteger toda a sua rede corporativa com um único equipamento dedicado, capaz de oferecer alto desempenho e manutenção centralizada, em vez de instalar proteção em cada computador individualmente.",
+  question: "Qual tipo de firewall atende melhor a essa necessidade?",
+  options: [
+    "Firewall de software instalado em cada máquina",
+    "Firewall de hardware",
+    "Antivírus local",
+    "Sistema de autenticação multifator"
+  ],
+  answer: 1,
+  feedback: "O firewall de hardware é instalado em um equipamento dedicado e protege toda a rede, oferecendo alto desempenho e manutenção centralizada, diferente do firewall de software, que protege apenas o dispositivo individual."
+},
+
+// 60 - VPN e protocolos seguros
+{
+  aula: "aula 6 - Introdução à Segurança de Redes",
+  tipo: "Direta",
+  texto: "Diferentes protocolos garantem comunicação segura em camadas específicas do modelo OSI.",
+  question: "Qual protocolo atua na camada de rede (Camada 3), protegendo diretamente os pacotes IP e sendo amplamente usado em VPNs corporativas?",
+  options: [
+    "SSL/TLS",
+    "SSH",
+    "IPSec",
+    "HTTPS"
+  ],
+  answer: 2,
+  feedback: "O IPSec (Internet Protocol Security) atua na camada de rede (Camada 3), protegendo diretamente os pacotes IP transmitidos entre hosts, roteadores ou gateways, sendo muito utilizado em VPNs corporativas."
+}
 
 
+  ],
+
+enade: [// 51 - Vulnerabilidade, ameaça e ataque
+{
+  aula: "Aula 6 — Introdução à Segurança de Redes",
+  tipo: "Asserção + Justificativa",
+  texto: "Uma equipe de segurança da informação identifica que um servidor da empresa está executando uma versão de software desatualizada há vários meses. Pouco tempo depois, esse mesmo servidor é infectado por um vírus conhecido que se aproveita dessa falha para se instalar no sistema.",
+  question: "Avalie as afirmações a seguir sobre os conceitos de vulnerabilidade, ameaça e ataque.",
+  assertions: [
+    "I. O software desatualizado representa uma ==def==vulnerabilidade==, ou seja, uma fraqueza presente no sistema que pode ser explorada.",
+    "PORQUE II. A infecção causada pelo vírus, que se aproveitou da falha do software desatualizado, representa o ataque, em que a ameaça se materializa explorando a vulnerabilidade existente."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 0,
+  feedback: "Ambas as afirmativas estão corretas e a segunda justifica a primeira: o software desatualizado é a **vulnerabilidade** explorada, o vírus representa a ameaça, e a infecção efetiva do sistema caracteriza o ataque, no qual essa ameaça se concretiza sobre a fraqueza existente."
+},
+
+// 52 - Criptografia simétrica x assimétrica
+{
+  aula: "Aula 6 — Introdução à Segurança de Redes",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Um analista de segurança está explicando a um novo colaborador as diferenças entre os dois principais tipos de criptografia utilizados na proteção de dados em trânsito e em repouso, destacando exemplos de algoritmos de cada categoria.",
+  question: "Sobre os tipos de criptografia apresentados na disciplina, avalie as afirmativas a seguir.",
+  assertions: [
+    "I. Na criptografia ==proc==simétrica==, a mesma chave é utilizada tanto para criptografar quanto para descriptografar os dados, sendo o AES um exemplo desse tipo.",
+    "II. Na criptografia assimétrica, é utilizado um par de chaves, sendo a chave pública usada para criptografar e a chave privada, para descriptografar.",
+    "III. O algoritmo DES, apesar de historicamente relevante, é considerado inseguro atualmente devido ao tamanho pequeno de sua chave, facilmente quebrável por força bruta.",
+    "IV. A criptografia de fluxo processa os dados sempre em blocos fixos de 128 bits, sendo o AES um exemplo típico desse funcionamento."
+  ],
+  options: [
+    "I, II e III, apenas",
+    "I e III, apenas",
+    "II e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 0,
+  feedback: "A afirmativa IV está incorreta, pois a criptografia de fluxo cifra os dados bit a bit ou byte a byte, e não em blocos fixos; o processamento em blocos, como o de 128 bits, é característico da **criptografia de bloco**, na qual se enquadra o AES."
+},
+
+// 53 - Tipos de ataques cibernéticos
+{
+  aula: "Aula 6 — Introdução à Segurança de Redes",
+  tipo: "Conceitual Contextualizada",
+  texto: "Um usuário recebe um e-mail que aparenta ter sido enviado pelo seu banco, solicitando que ele clique em um link e informe seus dados de acesso à conta para 'regularizar uma pendência'. Ao clicar no link, ele é direcionado a uma página muito semelhante à do banco real, mas que na verdade pertence ao atacante.",
+  question: "Considerando os tipos de ataques cibernéticos estudados na disciplina, qual alternativa identifica corretamente a técnica utilizada nessa situação?",
+  options: [
+    "Phishing, uma técnica de engenharia social em que o atacante se passa por uma entidade confiável para enganar a vítima e obter informações confidenciais.",
+    "Ataque de força bruta, pois o atacante tentou inúmeras combinações de senha até encontrar a correta para acessar a conta do usuário.",
+    "SQL Injection, pois o atacante inseriu código malicioso em um campo de entrada do site do banco para manipular o banco de dados.",
+    "Ataque de negação de serviço, pois o objetivo do atacante era sobrecarregar o servidor do banco com um grande volume de tráfego."
+  ],
+  answer: 0,
+  feedback: "A situação descrita caracteriza um ataque de **Phishing**, técnica de engenharia social em que o atacante se passa por uma entidade confiável, como um banco, para enganar a vítima e obter informações confidenciais, como senhas e dados bancários."
+},
+
+// 54 - Cálculo de RSA
+{
+  aula: "Aula 6 — Introdução à Segurança de Redes",
+  tipo: "Análise Aplicada",
+  texto: "Um estudante está praticando o algoritmo RSA com números pequenos para fins didáticos. Ele escolhe os primos p = 3 e q = 11, calculando n = p × q e a função totiente de Euler φ(n) = (p-1)(q-1) para, em seguida, definir o expoente público e o expoente privado do sistema.",
+  question: "Com base nas etapas de geração de chaves do algoritmo RSA apresentadas na disciplina, qual é o valor de n e de φ(n) para os primos escolhidos pelo estudante?",
+  options: [
+    "n = 33 e φ(n) = 20",
+    "n = 14 e φ(n) = 30",
+    "n = 33 e φ(n) = 33",
+    "n = 30 e φ(n) = 14"
+  ],
+  answer: 0,
+  feedback: "Aplicando as fórmulas do **RSA**: n = p × q = 3 × 11 = 33, e φ(n) = (p-1)(q-1) = (3-1)(11-1) = 2 × 10 = 20. Esses valores seriam utilizados nas etapas seguintes para determinar os expoentes público e privado."
+},
+
+// 55 - SSL/TLS, IPSec e SSH
+{
+  aula: "Aula 6 — Introdução à Segurança de Redes",
+  tipo: "Asserção + Justificativa",
+  texto: "Uma empresa está definindo quais protocolos de segurança utilizar em diferentes cenários: proteger o acesso de navegadores a seu site institucional, garantir a segurança de uma VPN corporativa entre duas filiais e permitir que administradores acessem remotamente os servidores da empresa.",
+  question: "Avalie as afirmações a seguir sobre os protocolos seguros estudados na disciplina.",
+  assertions: [
+    "I. O ==def==SSL/TLS== atua na camada de transporte e garante a segurança das comunicações entre navegador e servidor, sendo utilizado em conexões HTTPS.",
+    "PORQUE II. O IPSec atua na camada de rede e é amplamente usado em VPNs corporativas, podendo operar em modo transporte ou em modo túnel."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 1,
+  feedback: "Ambas as afirmativas estão corretas, mas descrevem protocolos que atuam em **camadas diferentes** e para finalidades distintas: o SSL/TLS protege comunicações web na camada de transporte, enquanto o IPSec protege pacotes IP na camada de rede, sendo comum em VPNs. A segunda não justifica a primeira, apenas complementa a comparação entre os protocolos."
+},
+
+// 56 - Funções hash e assinaturas digitais
+{
+  aula: "Aula 6 — Introdução à Segurança de Redes",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Um desenvolvedor está implementando um sistema de assinatura digital para garantir que documentos eletrônicos enviados por seus clientes não sejam alterados durante a transmissão e que seja possível identificar com segurança quem os assinou.",
+  question: "Sobre funções hash e assinaturas digitais, avalie as afirmativas a seguir.",
+  assertions: [
+    "I. Uma função ==def==hash== é irreversível, ou seja, não é possível obter a entrada original a partir do hash gerado.",
+    "II. Na criação de uma assinatura digital, o remetente criptografa o hash da mensagem usando sua chave privada, e esse resultado constitui a assinatura.",
+    "III. Para verificar a assinatura, o destinatário decifra a assinatura digital utilizando a chave privada do remetente, obtendo o hash original.",
+    "IV. Se o hash calculado localmente pelo destinatário for diferente do hash obtido a partir da assinatura, conclui-se que a mensagem foi alterada ou que a assinatura é falsa."
+  ],
+  options: [
+    "I, II e IV, apenas",
+    "I e II, apenas",
+    "II, III e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 0,
+  feedback: "A afirmativa III está incorreta, pois o destinatário decifra a assinatura digital utilizando a **chave pública** do remetente, e não a chave privada, que deve permanecer em sigilo com o próprio remetente."
+},
+
+// 57 - Firewall de software x hardware
+{
+  aula: "Aula 6 — Introdução à Segurança de Redes",
+  tipo: "Conceitual Contextualizada",
+  texto: "Uma empresa de médio porte precisa decidir entre instalar um programa de proteção individualmente em cada um de seus 50 computadores ou adquirir um único equipamento dedicado posicionado na entrada da rede, capaz de proteger toda a infraestrutura de uma só vez, mesmo que isso represente um investimento inicial mais alto.",
+  question: "Considerando a comparação entre firewall de software e firewall de hardware apresentada na disciplina, qual alternativa descreve corretamente uma diferença relevante entre essas duas opções?",
+  options: [
+    "O firewall de hardware protege toda a rede a partir de um equipamento dedicado, com manutenção centralizada e alto desempenho, enquanto o firewall de software protege cada dispositivo individualmente e requer atualização em cada máquina.",
+    "O firewall de software sempre oferece maior nível de proteção para toda a rede do que o firewall de hardware, já que é instalado diretamente em cada computador.",
+    "O firewall de hardware não é capaz de realizar filtragem de pacotes, sendo utilizado apenas para funções de backup e recuperação de desastres.",
+    "Não existe diferença relevante de custo, manutenção ou desempenho entre firewalls de software e de hardware, sendo a escolha uma questão puramente estética."
+  ],
+  answer: 0,
+  feedback: "O **firewall de hardware** protege toda a rede a partir de um equipamento dedicado, com manutenção centralizada e alto desempenho, enquanto o firewall de software protege o dispositivo individual em que é instalado, exigindo atualização separada em cada máquina, conforme apresentado na comparação da disciplina."
+},
+
+// 58 - Tipos de hackers
+{
+  aula: "Aula 6 — Introdução à Segurança de Redes",
+  tipo: "Análise Aplicada",
+  texto: "Uma empresa contrata um profissional de segurança para tentar invadir seus próprios sistemas de forma autorizada, com o objetivo de identificar falhas antes que agentes maliciosos possam explorá-las. Esse profissional realiza os testes dentro do escopo definido em contrato, com total permissão dos proprietários dos sistemas.",
+  question: "Considerando a classificação de hackers apresentada na disciplina, qual categoria melhor descreve o profissional contratado nessa situação?",
+  options: [
+    "Hacker White Hat, pois utiliza suas habilidades para proteger sistemas e encontrar falhas de segurança com a permissão dos proprietários.",
+    "Hacker Black Hat, pois qualquer tentativa de invasão de sistemas, mesmo autorizada, é classificada como ilegal e maliciosa.",
+    "Script Kiddie, pois qualquer profissional contratado para testes de invasão é, por definição, um amador sem conhecimento técnico profundo.",
+    "Hacktivista, pois o profissional está motivado por uma causa política ao realizar os testes de invasão nos sistemas da empresa."
+  ],
+  answer: 0,
+  feedback: "O profissional descrito se enquadra na categoria de **hacker White Hat**, também conhecido como hacker ético, pois utiliza suas habilidades técnicas para identificar falhas de segurança com a permissão explícita dos proprietários dos sistemas, diferentemente dos hackers Black Hat, que agem de forma ilegal ou maliciosa."
+},
+
+// 59 - Legislação brasileira sobre crimes cibernéticos
+{
+  aula: "Aula 6 — Introdução à Segurança de Redes",
+  tipo: "Asserção + Justificativa",
+  texto: "Um advogado especializado em direito digital está orientando uma empresa brasileira sobre as principais leis relacionadas à segurança de dados e a crimes cometidos por meios eletrônicos, considerando um caso de invasão de dispositivo informático e outro relacionado ao tratamento inadequado de dados pessoais de clientes.",
+  question: "Avalie as afirmações a seguir sobre a legislação brasileira relacionada à segurança de redes e crimes cibernéticos.",
+  assertions: [
+    "I. A ==rule==Lei Carolina Dieckmann== (Lei nº 12.737/2012) introduziu no Código Penal o crime de invasão de dispositivo de informática.",
+    "PORQUE II. A LGPD (Lei nº 13.709/2018) regula como os dados pessoais podem ser coletados, armazenados e compartilhados, garantindo a privacidade dos cidadãos."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 1,
+  feedback: "Ambas as afirmativas estão corretas, mas tratam de **leis independentes**, voltadas a objetivos distintos: a Lei Carolina Dieckmann criminaliza a invasão de dispositivos, enquanto a LGPD regula o tratamento de dados pessoais. A segunda não justifica a primeira, pois não há relação de causa e efeito entre elas."
+},
+
+// 60 - WannaCry e vulnerabilidade EternalBlue
+{
+  aula: "Aula 6 — Introdução à Segurança de Redes",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Um pesquisador de segurança está estudando o caso do ataque global de ransomware ocorrido em maio de 2017, que afetou centenas de milhares de computadores em diversos países, incluindo hospitais e órgãos públicos, explorando uma vulnerabilidade específica em um protocolo de compartilhamento de arquivos do Windows.",
+  question: "Sobre o caso do WannaCry apresentado na disciplina, avalie as afirmativas a seguir.",
+  assertions: [
+    "I. O ==danger==WannaCry== é um ransomware que criptografava os arquivos dos computadores infectados e exigia pagamento em Bitcoin para liberar o acesso.",
+    "II. O ataque se espalhou automaticamente explorando a vulnerabilidade EternalBlue, relacionada a uma falha no protocolo SMBv1 do Windows.",
+    "III. A vulnerabilidade explorada pelo WannaCry havia sido descoberta pela NSA e vazou por meio de um grupo chamado Shadow Brokers.",
+    "IV. O ataque do WannaCry ficou restrito a poucas dezenas de computadores em um único país, sem impacto relevante em hospitais ou órgãos públicos."
+  ],
+  options: [
+    "I, II e III, apenas",
+    "I e III, apenas",
+    "II e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 0,
+  feedback: "A afirmativa IV está incorreta, pois o material indica que o **WannaCry** afetou mais de 200 mil computadores em mais de 150 países, incluindo hospitais, empresas e órgãos públicos, e não ficou restrito a poucas dezenas de máquinas em um único país."
+},
+
+
+
+
+],
 
 };

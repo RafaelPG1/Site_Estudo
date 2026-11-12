@@ -768,5 +768,838 @@ questoes: [
   
 ],
 
+fixacao: [
+  // ===== AULA 9 =====
+// 1 - Entidade responsável
+{
+  aula: "Aula 9 - Introdução a UML (Unified Modeling Language)",
+  tipo: "Direta",
+  texto: "A UML é um padrão aberto, e alguém precisa manter sua especificação atualizada.",
+  question: "Qual entidade mantém e evolui a especificação da UML?",
+  options: [
+    "ISO (International Organization for Standardization).",
+    "W3C (World Wide Web Consortium).",
+    "OMG (Object Management Group).",
+    "IEEE (Institute of Electrical and Electronics Engineers)."
+  ],
+  answer: 2,
+  feedback: "A OMG desenvolve padrões abertos em TI e mantém a especificação da UML."
+},
+// 2 - Caso de uso
+{
+  aula: "Aula 9 - Introdução a UML (Unified Modeling Language)",
+  tipo: "Direta",
+  texto: "Cada diagrama da UML responde a uma necessidade diferente de modelagem.",
+  question: "Qual diagrama descreve as interações de atores externos com o sistema?",
+  options: [
+    "Diagrama de Caso de Uso.",
+    "Diagrama de Classes.",
+    "Diagrama de Componentes.",
+    "Diagrama de Pacotes."
+  ],
+  answer: 0,
+  feedback: "O Diagrama de Caso de Uso mostra quem (atores) faz o quê (casos de uso) no sistema, capturando requisitos funcionais."
+},
+// 3 - Diagrama de implantação
+{
+  aula: "Aula 9 - Introdução a UML (Unified Modeling Language)",
+  tipo: "Direta",
+  texto: "Alguns diagramas tratam da parte física do sistema, e não da lógica das classes.",
+  question: "O que o Diagrama de Implantação modela?",
+  options: [
+    "A distribuição física dos artefatos em nós da rede.",
+    "O fluxo de atividades de um processo.",
+    "A troca de mensagens entre objetos no tempo.",
+    "Os estados de um objeto ao longo do ciclo de vida."
+  ],
+  answer: 0,
+  feedback: "A implantação mostra onde cada artefato fica instalado e se relaciona com o Diagrama de Componentes."
+},
+// 4 - Linha de vida
+{
+  aula: "Aula 9 - Introdução a UML (Unified Modeling Language)",
+  tipo: "Direta",
+  texto: "No Diagrama de Sequência, a existência de um objeto durante a interação tem uma representação própria.",
+  question: "Como é representada a linha de vida (lifeline)?",
+  options: [
+    "Por um losango abaixo do objeto.",
+    "Por uma linha vertical tracejada que desce a partir do objeto.",
+    "Por uma barra horizontal sobre o objeto.",
+    "Por um círculo preenchido ao lado do objeto."
+  ],
+  answer: 1,
+  feedback: "A linha vertical tracejada indica o tempo de existência do objeto. A barra de ativação mostra quando ele está processando."
+},
+// 5 - UML 2.0
+{
+  aula: "Aula 9 - Introdução a UML (Unified Modeling Language)",
+  tipo: "Contexto",
+  texto: "A UML 2.0, lançada em 2005, foi uma grande revisão da linguagem, com arquitetura mais robusta e modular.",
+  question: "Quais diagramas foram adicionados nessa versão?",
+  options: [
+    "Classes e Objetos.",
+    "Componentes e Pacotes.",
+    "Caso de Uso e Sequência.",
+    "Estados e Atividades."
+  ],
+  answer: 1,
+  feedback: "A UML 2.0 trouxe os diagramas de Componentes e Pacotes e revisou a semântica dos já existentes."
+},
+// 6 - Ferramentas
+{
+  aula: "Aula 9 - Introdução a UML (Unified Modeling Language)",
+  tipo: "Contexto",
+  texto: "Existem ferramentas pagas, freeware e gratuitas de código aberto para criar diagramas UML.",
+  question: "Qual das ferramentas a seguir é paga?",
+  options: [
+    "Draw.io.",
+    "Modelio.",
+    "ArgoUML.",
+    "Enterprise Architect."
+  ],
+  answer: 3,
+  feedback: "Enterprise Architect, Visual Paradigm e IBM Rational Rose são pagas. Modelio, ArgoUML e PlantText são gratuitas e open source."
+},
+// 7 - Generalização
+{
+  aula: "Aula 9 - Introdução a UML (Unified Modeling Language)",
+  tipo: "Contexto",
+  texto: "No exemplo de caso de uso da aula, o ator Admin se liga ao ator User por uma seta de ponta vazada, que parte do elemento geral para o especializado.",
+  question: "Qual relacionamento essa seta representa?",
+  options: [
+    "Inclusão.",
+    "Extensão.",
+    "Generalização.",
+    "Associação."
+  ],
+  answer: 2,
+  feedback: "A generalização representa herança entre atores ou entre casos de uso. A associação liga ator e caso de uso."
+},
+// 8 - Máquina de porta
+{
+  aula: "Aula 9 - Introdução a UML (Unified Modeling Language)",
+  tipo: "Aplicação",
+  texto: "Em uma máquina de estados de porta, existem dois estados, opened e closed, e dois eventos, open e close. A porta está no estado closed.",
+  question: "O que acontece quando o evento open ocorre?",
+  options: [
+    "A porta permanece closed.",
+    "A porta vai para um estado final e a máquina termina.",
+    "A porta vai para o estado opened.",
+    "O evento é ignorado até que close ocorra."
+  ],
+  answer: 2,
+  feedback: "A transição open leva a porta de closed para opened. A transição close faz o caminho contrário."
+},
+// 9 - Merge
+{
+  aula: "Aula 9 - Introdução a UML (Unified Modeling Language)",
+  tipo: "Aplicação",
+  texto: "Em um diagrama de atividade, um processo se divide em dois caminhos após uma decisão. Depois que cada caminho é executado, o processo continua em um único fluxo.",
+  question: "Qual elemento reúne os caminhos alternativos em um só fluxo?",
+  options: [
+    "Fork.",
+    "Merge, representado por um losango.",
+    "Join, representado por uma barra.",
+    "Start, representado por um círculo preenchido."
+  ],
+  answer: 1,
+  feedback: "O merge combina fluxos alternativos após uma decisão. Fork e join tratam de paralelismo."
+},
+// 10 - Artefato
+{
+  aula: "Aula 9 - Introdução a UML (Unified Modeling Language)",
+  tipo: "Aplicação",
+  texto: "Em um diagrama de componentes, a equipe quer indicar que o componente Sistema de Autenticação é implementado pelo arquivo compilado autenticacao.jar.",
+  question: "Como esse arquivo é representado no diagrama?",
+  options: [
+    "Como um artefato.",
+    "Como uma interface (lollipop).",
+    "Como uma dependência.",
+    "Como um estereótipo."
+  ],
+  answer: 0,
+  feedback: "O artefato representa o resultado do processo de desenvolvimento, como um arquivo binário ou script, e se associa ao componente que o implementa."
+},
+// ===== AULA 10 =====
+// 1 - User Story
+{
+  aula: "Aula 10 - Diagramas Estruturais",
+  tipo: "Direta",
+  texto: "Uma User Story tem três partes: Como, Eu quero e Para que.",
+  question: "O que a parte 'Para que' da User Story informa?",
+  options: [
+    "O tipo de usuário que pede a funcionalidade.",
+    "A ação que o usuário deseja realizar.",
+    "O objetivo ou benefício esperado.",
+    "O esforço estimado em horas."
+  ],
+  answer: 2,
+  feedback: "O 'Para que' explica o valor da funcionalidade, ajudando a equipe a entender o motivo do requisito."
+},
+// 2 - INVEST
+{
+  aula: "Aula 10 - Diagramas Estruturais",
+  tipo: "Direta",
+  texto: "O acrônimo INVEST resume as características de boas User Stories.",
+  question: "O que significa a letra T do INVEST?",
+  options: [
+    "Testável.",
+    "Total.",
+    "Técnica.",
+    "Temporária."
+  ],
+  answer: 0,
+  feedback: "Testável: deve haver uma forma clara de verificar se a funcionalidade foi implementada corretamente."
+},
+// 3 - Escopo
+{
+  aula: "Aula 10 - Diagramas Estruturais",
+  tipo: "Direta",
+  texto: "O Diagrama de Caso de Uso tem várias funções em um projeto de software.",
+  question: "Qual dessas funções delimita o que está dentro e fora do projeto?",
+  options: [
+    "Definição de escopo.",
+    "Geração automática de código.",
+    "Cálculo de multas.",
+    "Escolha do banco de dados."
+  ],
+  answer: 0,
+  feedback: "Ao mostrar as interações e funcionalidades suportadas, o diagrama delimita o escopo do sistema."
+},
+// 4 - Pré-condição
+{
+  aula: "Aula 10 - Diagramas Estruturais",
+  tipo: "Contexto",
+  texto: "No SCB, cada caso de uso tem ator, pré-condição e User Story. Renovar Empréstimo é feito pelo usuário da biblioteca.",
+  question: "Qual é a pré-condição do caso de uso Renovar Empréstimo?",
+  options: [
+    "O usuário deve ser bibliotecário.",
+    "O livro não deve estar reservado por outro usuário.",
+    "O livro deve ter sido emprestado há mais de um ano.",
+    "O usuário não pode ter multas pagas."
+  ],
+  answer: 1,
+  feedback: "Se houver reserva por outro usuário, a renovação não é permitida. Isso também aparece no requisito RF11."
+},
+// 5 - Encapsulamento
+{
+  aula: "Aula 10 - Diagramas Estruturais",
+  tipo: "Contexto",
+  texto: "No Diagrama de Classes do SCB, os atributos são privados (-) e os métodos são públicos (+), com getters e setters para acessar os dados.",
+  question: "Qual princípio essa escolha reforça?",
+  options: [
+    "Herança.",
+    "Polimorfismo.",
+    "Cardinalidade.",
+    "Encapsulamento."
+  ],
+  answer: 3,
+  feedback: "O acesso controlado aos atributos protege a integridade dos dados e preserva o encapsulamento."
+},
+// 6 - Livro e Exemplar
+{
+  aula: "Aula 10 - Diagramas Estruturais",
+  tipo: "Aplicação",
+  texto: "A biblioteca possui três cópias físicas do mesmo título, e cada cópia pode ser emprestada separadamente.",
+  question: "Como isso deve ser modelado no Diagrama de Classes do SCB?",
+  options: [
+    "Três classes Livro independentes.",
+    "Uma classe Livro com três atributos de empréstimo.",
+    "Uma classe Usuário com três livros.",
+    "Uma classe Livro associada a três instâncias de Exemplar."
+  ],
+  answer: 3,
+  feedback: "Um Livro possui vários Exemplares. O empréstimo e a reserva se referem ao exemplar, e não ao título."
+},
+// 7 - Escolha do diagrama
+{
+  aula: "Aula 10 - Diagramas Estruturais",
+  tipo: "Aplicação",
+  texto: "A equipe quer mostrar, passo a passo e na ordem em que acontecem, as mensagens trocadas entre UsuarioBiblioteca, Bibliotecario e Exemplar durante um empréstimo.",
+  question: "Qual diagrama é o mais indicado?",
+  options: [
+    "Diagrama de Sequência.",
+    "Diagrama de Classes.",
+    "Diagrama de Componentes.",
+    "Diagrama de Caso de Uso."
+  ],
+  answer: 0,
+  feedback: "O Diagrama de Sequência exibe a ordem temporal das mensagens entre os objetos."
+},
+// 8 - Título e nome
+{
+  aula: "Aula 10 - Diagramas Estruturais",
+  tipo: "Código",
+  texto: "Um desenvolvedor escreveu o código PlantUML a seguir para documentar o SCB.",
+  question: "O que aparece escrito no topo do desenho, e o que 'casos-scb' representa?",
+  code: `@startuml casos-scb
+title Casos de Uso - SCB
+actor Bibliotecario
+usecase "Inserir Livro" as UC1
+Bibliotecario --> UC1
+@enduml`,
+  options: [
+    "No topo aparece casos-scb, e o título é o nome do arquivo.",
+    "No topo aparece Casos de Uso - SCB, e casos-scb é o nome do arquivo de saída.",
+    "Nada aparece no topo, pois o título só vale com skinparam.",
+    "No topo aparece UC1, e casos-scb é o ator."
+  ],
+  answer: 1,
+  feedback: "O comando title exibe o título no topo. O nome após @startuml não é desenhado e serve como nome do arquivo gerado."
+},
+// 9 - Direção
+{
+  aula: "Aula 10 - Diagramas Estruturais",
+  tipo: "Código",
+  texto: "O trecho a seguir descreve uma máquina de estados simples em PlantUML.",
+  question: "Como os elementos serão dispostos no diagrama gerado?",
+  code: `@startuml horizontal
+left to right direction
+[*] --> Estado1
+Estado1 --> Estado2 : Transição()
+Estado2 --> [*]
+@enduml`,
+  options: [
+    "De cima para baixo, que é o padrão.",
+    "Em círculo, sem direção definida.",
+    "Da direita para a esquerda.",
+    "Da esquerda para a direita."
+  ],
+  answer: 3,
+  feedback: "A diretiva left to right direction altera a orientação padrão (top to bottom) para a horizontal."
+},
+// 10 - Fragmento alt
+{
+  aula: "Aula 10 - Diagramas Estruturais",
+  tipo: "Código",
+  texto: "O código PlantUML abaixo é parte de um Diagrama de Sequência de login.",
+  question: "O que o bloco alt ... else ... end representa?",
+  code: `User -> System: Enviar Credenciais
+System -> DB: Validar Credenciais
+alt Login Válido
+  DB --> System: Credenciais Válidas
+  System -> User: Exibir Dashboard
+else Login Inválido
+  DB --> System: Credenciais Inválidas
+  System -> User: Mostrar Erro
+end`,
+  options: [
+    "Uma repetição de mensagens, como um loop.",
+    "Uma etapa opcional que pode ser ignorada.",
+    "Dois caminhos alternativos, como um if/else.",
+    "Mensagens executadas ao mesmo tempo."
+  ],
+  answer: 2,
+  feedback: "O fragmento alt representa condições alternativas. Loop repete mensagens, e opt representa uma condição opcional."
+},
+// ===== AULA 11 =====
+// 1 - MVC
+{
+  aula: "Aula 11 - Diagramas Comportamentais",
+  tipo: "Direta",
+  texto: "O MVC divide a aplicação em camadas com responsabilidades distintas.",
+  question: "Qual camada do MVC apresenta a interface ao usuário?",
+  options: [
+    "Model.",
+    "Controller.",
+    "View.",
+    "Route."
+  ],
+  answer: 2,
+  feedback: "A View apresenta a interface. A Model cuida dos dados e a Controller coordena as requisições."
+},
+// 2 - package.json
+{
+  aula: "Aula 11 - Diagramas Comportamentais",
+  tipo: "Direta",
+  texto: "No projeto Node.js do SCB, cada arquivo tem uma função na organização do código.",
+  question: "O que o arquivo package.json contém?",
+  options: [
+    "A lógica de controle dos empréstimos.",
+    "O mapeamento das URLs da aplicação.",
+    "A definição das tabelas do banco de dados.",
+    "As configurações do projeto, como dependências e scripts."
+  ],
+  answer: 3,
+  feedback: "O package.json guarda dependências e scripts. Rotas ficam em arquivos como loanRoutes.js, e a conexão com o banco, em config/db.js."
+},
+// 3 - Node.js
+{
+  aula: "Aula 11 - Diagramas Comportamentais",
+  tipo: "Direta",
+  texto: "A implementação inicial do SCB foi feita em JavaScript com um ambiente de execução específico.",
+  question: "O que o Node.js permite?",
+  options: [
+    "Executar JavaScript no lado do servidor.",
+    "Desenhar diagramas UML por script.",
+    "Compilar código Java para a web.",
+    "Armazenar dados sem banco de dados."
+  ],
+  answer: 0,
+  feedback: "O Node.js, baseado no motor V8, executa JavaScript no servidor e lida com I/O de forma assíncrona e orientada a eventos."
+},
+// 4 - Componentes
+{
+  aula: "Aula 11 - Diagramas Comportamentais",
+  tipo: "Contexto",
+  texto: "O diagrama de componentes do SCB mostra o aplicativo web, a API e o banco de dados, e como eles se relacionam.",
+  question: "Qual visão esse diagrama oferece do sistema?",
+  options: [
+    "Do ciclo de vida de um objeto.",
+    "Da arquitetura física e das dependências entre módulos.",
+    "Da sequência temporal das mensagens.",
+    "Dos atributos privados de cada classe."
+  ],
+  answer: 1,
+  feedback: "Ele dá uma visão de alto nível da estrutura e da alocação das funcionalidades entre os módulos."
+},
+// 5 - Model
+{
+  aula: "Aula 11 - Diagramas Comportamentais",
+  tipo: "Contexto",
+  texto: "No SCB, o modelo Book define a estrutura e o comportamento de um exemplar de livro, com métodos para verificar e atualizar sua disponibilidade.",
+  question: "Em qual camada do MVC esse código se encaixa?",
+  options: [
+    "View.",
+    "Model.",
+    "Controller.",
+    "Router."
+  ],
+  answer: 1,
+  feedback: "A Model lida com dados e regras ligadas a eles, como a disponibilidade do exemplar."
+},
+// 6 - Rotas
+{
+  aula: "Aula 11 - Diagramas Comportamentais",
+  tipo: "Contexto",
+  texto: "Quando o usuário envia uma requisição para uma URL, o sistema precisa saber qual método de qual controlador deve tratá-la.",
+  question: "Qual elemento do projeto faz esse mapeamento?",
+  options: [
+    "Os arquivos de rotas (Routes).",
+    "Os arquivos de modelo (Models).",
+    "O arquivo package.json.",
+    "O diagrama de componentes."
+  ],
+  answer: 0,
+  feedback: "Arquivos como bookRoutes.js e loanRoutes.js ligam URLs a métodos dos controladores."
+},
+// 7 - app.js
+{
+  aula: "Aula 11 - Diagramas Comportamentais",
+  tipo: "Aplicação",
+  texto: "Uma pessoa nova na equipe quer saber onde o servidor do SCB é configurado, as rotas são importadas e o sistema é iniciado.",
+  question: "Qual arquivo ela deve abrir?",
+  options: [
+    "config/db.js.",
+    "book.js.",
+    "loanController.js.",
+    "app.js."
+  ],
+  answer: 3,
+  feedback: "O app.js é o ponto de entrada da aplicação: configura o servidor, importa as rotas e inicializa o sistema."
+},
+// 8 - Diagrama de estados
+{
+  aula: "Aula 11 - Diagramas Comportamentais",
+  tipo: "Aplicação",
+  texto: "Uma loja virtual precisa modelar o status de um pedido, que passa por Aguardando pagamento, Pago, Enviado e Entregue conforme eventos.",
+  question: "Qual diagrama representa melhor essa situação?",
+  options: [
+    "Diagrama de Componentes.",
+    "Diagrama de Estados.",
+    "Diagrama de Implantação.",
+    "Diagrama de Classes."
+  ],
+  answer: 1,
+  feedback: "O Diagrama de Estados mostra como um objeto muda de estado em resposta a eventos ao longo do seu ciclo de vida."
+},
+// 9 - Código: estados
+{
+  aula: "Aula 11 - Diagramas Comportamentais",
+  tipo: "Código",
+  texto: "O diagrama de estados do exemplar de livro foi escrito em PlantUML como no trecho abaixo.",
+  question: "Em qual estado o exemplar fica depois do evento devolver()?",
+  code: `@startuml
+[*] --> Disponivel
+Disponivel --> Reservado : reservar()
+Disponivel --> Emprestado : emprestar()
+Reservado --> Emprestado : emprestar()
+Emprestado --> Disponivel : devolver()
+@enduml`,
+  options: [
+    "Reservado.",
+    "Emprestado.",
+    "Disponivel.",
+    "Estado final."
+  ],
+  answer: 2,
+  feedback: "A transição devolver() leva o exemplar de Emprestado de volta a Disponivel."
+},
+// 10 - Código: atividade
+{
+  aula: "Aula 11 - Diagramas Comportamentais",
+  tipo: "Código",
+  texto: "O processo de empréstimo foi descrito em PlantUML com um diagrama de atividades.",
+  question: "O que o fluxo faz quando o exemplar NÃO está disponível?",
+  code: `@startuml
+start
+:Usuário solicita empréstimo;
+if (Exemplar disponível?) then (sim)
+  :Registrar empréstimo;
+else (não)
+  :Avisar indisponibilidade;
+endif
+stop
+@enduml`,
+  options: [
+    "Registra o empréstimo mesmo assim.",
+    "Encerra sem nenhuma ação.",
+    "Volta ao início do processo.",
+    "Segue para o aviso de indisponibilidade."
+  ],
+  answer: 3,
+  feedback: "O nó de decisão bifurca o fluxo: no ramo não, a atividade é avisar a indisponibilidade, e o processo termina."
+},
+// ===== AULA 12 =====
+// 1 - Ano do GoF
+{
+  aula: "Aula 12 - Introdução",
+  tipo: "Direta",
+  texto: "O livro Design Patterns: Elements of Reusable Object-Oriented Software marcou a engenharia de software.",
+  question: "Em que ano ele foi publicado?",
+  options: [
+    "1984.",
+    "1994.",
+    "2004.",
+    "2014."
+  ],
+  answer: 1,
+  feedback: "O livro do Gang of Four foi publicado em 1994 e documentou 23 padrões fundamentais."
+},
+// 2 - Facade
+{
+  aula: "Aula 12 - Introdução",
+  tipo: "Direta",
+  texto: "Os padrões do GoF se dividem em categorias conforme o problema que resolvem.",
+  question: "A qual categoria pertence o padrão Facade?",
+  options: [
+    "Criacional.",
+    "Comportamental.",
+    "Arquitetural.",
+    "Estrutural."
+  ],
+  answer: 3,
+  feedback: "Facade é estrutural: fornece uma interface simplificada para um conjunto complexo de classes."
+},
+// 3 - Strategy
+{
+  aula: "Aula 12 - Introdução",
+  tipo: "Direta",
+  texto: "Entre os padrões comportamentais, alguns tratam de algoritmos e outros de notificações.",
+  question: "O que o padrão Strategy faz?",
+  options: [
+    "Notifica automaticamente objetos dependentes.",
+    "Garante uma única instância de uma classe.",
+    "Define uma família de algoritmos intercambiáveis.",
+    "Cria objetos por cópia de um protótipo."
+  ],
+  answer: 2,
+  feedback: "Strategy encapsula cada algoritmo e permite trocá-los conforme o contexto. Notificar dependentes é papel do Observer."
+},
+// 4 - Receita genérica
+{
+  aula: "Aula 12 - Introdução",
+  tipo: "Contexto",
+  texto: "Um desenvolvedor iniciante pergunta por que não existe um arquivo pronto de cada padrão de projeto para copiar e colar nos sistemas.",
+  question: "Qual é a explicação correta?",
+  options: [
+    "Porque padrões são protegidos por direitos autorais.",
+    "Porque padrões só valem para uma linguagem específica.",
+    "Porque padrões são apenas diagramas sem uso prático.",
+    "Porque padrões são estruturas genéricas de solução, e não código específico."
+  ],
+  answer: 3,
+  feedback: "Cada padrão descreve problema, solução e consequências de forma genérica, para ser adaptado a cada contexto."
+},
+// 5 - Memento
+{
+  aula: "Aula 12 - Introdução",
+  tipo: "Contexto",
+  texto: "Em um editor de texto, o usuário deseja desfazer a última alteração. O sistema precisa restaurar o estado anterior do documento sem violar o encapsulamento.",
+  question: "Qual padrão do GoF atende essa necessidade?",
+  options: [
+    "Memento.",
+    "Singleton.",
+    "Adapter.",
+    "Builder."
+  ],
+  answer: 0,
+  feedback: "O Memento captura e restaura o estado interno de um objeto, sendo útil em funcionalidades de desfazer."
+},
+// 6 - Uso do Singleton
+{
+  aula: "Aula 12 - Introdução",
+  tipo: "Contexto",
+  texto: "O Singleton garante uma única instância e um ponto de acesso global, o que combina com certos recursos compartilhados.",
+  question: "Em qual situação o Singleton é mais indicado?",
+  options: [
+    "Criar vários tipos de produtos relacionados.",
+    "Construir um relatório em várias etapas.",
+    "Centralizar o acesso a um serviço de log ou a uma conexão com banco.",
+    "Copiar objetos já configurados."
+  ],
+  answer: 2,
+  feedback: "Recursos compartilhados e únicos, como log, banco de dados e configuração global, são o cenário típico do Singleton."
+},
+// 7 - Facade em uso
+{
+  aula: "Aula 12 - Introdução",
+  tipo: "Aplicação",
+  texto: "Um sistema de pedidos usa cinco classes diferentes para calcular frete, validar estoque, emitir nota e cobrar o cliente. Os clientes do sistema só querem chamar uma operação simples, finalizarPedido().",
+  question: "Qual padrão estrutural ajuda a oferecer essa interface simplificada?",
+  options: [
+    "Decorator.",
+    "Facade.",
+    "Proxy.",
+    "Flyweight."
+  ],
+  answer: 1,
+  feedback: "O Facade esconde a complexidade do conjunto de classes por trás de uma interface única e simples."
+},
+// 8 - Observer em uso
+{
+  aula: "Aula 12 - Introdução",
+  tipo: "Aplicação",
+  texto: "Em um aplicativo de bolsa de valores, vários gráficos precisam ser atualizados automaticamente sempre que o preço de um ativo muda.",
+  question: "Qual padrão se encaixa nessa necessidade?",
+  options: [
+    "Prototype.",
+    "Factory Method.",
+    "Observer.",
+    "Interpreter."
+  ],
+  answer: 2,
+  feedback: "O Observer cria uma dependência um-para-muitos: quando o objeto observado muda, os dependentes são notificados."
+},
+// 9 - Código: Singleton
+{
+  aula: "Aula 12 - Introdução",
+  tipo: "Código",
+  texto: "A classe Logger do exemplo da aula verifica se já existe uma instância antes de criar outra.",
+  question: "Qual será a saída do console.log no final do código?",
+  code: `class Logger {
+  constructor() {
+    if (Logger.instance) return Logger.instance;
+    this.logs = [];
+    Logger.instance = this;
+  }
+  log(msg) { this.logs.push(msg); }
+}
+
+const a = new Logger();
+const b = new Logger();
+a.log("início");
+console.log(b.logs.length);`,
+  options: [
+    "0.",
+    "1.",
+    "2.",
+    "undefined."
+  ],
+  answer: 1,
+  feedback: "a e b são a mesma instância. A mensagem registrada por a aparece em b, então o tamanho do histórico é 1."
+},
+// 10 - Código: sem Singleton
+{
+  aula: "Aula 12 - Introdução",
+  tipo: "Código",
+  texto: "Um desenvolvedor tentou aplicar o Singleton em uma classe de configuração, mas esqueceu a verificação da instância no construtor.",
+  question: "Qual será o resultado impresso?",
+  code: `class Config {
+  constructor() {
+    this.valor = 1;
+  }
+}
+
+const c1 = new Config();
+const c2 = new Config();
+console.log(c1 === c2);`,
+  options: [
+    "true.",
+    "Erro de sintaxe.",
+    "undefined.",
+    "false."
+  ],
+  answer: 3,
+  feedback: "Sem a verificação de Config.instance, cada new cria um objeto novo. Por isso c1 e c2 são diferentes e o resultado é false."
+},
+// ===== AULA 13 =====
+// 1 - Abstract Factory
+{
+  aula: "Aula 13 - Padrões de criação",
+  tipo: "Direta",
+  texto: "Entre os padrões de criação, um deles se destaca por tratar de conjuntos de objetos que combinam entre si.",
+  question: "O que o Abstract Factory cria?",
+  options: [
+    "Famílias de objetos relacionados, sem especificar suas classes concretas.",
+    "Uma única instância global.",
+    "Cópias de um objeto existente.",
+    "Objetos complexos construídos passo a passo."
+  ],
+  answer: 0,
+  feedback: "Ele fornece uma interface para criar famílias de objetos relacionados e reduz o acoplamento do cliente com as classes concretas."
+},
+// 2 - Prototype
+{
+  aula: "Aula 13 - Padrões de criação",
+  tipo: "Direta",
+  texto: "Alguns padrões de criação evitam construir objetos do zero.",
+  question: "Como o padrão Prototype cria novos objetos?",
+  options: [
+    "Por herança de uma classe abstrata.",
+    "Copiando ou clonando uma instância existente.",
+    "Chamando uma fábrica de subclasses.",
+    "Encadeando métodos de construção."
+  ],
+  answer: 1,
+  feedback: "O Prototype usa uma instância como modelo e cria novos objetos por clonagem, permitindo ajustes em cada cópia."
+},
+// 3 - Limitação do Singleton
+{
+  aula: "Aula 13 - Padrões de criação",
+  tipo: "Direta",
+  texto: "Todo padrão traz benefícios e custos, e o Singleton não é exceção.",
+  question: "Qual é uma dificuldade associada ao Singleton?",
+  options: [
+    "Obriga a criar uma classe nova para cada produto.",
+    "Impede o uso de herança.",
+    "Dependência global que dificulta testes e pode exigir sincronização em ambientes multithreaded.",
+    "Só funciona com JavaScript."
+  ],
+  answer: 2,
+  feedback: "A dependência global dificulta isolar componentes para testar, e o acesso concorrente pode exigir controle adicional."
+},
+// 4 - Fluent interface
+{
+  aula: "Aula 13 - Padrões de criação",
+  tipo: "Contexto",
+  texto: "No exemplo do Builder, o código cliente escreve algo como builder.buildWalls().buildDoors().buildWindows().getHouse(), encadeando as chamadas.",
+  question: "O que torna esse encadeamento possível?",
+  options: [
+    "Cada método de etapa retorna o próprio builder.",
+    "Cada método de etapa retorna a casa pronta.",
+    "O construtor é estático.",
+    "O método getHouse é chamado primeiro."
+  ],
+  answer: 0,
+  feedback: "Retornar o próprio builder é o que forma a chamada encadeada (fluent interface). Só getHouse devolve o objeto final."
+},
+// 5 - Quem decide
+{
+  aula: "Aula 13 - Padrões de criação",
+  tipo: "Contexto",
+  texto: "No exemplo do Factory Method, AnimalFactory declara o método createAnimal, e DogFactory e CatFactory o implementam.",
+  question: "Quem decide qual classe concreta será instanciada?",
+  options: [
+    "O código cliente, com um if.",
+    "O banco de dados.",
+    "O construtor da classe base.",
+    "As subclasses da fábrica."
+  ],
+  answer: 3,
+  feedback: "O Factory Method delega às subclasses a decisão do tipo criado, deixando o código cliente desacoplado das implementações."
+},
+// 6 - Desvantagem Abstract Factory
+{
+  aula: "Aula 13 - Padrões de criação",
+  tipo: "Contexto",
+  texto: "Um sistema usa Abstract Factory com SedanFactory e SUVFactory. A equipe agora quer adicionar um novo tipo de produto, o câmbio, a todos os carros.",
+  question: "Qual é a consequência disso?",
+  options: [
+    "Basta criar uma classe nova, sem alterar as fábricas.",
+    "É preciso modificar todas as fábricas existentes.",
+    "O padrão deixa de funcionar.",
+    "O Singleton precisa ser usado."
+  ],
+  answer: 1,
+  feedback: "Adicionar tipos de produto é trabalhoso no Abstract Factory, pois exige alterar todas as fábricas para suportar o novo tipo."
+},
+// 7 - Builder em uso
+{
+  aula: "Aula 13 - Padrões de criação",
+  tipo: "Aplicação",
+  texto: "Uma empresa gera relatórios com várias seções opcionais, como cabeçalho, gráficos, tabelas e rodapé, e cada cliente escolhe uma combinação diferente.",
+  question: "Qual padrão de criação é o mais adequado?",
+  options: [
+    "Singleton.",
+    "Prototype.",
+    "Factory Method.",
+    "Builder."
+  ],
+  answer: 3,
+  feedback: "O Builder constrói objetos complexos em etapas, permitindo diferentes configurações pelo mesmo processo de construção."
+},
+// 8 - Prototype em uso
+{
+  aula: "Aula 13 - Padrões de criação",
+  tipo: "Aplicação",
+  texto: "Um jogo precisa criar centenas de inimigos com a mesma configuração inicial, mudando apenas alguns detalhes, como posição e cor, em cada um.",
+  question: "Qual padrão ajuda a criar esses inimigos de forma eficiente?",
+  options: [
+    "Prototype.",
+    "Abstract Factory.",
+    "Singleton.",
+    "Builder."
+  ],
+  answer: 0,
+  feedback: "Clonar um protótipo já configurado e alterar pontualmente cada cópia evita reconstruir tudo do zero."
+},
+// 9 - Código: Builder com erro
+{
+  aula: "Aula 13 - Padrões de criação",
+  tipo: "Código",
+  texto: "Um desenvolvedor implementou o Builder, mas os métodos de etapa não retornam nada.",
+  question: "O que acontece ao executar o código?",
+  code: `class HouseBuilder {
+  constructor() { this.house = {}; }
+  buildWalls()   { this.house.walls = true; }
+  buildDoors()   { this.house.doors = 2; }
+  getHouse()     { return this.house; }
+}
+
+const house = new HouseBuilder()
+  .buildWalls()
+  .buildDoors()
+  .getHouse();`,
+  options: [
+    "A casa é criada normalmente com paredes e portas.",
+    "A casa é criada, mas sem portas.",
+    "Ocorre um erro, pois buildWalls() retorna undefined e não permite encadear buildDoors().",
+    "Ocorre um erro no construtor da classe."
+  ],
+  answer: 2,
+  feedback: "Sem return this nos métodos de etapa, a chamada encadeada falha, pois o resultado seria undefined."
+},
+// 10 - Código: Prototype
+{
+  aula: "Aula 13 - Padrões de criação",
+  tipo: "Código",
+  texto: "No exemplo do Prototype, a cópia é feita com Object.assign, que gera uma cópia superficial. O protótipo abaixo tem uma lista interna.",
+  question: "Qual será a saída do console.log?",
+  code: `const proto = { nome: "base", itens: ["a"] };
+const copia = Object.assign({}, proto);
+
+copia.itens.push("b");
+console.log(proto.itens.length);`,
+  options: [
+    "1.",
+    "0.",
+    "2.",
+    "undefined."
+  ],
+  answer: 2,
+  feedback: "Na cópia superficial, a lista interna é compartilhada. Ao adicionar b na cópia, o protótipo também é afetado, e o tamanho passa a ser 2."
+},
+],
 
 };
