@@ -2490,7 +2490,660 @@ aulas: [
       ]
     }
   ]
+},
+
+// aula 14
+{
+  aula: "Padrões estruturais",
+  ideia_central: "Os padrões estruturais (Adapter, Bridge, Composite, Decorator, Proxy, Facade e Flyweight) organizam as relações entre classes e objetos já existentes, promovendo reutilização e manutenibilidade ao adaptar interfaces, separar abstração e implementação, tratar hierarquias de forma uniforme, estender, controlar o acesso, simplificar subsistemas e economizar memória, ao custo de maior complexidade quando aplicados em sistemas simples.",
+  secoes: [
+    {
+      id: "introducao",
+      titulo: "Introdução",
+      blocos: [
+        {
+          tipo: "lista",
+          titulo: "Objetivos",
+          itens: [
+            "Conhecer os padrões **Adapter** e **Bridge**;",
+            "Conhecer os padrões **Composite** e **Decorator**;",
+            "Conhecer os padrões **Façade** (ou **Facade**) e **Business Delegate**;",
+            "Conhecer os padrões **Flyweight** e **Proxy**."
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Neste módulo, exploraremos o universo dos **padrões estruturais**, essenciais para a composição de classes e objetos em sistemas de *software*. Enquanto o Módulo 13 apresentou os **padrões criacionais** — **Abstract Factory, Builder, Factory Method, Prototype e Singleton**, voltados para gerenciar a criação de objetos de maneira eficiente e flexível —, o foco agora está em como estruturar e organizar as relações entre classes e objetos já existentes. Se os **padrões criacionais** definem como construir a base do sistema, os **padrões estruturais** moldam como essas bases se estruturam, promovendo reutilização e manutenibilidade."
+        },
+        {
+          tipo: "texto",
+          texto: "Os **padrões estruturais** abordam cenários variados, como **adaptação de interfaces incompatíveis (Adapter)**, **independência entre abstrações e implementações (Bridge)**, **gerenciamento de hierarquias complexas (Composite)** e **extensão de funcionalidades de objetos de maneira dinâmica (Decorator)**. Também estudaremos como **simplificar interações com subsistemas complexos (Facade)**, **intermediar a comunicação entre camadas (Business Delegate)**, **otimizar o uso de memória em sistemas que lidam com muitos objetos similares (Flyweight)** e **controlar o acesso a objetos reais, por meio de representantes (Proxy)**."
+        },
+        {
+          tipo: "texto",
+          texto: "Cada padrão será apresentado com sua definição, exemplos práticos em **Javascript**, análises de vantagens e desvantagens, e explicações detalhadas. Ao longo do módulo, compreendemos como os padrões estruturais colaboram para criar arquiteturas mais limpas, flexíveis e alinhadas com os princípios de *design* orientado a objetos. Boa leitura!"
+        }
+      ]
+    },
+    {
+      id: "adapter",
+      titulo: "1 Introdução ao Padrão Adapter",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Imagine que você está tentando conectar um cabo USB em um dispositivo que só possui entrada USB-C. O **padrão de projetos Adapter** funciona exatamente como aquele pequeno adaptador que você usa: ele faz \"ponte\" entre interfaces incompatíveis, permitindo que componentes diferentes colaborem sem que nenhum dos dois precise ser modificado. Esse padrão é particularmente útil quando sistemas antigos precisam interagir com novos componentes ou quando bibliotecas de terceiros possuem interfaces que não correspondem às nossas necessidades."
+        },
+        {
+          tipo: "destaque",
+          texto: "A principal característica do *Adapter* é sua capacidade de encapsular a lógica de tradução entre as interfaces, tornando o código cliente independente de mudanças nos sistemas conectados. Ele pode ser implementado de duas formas principais: usando composição, onde o adaptador contém uma referência ao objeto que está adaptando; ou usando herança, quando o adaptador estende a classe a ser adaptada."
+        },
+        {
+          tipo: "texto",
+          texto: "O *Adapter* é amplamente utilizado em sistemas legados, integrações com APIs externas e em situações em que há a necessidade de unificar diferentes formatos de dados. Um exemplo desse padrão pode ser visto no quadro a seguir."
+        },
+        {
+          tipo: "lista",
+          titulo: "Quadro 1 – Código Javascript de implementação do padrão Adapter",
+          itens: [
+            "`class OldSystem {`",
+            "`  request( ) {`",
+            "`    return \"Response from Old System\";`",
+            "`  }`",
+            "`}`",
+            "`class NewSystem {`",
+            "`  specificRequest( ) {`",
+            "`    return \"Response from New System\";`",
+            "`  }`",
+            "`}`",
+            "`class Adapter {`",
+            "`  constructor(newSystem) {`",
+            "`    this.newSystem = newSystem;`",
+            "`  }`",
+            "`  request( ) {`",
+            "`    return this.newSystem.specificRequest( );`",
+            "`  }`",
+            "`}`",
+            "`// Uso do Adapter`",
+            "`const oldSystem = new OldSystem( );`",
+            "`console.log(oldSystem.request( )); // Response from Old System`",
+            "`const newSystemAdapter = new Adapter(new NewSystem( ));`",
+            "`console.log(newSystemAdapter.request( )); // Response from New System`"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "No código do Quadro 1, temos dois sistemas: o `OldSystem`, que utiliza o método `request`, e o `NewSystem`, que possui uma interface incompatível, com o método `specificRequest`. Para integrar esses sistemas, criamos a classe `Adapter`, que encapsula uma instância do `NewSystem` e implementa o método `request`. Quando o método `request` é chamado no *Adapter*, ele redireciona a chamada para o método `specificRequest` do `NewSystem`. Isso permite que o novo sistema seja utilizado como se fosse o antigo, sem que nenhuma das classes originais precise ser modificada."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "1.1 Pontos positivos e negativos"
+        },
+        {
+          tipo: "texto",
+          texto: "O *Adapter* apresenta várias vantagens. Ele permite a reutilização de código legado, melhora a interoperabilidade entre sistemas e reduz o esforço necessário para adaptar novos componentes. Além disso, ao encapsular a lógica de adaptação, ele promove a separação de responsabilidades e mantém o código cliente limpo e desacoplado."
+        },
+        {
+          tipo: "texto",
+          texto: "Por outro lado, esse padrão pode adicionar uma camada extra de complexidade, especialmente em sistemas simples onde sua implementação pode ser desnecessária. Em cenários mais complexos, múltiplos adaptadores podem se tornar difíceis de gerenciar, aumentando a dificuldade de manutenção e depuração do código."
+        },
+        {
+          tipo: "texto",
+          texto: "Assim, sua aplicação deve ser cuidadosamente planejada para garantir que os benefícios superem os custos."
+        },
+        {
+          tipo: "topico",
+          titulo: "Multimídia",
+          texto: "A fim de conhecer mais sobre o padrão discutido nesta seção, sugerimos o vídeo “Adapter Teoria - Padrões de Projeto - Parte 16/45”, do canal “Otávio Miranda” do Youtube."
+        }
+      ]
+    },
+    {
+      id: "bridge",
+      titulo: "2 Conhecendo o Padrão de Projetos Bridge",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O **padrão Bridge** foi concebido para resolver um problema comum no design de software: o acoplamento excessivo entre uma abstração e sua implementação. Ele separa essas duas partes, permitindo que evoluam de forma independente. Pense em um controle remoto e uma TV: o controle remoto é uma abstração que pode operar diferentes modelos de TV (implementações). O *Bridge* atua como a estrutura que conecta esses dois elementos, tornando possível, por exemplo, trocar o modelo da TV sem modificar a lógica do controle remoto."
+        },
+        {
+          tipo: "destaque",
+          texto: "Uma das principais características do *Bridge* é seu foco na flexibilidade. Ele permite que você altere as abstrações e as implementações sem que uma dependa diretamente da outra. Isso é alcançado por meio da composição, onde a abstração mantém uma referência a uma implementação. Esse padrão é particularmente útil em sistemas que requerem suporte para múltiplas dimensões de variação, como dispositivos com diferentes tipos de interfaces de controle."
+        },
+        {
+          tipo: "texto",
+          texto: "No dia a dia, o *Bridge* é amplamente utilizado em bibliotecas gráficas (para desenhar em diferentes plataformas), drivers de dispositivos (para abstrair detalhes de *hardware*) e até em *frameworks* que separam a lógica de negócios de diferentes *frontends*. Um exemplo desse padrão, pode ser visto no quadro a seguir."
+        },
+        {
+          tipo: "lista",
+          titulo: "Quadro 2 – Código Javascript de implementação do padrão Bridge",
+          itens: [
+            "`// Abstração`",
+            "`class Remote {`",
+            "`  constructor(device) {`",
+            "`    this.device = device;`",
+            "`  }`",
+            "`  togglePower( ) {`",
+            "`    if (this.device.isEnabled( )) {`",
+            "`      this.device.disable( );`",
+            "`      console.log(\"Device powered off\");`",
+            "`    } else {`",
+            "`      this.device.enable( );`",
+            "`      console.log(\"Device powered on\");`",
+            "`    }`",
+            "`  }`",
+            "`}`",
+            "`// Implementação`",
+            "`class TV {`",
+            "`  constructor( ) {`",
+            "`    this.enabled = false;`",
+            "`  }`",
+            "`  isEnabled( ) {`",
+            "`    return this.enabled;`",
+            "`  }`",
+            "`  enable( ) {`",
+            "`    this.enabled = true;`",
+            "`  }`",
+            "`  disable( ) {`",
+            "`    this.enabled = false;`",
+            "`  }`",
+            "`}`",
+            "`// Outra implementação`",
+            "`class Radio {`",
+            "`  constructor( ) {`",
+            "`    this.enabled = false;`",
+            "`  }`",
+            "`  isEnabled( ) {`",
+            "`    return this.enabled;`",
+            "`  }`",
+            "`  enable( ) {`",
+            "`    this.enabled = true;`",
+            "`  }`",
+            "`  disable( ) {`",
+            "`    this.enabled = false;`",
+            "`  }`",
+            "`}`",
+            "`// Uso do Bridge`",
+            "`const tv = new TV( );`",
+            "`const remote = new Remote(tv);`",
+            "`remote.togglePower( ); // Device powered on`",
+            "`remote.togglePower( ); // Device powered off`",
+            "`const radio = new Radio( );`",
+            "`const radioRemote = new Remote(radio);`",
+            "`radioRemote.togglePower( ); // Device powered on`"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "No código do Quadro 2, temos a abstração `Remote`, que é independente das implementações (`TV` e `Radio`). A classe `Remote` opera sobre uma interface comum (`isEnabled`, `enable`, e `disable`), enquanto as implementações específicas (`TV` e `Radio`) fornecem os detalhes de como essas operações são realizadas. Ao criar uma instância de `Remote` com uma implementação específica (como `TV` ou `Radio`), podemos alterar o estado do dispositivo sem alterar o código da abstração. Essa estrutura demonstra como o *Bridge* promove a flexibilidade e facilita a manutenção."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "2.1 Pontos positivos e negativos"
+        },
+        {
+          tipo: "texto",
+          texto: "O *Bridge* oferece várias vantagens. Ele reduz o acoplamento entre abstrações e implementações, facilitando a extensão e a manutenção do código. Isso permite que ambas as partes evoluam de maneira independente, promovendo a reutilização de código. É especialmente valioso em sistemas complexos que precisam gerenciar múltiplas dimensões de variação."
+        },
+        {
+          tipo: "texto",
+          texto: "Por outro lado, o Bridge pode introduzir complexidade desnecessária em sistemas simples. Em cenários onde não há necessidade de suportar múltiplas abstrações e implementações, a aplicação desse padrão pode ser um exagero. Além disso, seu uso requer um planejamento cuidadoso para evitar sobrecarga ou confusão no design do sistema. Assim, o *Bridge* é mais indicado para sistemas que realmente necessitam de sua flexibilidade estruturada."
+        },
+        {
+          tipo: "topico",
+          titulo: "Multimídia",
+          texto: "A fim de conhecer mais sobre o padrão discutido nesta seção, sugerimos o vídeo “Bridge Teoria - Padrões de Projeto - Parte 18/45”, do canal “Otávio Miranda” do Youtube."
+        }
+      ]
+    },
+    {
+      id: "composite",
+      titulo: "3 Introdução ao Padrão Composite",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O **padrão Composite** é uma solução elegante para lidar com estruturas hierárquicas, permitindo que objetos individuais e composições de objetos sejam tratados de maneira uniforme. Ele é inspirado no **conceito de árvores (*tree*)**, onde cada **nó** pode ser um objeto simples (uma folha) ou um **conjunto de outros nós** (um **composto ou *composite***)."
+        },
+        {
+          tipo: "destaque",
+          texto: "A mágica do *Composite* está em sua **interface uniforme**, que permite que o cliente interaja com qualquer nó da estrutura sem precisar distinguir entre folhas e compostos."
+        },
+        {
+          tipo: "texto",
+          texto: "Uma das características mais importantes deste padrão é sua capacidade de delegar operações. Quando uma operação é chamada em um composto, ele a delega para os seus componentes filhos, que podem ser outras folhas ou outros compostos. Sua estrutura o torna extremamente útil para representar partes de um todo, como gráficos, estruturas organizacionais, sistemas de arquivos ou até mesmo cenas gráficas em jogos."
+        },
+        {
+          tipo: "texto",
+          texto: "Esse padrão é amplamente utilizado em sistemas onde há necessidade de manipular hierarquias complexas de objetos, como **menus de interface**, **sistemas de renderização gráfica** e **modelagem de árvores de decisão**. Um exemplo deste padrão, pode ser visto no quadro a seguir."
+        },
+        {
+          tipo: "lista",
+          titulo: "Quadro 3 – Código Javascript de implementação do padrão Composite",
+          itens: [
+            "`// Classe base`",
+            "`class Component {`",
+            "`  operation( ) {`",
+            "`    throw new Error(\"This method must be overridden!\");`",
+            "`  }`",
+            "`}`",
+            "`// Classe folha`",
+            "`class Leaf extends Component {`",
+            "`  constructor(name) {`",
+            "`    super( );`",
+            "`    this.name = name;`",
+            "`  }`",
+            "`  operation( ) {`",
+            "`    console.log(`Leaf ${this.name} operation executed`);`",
+            "`  }`",
+            "`}`",
+            "`// Classe composta`",
+            "`class Composite extends Component {`",
+            "`  constructor(name) {`",
+            "`    super( );`",
+            "`    this.name = name;`",
+            "`    this.children = [ ];`",
+            "`  }`",
+            "`  add(component) {`",
+            "`    this.children.push(component);`",
+            "`  }`",
+            "`  operation( ) {`",
+            "`    console.log(`Composite ${this.name} operation starts`);`",
+            "`    this.children.forEach(child => child.operation( ));`",
+            "`    console.log(`Composite ${this.name} operation ends`);`",
+            "`  }`",
+            "`}`",
+            "`// Uso do Composite`",
+            "`const leaf1 = new Leaf(\"A\");`",
+            "`const leaf2 = new Leaf(\"B\");`",
+            "`const composite1 = new Composite(\"Composite1\");`",
+            "`composite1.add(leaf1);`",
+            "`composite1.add(leaf2);`",
+            "`const composite2 = new Composite(\"Composite2\");`",
+            "`composite2.add(composite1);`",
+            "`console.log(\"Executing composite2 operation:\");`",
+            "`composite2.operation( );`"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "No código do Quadro 3, criamos uma estrutura hierárquica usando o padrão *Composite*. A classe `Component` define a interface comum para todos os elementos da hierarquia. A classe `Leaf` representa elementos finais que executam operações individuais, enquanto a classe `Composite` pode conter múltiplos outros componentes (folhas ou compostos). No uso do padrão, adicionamos folhas e um composto (`Composite1`) dentro de outro composto (`Composite2`). Ao chamar a operação em Composite2, todas as operações dentro de sua hierarquia são executadas, demonstrando como o *Composite* gerencia hierarquias de forma uniforme."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "3.1 Pontos positivos e negativos"
+        },
+        {
+          tipo: "texto",
+          texto: "O *Composite* oferece uma maneira poderosa de organizar e trabalhar com hierarquias complexas. Ele facilita a reutilização de código, pois o cliente não precisa diferenciar entre folhas e compostos. Além disso, o padrão promove a extensibilidade, permitindo a adição de novos tipos de componentes sem alterar o código existente."
+        },
+        {
+          tipo: "texto",
+          texto: "Por outro lado, este padrão pode adicionar complexidade, especialmente em sistemas com estruturas simples que não exigem hierarquias elaboradas. A delegação de operações, por meio de vários níveis da hierarquia, pode dificultar o rastreamento de execuções e, em alguns casos, comprometer o desempenho. Assim, é essencial avaliar a necessidade real de hierarquias antes de aplicar o *Composite*."
+        },
+        {
+          tipo: "topico",
+          titulo: "Multimídia",
+          texto: "A fim de conhecer mais sobre o padrão discutido nesta seção, sugerimos o vídeo “A Composite Teoria - Padrões de Projeto - Parte 14/45”, do canal “Otávio Miranda” do Youtube."
+        }
+      ]
+    },
+    {
+      id: "decorator",
+      titulo: "4 Conhecendo o Padrão de Projetos Decorator",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O **padrão Decorator** é como um quebra-cabeça para quem gosta de criatividade no design de *software*. Ele permite que você adicione ou modifique funcionalidades de um objeto de forma dinâmica, sem alterar sua estrutura original."
+        },
+        {
+          tipo: "destaque",
+          texto: "Imagine que você tem uma xícara de café simples e decide incrementá-la com leite, açúcar e chantilly. Cada \"incremento\" é como um *Decorator*, adicionando funcionalidade ao café básico sem mudar o que ele é essencialmente."
+        },
+        {
+          tipo: "texto",
+          texto: "Este padrão é particularmente útil em situações em que você precisa adicionar **responsabilidades a objetos de forma flexível, em tempo de execução**. Ao invés de criar subclasses para cada combinação possível de funcionalidades, você pode empilhar \"decoradores\" sobre um objeto base. O padrão funciona por composição: cada decorador encapsula o objeto base ou outro decorador, e todos compartilham uma interface comum."
+        },
+        {
+          tipo: "texto",
+          texto: "Esse padrão é amplamente usado em *frameworks* e bibliotecas que permitem estender comportamentos, como **sistemas de entrada de dados** (validação em camadas), **interfaces gráficas** (componentes customizáveis) e até mesmo em *streams* de *I/O*, onde diferentes decoradores adicionam funcionalidades como compressão ou criptografia. Um exemplo deste padrão, pode ser visto no quadro a seguir."
+        },
+        {
+          tipo: "lista",
+          titulo: "Quadro 4 – Código Javascript de implementação do padrão Decorator",
+          itens: [
+            "`// Objeto base`",
+            "`class Coffee {`",
+            "`  cost( ) {`",
+            "`    return 5;`",
+            "`  }`",
+            "`  description( ) {`",
+            "`    return \"Simple coffee\";`",
+            "`  }`",
+            "`}`",
+            "`// Decorador base`",
+            "`class CoffeeDecorator {`",
+            "`  constructor(coffee) {`",
+            "`    this.coffee = coffee;`",
+            "`  }`",
+            "`  cost( ) {`",
+            "`    return this.coffee.cost( );`",
+            "`  }`",
+            "`  description( ) {`",
+            "`    return this.coffee.description( );`",
+            "`  }`",
+            "`}`",
+            "`// Decorador de leite`",
+            "`class MilkDecorator extends CoffeeDecorator {`",
+            "`  cost( ) {`",
+            "`    return super.cost( ) + 2;`",
+            "`  }`",
+            "`  description( ) {`",
+            "`    return `${super.description( )}, milk`;`",
+            "`  }`",
+            "`}`",
+            "`// Decorador de chantilly`",
+            "`class WhipDecorator extends CoffeeDecorator {`",
+            "`  cost( ) {`",
+            "`    return super.cost( ) + 1.5;`",
+            "`  }`",
+            "`  description( ) {`",
+            "`    return `${super.description( )}, whipped cream`;`",
+            "`  }`",
+            "`}`",
+            "`// Uso do Decorator`",
+            "`const coffee = new Coffee( );`",
+            "`const milkCoffee = new MilkDecorator(coffee);`",
+            "`const fancyCoffee = new WhipDecorator(milkCoffee);`",
+            "`console.log(fancyCoffee.description( )); // Simple coffee, milk, whipped cream`",
+            "`console.log(fancyCoffee.cost( )); // 8.5`"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "No código do Quadro 4, o objeto base é a classe `Coffee`, que define um custo básico e uma descrição simples. Os decoradores, como `MilkDecorator` e `WhipDecorator`, encapsulam o objeto base ou outro decorador e adicionam as suas próprias funcionalidades. No uso, criamos um café básico, adicionamos leite usando `MilkDecorator` e, em seguida, incrementamos com chantilly usando `WhipDecorator`. Isso demonstra como os decoradores podem ser empilhados para estender dinamicamente as funcionalidades do objeto base."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "4.1 Pontos positivos e negativos"
+        },
+        {
+          tipo: "texto",
+          texto: "O *Decorator* traz flexibilidade ao design, permitindo a combinação dinâmica de funcionalidades sem criar uma explosão de subclasses. Ele promove a reutilização de código e adota o princípio do \"aberto para extensão, fechado para modificação\", já que o objeto base permanece inalterado."
+        },
+        {
+          tipo: "texto",
+          texto: "Por outro lado, este padrão pode levar a uma cadeia de objetos aninhados difícil de rastrear, especialmente em sistemas complexos. A depuração pode se tornar desafiadora, pois cada decorador encapsula outro, escondendo a lógica interna. Além disso, ele exige um entendimento claro do padrão para evitar sobrecarga desnecessária ou inconsistências na funcionalidade. Assim, o *Decorator* é ideal para sistemas onde a flexibilidade e a extensibilidade são prioridades."
+        },
+        {
+          tipo: "topico",
+          titulo: "Multimídia",
+          texto: "A fim de conhecer mais sobre o padrão discutido nesta seção, sugerimos o vídeo “Decorator Teoria - Padrões de Projeto - Parte 20/45”, do canal “Otávio Miranda” do Youtube."
+        }
+      ]
+    },
+    {
+      id: "proxy",
+      titulo: "5 Introdução ao Padrão Proxy",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O **padrão de projetos Proxy** pode ser entendido como um \"representante\" ou \"intermediário\" que controla o acesso a outro objeto. Imagine que você é um empresário ocupado e precisa de um assistente para gerenciar sua agenda. Esse assistente é o *Proxy*: ele decide quem pode falar com você, quais mensagens deve repassar e pode até executar algumas tarefas simples em seu lugar. No mundo do *software*, o *Proxy* funciona de maneira semelhante, interpondo-se entre o cliente e o objeto real para adicionar camadas de controle ou funcionalidades adicionais."
+        },
+        {
+          tipo: "destaque",
+          texto: "Este padrão de projeto é caracterizado pela sua capacidade de atuar como um substituto de outro objeto, oferecendo a mesma interface do objeto que representa. Ele pode ser usado para diversos propósitos, como **controle de acesso** (*proxies* de segurança), **criação de objetos sob demanda** (*proxies* virtuais) ou **monitoramento de interações** (*proxies* de registro). Essa flexibilidade torna o padrão útil em uma ampla variedade de aplicações."
+        },
+        {
+          tipo: "texto",
+          texto: "No dia a dia, o *Proxy* é frequentemente utilizado em sistemas que lidam com recursos remotos, caros ou sensíveis. Por exemplo, ele pode ser usado para gerenciar **conexões a bancos de dados**, para atrasar a criação de objetos pesados até que sejam realmente necessários, ou para **criar camadas de segurança** e **autenticação em chamadas de métodos**. Um exemplo deste padrão, pode ser visto no quadro a seguir."
+        },
+        {
+          tipo: "lista",
+          titulo: "Quadro 5 – Código Javascript de implementação do padrão Proxy",
+          itens: [
+            "`// Objeto real`",
+            "`class RealSubject {`",
+            "`  request( ) {`",
+            "`    return \"RealSubject: Handling request.\";`",
+            "`  }`",
+            "`}`",
+            "`// Proxy`",
+            "`class Proxy {`",
+            "`  constructor(realSubject) {`",
+            "`    this.realSubject = realSubject;`",
+            "`  }`",
+            "`  request( ) {`",
+            "`    console.log(\"Proxy: Checking access before forwarding the request.\");`",
+            "`    const result = this.realSubject.request( );`",
+            "`    console.log(\"Proxy: Logging the request after execution.\");`",
+            "`    return result;`",
+            "`  }`",
+            "`}`",
+            "`// Cliente`",
+            "`function clientCode(subject) {`",
+            "`  console.log(subject.request( ));`",
+            "`}`",
+            "`// Uso do Proxy`",
+            "`const realSubject = new RealSubject();`",
+            "`const proxy = new Proxy(realSubject);`",
+            "`console.log(\"Client using the Proxy:\");`",
+            "`clientCode(proxy);`",
+            "`console.log(\"\\nClient using the RealSubject directly:\");`",
+            "`clientCode(realSubject);`"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "No código do Quadro 5, a classe `RealSubject` representa o objeto real que lida com a lógica principal. A classe `Proxy` encapsula o objeto real e adiciona funcionalidades extras, como verificação de acesso e registro de *logs*. O cliente interage com o *Proxy* como se estivesse lidando diretamente com o objeto real, sem precisar se preocupar com funcionalidades adicionais. Isso demonstra como o *Proxy* pode estender o comportamento do objeto sem alterar sua interface."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "5.1 Pontos positivos e negativos"
+        },
+        {
+          tipo: "texto",
+          texto: "O *Proxy* oferece diversas vantagens. Ele promove o princípio da responsabilidade única ao delegar funcionalidades adicionais, como autenticação ou cache, para o Proxy em vez de sobrecarregar o objeto real. Além disso, ele é ideal para otimizar o desempenho em cenários onde o objeto real é caro para criar ou acessar, como em conexões remotas ou carregamento de grandes recursos."
+        },
+        {
+          tipo: "texto",
+          texto: "Por outro lado, esse padrão pode aumentar a complexidade do sistema, adicionando uma camada extra que precisa ser gerenciada e compreendida. Em sistemas simples, essa complexidade pode ser desnecessária. Além disso, a introdução de um *Proxy* pode impactar o desempenho em situações em que o acesso direto ao objeto seria mais rápido."
+        },
+        {
+          tipo: "topico",
+          titulo: "Multimídia",
+          texto: "A fim de conhecer mais sobre o padrão discutido nesta seção, sugerimos o vídeo “Proxy Teoria - Padrões de Projeto - Parte 23/45”, do canal “Otávio Miranda” do Youtube."
+        }
+      ]
+    },
+    {
+      id: "facade",
+      titulo: "6 Conhecendo o Padrão de Projetos Facade",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O **padrão Facade** pode ser comparado a uma interface amigável em um sistema complexo."
+        },
+        {
+          tipo: "destaque",
+          texto: "Imagine que você está em um restaurante e, ao invés de lidar diretamente com o chef, os fornecedores e os garçons, você simplesmente faz o pedido ao atendente. Esse atendente é o **Facade**, um intermediário que oculta os detalhes complexos e fornece uma interface simplificada para o cliente."
+        },
+        {
+          tipo: "texto",
+          texto: "A principal característica deste padrão é sua **capacidade de esconder a complexidade de subsistemas, oferecendo uma interface unificada para realizar operações comuns**. Ele é particularmente útil quando um sistema possui várias classes ou componentes que precisam ser acessados em conjunto, mas cuja interação é complexa ou desnecessária para o cliente."
+        },
+        {
+          tipo: "texto",
+          texto: "Esse padrão é amplamente utilizado em bibliotecas e *frameworks*, onde os desenvolvedores precisam realizar operações avançadas sem lidar diretamente com todos os detalhes. Um exemplo clássico é o uso de APIs que fornecem métodos de alto nível, como **manipulação de arquivos** ou **operações gráficas**, **encapsulando as operações internas**. Um exemplo deste padrão, pode ser visto no quadro a seguir."
+        },
+        {
+          tipo: "lista",
+          titulo: "Quadro 6 – Código Javascript de implementação do padrão Facade",
+          itens: [
+            "`// Subsistemas complexos`",
+            "`class SubsystemA {`",
+            "`  operationA( ) {`",
+            "`    return \"SubsystemA: Operation A completed\";`",
+            "`  }`",
+            "`}`",
+            "`class SubsystemB {`",
+            "`  operationB( ) {`",
+            "`    return \"SubsystemB: Operation B completed\";`",
+            "`  }`",
+            "`}`",
+            "`class SubsystemC {`",
+            "`  operationC( ) {`",
+            "`    return \"SubsystemC: Operation C completed\";`",
+            "`  }`",
+            "`}`",
+            "`// Facade`",
+            "`class Facade {`",
+            "`  constructor( ) {`",
+            "`    this.subsystemA = new SubsystemA( );`",
+            "`    this.subsystemB = new SubsystemB( );`",
+            "`    this.subsystemC = new SubsystemC( );`",
+            "`  }`",
+            "`  performOperation( ) {`",
+            "`    return [`",
+            "`      this.subsystemA.operationA( ),`",
+            "`      this.subsystemB.operationB( ),`",
+            "`      this.subsystemC.operationC( ),`",
+            "`    ].join(\"\\n\");`",
+            "`  }`",
+            "`}`",
+            "`// Uso do Facade`",
+            "`const facade = new Facade( );`",
+            "`console.log(facade.performOperation( ));`"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "No código do Quadro 6, temos três subsistemas (`SubsystemA`, `SubsystemB`, e `SubsystemC`) que realizam operações independentes. Para o cliente, acessar diretamente esses subsistemas exigiria conhecimento das suas interfaces e interações. A **classe `Facade`** simplifica esse processo ao encapsular os subsistemas e oferecer um único método, `performOperation`, que realiza todas as operações necessárias. O cliente interage apenas com o `Facade`, sem se preocupar com os detalhes internos dos subsistemas."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "6.1 Pontos positivos e negativos"
+        },
+        {
+          tipo: "texto",
+          texto: "O padrão *Facade* oferece várias vantagens significativas. Ele reduz o acoplamento ao permitir que os clientes interajam com uma interface simples em vez de diretamente com subsistemas complexos. Isso facilita a manutenção e promove a reutilização de código, já que mudanças nos subsistemas não afetam diretamente o cliente. Além disso, ele melhora a legibilidade e organização do código, especialmente em sistemas grandes."
+        },
+        {
+          tipo: "texto",
+          texto: "Por outro lado, o uso excessivo deste padrão pode levar a um encapsulamento exagerado, escondendo detalhes que poderiam ser úteis para o cliente em alguns casos. Além disso, ao introduzir um intermediário, pode haver um pequeno impacto no desempenho em situações em que o acesso direto seria mais eficiente. Portanto, ele é ideal em sistemas onde a simplicidade e a clareza são mais importantes do que o acesso granular aos detalhes internos."
+        },
+        {
+          tipo: "topico",
+          titulo: "Multimídia",
+          texto: "A fim de conhecer mais sobre o padrão discutido nesta seção, sugerimos o vídeo “Façade Teoria e Prática - Padrões de Projeto - Parte 22/45”, do canal “Otávio Miranda” do Youtube."
+        }
+      ]
+    },
+    {
+      id: "flyweight",
+      titulo: "7 Introdução ao Padrão Flyweight",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O **padrão Flyweight** é uma solução inteligente para economizar memória e recursos em sistemas onde muitos objetos similares precisam coexistir. Ele funciona **compartilhando partes comuns de objetos, evitando a criação redundante de elementos que podem ser reutilizados**."
+        },
+        {
+          tipo: "destaque",
+          texto: "Imagine um programa de *design* gráfico que precisa *renderizar* milhares de polígonos na tela. Se cada círculo for tratado como um objeto independente, o consumo de memória será astronômico. O *Flyweight* resolve esse problema permitindo que propriedades compartilhadas (como a cor, número de lados, espessura da linha) sejam armazenadas uma única vez e referenciadas por todos os objetos que as utilizam."
+        },
+        {
+          tipo: "texto",
+          texto: "A principal característica deste padrão de projeto é a **separação entre estados intrínsecos e extrínsecos**. O **estado intrínseco** é a parte que pode ser compartilhada entre vários objetos (como a cor de um polígono), enquanto o **estado extrínseco** é específico de cada instância (como a posição de cada polígono na tela). Essa distinção permite que o padrão seja altamente eficiente em situações em que muitos objetos têm características comuns."
+        },
+        {
+          tipo: "texto",
+          texto: "O *Flyweight* é amplamente utilizado em **sistemas que trabalham com grandes quantidades de objetos semelhantes**, como jogos (para representar inimigos ou recursos visuais), **sistemas de *cache*** e em **bancos de dados** para armazenar dados imutáveis compartilhados. Um exemplo deste padrão pode ser visto no quadro a seguir."
+        },
+        {
+          tipo: "lista",
+          titulo: "Quadro 7 – Código Javascript de implementação do padrão Flyweight",
+          itens: [
+            "`// Flyweight`",
+            "`class Flyweight {`",
+            "`  constructor(sharedState) {`",
+            "`    this.sharedState = sharedState;`",
+            "`  }`",
+            "`}`",
+            "`// Flyweight Factory`",
+            "`class FlyweightFactory {`",
+            "`  constructor( ) {`",
+            "`    this.flyweights = { };`",
+            "`  }`",
+            "`  getFlyweight(sharedState) {`",
+            "`    const key = JSON.stringify(sharedState);`",
+            "`    if (!this.flyweights[key]) {`",
+            "`      console.log(`Creating new Flyweight for: ${key}`);`",
+            "`      this.flyweights[key] = new Flyweight(sharedState);`",
+            "`    }`",
+            "`    return this.flyweights[key];`",
+            "`  }`",
+            "`  getFlyweightCount( ) {`",
+            "`    return Object.keys(this.flyweights).length;`",
+            "`  }`",
+            "`}`",
+            "`// Uso do Flyweight`",
+            "`const factory = new FlyweightFactory( );`",
+            "`const flyweight1 = factory.getFlyweight({ color: \"red\", size: 5 });`",
+            "`const flyweight2 = factory.getFlyweight({ color: \"red\", size: 5 });`",
+            "`const flyweight3 = factory.getFlyweight({ color: \"blue\", size: 10 });`",
+            "`console.log(`Total Flyweights created: ${factory.getFlyweightCount( )}`); // 2`"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "No código do Quadro 7, a **classe `Flyweight`** representa os objetos compartilhados com propriedades comuns, como cor e tamanho. A **classe `FlyweightFactory`** gerencia a criação e o armazenamento desses objetos compartilhados. Quando dois objetos com o mesmo estado compartilhado são solicitados, a fábrica reutiliza o mesmo objeto em vez de criar um. Isso é demonstrado quando dois círculos vermelhos de tamanho 5 reutilizam o mesmo *Flyweight*, enquanto o círculo azul de tamanho 10 requer um novo objeto."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "7.1 Pontos positivos e negativos"
+        },
+        {
+          tipo: "texto",
+          texto: "O *Flyweight* oferece vantagens significativas em termos de eficiência de memória e desempenho em sistemas que manipulam muitos objetos semelhantes. Ele é especialmente útil em aplicações gráficas, caches e outros contextos em que a redução de objetos duplicados pode melhorar drasticamente o desempenho."
+        },
+        {
+          tipo: "texto",
+          texto: "No entanto, sua implementação pode introduzir complexidade adicional. O desenvolvedor precisa gerenciar cuidadosamente os estados intrínsecos e extrínsecos, e a separação entre eles nem sempre é óbvia."
+        },
+        {
+          tipo: "texto",
+          texto: "Além disso, em sistemas onde os objetos são altamente dinâmicos e têm poucas propriedades comuns, o *Flyweight* pode não trazer benefícios significativos. Portanto, seu uso deve ser ponderado, sendo mais adequado para cenários onde a otimização de recursos é essencial."
+        },
+        {
+          tipo: "topico",
+          titulo: "Multimídia",
+          texto: "A fim de conhecer mais sobre o padrão discutido nesta seção, sugerimos o vídeo “[Structural 6] Flyweight design pattern with JavaScript”, do canal “Integrator Dima” do Youtube."
+        }
+      ]
+    },
+    {
+      id: "consideracoes_finais",
+      titulo: "Considerações finais",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Neste módulo, exploramos os padrões estruturais, destacando sua importância na organização e composição de sistemas. Vimos como o **Adapter** facilita a integração de sistemas legados, enquanto o **Bridge** separa abstrações de implementações, promovendo flexibilidade. O **Composite** mostrou-se valioso para gerenciar hierarquias complexas, e o **Decorator** se destacou por sua capacidade de adicionar funcionalidades dinamicamente."
+        },
+        {
+          tipo: "texto",
+          texto: "Estudamos ainda o **Facade**, que simplifica interações com subsistemas complexos. O **Flyweight** provou ser uma solução eficaz para economizar memória ao lidar com muitos objetos semelhantes, e o **Proxy** destacou-se por suas aplicações em controle de acesso e otimização de recursos."
+        },
+        {
+          tipo: "texto",
+          texto: "Os exemplos práticos em Javascript facilitam a compreensão de cada padrão, demonstrando sua aplicabilidade em cenários reais."
+        },
+        {
+          tipo: "texto",
+          texto: "A importância dos padrões estruturais reside na sua capacidade de criar. Eles complementam os **padrões criacionais** apresentados no Módulo 13, formando, juntos, um alicerce robusto para o design de *software*. Bons estudos!"
+        }
+      ]
+    }
+  ]
 }
+
 
 ],
 

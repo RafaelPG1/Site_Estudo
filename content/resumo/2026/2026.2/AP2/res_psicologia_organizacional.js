@@ -1281,6 +1281,293 @@ aulas: [
       ]
     }
   ]
+},
+
+// aula 14
+
+{
+  aula: "Saúde, subjetividade e desgastes mentais no trabalho",
+  ideia_central: "A saúde mental no trabalho deve ser entendida como processo dinâmico e relacional, e não como estado fixo ou questão apenas individual: da medicina do trabalho (adaptar o trabalhador à empresa) ao campo da saúde do trabalhador (crítico, coletivo e participativo), passando pela psicopatologia do trabalho e pelo desgaste mental, é preciso distinguir sintomas, síndromes, transtornos e doenças e reconhecer os transtornos relacionados ao trabalho na legislação brasileira.",
+  secoes: [
+    {
+      id: "objetivos_introducao",
+      titulo: "Objetivos e Introdução",
+      blocos: [
+        {
+          tipo: "lista",
+          titulo: "Objetivos",
+          itens: [
+            "Indicar a evolução das noções de saúde e segurança a partir da medicina do trabalho até o campo da saúde do trabalhador;",
+            "Descrever aspectos centrais dos modos de subjetivação que marcam os processos de sofrimento mental decorrentes das condições de trabalho;",
+            "Desenvolver reflexões sobre o desgaste mental no processo saúde-doença de pessoas que atuam em condições adversas de trabalho;",
+            "Evidenciar as diferenças entre sintomas, síndromes, transtornos e doenças relacionadas ao trabalho, indicando os principais que constam na legislação brasileira."
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "Temas",
+          itens: [
+            "Introdução",
+            "1 Da medicina do trabalho ao campo da saúde do trabalhador",
+            "2 A psicopatologia do trabalho",
+            "3 O desgaste mental no trabalho",
+            "4 Transtornos mentais relacionados ao trabalho",
+            "Considerações finais",
+            "Referências"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "O estudo da relação entre trabalho e saúde mental é fundamental para compreender os desafios contemporâneos enfrentados pelos trabalhadores. O modo como as organizações estruturam as suas atividades, definem metas e distribuem responsabilidades afeta diretamente o bem-estar físico e psicológico das pessoas. Nas últimas décadas, as transformações tecnológicas e a intensificação das exigências de desempenho modificaram profundamente as formas de viver e trabalhar, tornando o ambiente laboral um espaço central de produção de subjetividade, mas também de sofrimento."
+        },
+        {
+          tipo: "texto",
+          texto: "Compreender os processos de adoecimento mental exige olhar para além dos sintomas clínicos e considerar o contexto social, cultural e econômico que envolve o trabalhador. O sofrimento psíquico, muitas vezes, não é apenas resultado de fatores individuais, mas de condições estruturais de trabalho que impõem sobrecarga, competição e insegurança. Nesse sentido, a análise da subjetividade permite entender como o trabalhador interpreta, sente e reage às pressões e exigências do mundo do trabalho, revelando aspectos invisíveis das relações produtivas."
+        },
+        {
+          tipo: "texto",
+          texto: "Neste módulo, o foco se inicia na transição histórica da medicina do trabalho para a saúde do trabalhador e sobre o reconhecimento da subjetividade como elemento essencial no processo saúde-doença. Além disso, são exploradas as origens da psicopatologia do trabalho e os conceitos de desgaste mental, mostrando que a saúde não é um estado fixo, mas um processo dinâmico que depende das condições sociais, das relações de poder e da forma como o sujeito atribui sentido à sua atividade laboral."
+        },
+        {
+          tipo: "imagem",
+          src: "figura_1_cabeca_raphaelesque_explodindo.png",
+          pasta: "imagens_psicologia_organizacional/aula_14",
+          alt: "Figura 1 – Cabeça Raphaelesque Explodindo: pintura de Salvador Dalí (1951) em tons de laranja e dourado, com uma cabeça humana que parece se fragmentar em pequenas partes. Fonte: Salvador Dalí (1951).",
+          num: 1
+        }
+      ]
+    },
+    {
+      id: "medicina_trabalho_saude_trabalhador",
+      titulo: "1 Da medicina do trabalho ao campo da saúde do trabalhador",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "A medicina do trabalho surgiu como uma especialidade médica na Inglaterra, no início do século XIX, durante o processo de industrialização acelerada impulsionado pela Revolução Industrial. Nesse contexto, os trabalhadores eram submetidos a jornadas exaustivas, ambientes insalubres e ritmos de produção intensos, o que gerava adoecimento em larga escala. A necessidade de manter a força de trabalho minimamente saudável para sustentar a produção levou ao surgimento de práticas médicas voltadas ao ambiente de trabalho. A medicina do trabalho, portanto, nasceu para atender a uma lógica funcional: evitar perdas econômicas com afastamentos, incapacidades e mortes. Ainda que esse modelo trouxesse benefícios pontuais aos trabalhadores, ele estava muito mais centrado na produtividade do que no bem-estar humano."
+        },
+        {
+          tipo: "texto",
+          texto: "Com a expansão da industrialização para outros países e, posteriormente, com a globalização da economia, os serviços médicos da empresa se multiplicaram. Em muitos países, especialmente naqueles com sistemas de saúde frágeis ou inexistentes, a presença de médicos dentro das fábricas passou a exercer uma função substitutiva ao serviço público de saúde. A medicina do trabalho foi incorporada ao cotidiano industrial com a missão de atender trabalhadores adoecidos, controlar os afastamentos e realizar exames admissionais e periódicos."
+        },
+        {
+          tipo: "destaque",
+          texto: "A preocupação internacional com a saúde dos trabalhadores começou a ganhar força na agenda da Organização Internacional do Trabalho (OIT), especialmente após sua criação em 1919. Em 1954, a OIT convocou especialistas para pensar diretrizes sobre os “Serviços Médicos do Trabalho”. Em 1958, a entidade adotou o termo “Serviços de Medicina do Trabalho”, substituindo o anterior. A Recomendação 112, da OIT, define esses serviços como responsáveis por proteger os trabalhadores contra riscos à saúde causados pelo trabalho, adaptar fisicamente e mentalmente os trabalhadores às tarefas e promover o bem-estar. Embora bem-intencionada, essa definição mantinha um foco centrado no indivíduo, reforçando o ideal de adaptação do trabalhador ao trabalho, e não o contrário."
+        },
+        {
+          tipo: "texto",
+          texto: "A medicina do trabalho passou a ser concebida como um campo técnico com papel de **ajustar o trabalhador às exigências das empresas**. Isso se dava por meio de exames, treinamentos educativos e remanejamentos, sempre baseados em critérios médicos. Essa concepção sustentava a ideia de que bastava colocar a pessoa certa no lugar certo para garantir o bem-estar e a produtividade. No entanto, essa perspectiva revelava-se limitada, pois **ignorava a complexidade das relações de trabalho e a dinâmica coletiva dos ambientes organizacionais**. O discurso médico era carregado por uma visão positivista, acreditando ser possível controlar os corpos e as mentes dos trabalhadores por meio da ciência, o que desconsiderava a subjetividade e o sofrimento psíquico gerado pelas condições de trabalho."
+        },
+        {
+          tipo: "texto",
+          texto: "A insatisfação dos trabalhadores aumentava, assim como o custo social e econômico das doenças ocupacionais. Como resposta, surgiram **propostas mais amplas, que buscavam entender o ambiente de trabalho como determinante da saúde**. Isso levou à criação de equipes multiprofissionais dentro das empresas e ao fortalecimento de práticas interdisciplinares. Surgia então a saúde ocupacional, que, embora mais abrangente, ainda mantinha grande parte da lógica técnica e biomédica da medicina do trabalho. A ênfase recaiu sobre a higiene industrial e sobre os riscos físicos e químicos do ambiente. Pouco se falava sobre fatores psicossociais, cultura organizacional ou participação dos trabalhadores nas decisões."
+        },
+        {
+          tipo: "texto",
+          texto: "Essas críticas abriram espaço para o surgimento de uma nova forma de compreender a relação entre saúde e trabalho, especialmente no contexto da Reforma Sanitária Brasileira, que propôs a ampliação do SUS e a integração da saúde do trabalhador às políticas públicas. Nesse novo paradigma, o trabalho deixa de ser apenas um fator de risco e passa a ser reconhecido como espaço de produção de vida, subjetividade e sentido. Neste campo de estudos e práticas emergentes denominado Saúde do Trabalhador, diferente da medicina do trabalho e da saúde ocupacional, propõe-se uma abordagem crítica, coletiva e participativa. Incorporando referências das ciências sociais, esse campo busca compreender como o processo de trabalho se relaciona com as condições de saúde e de adoecimento. O foco se desloca para os determinantes sociais, os modos de organização da produção, a divisão técnica do trabalho e as desigualdades estruturais."
+        },
+        {
+          tipo: "texto",
+          texto: "O campo da saúde do trabalhador reconhece a necessidade de escuta ativa dos trabalhadores, da valorização de seus saberes e da participação ativa nos processos de mudança. Trata-se de um campo em constante construção, orientado por demandas reais que surgem no cotidiano das relações de trabalho. Cada situação vivida por trabalhadores é vista como um objeto legítimo de investigação, e não como um desvio da norma. Com isso, o saber técnico se articula à experiência vivida, criando condições para intervenções mais potentes e contextualizadas."
+        },
+        {
+          tipo: "imagem",
+          src: "figura_2_atencao_com_a_saude.png",
+          pasta: "imagens_psicologia_organizacional/aula_14",
+          alt: "Figura 2 – Atenção com a saúde: ilustração com a expressão “SAÚDE DO TRABALHADOR”, em que as letras de “SAÚDE” são montadas e cuidadas por trabalhadores de diferentes funções (profissional de saúde, operários com capacete e uniforme). Fonte: Campinas CMS (2026).",
+          num: 2
+        }
+      ]
+    },
+    {
+      id: "psicopatologia_trabalho",
+      titulo: "2 A psicopatologia do trabalho",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Após a Segunda Guerra Mundial, um movimento significativo liderado por psiquiatras franceses ganhou força ao propor uma nova forma de compreender a saúde mental no contexto do trabalho. Esse movimento se insere em um cenário de modernização crescente da indústria francesa desde a Primeira Guerra Mundial, com foco na racionalização e aumento da produtividade. Ao mesmo tempo, surgem políticas públicas voltadas à prevenção de doenças e à promoção de uma “higiene social”. O trabalho passa a ser investigado por diversas disciplinas, como sociologia, administração, medicina, ergonomia e psicologia, consolidando-se como objeto de estudo multidisciplinar. A guerra também impôs desafios práticos, como a readaptação de soldados e trabalhadores ao sistema produtivo, o que estimulou novas reflexões sobre o papel do trabalho tanto no adoecimento quanto na integração social."
+        },
+        {
+          tipo: "texto",
+          texto: "É nesse contexto que surgem dois importantes nomes da chamada psiquiatria social francesa: **Paul Sivadon** e **Louis Le Guillant**. Ambos se dedicaram a compreender os impactos do trabalho na saúde mental, mas por caminhos teóricos distintos."
+        },
+        {
+          tipo: "texto",
+          texto: "Sivadon buscava integrar a perspectiva orgânica e dinâmica da doença mental. Sua maior contribuição foi a **ergoterapia**, uma abordagem terapêutica que valorizava o trabalho como forma de reintegração social para pacientes psiquiátricos. Ele também foi o primeiro a utilizar o termo **psicopatologia do trabalho**, reconhecendo que a organização do trabalho poderia ser uma fonte de sofrimento psíquico. Sua abordagem ia do reconhecimento do valor terapêutico do trabalho até a denúncia das formas patogênicas de organização laboral."
+        },
+        {
+          tipo: "texto",
+          texto: "Louis Le Guillant, por sua vez, desenvolveu uma perspectiva mais crítica e social sobre o tema. Inspirado pela psicologia concreta de Georges Politzer, ele buscou compreender a relação entre alienação social e adoecimento mental. Para Le Guillant, os distúrbios psíquicos não deveriam ser vistos apenas como problemas individuais ou orgânicos, mas como expressões de condições sociais e históricas. Ele argumentava que o adoecimento mental, muitas vezes, tinha origem nas contradições e exigências do mundo do trabalho. A proposta era clara: desenvolver uma psicopatologia da realidade cotidiana, em que a vida real das pessoas, os seus modos de trabalho e existência concreta fosse o ponto de partida para entender sua saúde mental (Le Guillant, 2006)."
+        },
+        {
+          tipo: "texto",
+          texto: "Le Guillant defendia que o trabalho deveria ser analisado como um elemento central da vida social, capaz de provocar sofrimento psíquico quando organizado de forma opressora e desumana. Para ele, o adoecimento não era resultado de um evento isolado, mas de uma trajetória de vida atravessada por conflitos, frustrações e exigências desproporcionais. O trabalhador, nesse sentido, não deveria ser reduzido a um corpo a ser adaptado, mas sim reconhecido como sujeito histórico e social. Sua proposta metodológica incluía uma escuta atenta da história de vida dos pacientes e a análise das condições concretas de trabalho."
+        },
+        {
+          tipo: "texto",
+          texto: "Le Guillant entendia que compreender o sofrimento humano exigia um esforço de interpretação plural, sensível, tanto aos números quanto às narrativas pessoais. Para ele, era preciso fazer um “ir e vir” constante entre os dados quantitativos e qualitativos, entre os registros objetivos e as vivências subjetivas. Com isso, sua proposta metodológica ganhava densidade e permitia captar a complexidade do fenômeno do adoecimento no trabalho. Ele admitia que, mesmo com todo esse esforço, ainda era difícil compreender exatamente como se dá a transição entre uma experiência vivida e um distúrbio psíquico diagnosticável."
+        },
+        {
+          tipo: "texto",
+          texto: "Apesar das diferenças entre Sivadon e Le Guillant, ambos compartilharam a preocupação com o sofrimento psíquico gerado pelas condições de trabalho. Sivadon trouxe uma valorização do trabalho como possibilidade de cura e integração, mas também reconheceu os riscos quando o trabalho é mal organizado. Le Guillant, por sua vez, aprofundou a crítica social e buscou fundamentos filosóficos e históricos para explicar como as formas de produção influenciam diretamente a subjetividade dos trabalhadores. As ideias desses autores anteciparam debates contemporâneos sobre os efeitos da intensificação da produtividade na saúde psíquica dos trabalhadores. Ambos abriram caminhos para se pensar o trabalho como um campo de determinação da saúde mental e não apenas como um espaço de rendimento econômico."
+        },
+        {
+          tipo: "destaque",
+          texto: "Em resumo, o movimento da psiquiatria social francesa permitiu um salto conceitual importante: do indivíduo isolado para o sujeito em relação com o mundo. Ao considerar os efeitos sociais, históricos e simbólicos do trabalho sobre a mente humana, esses autores contribuíram para a construção de uma crítica fundamentada ao modelo biomédico da medicina do trabalho."
+        },
+        {
+          tipo: "imagem",
+          src: "figura_3_saude_mental.png",
+          pasta: "imagens_psicologia_organizacional/aula_14",
+          alt: "Figura 3 – Saúde mental: ilustração de um homem de terno, em perfil, com a cabeça aberta mostrando engrenagens e um cano que solta fumaça escura. Fonte: Blog do CENAT (2019).",
+          num: 3
+        }
+      ]
+    },
+    {
+      id: "desgaste_mental_trabalho",
+      titulo: "3 O desgaste mental no trabalho",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Nas últimas décadas, o mundo do trabalho tem passado por transformações profundas devido à flexibilização das relações de trabalho. Cultura, história e relações humanas foram sendo deixadas de lado na análise das condições de trabalho, substituídas por métricas impessoais de desempenho e produtividade. Para além de questões técnicas ou econômicas, é fundamental olhar para os impactos subjetivos que esse cenário impõe sobre os trabalhadores. O sofrimento, a exaustão e a perda de sentido do trabalho tornam-se expressões da crise de um modelo que ignora a complexidade das vidas que atravessa."
+        },
+        {
+          tipo: "texto",
+          texto: "Segundo Seligmann-Silva (2011), o adoecimento mental no trabalho não pode ser compreendido fora de seu contexto social e histórico. O processo saúde-doença está vinculado às condições em que o trabalho é realizado, às formas de organização produtiva e aos sentidos que os sujeitos atribuem à sua atividade. Tanto no plano individual quanto coletivo, o trabalho pode ser fonte de fortalecimento psíquico ou de sofrimento intenso. A maneira como se estrutura o cotidiano de trabalho interfere diretamente na produção da subjetividade dos trabalhadores, uma subjetividade que se constrói nas trocas afetivas, na significação do fazer e nas possibilidades de reconhecimento."
+        },
+        {
+          tipo: "texto",
+          texto: "A autora introduz o conceito de **carga de trabalho** a partir de uma perspectiva que integra elementos físicos e subjetivos. Inicialmente estudada pela ergonomia, a carga de trabalho passa a ser entendida também como **carga psíquica**, isto é, como o conjunto de esforços cognitivos, emocionais e afetivos que os sujeitos empregam para atender às exigências do trabalho. Seligmann-Silva (2011) diferencia a **carga quantitativa**, ligada ao volume de trabalho num tempo determinado, da **carga qualitativa**, que diz respeito à complexidade e ao significado das tarefas executadas. Quando o trabalho exige demais, sem oferecer espaço para reflexão, reconhecimento ou cuidado, a carga qualitativa torna-se pesada e desgastante, promovendo um tipo de sofrimento que se manifesta não só no corpo, mas principalmente na mente e no afeto dos trabalhadores."
+        },
+        {
+          tipo: "texto",
+          texto: "A partir da difusão da ideologia da gestão flexível e da cultura do desempenho, muitas organizações passaram a adotar práticas de controle e avaliação que estimulam a competitividade, o individualismo e a solidão afetiva."
+        },
+        {
+          tipo: "destaque",
+          texto: "A saúde do trabalhador, nesse cenário, deixa de ser apenas uma questão médica e torna-se uma questão simbólica e profundamente relacional. Isso significa que não basta olhar para o sujeito isoladamente, mas sim situá-lo nas relações de poder, nas condições concretas de vida, nas violências simbólicas e materiais que o atravessam. Quando há precariedade, violação de direitos ou ausência de suporte institucional, o desgaste tende a se agravar."
+        },
+        {
+          tipo: "texto",
+          texto: "Nesse sentido, é fundamental compreender que a saúde do trabalhador é um processo em constante construção. Não se trata de um estado fixo ou ideal, mas de um equilíbrio dinâmico que depende da forma como os sujeitos se relacionam com o trabalho, com os outros e consigo mesmos. A concepção contemporânea da saúde-doença rompe com a ideia de que as doenças têm causas únicas e universais. Pelo contrário, elas são resultado de múltiplas determinações, entre elas, o modo de organização do trabalho, a cultura institucional e a qualidade das relações interpessoais."
+        },
+        {
+          tipo: "texto",
+          texto: "Dessa forma, o desgaste mental precisa ser compreendido como uma expressão concreta da crise das formas contemporâneas de organização do trabalho. Ele se manifesta no corpo, nas emoções, nas relações e nas decisões dos sujeitos. Mas também representa um chamado à reflexão crítica sobre as condições em que vivemos e trabalhamos. Não é possível promover saúde mental sem promover justiça social, reconhecimento simbólico e transformação das formas de gestão que ignoram a complexidade humana. Tais iniciativas se expressam nas situações concretas de trabalho, ou seja, na resolução de problemas diários respectivos às funções, em que a gestão de pessoas prioriza relações capazes de restabelecer a funcionalidade vital para a qualidade de trabalho exercido."
+        },
+        {
+          tipo: "destaque",
+          texto: "A saúde mental no trabalho se estabelece no compromisso de equipes, líderes e gestão no sentido de construir um sistema organizacional em que a vitalidade das ações seja restabelecida frente aos conflitos (previsíveis e imprevisíveis) inerentes ao exercício profissional. Os desgastes mentais acontecerão inevitavelmente, a pergunta é: neste sistema, existem práticas que protegem e revitalizam as potencialidades para o trabalho bem feito?"
+        },
+        {
+          tipo: "imagem",
+          src: "figura_4_saude_mental.png",
+          pasta: "imagens_psicologia_organizacional/aula_14",
+          alt: "Figura 4 – Saúde mental: composição com duas cenas de trabalho em escritório. À esquerda, uma mulher com a mão na testa diante do notebook, ao lado de um quadro de “ALERTA” (prazo estourando, muitas tarefas, alta prioridade). À direita, uma mulher sorridente escrevendo, ao lado de quadros com “Disciplina”, “Foco + constância = resultados” e “Produtividade”. Fonte: Elaborado pelo autor com auxílio do modelo de IA Gemini (Google, 2025).",
+          num: 4
+        }
+      ]
+    },
+    {
+      id: "transtornos_mentais_trabalho",
+      titulo: "4 Transtornos mentais relacionados ao trabalho",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Após verificarmos algumas das vertentes centrais para o estudo sobre os processos de adoecimento mental relacionados ao trabalho, é momento de indicarmos as principais doenças mentais já catalogadas e que constam nos manuais (nacionais e internacionais) de saúde de trabalhadores. Antes, porém, é preciso diferenciar o que significa sintomas, síndromes, transtornos e doenças."
+        },
+        {
+          tipo: "texto",
+          texto: "Os fenômenos que envolvem o processo saúde-doença podem ser compreendidos em diferentes níveis de complexidade, que vão desde a manifestação subjetiva até a caracterização clínica de uma doença."
+        },
+        {
+          tipo: "lista",
+          titulo: "Sintoma, síndrome, transtorno e doença",
+          itens: [
+            "**Sintoma**: primeiro nível da cadeia; é uma experiência pessoal de mal-estar, dor, tristeza, ansiedade ou qualquer outra alteração percebida pelo indivíduo, indicando que algo não está bem, mas sem constituir, por si só, um diagnóstico.",
+            "**Síndrome**: surge quando diversos sintomas se articulam e formam um padrão reconhecível de manifestações físicas ou psíquicas; descreve um conjunto característico de sintomas, ainda que sua causa não esteja totalmente esclarecida.",
+            "**Transtorno**: quando essas manifestações revelam um prejuízo persistente no funcionamento psíquico, emocional ou comportamental, interferindo na vida social, ocupacional ou afetiva da pessoa. Termo amplamente utilizado na psiquiatria e na psicologia clínica, indica uma disfunção, sem necessariamente implicar lesão orgânica, mas que compromete o modo de pensar, sentir e agir do sujeito. Exemplos: transtornos depressivos, ansiosos ou obsessivo-compulsivos, que mostram que o sofrimento mental pode ser tão incapacitante quanto as doenças físicas, exigindo abordagens terapêuticas que considerem os aspectos biológicos, psicológicos e sociais.",
+            "**Doença**: nível mais definido da classificação, caracterizada por alterações anatômicas, fisiológicas ou bioquímicas objetivamente identificáveis. Diferentemente dos transtornos, as doenças costumam apresentar causas conhecidas, curso clínico previsível e critérios diagnósticos baseados em exames e marcadores biológicos."
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Na perspectiva das classificações da Organização Mundial da Saúde, compreender a diferença entre sintomas, síndromes, transtornos e doenças é essencial para avaliar adequadamente o sofrimento humano, evitando tanto a medicalização excessiva quanto a negligência diante de sinais reais de adoecimento."
+        },
+        {
+          tipo: "destaque",
+          texto: "Parada Obrigatória: O burnout começou a ser reconhecido como doença ocupacional em 1º de janeiro de 2022, quando a Organização Mundial da Saúde (OMS) incluiu a síndrome na CID-11 sob o código QD85. No Brasil, esse reconhecimento é oficial desde 1999, quando o Ministério da Saúde listou a síndrome (sob o código Z73.0) como um transtorno mental relacionado ao trabalho."
+        },
+        {
+          tipo: "texto",
+          texto: "A partir das revisões na Classificação Internacional de Doenças (CID-11), em 2022, o Ministério da Saúde brasileiro atualizou a Lista de Doenças Relacionadas ao Trabalho através da Portaria nº 1.999, de 27 de novembro de 2023. A seguir, sintetizamos as causas e os transtornos mentais catalogados por esta Portaria, com os seus respectivos códigos no CID-11."
+        },
+        {
+          tipo: "tabela",
+          titulo: "Fatores de risco, transtornos/síndromes e códigos (Portaria nº 1.999/2023)",
+          colunas: [
+            "Fator de Risco Relacionado à Organização do Trabalho / Agentes Etiológicos",
+            "Transtornos / Síndromes",
+            "Código"
+          ],
+          linhas: [
+            [
+              "Exigências emocionais, tensões psicológicas no trabalho, pressão para metas, falta de controle sobre o trabalho e afins.",
+              "Transtornos depressivos, episódios depressivos",
+              "F32"
+            ],
+            [
+              "Regime de trabalho, exigências constantes de atenção, turnos, pressão mental.",
+              "Transtorno depressivo recorrente",
+              "F33"
+            ],
+            [
+              "Sobrecarga mental, estresse ocupacional, falta de suporte social.",
+              "Síndrome de Burnout",
+              "Z73.0"
+            ],
+            [
+              "Exposição a eventos traumáticos no trabalho (acidentes, agressões, desastres, violência e afins.)",
+              "Transtorno de estresse pós-traumático",
+              "6B40"
+            ],
+            [
+              "Exposição prolongada ao estresse ocupacional / demandas emocionais / pressão no trabalho / mudanças no emprego.",
+              "Transtorno de adaptação",
+              "6B43"
+            ],
+            [
+              "Fatores psicossociais relacionados a(à): acidentes e riscos de acidentes; gestão organizacional; deficiências na adm. de recursos humanos; estilo de comando; modalidades de pagamento e contratação; participação, acesso a treinamento; serviços de assistência social; mecanismos de avaliação de desempenho; deficiência nas formas de comunicação; deficiência na qualidade das interações; exigências de carga mental; conteúdo da tarefa; demandas emocionais; condições do ambiente de trabalho; interação pessoa-tarefa; níveis de iniciativa e autonomia permitidos e de reconhecimento; identificação da pessoa com a tarefa e com a organização; duração da jornada de trabalho; trabalho em turno e noturno; número e frequência de horas extras; assédio moral/sexual; discriminação.",
+              "Transtornos mentais e comportamentais devidos ao uso de álcool, canabinoides, opiáceos, sedativos e hipnóticos, alucinógenos, fumo. Transtornos delirantes persistentes. Episódios depressivos. Outros transtornos ansiosos. Neurastenia. Transtorno do ciclo vigília-sono. Hipertensão. Burnout. Lesões autoprovocadas (suicídio).",
+              "F10 à F48; M65 à M79; I46 à I6; C18 à C61; X60 à X84; Z73.0"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      id: "consideracoes_finais",
+      titulo: "Considerações finais",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "A compreensão da saúde mental no trabalho requer uma visão ampliada, que considere tanto os aspectos biológicos e psicológicos quanto os sociais e organizacionais. A **superação do modelo tradicional**, centrado apenas na adaptação do trabalhador ao ambiente produtivo, representa um avanço importante na construção de políticas públicas e práticas de cuidado mais humanas. A saúde do trabalhador deve ser entendida como resultado da **interação entre as condições de trabalho, as relações interpessoais e o modo como cada pessoa vivencia e dá sentido à sua experiência laboral**."
+        },
+        {
+          tipo: "texto",
+          texto: "Reconhecer a subjetividade como parte central do processo saúde-doença é reconhecer também a **singularidade de cada trabalhador**. O sofrimento mental não se resume a diagnósticos ou estatísticas: ele expressa o impacto real das formas de organização do trabalho sobre a vida das pessoas. Promover saúde no trabalho significa, portanto, criar espaços de escuta, diálogo e participação, nos quais os trabalhadores possam compartilhar as suas vivências e contribuir para a **transformação das condições que geram adoecimento**."
+        },
+        {
+          tipo: "texto",
+          texto: "Por fim, é essencial compreender que a saúde mental no contexto laboral não é responsabilidade exclusiva de profissionais de saúde, mas um **compromisso ético e social de toda a organização**. Empresas, gestores e trabalhadores precisam atuar conjuntamente na prevenção dos riscos psicossociais e na construção de ambientes mais justos, solidários e saudáveis. Cuidar da saúde mental é cuidar da dignidade humana e da sustentabilidade das relações de trabalho."
+        },
+        {
+          tipo: "texto",
+          texto: "Bons estudos!"
+        }
+      ]
+    }
+  ]
 }
 
 ],

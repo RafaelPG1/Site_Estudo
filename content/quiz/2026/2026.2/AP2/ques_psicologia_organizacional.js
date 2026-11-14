@@ -760,6 +760,169 @@ window.questoes = {
   answer: 2,
   feedback: "Pela universalidade, todos os trabalhadores têm direito às ações, independentemente de vínculo formal. Os demais princípios organizam o funcionamento da política."
 },
+
+// aula: Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho
+
+// 1 - Origem da medicina do trabalho
+{
+  aula: "Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho",
+  tipo: "Explicativa",
+  texto: "A medicina do trabalho surgiu na Inglaterra do início do século XIX, em plena Revolução Industrial. Jornadas exaustivas e ambientes insalubres adoeciam trabalhadores em larga escala, e as fábricas passaram a contar com médicos. O objetivo não era o bem-estar de quem trabalhava, mas manter a força de trabalho em condições de sustentar a produção.",
+  question: "Qual lógica orientou o surgimento da medicina do trabalho?",
+  options: [
+    "Participativa: ampliar a voz dos trabalhadores nas decisões sobre o ambiente de trabalho.",
+    "Funcional: evitar perdas econômicas por afastamentos, incapacidades e mortes.",
+    "Crítica: denunciar a organização do trabalho como determinante social do adoecimento.",
+    "Subjetiva: valorizar o sentido que cada trabalhador atribui à própria atividade laboral."
+  ],
+  answer: 1,
+  feedback: "A ==proc==lógica funcional== priorizava a produtividade: a saúde servia à continuidade da produção, e não ao bem-estar em si."
+},
+
+// 2 - Saúde do trabalhador
+{
+  aula: "Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho",
+  tipo: "Explicativa",
+  texto: "Com a insatisfação crescente dos trabalhadores e a Reforma Sanitária Brasileira, a relação entre saúde e trabalho foi repensada. O trabalho deixou de ser só fator de risco e passou a ser visto como espaço de produção de vida, subjetividade e sentido. Nasce assim o campo da Saúde do Trabalhador, que dialoga com as ciências sociais.",
+  question: "O que distingue o campo da saúde do trabalhador da medicina do trabalho?",
+  options: [
+    "Abordagem crítica, coletiva e participativa, voltada aos determinantes sociais da saúde.",
+    "Foco nos exames admissionais e periódicos conduzidos por médicos dentro das empresas.",
+    "Ênfase na higiene industrial e nos riscos físicos e químicos presentes no ambiente.",
+    "Ajuste do trabalhador às exigências da empresa por meio de treinamentos e remanejamentos."
+  ],
+  answer: 0,
+  feedback: "O campo da ==def==saúde do trabalhador== escuta os trabalhadores e olha a organização da produção, e não apenas o corpo individual."
+},
+
+// 3 - Sivadon e Le Guillant
+{
+  aula: "Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho",
+  tipo: "Explicativa",
+  texto: "Depois da Segunda Guerra, psiquiatras franceses passaram a investigar o trabalho como fator de saúde mental. Sivadon valorizava o trabalho como reintegração social de pacientes psiquiátricos e criou a ergoterapia. Le Guillant, mais crítico, ligava o adoecimento à alienação e às contradições do mundo do trabalho.",
+  question: "Qual contribuição é associada a Paul Sivadon?",
+  options: [
+    "A psicopatologia da realidade cotidiana, inspirada em Georges Politzer.",
+    "O conceito de carga psíquica, desenvolvido a partir dos estudos da ergonomia.",
+    "A ergoterapia e o primeiro emprego do termo psicopatologia do trabalho.",
+    "A definição de saúde como capacidade de criar normas para se adaptar ao meio."
+  ],
+  answer: 2,
+  feedback: "Sivadon reconheceu que a ==term==psicopatologia do trabalho== nasce da própria organização laboral, que pode ser fonte de sofrimento psíquico."
+},
+
+// 4 - Carga qualitativa
+{
+  aula: "Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho",
+  tipo: "Contextualizada",
+  texto: "Mariana atua em um setor com volume de tarefas dentro do esperado e jornada regular. Ainda assim, relata exaustão: as tarefas são repetitivas e sem sentido claro, ela nunca recebe retorno sobre o que faz e não há espaço para opinar.",
+  question: "Qual dimensão da carga de trabalho, segundo Seligmann-Silva, explica melhor o desgaste de Mariana?",
+  options: [
+    "A carga quantitativa, ligada ao volume de trabalho realizado num tempo determinado.",
+    "A carga física, restrita ao esforço muscular exigido pela função desempenhada.",
+    "A carga técnica, definida apenas pelos equipamentos disponíveis ao trabalhador.",
+    "A carga qualitativa, ligada ao significado das tarefas e ao reconhecimento no trabalho."
+  ],
+  answer: 3,
+  feedback: "A ==def==carga qualitativa== trata da complexidade e do significado das tarefas. Sem reflexão, reconhecimento ou cuidado, ela se torna desgastante."
+},
+
+// 5 - Sintoma
+{
+  aula: "Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho",
+  tipo: "Contextualizada",
+  texto: "Carlos procurou o serviço de saúde ocupacional porque, há duas semanas, sente tristeza e dificuldade para dormir. Nenhum exame mostrou alteração e nenhum profissional fechou um diagnóstico. Ele relata apenas o mal-estar que percebe.",
+  question: "Em que nível da cadeia sintoma, síndrome, transtorno e doença a situação de Carlos se enquadra?",
+  options: [
+    "Síndrome, pois já existe um conjunto característico de sintomas com causa esclarecida.",
+    "Doença, pois há alterações bioquímicas objetivamente identificadas em exames clínicos.",
+    "Transtorno, pois há prejuízo persistente comprovado no funcionamento ocupacional.",
+    "Sintoma, pois é uma experiência pessoal de mal-estar que não constitui diagnóstico."
+  ],
+  answer: 3,
+  feedback: "O ==term==sintoma== é o primeiro nível da cadeia: algo percebido pelo indivíduo, que por si só não fecha um diagnóstico."
+},
+
+// 6 - Reconhecimento do burnout
+{
+  aula: "Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho",
+  tipo: "Contextualizada",
+  texto: "Uma equipe de RH discute o caso de um trabalhador com exaustão extrema, atribuída a sobrecarga mental e estresse ocupacional. Na reunião, surge a dúvida: o burnout já é reconhecido oficialmente como adoecimento relacionado ao trabalho?",
+  question: "Qual afirmação está correta sobre esse reconhecimento?",
+  options: [
+    "A OMS o incluiu na CID-11 (QD85) em 2022, e o Brasil o lista como Z73.0 desde 1999.",
+    "A OMS o reconhece desde 1999, e o Brasil só o listou como Z73.0 após a CID-11, em 2022.",
+    "Nem a OMS nem o Ministério da Saúde o reconhecem como doença ligada ao trabalho.",
+    "Apenas o Ministério da Saúde o reconhece, pois a CID-11 não menciona a síndrome."
+  ],
+  answer: 0,
+  feedback: "O reconhecimento brasileiro é ==rule==anterior== ao da OMS: 1999 no Brasil, com o código Z73.0, e 2022 na CID-11, com o código QD85."
+},
+
+// 7 - Intervenção em saúde mental
+{
+  aula: "Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho",
+  tipo: "Aplicação",
+  texto: "Uma psicóloga organizacional percebe, em uma empresa, altos índices de estresse, isolamento e absenteísmo. O programa atual se limita a palestras motivacionais sobre resiliência e a exames psicológicos periódicos. Ela quer propor algo coerente com os princípios da saúde do trabalhador.",
+  question: "Qual intervenção é mais adequada?",
+  options: [
+    "Ampliar a carga horária para elevar a produtividade e diluir o estresse da equipe.",
+    "Reforçar o controle individual com mais exames psicológicos periódicos nos setores.",
+    "Investigar condições organizacionais e de gestão e propor mudanças participativas.",
+    "Contratar mais profissionais apenas para atendimento clínico individualizado na empresa."
+  ],
+  answer: 2,
+  feedback: "Na ==proc==saúde do trabalhador== a intervenção parte das condições de trabalho e de gestão, com os trabalhadores, e não só do indivíduo."
+},
+
+// 8 - Recomendação 112 da OIT
+{
+  aula: "Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho",
+  tipo: "Aplicação",
+  texto: "Em 1958 a OIT adotou o termo Serviços de Medicina do Trabalho, e a Recomendação 112 os definiu como responsáveis por proteger contra riscos, adaptar física e mentalmente os trabalhadores às tarefas e promover o bem-estar. Um consultor lê o texto e precisa avaliar o seu enfoque.",
+  question: "Que limitação crítica pode ser apontada nessa definição?",
+  options: [
+    "Desconsiderava os riscos à saúde causados pelo trabalho, tratando só de doenças comuns.",
+    "O foco no indivíduo, que reforça a adaptação do trabalhador ao trabalho, e não o contrário.",
+    "Excluía qualquer preocupação com o bem-estar, restringindo-se à higiene industrial das fábricas.",
+    "Impunha a participação dos trabalhadores nas decisões, o que travava a produção."
+  ],
+  answer: 1,
+  feedback: "A definição era bem-intencionada, mas ==warn==centrada no indivíduo==: o ideal era adaptar o trabalhador, sem questionar a organização do trabalho."
+},
+
+// 9 - Argumento individualista
+{
+  aula: "Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho",
+  tipo: "Aplicação",
+  texto: "Em reunião, um diretor afirma que o afastamento de uma equipe por adoecimento mental decorre de fragilidade pessoal de cada integrante. A equipe, porém, convive com metas inalcançáveis, competição interna e avaliação constante. Um analista quer contra-argumentar com base em Seligmann-Silva.",
+  question: "Qual argumento é coerente com essa autora?",
+  options: [
+    "O adoecimento depende de uma causa única e universal, de origem estritamente biológica.",
+    "O sofrimento surge apenas de fatores individuais, e as condições de trabalho são secundárias.",
+    "A subjetividade do trabalhador é irrelevante para entender o processo saúde-doença.",
+    "O adoecimento mental não se compreende fora do contexto social e das condições de trabalho."
+  ],
+  answer: 3,
+  feedback: "Para Seligmann-Silva, o ==rule==processo saúde-doença== está ligado às condições, à organização produtiva e aos sentidos atribuídos ao trabalho."
+},
+
+// 10 - Registro de transtorno traumático
+{
+  aula: "Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho",
+  tipo: "Aplicação",
+  texto: "Um vigilante presenciou um assalto armado grave durante o expediente e, desde então, tem pesadelos e evita o local de trabalho. O RH precisa registrar o caso conforme a lista da Portaria nº 1.999/2023, que associa fatores de risco a transtornos.",
+  question: "Qual transtorno da lista se relaciona à exposição a eventos traumáticos no trabalho?",
+  options: [
+    "Transtorno depressivo recorrente, ligado ao regime de trabalho e a turnos (F33).",
+    "Síndrome de Burnout, ligada à sobrecarga mental e à falta de suporte social (Z73.0).",
+    "Transtorno de estresse pós-traumático, por eventos traumáticos no trabalho (6B40).",
+    "Transtorno de adaptação, ligado a mudanças no emprego e à pressão contínua (6B43)."
+  ],
+  answer: 2,
+  feedback: "A Portaria associa a exposição a ==term==eventos traumáticos== (acidentes, agressões, desastres, violência) ao transtorno de estresse pós-traumático, código 6B40."
+},
+
   ],
 
   fixacao: [
@@ -1518,204 +1681,169 @@ window.questoes = {
   answer: 3,
   feedback: "Diante de incerteza ou riscos potenciais, o cuidado deve prevalecer sobre o lucro ou a produtividade."
 },
+
+// aula: Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho
+
+// 1 - Origem
+{
+  aula: "Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho",
+  tipo: "Direta",
+  texto: "A medicina do trabalho surgiu durante a Revolução Industrial, em um processo de industrialização acelerada.",
+  question: "Em que país surgiu a medicina do trabalho, no início do século XIX?",
+  options: [
+    "França",
+    "Alemanha",
+    "Inglaterra",
+    "Estados Unidos"
+  ],
+  answer: 2,
+  feedback: "A medicina do trabalho surgiu na Inglaterra, no início do século XIX, durante a Revolução Industrial."
+},
+
+// 2 - Psicopatologia do trabalho
+{
+  aula: "Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho",
+  tipo: "Direta",
+  texto: "Entre os psiquiatras sociais franceses do pós-guerra, um deles criou a ergoterapia.",
+  question: "Quem foi o primeiro a utilizar o termo psicopatologia do trabalho?",
+  options: [
+    "Paul Sivadon",
+    "Louis Le Guillant",
+    "Georges Politzer",
+    "Edith Seligmann-Silva"
+  ],
+  answer: 0,
+  feedback: "Paul Sivadon foi o primeiro a usar o termo, reconhecendo que a organização do trabalho pode causar sofrimento psíquico."
+},
+
+// 3 - Sintoma
+{
+  aula: "Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho",
+  tipo: "Direta",
+  texto: "O processo saúde-doença pode ser entendido em níveis de complexidade, da manifestação subjetiva à doença.",
+  question: "Como se chama a experiência pessoal de mal-estar percebida pelo indivíduo, que não é um diagnóstico por si só?",
+  options: [
+    "Síndrome",
+    "Transtorno",
+    "Doença",
+    "Sintoma"
+  ],
+  answer: 3,
+  feedback: "O sintoma é o primeiro nível da cadeia: uma alteração percebida pelo indivíduo, sem constituir diagnóstico por si só."
+},
+
+// 4 - Carga psíquica
+{
+  aula: "Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho",
+  tipo: "Contexto",
+  texto: "Uma analista dedica esforços cognitivos, emocionais e afetivos para atender às exigências do seu trabalho.",
+  question: "Como Seligmann-Silva chama esse conjunto de esforços?",
+  options: [
+    "Carga postural",
+    "Carga psíquica",
+    "Carga documental",
+    "Carga contratual"
+  ],
+  answer: 1,
+  feedback: "A carga psíquica reúne os esforços cognitivos, emocionais e afetivos empregados para atender às exigências do trabalho."
+},
+
+// 5 - Burnout na CID-11
+{
+  aula: "Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho",
+  tipo: "Contexto",
+  texto: "A OMS passou a reconhecer o burnout como adoecimento ocupacional a partir de 2022.",
+  question: "Qual é o código do burnout na CID-11?",
+  options: [
+    "F32",
+    "6B40",
+    "QD85",
+    "6B43"
+  ],
+  answer: 2,
+  feedback: "A OMS incluiu o burnout na CID-11 sob o código QD85, em 1º de janeiro de 2022."
+},
+
+// 6 - Transtorno depressivo recorrente
+{
+  aula: "Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho",
+  tipo: "Contexto",
+  texto: "O Ministério da Saúde atualizou a Lista de Doenças Relacionadas ao Trabalho pela Portaria nº 1.999/2023.",
+  question: "Qual transtorno da lista corresponde ao código F33?",
+  options: [
+    "Transtorno depressivo recorrente",
+    "Transtorno de adaptação",
+    "Síndrome de Burnout",
+    "Transtorno de estresse pós-traumático"
+  ],
+  answer: 0,
+  feedback: "O código F33 corresponde ao transtorno depressivo recorrente, associado a regime de trabalho, atenção constante, turnos e pressão mental."
+},
+
+// 7 - Escuta e participação
+{
+  aula: "Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho",
+  tipo: "Aplicação",
+  texto: "Uma empresa quer ouvir os trabalhadores e valorizar os seus saberes antes de mudar a organização do trabalho.",
+  question: "Qual campo reconhece a necessidade de escuta ativa e de participação nos processos de mudança?",
+  options: [
+    "Medicina do trabalho",
+    "Higiene industrial",
+    "Medicina legal",
+    "Saúde do trabalhador"
+  ],
+  answer: 3,
+  feedback: "O campo da saúde do trabalhador é crítico, coletivo e participativo, e valoriza a escuta ativa dos trabalhadores."
+},
+
+// 8 - Doença
+{
+  aula: "Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho",
+  tipo: "Aplicação",
+  texto: "Um exame identificou uma alteração bioquímica objetiva, com causa conhecida e curso clínico previsível.",
+  question: "Em qual nível da cadeia esse quadro se classifica?",
+  options: [
+    "Sintoma",
+    "Doença",
+    "Síndrome",
+    "Transtorno"
+  ],
+  answer: 1,
+  feedback: "A doença é o nível mais definido: alterações anatômicas, fisiológicas ou bioquímicas objetivamente identificáveis."
+},
+
+// 9 - Medicina do trabalho
+{
+  aula: "Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho",
+  tipo: "Aplicação",
+  texto: "Um médico faz exames periódicos e remaneja funcionários, supondo que basta colocar a pessoa certa no lugar certo.",
+  question: "Que concepção orienta essa prática?",
+  options: [
+    "Saúde do trabalhador",
+    "Psicopatologia do trabalho",
+    "Medicina do trabalho",
+    "Saúde coletiva crítica"
+  ],
+  answer: 2,
+  feedback: "A medicina do trabalho buscava ajustar o trabalhador às exigências da empresa por critérios médicos."
+},
+
+// 10 - Carga qualitativa
+{
+  aula: "Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho",
+  tipo: "Aplicação",
+  texto: "Um setor tem tarefas de grande complexidade e pouco significado para quem as executa, sem espaço para reconhecimento.",
+  question: "Qual dimensão da carga de trabalho predomina nesse caso?",
+  options: [
+    "Carga qualitativa",
+    "Carga quantitativa",
+    "Carga física",
+    "Carga horária"
+  ],
+  answer: 0,
+  feedback: "A carga qualitativa diz respeito à complexidade e ao significado das tarefas executadas."
+},
     
-  ],
-
-
-  ava: [
-
-    // aula: Atividade 5
-
-// 1 - Gestão por competências
-{
-  aula: "Atividade 5",
-  tipo: "",
-  texto: "Leia o trecho a seguir e responda à questão: “Uma empresa de médio porte percebeu que, embora os funcionários tivessem boa formação técnica, havia dificuldades na resolução de problemas em equipe e na tomada de decisões sob pressão. A partir disso, decidiu revisar seus critérios de avaliação de desempenho, incorporando competências como iniciativa, trabalho em equipe e inteligência emocional.”",
-  question: "Com base na situação apresentada, é possível afirmar que:",
-  code: "",
-  options: [
-    "A gestão por competências limita a atuação dos profissionais ao seu cargo formal, sem considerar contextos ou desafios cotidianos.",
-    "A avaliação por competências ignora os aspectos comportamentais, focando em cargos e salários.",
-    "A gestão por competências permite que a organização desenvolva talentos considerando conhecimentos, habilidades e atitudes necessários para sua realidade.",
-    "As avaliações devem priorizar exclusivamente o tempo de serviço e a assiduidade do trabalhador.",
-    "A avaliação deve permanecer restrita a indicadores de produtividade, pois competências subjetivas não são mensuráveis."
-  ],
-  answer: 2,
-  feedback: "A empresa passou a avaliar comportamento além da técnica. Isso é o CHA (conhecimentos, habilidades e atitudes) aplicado à realidade dela. As demais alternativas limitam ou ignoram o lado comportamental, o que contradiz a gestão por competências.",
-  chips: []
-},
-
-// 2 - Funções do planejamento estratégico
-{
-  aula: "Atividade 5",
-  tipo: "",
-  texto: "",
-  question: "O planejamento estratégico é um instrumento fundamental para a gestão organizacional e está vinculado à definição de diretrizes, objetivos e metas. Sobre as funções do planejamento estratégico, assinale a alternativa correta:",
-  code: "",
-  options: [
-    "Priorizar a execução de tarefas operacionais por meio de métodos padronizados.",
-    "Substituir os processos decisórios da alta gestão, padronizando rotinas com foco nas tarefas repetitivas.",
-    "Organizar apenas as atividades financeiras da organização, garantindo sua sustentabilidade contábil.",
-    "Estabelecer normas para o controle das relações interpessoais, com foco em conflitos interpessoais.",
-    "Definir objetivos organizacionais, alinhar esforços internos e orientar as decisões em médio e longo prazo."
-  ],
-  answer: 4,
-  feedback: "Planejamento estratégico tem visão ampla e de longo prazo: define objetivos, alinha esforços e orienta decisões. Tarefas operacionais, só finanças ou conflitos interpessoais não são função dele, e ele apoia a alta gestão, não a substitui.",
-  chips: []
-},
-
-// 3 - Recrutamento e seleção (V ou F)
-{
-  aula: "Atividade 5",
-  tipo: "",
-  texto: "Sobre as funções do recrutamento e seleção, analise as afirmações a seguir: I. O recrutamento visa atrair candidatos qualificados para uma vaga, enquanto a seleção busca escolher, entre eles, o mais adequado ao perfil da função. II. O processo seletivo deve considerar apenas os critérios técnicos, desconsiderando aspectos comportamentais. III. Recrutamento interno refere-se à contratação de candidatos de fora da organização. IV. A seleção por competências avalia conhecimentos, habilidades e atitudes do candidato. V. Recrutamento e seleção fazem parte da estratégia de alinhamento entre pessoas e cultura organizacional.",
-  question: "A sequência correta, de cima para baixo, é:",
-  code: "",
-  options: [
-    "V – F – V – F – F",
-    "F – F – V – V – F",
-    "V – V – F – F – V",
-    "F – V – V – F – F",
-    "V – F – F – V – V"
-  ],
-  answer: 4,
-  feedback: "I (V): recrutar atrai, selecionar escolhe. II (F): aspectos comportamentais também contam. III (F): contratar de fora é recrutamento externo. Interno aproveita quem já está na empresa. IV (V): seleção por competências avalia CHA. V (V): recrutar e selecionar alinha pessoas à cultura da organização.",
-  chips: []
-},
-
-// 4 - Etapa do diagnóstico organizacional
-{
-  aula: "Atividade 5",
-  tipo: "",
-  texto: "",
-  question: "Entre as etapas do diagnóstico organizacional, destaca-se a importância de compreender os dados colhidos no ambiente de trabalho e transformá-los em propostas de ação. Essa etapa é chamada de:",
-  code: "",
-  options: [
-    "Divulgação dos resultados em campanhas publicitárias.",
-    "Recrutamento e seleção de novos profissionais.",
-    "Aplicação de inventários padronizados.",
-    "Elaboração de metas operacionais.",
-    "Análise e interpretação dos dados levantados."
-  ],
-  answer: 4,
-  feedback: "Depois de coletar os dados, é preciso interpretá-los para gerar propostas de ação. Inventários são instrumentos de coleta, que vêm antes. Campanhas publicitárias e recrutamento não fazem parte do diagnóstico.",
-  chips: []
-},
-
-// 5 - Cultura e saúde mental (asserção e razão)
-{
-  aula: "Atividade 5",
-  tipo: "",
-  texto: "I. A promoção de uma cultura organizacional que valoriza o cuidado com a saúde mental dos trabalhadores contribui para o engajamento e a qualidade dos serviços prestados. PORQUE II. Quando a cultura da organização estimula a competição individual e a negação do sofrimento psíquico, há maior risco de adoecimento e afastamento por problemas emocionais.",
-  question: "",
-  code: "",
-  options: [
-    "As afirmações I e II são verdadeiras, mas II não justifica I.",
-    "A afirmação I é verdadeira e a II é falsa.",
-    "As afirmações I e II são verdadeiras, e II justifica corretamente I.",
-    "A afirmação I é falsa e a II é verdadeira.",
-    "As afirmações I e II são falsas."
-  ],
-  answer: 0,
-  feedback: "As duas são verdadeiras. Mas II descreve o efeito de uma cultura ruim (adoecimento), enquanto I descreve o benefício de uma cultura boa (engajamento e qualidade). Estão relacionadas, mas II não explica o porquê de I.",
-  chips: []
-},
-
-// 6 - Gap de competência
-{
-  aula: "Atividade 5",
-  tipo: "",
-  texto: "",
-  question: "Uma das etapas da gestão por competências consiste em comparar o desempenho atual do colaborador com o desempenho esperado, a fim de identificar lacunas que possam ser trabalhadas. Essa etapa é conhecida como:",
-  code: "",
-  options: [
-    "Avaliação do clima organizacional.",
-    "Pesquisa de satisfação interna.",
-    "Diagnóstico estrutural da empresa.",
-    "Planejamento estratégico individual.",
-    "Mapeamento de gaps de competência."
-  ],
-  answer: 4,
-  feedback: "Gap é a diferença entre a competência atual e a esperada. Ele mostra o que desenvolver (treinamento, capacitação). Clima e satisfação medem percepção coletiva, e diagnóstico estrutural olha a organização toda, não o indivíduo.",
-  chips: []
-},
-
-// 7 - Cultura x clima organizacional
-{
-  aula: "Atividade 5",
-  tipo: "",
-  texto: "",
-  question: "Sobre as noções de cultura e clima organizacional, assinale a alternativa correta:",
-  code: "",
-  options: [
-    "A cultura organizacional diz respeito a valores, crenças e práticas compartilhadas; o clima organizacional reflete as percepções dos trabalhadores sobre o ambiente de trabalho.",
-    "O clima organizacional é determinado exclusivamente por fatores externos à organização.",
-    "A cultura organizacional refere-se a percepções momentâneas, enquanto o clima organizacional está relacionado a crenças e valores estáveis.",
-    "A cultura organizacional é facilmente mensurável e modificável, ao contrário do clima.",
-    "Clima e cultura organizacional são conceitos equivalentes e podem ser usados como sinônimos em qualquer contexto."
-  ],
-  answer: 0,
-  feedback: "Cultura é estável (valores, crenças, práticas). Clima é a percepção mais momentânea dos trabalhadores. A alternativa c inverte os dois, d inverte a facilidade de mudança (cultura é difícil de mudar), e b e e estão erradas porque o clima depende de fatores internos e os conceitos não são sinônimos.",
-  chips: []
-},
-
-// 8 - Processo de recrutamento e seleção
-{
-  aula: "Atividade 5",
-  tipo: "",
-  texto: "",
-  question: "O processo de recrutamento e seleção envolve uma série de etapas que visam adequar o perfil do profissional às exigências do cargo e à cultura da organização. Sobre esse processo, assinale a alternativa correta:",
-  code: "",
-  options: [
-    "A seleção por competências permite identificar, além do conhecimento técnico, habilidades interpessoais e atitudes relevantes para a função.",
-    "O processo seletivo se encerra com a assinatura do contrato, sem necessidade de integração ou ambientação do novo colaborador.",
-    "A triagem de currículos é a única etapa necessária para identificar as competências dos candidatos.",
-    "As entrevistas devem ser sempre padronizadas e não devem considerar aspectos subjetivos.",
-    "O recrutamento externo visa remanejar colaboradores que já atuam na organização para novas funções."
-  ],
-  answer: 0,
-  feedback: "Seleção por competências vai além da técnica e avalia habilidades interpessoais e atitudes. Integração e ambientação fazem parte do processo, triagem é só a primeira filtragem, entrevista considera aspectos comportamentais, e remanejar quem já está na empresa é recrutamento interno.",
-  chips: []
-},
-
-// 9 - Etapas do planejamento estratégico
-{
-  aula: "Atividade 5",
-  tipo: "",
-  texto: "",
-  question: "As etapas do planejamento estratégico envolvem um processo contínuo de análise, decisão e avaliação. Assinale a alternativa que apresenta corretamente essas etapas, em uma ordem lógica:",
-  code: "",
-  options: [
-    "Reconhecimento de metas, Resolução de problemas técnicos, Realinhamento produtivo, Elaboração do orçamento anual.",
-    "Recrutamento, Avaliação por competências, Planejamento, Gestão de resultados.",
-    "Diagnóstico situacional, Definição da missão e visão, Estabelecimento de objetivos, Implementação e monitoramento.",
-    "Implantação, Avaliação de desempenho, Definição de missão, Reestruturação interna.",
-    "Análise de conflitos, Delegação de tarefas, Execução direta, Revisão parcial."
-  ],
-  answer: 2,
-  feedback: "Ordem lógica: ver onde a empresa está (diagnóstico), definir quem ela é e aonde quer chegar (missão e visão), fixar objetivos e, por fim, executar e acompanhar. As outras misturam processos de outras áreas ou invertem a ordem.",
-  chips: []
-},
-
-// 10 - Diagnóstico organizacional (asserção e razão)
-{
-  aula: "Atividade 5",
-  tipo: "",
-  texto: "Leia as assertivas e responda corretamente: I. O diagnóstico organizacional é uma ferramenta de gestão que busca identificar pontos fortes e vulnerabilidades nas rotinas de trabalho. PORQUE II. O objetivo do diagnóstico é propor soluções financeiras, deixando de lado os aspectos humanos e relacionais.",
-  question: "",
-  code: "",
-  options: [
-    "As afirmações I e II são verdadeiras, mas II não justifica I.",
-    "As afirmações I e II são falsas.",
-    "As afirmações I e II são verdadeiras, e II justifica corretamente I.",
-    "A afirmação I é falsa e a II é verdadeira.",
-    "A afirmação I é verdadeira e a II é falsa."
-  ],
-  answer: 4,
-  feedback: "I é verdadeira: o diagnóstico mapeia pontos fortes e vulnerabilidades. II é falsa: ele não se limita a soluções financeiras e considera sim os aspectos humanos e relacionais (clima, comunicação, liderança).",
-  chips: []
-},
-
   ],
 
   enade: [
@@ -2629,7 +2757,389 @@ window.questoes = {
   answer: 1,
   feedback: "As **NRs** não são formalidades técnicas. Elas exigem ==proc==participação e diálogo== entre empregadores e trabalhadores, integrando gestão e prevenção."
 },
+
+
+// aula: Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho
+
+// 1 - Medicina do trabalho e saúde do trabalhador
+{
+  aula: "Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho",
+  tipo: "Asserção + Justificativa",
+  texto: "Um gestor de RH recebe a proposta de reformular o serviço de saúde da empresa, hoje restrito a exames admissionais e periódicos e a remanejamentos de função.",
+  question: "Analise as asserções e a relação proposta entre elas.",
+  assertions: [
+    "O campo da ==def==saúde do trabalhador== supera o modelo da medicina do trabalho.",
+    "PORQUE ele passa a tratar o trabalho como espaço de produção de vida, subjetividade e sentido, com escuta ativa e participação dos trabalhadores."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 0,
+  feedback: "As duas asserções são verdadeiras e II explica I: a **saúde do trabalhador** desloca o foco do indivíduo para os determinantes sociais e a organização da produção."
+},
+
+// 2 - Sivadon e o termo psicopatologia do trabalho
+{
+  aula: "Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho",
+  tipo: "Asserção + Justificativa",
+  texto: "Dois psiquiatras sociais franceses do pós-guerra estudaram o trabalho como fator de saúde mental, por caminhos teóricos distintos.",
+  question: "Analise as asserções e a relação proposta entre elas.",
+  assertions: [
+    "Paul Sivadon foi o primeiro a utilizar o termo ==term==psicopatologia do trabalho==.",
+    "PORQUE ele considerava que a organização do trabalho jamais poderia ser fonte de sofrimento psíquico."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 2,
+  feedback: "A I é verdadeira, e a II é falsa: **Sivadon** reconheceu que a organização do trabalho pode ser fonte de sofrimento e chegou a denunciar formas patogênicas de organização laboral."
+},
+
+// 3 - Carga psíquica e Recomendação 112
+{
+  aula: "Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho",
+  tipo: "Asserção + Justificativa",
+  texto: "Um curso de pós-graduação compara conceitos da ergonomia e documentos da OIT sobre a relação entre trabalho e saúde.",
+  question: "Analise as asserções e a relação proposta entre elas.",
+  assertions: [
+    "A carga de trabalho passou a ser entendida também como ==def==carga psíquica==.",
+    "PORQUE a Recomendação 112 da OIT definiu os serviços de medicina do trabalho como responsáveis por adaptar física e mentalmente os trabalhadores às tarefas."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 1,
+  feedback: "As duas asserções são verdadeiras, mas II não justifica I: a **carga psíquica** vem de Seligmann-Silva e da ergonomia, enquanto a Recomendação 112 trata da adaptação do trabalhador."
+},
+
+// 4 - Sintoma, síndrome, transtorno e doença
+{
+  aula: "Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Uma equipe de saúde ocupacional precisa diferenciar sintomas, síndromes, transtornos e doenças ao avaliar o sofrimento dos trabalhadores de uma empresa.",
+  question: "Avalie as afirmações a seguir e assinale a alternativa correta.",
+  assertions: [
+    "O sintoma é uma experiência pessoal de mal-estar percebida pelo indivíduo, mas não constitui, por si só, um diagnóstico.",
+    "A síndrome é um conjunto característico de sintomas, ainda que sua causa não esteja totalmente esclarecida.",
+    "O transtorno pressupõe necessariamente uma lesão orgânica identificável por exames.",
+    "A doença costuma apresentar causas conhecidas, curso clínico previsível e critérios diagnósticos baseados em exames e marcadores biológicos."
+  ],
+  options: [
+    "I e II, apenas",
+    "II e III, apenas",
+    "I, II e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 2,
+  feedback: "A III é falsa: o **transtorno** indica uma disfunção que compromete o modo de pensar, sentir e agir, ==def==sem necessariamente implicar lesão orgânica==."
+},
+
+// 5 - Desgaste mental
+{
+  aula: "Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Um grupo de estudos discute como o desgaste mental se manifesta em organizações marcadas pela gestão flexível e pela cultura do desempenho.",
+  question: "Avalie as afirmações a seguir e assinale a alternativa correta.",
+  assertions: [
+    "Seligmann-Silva diferencia a carga quantitativa, ligada ao volume de trabalho num tempo determinado, da carga qualitativa, ligada à complexidade e ao significado das tarefas.",
+    "A concepção contemporânea da saúde-doença sustenta que as doenças têm causas únicas e universais.",
+    "A cultura do desempenho pode estimular a competitividade, o individualismo e a solidão afetiva.",
+    "O desgaste mental é um estado fixo, determinado biologicamente e sem influência do contexto social."
+  ],
+  options: [
+    "II e IV, apenas",
+    "I, II e III, apenas",
+    "III e IV, apenas",
+    "I e III, apenas"
+  ],
+  answer: 3,
+  feedback: "A II e a IV são falsas: o ==rule==processo saúde-doença== resulta de **múltiplas determinações** e é dinâmico, e não um estado fixo."
+},
+
+// 6 - Enquadramento do burnout
+{
+  aula: "Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho",
+  tipo: "Conceitual Contextualizada",
+  texto: "Uma trabalhadora de teleatendimento apresenta exaustão persistente associada a sobrecarga mental, estresse ocupacional e falta de suporte social. O RH precisa registrar o quadro conforme a Portaria nº 1.999/2023.",
+  question: "Como o quadro deve ser enquadrado na lista da Portaria?",
+  options: [
+    "Transtorno de estresse pós-traumático (6B40), associado a eventos traumáticos no trabalho.",
+    "Síndrome de Burnout (Z73.0), por sobrecarga mental, estresse ocupacional e falta de suporte.",
+    "Transtorno depressivo recorrente (F33), associado a turnos e exigências constantes de atenção.",
+    "Transtorno de adaptação (6B43), associado a mudanças no emprego e à pressão no trabalho."
+  ],
+  answer: 1,
+  feedback: "A lista associa a **Síndrome de Burnout** (Z73.0) à ==term==sobrecarga mental==, ao estresse ocupacional e à falta de suporte social."
+},
+
+// 7 - Adoecimento e múltiplas determinações
+{
+  aula: "Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho",
+  tipo: "Conceitual Contextualizada",
+  texto: "Um gestor atribui o alto absenteísmo da sua equipe à falta de resiliência individual dos trabalhadores, sem examinar metas, ritmo e relações de trabalho.",
+  question: "Qual leitura do processo saúde-doença contraria esse argumento?",
+  options: [
+    "O adoecimento tem causa única e universal, que independe do modo como o trabalho é organizado.",
+    "O adoecimento é um estado fixo, determinado pelas características pessoais de cada trabalhador.",
+    "Há múltiplas determinações: organização do trabalho, cultura institucional e relações.",
+    "O adoecimento decorre apenas da falta de adaptação do trabalhador às exigências da empresa."
+  ],
+  answer: 2,
+  feedback: "A concepção contemporânea rompe com a ideia de ==rule==causas únicas e universais==: **organização do trabalho**, cultura institucional e relações interpessoais pesam no adoecimento."
+},
+
+// 8 - Intervenção participativa
+{
+  aula: "Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho",
+  tipo: "Análise Aplicada",
+  texto: "Uma empresa registra isolamento, competição entre equipes e metas inalcançáveis. A direção pede um plano de ação coerente com o campo da saúde do trabalhador.",
+  question: "Qual plano de ação é mais adequado a esse campo?",
+  options: [
+    "Criar espaços de escuta com os trabalhadores e rever coletivamente metas e gestão.",
+    "Aplicar testes psicológicos individuais para identificar quem não suporta a pressão.",
+    "Oferecer palestras motivacionais sobre resiliência e otimismo para toda a equipe.",
+    "Aumentar o controle sobre o desempenho individual para reduzir o absenteísmo."
+  ],
+  answer: 0,
+  feedback: "A ==proc==escuta ativa== e a **participação** são centrais: o foco se desloca do indivíduo para a organização do trabalho e para a transformação das condições que geram adoecimento."
+},
+
+// 9 - Método de Le Guillant
+{
+  aula: "Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho",
+  tipo: "Análise Aplicada",
+  texto: "Uma pesquisadora cruza os números de afastamentos de uma indústria com entrevistas sobre a história de vida e as condições concretas de trabalho dos afastados.",
+  question: "Qual princípio metodológico de Le Guillant ela aplica?",
+  options: [
+    "A análise exclusiva de dados estatísticos, pois as narrativas pessoais não captam o adoecimento.",
+    "A substituição da escuta clínica por testes padronizados aplicados a toda a população.",
+    "A separação entre o indivíduo e o seu trabalho, para isolar as causas orgânicas do sofrimento.",
+    "O ir e vir entre dados quantitativos e qualitativos, entre registros objetivos e vivências."
+  ],
+  answer: 3,
+  feedback: "**Le Guillant** defendia uma interpretação plural, sensível tanto aos ==def==números== quanto às narrativas, para captar a complexidade do adoecimento no trabalho."
+},
+
+// 10 - Portaria nº 1.999/2023
+{
+  aula: "Aula 14 - Saúde, subjetividade e desgastes mentais no trabalho",
+  tipo: "Conceitual Contextualizada",
+  texto: "Após as revisões da CID-11, em 2022, o Ministério da Saúde brasileiro editou nova norma sobre a relação entre trabalho e adoecimento.",
+  question: "Qual é a função da Portaria nº 1.999/2023 segundo o módulo?",
+  options: [
+    "Atualizar a Lista de Doenças Relacionadas ao Trabalho com base na CID-11 e nos códigos.",
+    "Revogar a obrigatoriedade de programas de prevenção psicossocial nas empresas brasileiras.",
+    "Excluir os transtornos mentais da lista de causas de afastamento do trabalho no país.",
+    "Limitar a análise de riscos aos fatores físicos e biológicos presentes nos ambientes."
+  ],
+  answer: 0,
+  feedback: "A Portaria **atualiza** a lista com base na CID-11 e associa ==term==fatores de risco== organizacionais a transtornos e síndromes, com os seus códigos."
+},
+
   ],
 
+  ava: [
 
+    // aula: Atividade 5
+
+// 1 - Gestão por competências
+{
+  aula: "Atividade 5",
+  tipo: "",
+  texto: "Leia o trecho a seguir e responda à questão: “Uma empresa de médio porte percebeu que, embora os funcionários tivessem boa formação técnica, havia dificuldades na resolução de problemas em equipe e na tomada de decisões sob pressão. A partir disso, decidiu revisar seus critérios de avaliação de desempenho, incorporando competências como iniciativa, trabalho em equipe e inteligência emocional.”",
+  question: "Com base na situação apresentada, é possível afirmar que:",
+  code: "",
+  options: [
+    "A gestão por competências limita a atuação dos profissionais ao seu cargo formal, sem considerar contextos ou desafios cotidianos.",
+    "A avaliação por competências ignora os aspectos comportamentais, focando em cargos e salários.",
+    "A gestão por competências permite que a organização desenvolva talentos considerando conhecimentos, habilidades e atitudes necessários para sua realidade.",
+    "As avaliações devem priorizar exclusivamente o tempo de serviço e a assiduidade do trabalhador.",
+    "A avaliação deve permanecer restrita a indicadores de produtividade, pois competências subjetivas não são mensuráveis."
+  ],
+  answer: 2,
+  feedback: "A empresa passou a avaliar comportamento além da técnica. Isso é o CHA (conhecimentos, habilidades e atitudes) aplicado à realidade dela. As demais alternativas limitam ou ignoram o lado comportamental, o que contradiz a gestão por competências.",
+  chips: []
+},
+
+// 2 - Funções do planejamento estratégico
+{
+  aula: "Atividade 5",
+  tipo: "",
+  texto: "",
+  question: "O planejamento estratégico é um instrumento fundamental para a gestão organizacional e está vinculado à definição de diretrizes, objetivos e metas. Sobre as funções do planejamento estratégico, assinale a alternativa correta:",
+  code: "",
+  options: [
+    "Priorizar a execução de tarefas operacionais por meio de métodos padronizados.",
+    "Substituir os processos decisórios da alta gestão, padronizando rotinas com foco nas tarefas repetitivas.",
+    "Organizar apenas as atividades financeiras da organização, garantindo sua sustentabilidade contábil.",
+    "Estabelecer normas para o controle das relações interpessoais, com foco em conflitos interpessoais.",
+    "Definir objetivos organizacionais, alinhar esforços internos e orientar as decisões em médio e longo prazo."
+  ],
+  answer: 4,
+  feedback: "Planejamento estratégico tem visão ampla e de longo prazo: define objetivos, alinha esforços e orienta decisões. Tarefas operacionais, só finanças ou conflitos interpessoais não são função dele, e ele apoia a alta gestão, não a substitui.",
+  chips: []
+},
+
+// 3 - Recrutamento e seleção (V ou F)
+{
+  aula: "Atividade 5",
+  tipo: "",
+  texto: "Sobre as funções do recrutamento e seleção, analise as afirmações a seguir: I. O recrutamento visa atrair candidatos qualificados para uma vaga, enquanto a seleção busca escolher, entre eles, o mais adequado ao perfil da função. II. O processo seletivo deve considerar apenas os critérios técnicos, desconsiderando aspectos comportamentais. III. Recrutamento interno refere-se à contratação de candidatos de fora da organização. IV. A seleção por competências avalia conhecimentos, habilidades e atitudes do candidato. V. Recrutamento e seleção fazem parte da estratégia de alinhamento entre pessoas e cultura organizacional.",
+  question: "A sequência correta, de cima para baixo, é:",
+  code: "",
+  options: [
+    "V – F – V – F – F",
+    "F – F – V – V – F",
+    "V – V – F – F – V",
+    "F – V – V – F – F",
+    "V – F – F – V – V"
+  ],
+  answer: 4,
+  feedback: "I (V): recrutar atrai, selecionar escolhe. II (F): aspectos comportamentais também contam. III (F): contratar de fora é recrutamento externo. Interno aproveita quem já está na empresa. IV (V): seleção por competências avalia CHA. V (V): recrutar e selecionar alinha pessoas à cultura da organização.",
+  chips: []
+},
+
+// 4 - Etapa do diagnóstico organizacional
+{
+  aula: "Atividade 5",
+  tipo: "",
+  texto: "",
+  question: "Entre as etapas do diagnóstico organizacional, destaca-se a importância de compreender os dados colhidos no ambiente de trabalho e transformá-los em propostas de ação. Essa etapa é chamada de:",
+  code: "",
+  options: [
+    "Divulgação dos resultados em campanhas publicitárias.",
+    "Recrutamento e seleção de novos profissionais.",
+    "Aplicação de inventários padronizados.",
+    "Elaboração de metas operacionais.",
+    "Análise e interpretação dos dados levantados."
+  ],
+  answer: 4,
+  feedback: "Depois de coletar os dados, é preciso interpretá-los para gerar propostas de ação. Inventários são instrumentos de coleta, que vêm antes. Campanhas publicitárias e recrutamento não fazem parte do diagnóstico.",
+  chips: []
+},
+
+// 5 - Cultura e saúde mental (asserção e razão)
+{
+  aula: "Atividade 5",
+  tipo: "",
+  texto: "I. A promoção de uma cultura organizacional que valoriza o cuidado com a saúde mental dos trabalhadores contribui para o engajamento e a qualidade dos serviços prestados. PORQUE II. Quando a cultura da organização estimula a competição individual e a negação do sofrimento psíquico, há maior risco de adoecimento e afastamento por problemas emocionais.",
+  question: "",
+  code: "",
+  options: [
+    "As afirmações I e II são verdadeiras, mas II não justifica I.",
+    "A afirmação I é verdadeira e a II é falsa.",
+    "As afirmações I e II são verdadeiras, e II justifica corretamente I.",
+    "A afirmação I é falsa e a II é verdadeira.",
+    "As afirmações I e II são falsas."
+  ],
+  answer: 0,
+  feedback: "As duas são verdadeiras. Mas II descreve o efeito de uma cultura ruim (adoecimento), enquanto I descreve o benefício de uma cultura boa (engajamento e qualidade). Estão relacionadas, mas II não explica o porquê de I.",
+  chips: []
+},
+
+// 6 - Gap de competência
+{
+  aula: "Atividade 5",
+  tipo: "",
+  texto: "",
+  question: "Uma das etapas da gestão por competências consiste em comparar o desempenho atual do colaborador com o desempenho esperado, a fim de identificar lacunas que possam ser trabalhadas. Essa etapa é conhecida como:",
+  code: "",
+  options: [
+    "Avaliação do clima organizacional.",
+    "Pesquisa de satisfação interna.",
+    "Diagnóstico estrutural da empresa.",
+    "Planejamento estratégico individual.",
+    "Mapeamento de gaps de competência."
+  ],
+  answer: 4,
+  feedback: "Gap é a diferença entre a competência atual e a esperada. Ele mostra o que desenvolver (treinamento, capacitação). Clima e satisfação medem percepção coletiva, e diagnóstico estrutural olha a organização toda, não o indivíduo.",
+  chips: []
+},
+
+// 7 - Cultura x clima organizacional
+{
+  aula: "Atividade 5",
+  tipo: "",
+  texto: "",
+  question: "Sobre as noções de cultura e clima organizacional, assinale a alternativa correta:",
+  code: "",
+  options: [
+    "A cultura organizacional diz respeito a valores, crenças e práticas compartilhadas; o clima organizacional reflete as percepções dos trabalhadores sobre o ambiente de trabalho.",
+    "O clima organizacional é determinado exclusivamente por fatores externos à organização.",
+    "A cultura organizacional refere-se a percepções momentâneas, enquanto o clima organizacional está relacionado a crenças e valores estáveis.",
+    "A cultura organizacional é facilmente mensurável e modificável, ao contrário do clima.",
+    "Clima e cultura organizacional são conceitos equivalentes e podem ser usados como sinônimos em qualquer contexto."
+  ],
+  answer: 0,
+  feedback: "Cultura é estável (valores, crenças, práticas). Clima é a percepção mais momentânea dos trabalhadores. A alternativa c inverte os dois, d inverte a facilidade de mudança (cultura é difícil de mudar), e b e e estão erradas porque o clima depende de fatores internos e os conceitos não são sinônimos.",
+  chips: []
+},
+
+// 8 - Processo de recrutamento e seleção
+{
+  aula: "Atividade 5",
+  tipo: "",
+  texto: "",
+  question: "O processo de recrutamento e seleção envolve uma série de etapas que visam adequar o perfil do profissional às exigências do cargo e à cultura da organização. Sobre esse processo, assinale a alternativa correta:",
+  code: "",
+  options: [
+    "A seleção por competências permite identificar, além do conhecimento técnico, habilidades interpessoais e atitudes relevantes para a função.",
+    "O processo seletivo se encerra com a assinatura do contrato, sem necessidade de integração ou ambientação do novo colaborador.",
+    "A triagem de currículos é a única etapa necessária para identificar as competências dos candidatos.",
+    "As entrevistas devem ser sempre padronizadas e não devem considerar aspectos subjetivos.",
+    "O recrutamento externo visa remanejar colaboradores que já atuam na organização para novas funções."
+  ],
+  answer: 0,
+  feedback: "Seleção por competências vai além da técnica e avalia habilidades interpessoais e atitudes. Integração e ambientação fazem parte do processo, triagem é só a primeira filtragem, entrevista considera aspectos comportamentais, e remanejar quem já está na empresa é recrutamento interno.",
+  chips: []
+},
+
+// 9 - Etapas do planejamento estratégico
+{
+  aula: "Atividade 5",
+  tipo: "",
+  texto: "",
+  question: "As etapas do planejamento estratégico envolvem um processo contínuo de análise, decisão e avaliação. Assinale a alternativa que apresenta corretamente essas etapas, em uma ordem lógica:",
+  code: "",
+  options: [
+    "Reconhecimento de metas, Resolução de problemas técnicos, Realinhamento produtivo, Elaboração do orçamento anual.",
+    "Recrutamento, Avaliação por competências, Planejamento, Gestão de resultados.",
+    "Diagnóstico situacional, Definição da missão e visão, Estabelecimento de objetivos, Implementação e monitoramento.",
+    "Implantação, Avaliação de desempenho, Definição de missão, Reestruturação interna.",
+    "Análise de conflitos, Delegação de tarefas, Execução direta, Revisão parcial."
+  ],
+  answer: 2,
+  feedback: "Ordem lógica: ver onde a empresa está (diagnóstico), definir quem ela é e aonde quer chegar (missão e visão), fixar objetivos e, por fim, executar e acompanhar. As outras misturam processos de outras áreas ou invertem a ordem.",
+  chips: []
+},
+
+// 10 - Diagnóstico organizacional (asserção e razão)
+{
+  aula: "Atividade 5",
+  tipo: "",
+  texto: "Leia as assertivas e responda corretamente: I. O diagnóstico organizacional é uma ferramenta de gestão que busca identificar pontos fortes e vulnerabilidades nas rotinas de trabalho. PORQUE II. O objetivo do diagnóstico é propor soluções financeiras, deixando de lado os aspectos humanos e relacionais.",
+  question: "",
+  code: "",
+  options: [
+    "As afirmações I e II são verdadeiras, mas II não justifica I.",
+    "As afirmações I e II são falsas.",
+    "As afirmações I e II são verdadeiras, e II justifica corretamente I.",
+    "A afirmação I é falsa e a II é verdadeira.",
+    "A afirmação I é verdadeira e a II é falsa."
+  ],
+  answer: 4,
+  feedback: "I é verdadeira: o diagnóstico mapeia pontos fortes e vulnerabilidades. II é falsa: ele não se limita a soluções financeiras e considera sim os aspectos humanos e relacionais (clima, comunicação, liderança).",
+  chips: []
+},
+
+  ],
 };

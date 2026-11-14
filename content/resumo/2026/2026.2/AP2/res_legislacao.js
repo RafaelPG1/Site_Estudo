@@ -1110,5 +1110,388 @@ window.__nexusConteudo = {
   ]
 },
 
+{
+  aula: "Recuperação judicial e extrajudicial",
+  ideia_central: "A recuperação empresarial, regulada pela Lei nº 11.101/2005 (LRE), oferece ao devedor duas vias para superar a crise e preservar a empresa: a recuperação judicial, que busca viabilizar a superação da crise com plano e acompanhamento do juiz por dois anos, e a recuperação extrajudicial, acordo entre devedor e credores com fim homologatório, mais célere e sem assembleia de credores.",
+  secoes: [
+    {
+      id: "objetivos_introducao",
+      titulo: "Objetivos de Aprendizagem e Introdução",
+      blocos: [
+        {
+          tipo: "lista",
+          titulo: "Objetivos de Aprendizagem",
+          itens: [
+            "Conhecer sobre os institutos e as possibilidades quanto à recuperação empresarial;",
+            "dominar as possibilidades de tratativas empresariais entre a sociedade empresarial e os seus credores;",
+            "aprender a diferenciar entre recuperação judicial e extrajudicial."
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "Temas",
+          itens: [
+            "Introdução",
+            "1 Recuperação judicial: regulação e objetivo",
+            "1.1 Sujeito ativo e requisitos",
+            "1.2 Foro",
+            "1.3 Aplicação",
+            "1.4 Meios de recuperação",
+            "1.5 Prazo",
+            "2 Recuperação extrajudicial: conceito e regulação",
+            "2.1 Vantagens da recuperação extrajudicial",
+            "2.2 Requisitos",
+            "2.3 O plano de recuperação extrajudicial",
+            "Considerações finais",
+            "Referências"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Iniciando o nosso estudo jurídico sobre o direito comercial, iremos começar a tratar e dar continuidade ao aprendizado sobre o direito empresarial, essa ciência que nasceu da simples e edificante necessidade humana, que é o contato com o outro."
+        },
+        {
+          tipo: "texto",
+          texto: "Neste e nos módulos seguintes, iremos começar tratando dos aspectos históricos e de como a relação empresarial se desenvolveu ao longo do tempo e como chegamos até a complexidade do direito empresarial com tantas nuances, particularidades e inovações. Para que seu raciocínio seja formado com acontecimentos e institutos que possuem uma cronologia de informações, é muito importante que você acompanhe os artigos citados e até mesmo quando eles não estiverem expressos, que você possa fazer a leitura complementar da legislação referida proposta no texto."
+        },
+        {
+          tipo: "texto",
+          texto: "Boa leitura!"
+        }
+      ]
+    },
+    {
+      id: "recuperacao_judicial",
+      titulo: "1 Recuperação judicial: regulação e objetivo",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O instituto da recuperação judicial foi trazido pela **Lei nº 11.101/2005 (LRE)** e substituiu o antigo instituto da **concordata**. A inovação trazida com o advento da lei foi a possibilidade de oportunizar à empresa um novo “respiro” ao poder acordar com seus credores sobre sua situação financeira crítica. Conforme trata o Art. 47 da LRE, “A recuperação judicial tem por objetivo viabilizar a superação da situação de crise econômico-financeira do devedor, a fim de permitir a manutenção da fonte produtora, do emprego dos trabalhadores e dos interesses dos credores, promovendo, assim, a preservação da empresa, sua função social e o estímulo à atividade econômica”¹."
+        },
+        {
+          tipo: "texto",
+          texto: "Dando continuidade ao tratado no artigo acima, o objetivo da inserção deste novo instituto foi a manutenção do emprego dos trabalhadores, da fonte produtora e dos interesses dos credores. Tudo nessa modalidade atende às necessidades dos envolvidos. A possibilidade de haver vantagens é muito maior. Além de existirem créditos diversos passíveis, pois o credor participa de todas as fases e possui faculdade de consentir ou não, dessa forma as partes participam da composição à solução do problema."
+        },
+        {
+          tipo: "texto",
+          texto: "Com essa possibilidade de acordo entre a sociedade empresária e os credores, há a promoção da preservação da empresa, da função social e do estímulo à atividade econômica continua a produzir efeitos."
+        },
+        {
+          tipo: "texto",
+          texto: "¹ Art. 47 [...] § A recuperação judicial tem por objetivo viabilizar a superação da situação de crise econômico-financeira do devedor, a fim de permitir a manutenção da fonte produtora, do emprego dos trabalhadores e dos interesses dos credores, promovendo, assim, a preservação da empresa, sua função social e o estímulo à atividade econômica."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "1.1 Sujeito ativo e requisitos"
+        },
+        {
+          tipo: "texto",
+          texto: "O sujeito ativo da recuperação judicial é o **devedor** (aquele que deve), ou seja, o empresário ou a sociedade empresária, somente ele podendo pedir a recuperação judicial."
+        },
+        {
+          tipo: "destaque",
+          texto: "Parada Obrigatória: A figura do credor só pode pedir a falência."
+        },
+        {
+          tipo: "lista",
+          titulo: "Requisitos para o devedor pedir a recuperação judicial",
+          itens: [
+            "Exercer regularmente a atividade empresária há mais de 2 anos;",
+            "Não ser falido (ou, se foi, teve seus direitos extintos);",
+            "Não ter obtido recuperação judicial nos últimos 5 anos;",
+            "Não ter sido condenado por crime falimentar;",
+            "Não ter sócio ou administrador condenado por crime falimentar."
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Os requisitos trazidos acima são expressos no Art. 48 da LRE: “Art. 48. Poderá requerer recuperação judicial o devedor que, no momento do pedido, exerça regularmente suas atividades há mais de 2 (dois) anos e que atenda aos seguintes requisitos, cumulativamente²:"
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "I - não ser falido e, se o foi, estejam declaradas extintas, por sentença transitada em julgado, as responsabilidades daí decorrentes;",
+            "II - não ter, há menos de 5 (cinco) anos, obtido concessão de recuperação judicial;",
+            "III - não ter, há menos de 5 (cinco) anos, obtido concessão de recuperação judicial com base no plano especial de que trata a Seção V deste Capítulo;",
+            "IV - não ter sido condenado ou não ter, como administrador ou sócio controlador, pessoa condenada por qualquer dos crimes previstos nesta Lei.”"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "² Art. 48 [...] § Poderá requerer recuperação judicial o devedor que, no momento do pedido, exerça regularmente suas atividades há mais de 2 (dois) anos e que atenda aos seguintes requisitos."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "1.2 Foro"
+        },
+        {
+          tipo: "texto",
+          texto: "O foro para a solicitação da recuperação judicial é o juízo do local do **principal estabelecimento** do devedor ou **filial de empresa com sede no exterior**."
+        },
+        {
+          tipo: "destaque",
+          texto: "Parada Obrigatória: O principal estabelecimento não necessariamente corresponde à matriz do estabelecimento."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "1.3 Aplicação"
+        },
+        {
+          tipo: "texto",
+          texto: "O caput do Art. 49 da LRE determina que os créditos sujeitos à recuperação judicial serão aqueles existentes **até** a data do pedido de recuperação. Dessa forma, somente aqueles efetivos até a data do pedido, vencidos ou vincendos, podem ser alvo do plano de recuperação: “Art. 49. Estão sujeitos à recuperação judicial todos os créditos **existentes na data do pedido**, ainda que não vencidos”³."
+        },
+        {
+          tipo: "texto",
+          texto: "³ Art. 49 [...] § Estão sujeitos à recuperação judicial todos os créditos existentes na data do pedido, ainda que não vencidos."
+        },
+        {
+          tipo: "lista",
+          titulo: "Exceções: créditos que não se aplicam à recuperação judicial",
+          itens: [
+            "1) Créditos tributários: correria o risco de romper com a isonomia entre os contribuintes na execução fiscal; a fundamentação é trazida pelo Art. 6º, §7º, combinado com o Art. 57 da LRE;",
+            "2) Credor proprietário fiduciário;",
+            "3) Credor arrendador mercantil;",
+            "Proprietário ou promitente vendedor de imóvel cujos contratos tenham cláusula de irrevogabilidade ou irretroatividade, cuja fundamentação é trazida pelo Art. 49, §3º, da LRE;",
+            "4) Credor de adiantamento de contrato de câmbio, cuja fundamentação é trazida pelo Art. 49, §4º, da LRE;",
+            "5) Credor de adiantamento de contrato de câmbio, Art. 6º, §7º, combinado com o Art. 57 da LRE."
+          ]
+        },
+        {
+          tipo: "subtitulo",
+          texto: "1.4 Meios de recuperação"
+        },
+        {
+          tipo: "texto",
+          texto: "Os meios de recuperação são aqueles que tornam a forma de acontecer o processo da recuperação judicial mais ajustadamente, para que seja mais eficaz a recuperação e produza resultados reais, tais como:"
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "Alteração do contrato societário;",
+            "Cisão, alteração, transformação de sociedade;",
+            "Prazos e condições especiais para pagamento das obrigações vencidas e vincendas;",
+            "Aumento do capital social;",
+            "Venda parcial de bens;",
+            "Substituição dos administradores e afins."
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Inclusive, os incisos do Art. 50 da LRE trazem, em um rol exemplificativo, mais os mecanismos/meios de recuperação judicial de maneira mais extensa: “Art. 50. Constituem meios de recuperação judicial, observada a legislação pertinente a cada caso, dentre outros:"
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "I - concessão de prazos e condições especiais para pagamento das obrigações vencidas ou vincendas;",
+            "II - cisão, incorporação, fusão ou transformação de sociedade, constituição de subsidiária integral, ou cessão de cotas ou ações, respeitados os direitos dos sócios, nos termos da legislação vigente;",
+            "III - alteração do controle societário;",
+            "IV - substituição total ou parcial dos administradores do devedor ou modificação de seus órgãos administrativos;",
+            "V - concessão aos credores de direito de eleição em separado de administradores e de poder de veto em relação às matérias que o plano especificar;",
+            "VI - aumento de capital social;",
+            "VII - trespasse ou arrendamento de estabelecimento, inclusive à sociedade constituída pelos próprios empregados;",
+            "VIII - redução salarial, compensação de horários e redução da jornada, mediante acordo ou convenção coletiva;",
+            "IX - dação em pagamento ou novação de dívidas do passivo, com ou sem constituição de garantia própria ou de terceiro;",
+            "X - constituição de sociedade de credores;",
+            "XI - venda parcial dos bens;",
+            "XII - equalização de encargos financeiros relativos a débitos de qualquer natureza, tendo como termo inicial a data da distribuição do pedido de recuperação judicial, aplicando-se inclusive aos contratos de crédito rural, sem prejuízo do disposto em legislação específica;",
+            "XIII - usufruto da empresa;",
+            "XIV - administração compartilhada;",
+            "XV - emissão de valores mobiliários;",
+            "XVI - constituição de sociedade de propósito específico para adjudicar, em pagamento dos créditos, os ativos do devedor;",
+            "XVII - conversão de dívida em capital social;",
+            "XVIII - venda integral da devedora, desde que garantidas aos credores não submetidos ou não aderentes condições, no mínimo, equivalentes àquelas que teriam na falência, hipótese em que será, para todos os fins, considerada unidade produtiva isolada”⁴."
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "⁴ Art. 50 [...] § Constituem meios de recuperação judicial, observada a legislação pertinente a cada caso."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "1.5 Prazo"
+        },
+        {
+          tipo: "texto",
+          texto: "O prazo poderá exceder dois anos. O prazo de 2 anos do Art. 61 é o prazo **em que haverá acompanhamento judicial**. Ou seja, a recuperação pode ter 8 anos, 10 anos, e o acompanhamento terá 2 anos, como determina o artigo da LRE: “Art. 61. Proferida a decisão prevista no Art. 58 desta Lei, o devedor permanecerá em recuperação judicial até que se cumpram todas as obrigações previstas no plano que se vencerem até 2 (dois) anos depois da concessão da recuperação judicial:"
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "§1º Durante o período estabelecido no caput deste artigo, o descumprimento de qualquer obrigação prevista no plano acarretará a convolação da recuperação em falência, nos termos do Art. 73 desta Lei”⁵."
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "⁵ Art. 61 [...] § Proferida a decisão prevista no art. 58 desta Lei, o juiz poderá determinar a manutenção do devedor em recuperação judicial até que sejam cumpridas todas as obrigações previstas no plano que vencerem até, no máximo, 2 (dois) anos depois da concessão da recuperação judicial, independentemente do eventual período de carência."
+        },
+        {
+          tipo: "destaque",
+          texto: "Reflita: Terminado o prazo, o juiz conclui o processo de recuperação, proferindo a sentença de encerramento. Caso o devedor descumpra a obrigação (acordada no decorrer da recuperação) do plano de recuperação dentro do prazo de 02 anos após a concessão da recuperação, isso ocasionará a convolação em falência. E, o que isso quer dizer?"
+        },
+        {
+          tipo: "texto",
+          texto: "Que o plano antes acordado, como foi desobedecido, será convertido em falência, mas acontecerá dentro do processo de recuperação judicial, conforme preceitua o Art. 73 da LRE: “Art. 73. O juiz decretará a falência durante o processo de recuperação judicial:"
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "I - por deliberação da assembleia-geral de credores, na forma do Art. 42 desta Lei;",
+            "II - pela não apresentação, pelo devedor, do plano de recuperação no prazo do Art. 53 desta Lei;",
+            "III - quando não aplicado o disposto nos § 4º, 5º e 6º do Art. 56 desta Lei, ou rejeitado o plano de recuperação judicial proposto pelos credores, nos termos do § 7º do Art. 56 e do Art. 58-A desta Lei;",
+            "IV - por descumprimento de qualquer obrigação assumida no plano de recuperação, na forma do § 1º do Art. 61 desta Lei;",
+            "V - por descumprimento dos parcelamentos referidos no Art. 68 desta Lei ou da transação prevista no Art. 10-C da Lei nº 10.522, de 19 de julho de 2002; e",
+            "VI - quando identificado o esvaziamento patrimonial da devedora que implique liquidação substancial da empresa, em prejuízo de credores não sujeitos à recuperação judicial, inclusive as Fazendas Públicas”⁶."
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "⁶ Art. 73 [...] § O juiz decretará a falência durante o processo de recuperação judicial."
+        },
+        {
+          tipo: "texto",
+          texto: "Sobre o tema da convolação da recuperação judicial em falência, o professor André Luiz Santa Cruz Ramos⁷ instrui a perceber que a convolação da recuperação em falência só tem lugar quando o descumprimento se dá dentro do prazo de dois anos após a concessão da recuperação."
+        },
+        {
+          tipo: "texto",
+          texto: "⁷ Ramos (2014, p. 758)."
+        }
+      ]
+    },
+    {
+      id: "recuperacao_extrajudicial",
+      titulo: "2 Recuperação extrajudicial: conceito e regulação",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O advento da Lei nº 11.101/2005 (Lei de Recuperação das Empresas) inovou ao trazer o instituto da **recuperação extrajudicial**. Antes, na regulação trazida pelo Decreto-lei 7.661/1945, a hipótese de tentar realizar o que a recuperação extrajudicial se propõe era alvo de penalidades e, com o tempo, notou-se que, se já houvesse algum acordo entre a sociedade empresária e os credores para resolver o problema que havia entre eles, seria além de mais benéfico para ambas as partes a celeridade e a eficácia abreviariam todo o desgaste que o processo judicial demanda."
+        },
+        {
+          tipo: "texto",
+          texto: "Dessa maneira, a recuperação extrajudicial tem por objetivo a instauração de um acordo com **fim homologatório**, formado e a ser cumprido entre o devedor e o credor (ou pelo grupo de credores). A regulamentação da recuperação extrajudicial é trazida pelos artigos 161 a 167 da LRE."
+        },
+        {
+          tipo: "destaque",
+          texto: "Saiba Mais: Quando citei acima que o fim era homologatório, fiz referência à figura do juiz que homologará o acordo, mesmo ele sendo composto na via extrajudicial (fora do âmbito judicial)."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "2.1 Vantagens da recuperação extrajudicial"
+        },
+        {
+          tipo: "texto",
+          texto: "A recuperação extrajudicial apresenta algumas situações mais benéficas em relação à recuperação judicial, sendo estas:"
+        },
+        {
+          tipo: "imagem",
+          src: "figura_1_vantagens_da_recuperacao_extrajudicial.png",
+          pasta: "imagens_legislacao/aula_12",
+          alt: "Figura 1 – Vantagens da recuperação extrajudicial: quatro losangos coloridos. Processo mais célere e eficiente; Não existe a figura da assembleia de credores; Não existe previsão legal da atuação/fiscalização do Ministério Público, salvo nos casos de violação das leis; Afasta a existência da falência. Fonte: Autora.",
+          num: 1
+        },
+        {
+          tipo: "subtitulo",
+          texto: "2.2 Requisitos"
+        },
+        {
+          tipo: "texto",
+          texto: "Já que a LRE elegeu pelo apoio ao que o professor André Luiz Santa Cruz Ramos⁸ chama de **incentivo à solução de mercado**, o Art. 161 da LRE traz a regulamentação dos requisitos necessários a serem preenchidos para ocorrer a recuperação extrajudicial: “Art. 161. O devedor que preencher os requisitos do Art. 48 desta Lei poderá propor e negociar com credores plano de recuperação extrajudicial”⁹."
+        },
+        {
+          tipo: "texto",
+          texto: "Os requisitos que o Art. 48 faz menção são os mesmos da recuperação judicial, quais sejam¹⁰:"
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "Exercer atividade empresarial regularmente há mais de 2 anos;",
+            "Não ser falido ou, se tiver sido, já ter suas obrigações e responsabilidade declaradas extintas (por sentença transitada em julgado);",
+            "Não ter, há menos de 5 anos, obtido concessão de recuperação judicial ou concordata;",
+            "Não ter sido condenado por crime falimentar, ou não ter, como administrador ou sócio, pessoa também condenada por crime falimentar."
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "⁸ Ramos (2014, p. 761). ⁹ Art. 161 [...] § O devedor que preencher os requisitos do art. 48 desta Lei poderá propor e negociar com credores plano de recuperação extrajudicial. ¹⁰ Art. 48 [...] § Poderá requerer recuperação judicial o devedor que, no momento do pedido, exerça regularmente suas atividades há mais de 2 (dois) anos e que atenda aos seguintes requisitos, cumulativamente."
+        },
+        {
+          tipo: "texto",
+          texto: "Além dos requisitos elencados acima, existe ainda outro trazido no § 3º do Art. 161, que é: “Art. 161. O devedor que preencher os requisitos do art. 48 desta Lei poderá propor e negociar com credores plano de recuperação extrajudicial:"
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "§ 3º O devedor **não poderá requerer a homologação de plano extrajudicial**, se estiver pendente pedido de recuperação judicial ou se houver obtido recuperação judicial ou homologação de outro plano de recuperação extrajudicial há menos de 2 (dois) anos”¹¹."
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "O preenchimento de todos os requisitos listados acima permite aos credores que se submetam à homologação judicial (consentimento do juiz por tal ato)."
+        },
+        {
+          tipo: "texto",
+          texto: "¹¹ Art. 161 [...] § O devedor que preencher os requisitos do art. 48 desta Lei poderá propor e negociar com credores plano de recuperação extrajudicial."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "2.3 O plano de recuperação extrajudicial"
+        },
+        {
+          tipo: "texto",
+          texto: "O plano de recuperação extrajudicial é o acordo com termos de condições combinadas entre devedor e credores que contém os meios de recuperação que serão adotados."
+        },
+        {
+          tipo: "texto",
+          texto: "Primeiramente, o parágrafo § 1º do Art. 161¹² da LRE trata que o plano só poderá incluir os créditos constituídos até a data do pedido de homologação em juízo, mas esse prazo não é bem uma novidade para você. Os demais parágrafos do Art. 161 e do Art. 163 trarão a estrutura do que o plano não pode conter, que estão os seguintes cenários:"
+        },
+        {
+          tipo: "lista",
+          itens: [
+            "Não prever o pagamento antecipado de nenhuma dívida (§ 2º do Art. 161 da LRE);",
+            "Não conferir afastamento de variação cambial sem anuência do credor (§ 5º do Art. 163 da LRE)."
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Além dessas proibições, temos também na lei a expressa determinação em dar tratamento igualitário aos credores e à autorização do credor garantido para alienação/supressão/substituição de garantia real, conforme o que trata o § 4º do Art. 163 da LRE.¹³"
+        },
+        {
+          tipo: "texto",
+          texto: "¹² Art. 161 [...] § O devedor que preencher os requisitos do art. 48 desta Lei poderá propor e negociar com credores plano de recuperação extrajudicial. ¹³ Art. 163 [...] § O devedor poderá também requerer a homologação de plano de recuperação extrajudicial que obriga todos os credores por ele abrangidos, desde que assinado por credores que representem mais da metade dos créditos de cada espécie abrangidos pelo plano de recuperação extrajudicial."
+        },
+        {
+          tipo: "destaque",
+          texto: "Parada Obrigatória: Não estão sujeitos à recuperação extrajudicial os: créditos tributários; créditos trabalhistas e de acidente de trabalho; credor proprietário fiduciário; credor arrendador mercantil, proprietário ou promitente vendedor de imóvel cujos contratos tenham cláusula de irrevogabilidade/irretratabilidade e credor de adiantamento de câmbio."
+        }
+      ]
+    },
+    {
+      id: "consideracoes_finais",
+      titulo: "Considerações finais",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Chegamos ao fim da temática acerca do direito empresarial, aqui tratamos sobre a recuperação judicial e a extrajudicial, também, como já estudado antes, a possibilidade de reaverem, por parte dos credores, a contraprestação da atividade desenvolvida e prestada."
+        },
+        {
+          tipo: "texto",
+          texto: "No instituto da recuperação judicial, esse procedimento é mais evasivo e nele o devedor não possui uma postura minimamente resolutiva em querer resolver a questão, muito embora por melhor que a situação seja desempenhada e efetivada melhor para ele também seja, que pode, inclusive, até ter a possibilidade de continuar o exercício de seu labor."
+        },
+        {
+          tipo: "texto",
+          texto: "A modalidade extrajudicial não é necessária à figura do juiz conduzindo todos os atos atinentes ao processo, mas precisa de sua homologação como maneira de ratificar a licitude daquele procedimento feito entre devedor e credores."
+        },
+        {
+          tipo: "texto",
+          texto: "Espero que ao fim desses estudos você possa ter conseguido compreender os institutos tratados e exaustivamente expostos e que seu raciocínio jurídico empresarial tenha sido treinado depois de tantas informações."
+        },
+        {
+          tipo: "texto",
+          texto: "Bons Estudos!!"
+        }
+      ]
+    }
+  ]
+}
+
    ],
 };

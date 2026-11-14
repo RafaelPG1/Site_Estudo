@@ -766,6 +766,197 @@ questoes: [
   feedback: "O segundo new Database() retorna a instância já guardada, então db1 e db2 são o mesmo objeto."
 },
   
+
+// aula: Aula 14 - Padrões estruturais
+
+// 1 - Adapter
+{
+  aula: "Aula 14 - Padrões estruturais",
+  tipo: "Explicativa",
+  texto: "O Adapter funciona como um tradutor entre duas interfaces que não se entendem. Em vez de reescrever o sistema antigo ou o novo, cria-se uma classe intermediária que recebe a chamada no formato que o cliente espera e a repassa no formato que o outro sistema entende.",
+  question: "Qual é o papel do Adapter nessa situação?",
+  options: [
+    "Traduzir as chamadas de uma interface para outra, sem alterar as classes originais.",
+    "Criar uma única instância compartilhada das classes dos dois sistemas conectados.",
+    "Dividir uma classe extensa em várias menores para reduzir o seu acoplamento interno.",
+    "Substituir o sistema antigo por uma nova versão, descartando todo o código legado."
+  ],
+  answer: 0,
+  feedback: "O ==def==Adapter== encapsula a lógica de tradução e deixa o cliente independente das mudanças nos sistemas conectados."
+},
+
+// 2 - Bridge
+{
+  aula: "Aula 14 - Padrões estruturais",
+  tipo: "Explicativa",
+  texto: "O padrão Bridge separa uma abstração da sua implementação para que cada uma possa evoluir por conta própria. Pense em um controle remoto e em vários modelos de TV: o controle não precisa saber como cada TV liga ou desliga, ele apenas guarda uma referência ao aparelho que vai operar.",
+  question: "No Bridge, como a abstração se liga à implementação?",
+  options: [
+    "Por herança: a abstração estende a classe da implementação escolhida.",
+    "Por composição: a abstração guarda uma referência à implementação.",
+    "Por cópia: cada abstração duplica o código de todas as implementações.",
+    "Por instância única: ambas usam um único objeto global compartilhado."
+  ],
+  answer: 1,
+  feedback: "A ligação é feita por composição, o que permite trocar a implementação, como o modelo da TV, sem mexer na lógica da abstração."
+},
+
+// 3 - Interface uniforme
+{
+  aula: "Aula 14 - Padrões estruturais",
+  tipo: "Explicativa",
+  texto: "No Composite, a estrutura lembra uma árvore: cada nó pode ser uma folha, que executa uma operação sozinha, ou um composto, que guarda outros nós. Como todos seguem a mesma interface, quem chama a operação não precisa descobrir se está diante de uma folha ou de um composto.",
+  question: "Qual é a principal vantagem da interface uniforme do Composite?",
+  options: [
+    "O cliente passa a acessar somente as folhas, pois os compostos ficam ocultos por trás delas.",
+    "O cliente deixa de depender de qualquer classe, já que nenhuma delas define a operação.",
+    "O cliente trata folhas e compostos da mesma maneira, sem precisar distinguir os seus tipos.",
+    "O cliente escolhe em tempo de execução qual implementação usar para cada nó da árvore."
+  ],
+  answer: 2,
+  feedback: "A ==rule==interface uniforme== permite delegar operações pela hierarquia: o composto repassa a chamada para os filhos, sejam folhas ou outros compostos."
+},
+
+// 4 - Decorator
+{
+  aula: "Aula 14 - Padrões estruturais",
+  tipo: "Contextualizada",
+  texto: "Quando um objeto precisa de funcionalidades extras em combinações variadas, criar uma subclasse para cada combinação gera uma explosão de classes. O Decorator resolve isso encapsulando o objeto base em camadas: cada decorador compartilha a mesma interface, acrescenta o seu comportamento e repassa o resto para o objeto que envolve. Assim, os extras são empilhados em tempo de execução.",
+  question: "Por que o Decorator evita a explosão de subclasses?",
+  options: [
+    "Porque cada combinação possível de funcionalidades fica pré-definida em uma única superclasse.",
+    "Porque o objeto base é modificado diretamente, e as subclasses passam a ser desnecessárias.",
+    "Porque os decoradores impedem que o objeto base receba novas responsabilidades depois de criado.",
+    "Porque as funcionalidades são combinadas dinamicamente por empilhamento de decoradores."
+  ],
+  answer: 3,
+  feedback: "O ==def==Decorator== acrescenta responsabilidades por composição, sem alterar o objeto base, o que segue o princípio aberto para extensão e fechado para modificação."
+},
+
+// 5 - Tipos de Proxy
+{
+  aula: "Aula 14 - Padrões estruturais",
+  tipo: "Contextualizada",
+  texto: "O Proxy oferece a mesma interface do objeto real e se coloca entre o cliente e ele. Dependendo do propósito, ganha nomes diferentes: o proxy de segurança controla quem pode acessar, o de registro anota as interações e o virtual cria o objeto apenas quando ele é realmente necessário, o que evita gastar recursos com algo pesado que talvez nunca seja usado.",
+  question: "Qual tipo de proxy adia a criação de um objeto pesado até o momento do uso?",
+  options: [
+    "O proxy de segurança, que cria o objeto sob demanda ao validar o acesso.",
+    "O proxy virtual, que cria o objeto real apenas quando ele é necessário.",
+    "O proxy de registro, que cria o objeto sob demanda ao anotar a interação.",
+    "O proxy estático, que cria o objeto sob demanda ao iniciar o sistema."
+  ],
+  answer: 1,
+  feedback: "No ==term==proxy virtual== o representante só instancia o objeto real quando a primeira chamada chega, economizando recursos."
+},
+
+// 6 - Facade x Adapter
+{
+  aula: "Aula 14 - Padrões estruturais",
+  tipo: "Contextualizada",
+  texto: "Facade e Adapter são intermediários, mas resolvem problemas diferentes. O Facade oferece uma interface única e simples para um conjunto de subsistemas complexos, escondendo os detalhes de como eles interagem. Já o Adapter converte uma interface em outra, para que um componente existente seja usado onde se espera outro formato de chamada.",
+  question: "Qual é a diferença central entre os dois padrões?",
+  options: [
+    "O Facade simplifica o acesso a vários subsistemas, e o Adapter converte uma interface em outra.",
+    "O Facade converte interfaces incompatíveis, e o Adapter simplifica o acesso a vários subsistemas.",
+    "O Facade cria objetos compartilhados, e o Adapter controla o acesso a um objeto real.",
+    "O Facade separa abstração de implementação, e o Adapter empilha funcionalidades em objetos."
+  ],
+  answer: 0,
+  feedback: "O ==def==Facade== reduz a complexidade percebida pelo cliente, e o Adapter resolve incompatibilidade entre interfaces."
+},
+
+// 7 - Flyweight
+{
+  aula: "Aula 14 - Padrões estruturais",
+  tipo: "Aplicação",
+  texto: "No Flyweight, as informações de um objeto são divididas em dois grupos: o estado intrínseco, que pode ser compartilhado por muitos objetos, e o estado extrínseco, que é próprio de cada instância. Em um jogo com milhares de árvores iguais, a textura de cada tipo de árvore se repete, enquanto a posição na tela muda de uma para outra.",
+  question: "Como classificar a textura e a posição das árvores?",
+  options: [
+    "A textura é estado extrínseco, próprio de cada árvore, e a posição é estado intrínseco, compartilhado.",
+    "A textura e a posição são estados intrínsecos, pois ambas pertencem ao mesmo objeto.",
+    "A textura é estado intrínseco, compartilhado, e a posição é estado extrínseco, de cada árvore.",
+    "A textura e a posição são estados extrínsecos, pois nenhuma delas pode ser compartilhada."
+  ],
+  answer: 2,
+  feedback: "Compartilhar o ==term==estado intrínseco== em uma fábrica evita criar milhares de objetos duplicados, o que economiza memória."
+},
+
+// 8 - Sistema de arquivos
+{
+  aula: "Aula 14 - Padrões estruturais",
+  tipo: "Aplicação",
+  texto: "Uma equipe precisa calcular o tamanho total de um diretório. Cada diretório pode conter arquivos e outros diretórios, e o código que faz o cálculo não deveria precisar verificar o tipo de cada item antes de chamar a operação. Esse tipo de estrutura de partes dentro de um todo tem um padrão estrutural próprio.",
+  question: "Qual padrão atende melhor a essa necessidade?",
+  options: [
+    "Bridge, pois separa os arquivos dos diretórios em duas hierarquias independentes.",
+    "Flyweight, pois faz os arquivos iguais compartilharem um único objeto na memória.",
+    "Proxy, pois controla quem pode acessar cada diretório antes de calcular o tamanho.",
+    "Composite, pois trata arquivos e diretórios pela mesma interface em uma hierarquia."
+  ],
+  answer: 3,
+  feedback: "Hierarquias de partes e todo, como ==def==sistemas de arquivos==, menus e árvores de decisão, são o cenário típico do Composite."
+},
+
+// 9 - Decorator no código
+{
+  aula: "Aula 14 - Padrões estruturais",
+  tipo: "Aplicação",
+  texto: "Cada decorador soma o seu custo ao do objeto que ele envolve, e as chamadas passam pela cadeia de dentro para fora. O café base custa 5, o leite acrescenta 2 e o chantilly acrescenta 1,5. Nada impede empilhar o mesmo decorador mais de uma vez.",
+  question: "Qual valor será exibido pelo código?",
+  code: `class Coffee { cost( ) { return 5; } }
+class CoffeeDecorator {
+  constructor(coffee) { this.coffee = coffee; }
+  cost( ) { return this.coffee.cost( ); }
+}
+class MilkDecorator extends CoffeeDecorator {
+  cost( ) { return super.cost( ) + 2; }
+}
+class WhipDecorator extends CoffeeDecorator {
+  cost( ) { return super.cost( ) + 1.5; }
+}
+const c = new WhipDecorator(new MilkDecorator(new WhipDecorator(new Coffee( ))));
+console.log(c.cost( ));`,
+  options: [
+    "8,5",
+    "10",
+    "9,5",
+    "7"
+  ],
+  answer: 1,
+  feedback: "A cadeia soma 5 + 1,5 + 2 + 1,5 = 10. Cada ==proc==decorador== apenas acrescenta o seu valor e repassa a chamada."
+},
+
+// 10 - Fábrica de Flyweights
+{
+  aula: "Aula 14 - Padrões estruturais",
+  tipo: "Aplicação",
+  texto: "A fábrica de Flyweights guarda os objetos em um dicionário, usando o estado compartilhado como chave. Se a chave já existe, o objeto é reaproveitado, e só quando ela não existe é criado um novo. Por isso, o número de objetos criados depende de quantas combinações diferentes de estado foram pedidas.",
+  question: "Quantos objetos Flyweight serão criados ao final do código?",
+  code: `const flyweights = { };
+function get(state) {
+  const key = JSON.stringify(state);
+  if (!flyweights[key]) {
+    flyweights[key] = { state };
+  }
+  return flyweights[key];
+}
+get({ color: "red", size: 5 });
+get({ color: "blue", size: 10 });
+get({ color: "red", size: 5 });
+get({ color: "blue", size: 10 });
+get({ color: "green", size: 3 });
+console.log(Object.keys(flyweights).length);`,
+  options: [
+    "5",
+    "2",
+    "3",
+    "4"
+  ],
+  answer: 2,
+  feedback: "Há três combinações diferentes, vermelho 5, azul 10 e verde 3. As repetições reutilizam o objeto já criado, e é isso que o ==rule==Flyweight== garante."
+},
+
+
 ],
 
 fixacao: [
@@ -1600,6 +1791,205 @@ console.log(proto.itens.length);`,
   answer: 2,
   feedback: "Na cópia superficial, a lista interna é compartilhada. Ao adicionar b na cópia, o protótipo também é afetado, e o tamanho passa a ser 2."
 },
+
+// aula: Aula 14 - Padrões estruturais
+
+// 1 - Adapter
+{
+  aula: "Aula 14 - Padrões estruturais",
+  tipo: "Direta",
+  texto: "Os padrões estruturais tratam de como organizar as relações entre classes e objetos.",
+  question: "Qual padrão estrutural é indicado para fazer duas interfaces incompatíveis colaborarem?",
+  options: [
+    "Flyweight",
+    "Adapter",
+    "Composite",
+    "Facade"
+  ],
+  answer: 1,
+  feedback: "O Adapter faz a ponte entre interfaces incompatíveis, sem modificar as classes originais."
+},
+
+// 2 - Flyweight
+{
+  aula: "Aula 14 - Padrões estruturais",
+  tipo: "Direta",
+  texto: "Alguns padrões estruturais têm foco em desempenho e uso de recursos.",
+  question: "Qual padrão compartilha partes comuns de muitos objetos semelhantes para economizar memória?",
+  options: [
+    "Proxy",
+    "Bridge",
+    "Flyweight",
+    "Decorator"
+  ],
+  answer: 2,
+  feedback: "O Flyweight reaproveita o estado compartilhado, evitando criar objetos redundantes."
+},
+
+// 3 - Bridge
+{
+  aula: "Aula 14 - Padrões estruturais",
+  tipo: "Contexto",
+  texto: "Uma biblioteca gráfica precisa desenhar em várias plataformas, sem que a lógica de desenho dependa dos detalhes de cada uma.",
+  question: "Qual padrão separa a abstração das implementações para que evoluam de forma independente?",
+  options: [
+    "Adapter",
+    "Composite",
+    "Facade",
+    "Bridge"
+  ],
+  answer: 3,
+  feedback: "No Bridge, a abstração guarda uma referência à implementação, e as duas partes variam separadamente."
+},
+
+// 4 - Decorator
+{
+  aula: "Aula 14 - Padrões estruturais",
+  tipo: "Contexto",
+  texto: "Em um aplicativo de cafeteria, o preço final muda conforme o cliente adiciona leite, açúcar ou chantilly ao café.",
+  question: "Qual padrão permite adicionar esses extras dinamicamente, sem criar uma subclasse para cada combinação?",
+  options: [
+    "Decorator",
+    "Proxy",
+    "Flyweight",
+    "Bridge"
+  ],
+  answer: 0,
+  feedback: "O Decorator empilha funcionalidades em tempo de execução, sem alterar o objeto base."
+},
+
+// 5 - Proxy
+{
+  aula: "Aula 14 - Padrões estruturais",
+  tipo: "Aplicação",
+  texto: "Uma loja virtual usa um objeto de conexão com o banco de dados que é caro de criar. A equipe quer criá-lo só quando necessário e registrar quem o acessa.",
+  question: "Qual padrão é o mais adequado para esse requisito?",
+  options: [
+    "Composite",
+    "Facade",
+    "Proxy",
+    "Adapter"
+  ],
+  answer: 2,
+  feedback: "O Proxy atua como representante do objeto real, controlando o acesso e a criação sob demanda."
+},
+
+// 6 - Facade
+{
+  aula: "Aula 14 - Padrões estruturais",
+  tipo: "Aplicação",
+  texto: "Um sistema de home theater tem cinco subsistemas (som, vídeo, luzes, cortinas e projetor). O usuário quer um único botão para iniciar o filme, sem conhecer cada componente.",
+  question: "Qual padrão fornece essa interface simplificada?",
+  options: [
+    "Facade",
+    "Decorator",
+    "Bridge",
+    "Flyweight"
+  ],
+  answer: 0,
+  feedback: "O Facade oculta a complexidade dos subsistemas e oferece uma interface única para operações comuns."
+},
+
+// 7 - Composite
+{
+  aula: "Aula 14 - Padrões estruturais",
+  tipo: "Aplicação",
+  texto: "Em uma interface gráfica, um menu pode conter itens simples e submenus que, por sua vez, contêm outros itens. O código precisa tratar item e submenu da mesma forma.",
+  question: "Qual padrão representa essa estrutura hierárquica?",
+  options: [
+    "Proxy",
+    "Adapter",
+    "Flyweight",
+    "Composite"
+  ],
+  answer: 3,
+  feedback: "O Composite permite tratar objetos individuais e composições de objetos de maneira uniforme."
+},
+
+// 8 - Adapter em código
+{
+  aula: "Aula 14 - Padrões estruturais",
+  tipo: "Código",
+  texto: "O código abaixo integra um sistema novo, com interface diferente, a um cliente que espera o método request.",
+  question: "O que será exibido no console?",
+  code: `class NewSystem {
+  specificRequest( ) { return "new"; }
+}
+class Adapter {
+  constructor(n) { this.n = n; }
+  request( ) { return this.n.specificRequest( ); }
+}
+console.log(new Adapter(new NewSystem( )).request( ));`,
+  options: [
+    "old",
+    "new",
+    "undefined",
+    "Erro, pois Adapter não possui o método specificRequest"
+  ],
+  answer: 1,
+  feedback: "O Adapter recebe request e redireciona a chamada para specificRequest, que retorna new."
+},
+
+// 9 - Composite em código
+{
+  aula: "Aula 14 - Padrões estruturais",
+  tipo: "Código",
+  texto: "O código abaixo monta uma estrutura com folhas e um composto, que delega a operação aos filhos.",
+  question: "Qual é a ordem das mensagens exibidas?",
+  code: `class Leaf {
+  constructor(name) { this.name = name; }
+  operation( ) { console.log(this.name); }
+}
+class Composite {
+  constructor(name) { this.name = name; this.children = [ ]; }
+  add(c) { this.children.push(c); }
+  operation( ) {
+    console.log(this.name + " start");
+    this.children.forEach(c => c.operation( ));
+    console.log(this.name + " end");
+  }
+}
+const c = new Composite("C");
+c.add(new Leaf("A"));
+c.add(new Leaf("B"));
+c.operation( );`,
+  options: [
+    "A, B, C start, C end",
+    "C start, C end, A, B",
+    "A, C start, B, C end",
+    "C start, A, B, C end"
+  ],
+  answer: 3,
+  feedback: "O composto imprime o início, delega aos filhos na ordem em que foram adicionados e depois imprime o fim."
+},
+
+// 10 - Proxy em código
+{
+  aula: "Aula 14 - Padrões estruturais",
+  tipo: "Código",
+  texto: "O código abaixo usa um Proxy que verifica o acesso antes de repassar a chamada ao objeto real.",
+  question: "O que será exibido, na ordem, ao executar o código?",
+  code: `class RealSubject {
+  request( ) { return "ok"; }
+}
+class Proxy {
+  constructor(real) { this.real = real; }
+  request( ) {
+    console.log("check");
+    return this.real.request( );
+  }
+}
+console.log(new Proxy(new RealSubject( )).request( ));`,
+  options: [
+    "check e depois ok",
+    "ok e depois check",
+    "somente ok",
+    "somente check"
+  ],
+  answer: 0,
+  feedback: "O Proxy imprime check, chama o objeto real e devolve ok, que é impresso pelo cliente."
+},
+
 ],
 
 enade: [
@@ -2566,6 +2956,204 @@ console.log(proto.nome, proto.itens.length);`,
   ],
   answer: 3,
   feedback: "A IV é falsa: o **Singleton** garante uma única instância com ponto de acesso global. As demais descrevem corretamente Abstract Factory, Factory Method e Builder."
+},
+
+
+// aula: Aula 14 - Padrões estruturais
+
+// 1 - Adapter e legado
+{
+  aula: "Aula 14 - Padrões estruturais",
+  tipo: "Asserção + Justificativa",
+  texto: "Uma empresa precisa usar uma biblioteca de terceiros, cuja interface não corresponde à que o seu sistema legado espera. Nem o sistema nem a biblioteca podem ser modificados.",
+  question: "Analise as asserções e a relação proposta entre elas.",
+  assertions: [
+    "O ==def==Adapter== permite que o sistema legado e a biblioteca colaborem sem alterar nenhuma das classes originais.",
+    "PORQUE ele encapsula a lógica de tradução entre as interfaces, mantendo o código cliente independente de mudanças nos sistemas conectados."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 0,
+  feedback: "As duas asserções são verdadeiras e II explica I: o **Adapter** traduz as chamadas, por composição ou por herança, e o cliente não percebe a diferença entre as interfaces."
+},
+
+// 2 - Bridge, Composite, Decorator e Proxy
+{
+  aula: "Aula 14 - Padrões estruturais",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Uma equipe de arquitetura revisa quatro padrões estruturais antes de definir o desenho de um novo módulo de software.",
+  question: "Avalie as afirmações a seguir e assinale a alternativa correta.",
+  assertions: [
+    "O Bridge reduz o acoplamento ao separar a abstração da sua implementação, permitindo que evoluam de forma independente.",
+    "O Composite exige que o cliente distinga folhas de compostos para chamar corretamente cada operação.",
+    "O Decorator funciona por composição: cada decorador encapsula o objeto base ou outro decorador e compartilha a mesma interface.",
+    "O Proxy oferece a mesma interface do objeto que representa e se interpõe entre ele e o cliente."
+  ],
+  options: [
+    "I, II e III, apenas",
+    "I, III e IV, apenas",
+    "II e IV, apenas",
+    "I, II, III e IV"
+  ],
+  answer: 1,
+  feedback: "A II é falsa: a **interface uniforme** do Composite dispensa o cliente de distinguir folhas e compostos. As demais descrevem corretamente os ==def==padrões== estudados."
+},
+
+// 3 - Risco do Facade
+{
+  aula: "Aula 14 - Padrões estruturais",
+  tipo: "Conceitual Contextualizada",
+  texto: "Uma biblioteca de processamento de imagens expõe um Facade com um único método que executa leitura, filtro e gravação. Alguns usuários avançados reclamam que não conseguem ajustar etapas intermediárias.",
+  question: "Qual limitação do padrão Facade se manifesta nesse cenário?",
+  options: [
+    "A impossibilidade de reutilizar o código, pois cada subsistema passa a depender de todos os outros.",
+    "O aumento do acoplamento, pois o cliente precisa conhecer a interface de cada subsistema.",
+    "O encapsulamento exagerado, que oculta detalhes que podem ser úteis ao cliente em certos casos.",
+    "A necessidade de criar uma subclasse para cada combinação de etapas oferecida ao usuário."
+  ],
+  answer: 2,
+  feedback: "O ==warn==uso excessivo== do **Facade** pode ocultar detalhes úteis e acrescentar um intermediário, o que o torna ideal onde simplicidade importa mais que acesso granular."
+},
+
+// 4 - Flyweight em jogo
+{
+  aula: "Aula 14 - Padrões estruturais",
+  tipo: "Análise Aplicada",
+  texto: "Um jogo de tiro gera dezenas de milhares de projéteis por minuto. Cada projétil guarda sprite, cor, posição e velocidade, e o consumo de memória cresce a ponto de causar travamentos. Os sprites e as cores são os mesmos para cada tipo de projétil.",
+  question: "Qual solução estrutural reduz o consumo de memória nesse cenário?",
+  options: [
+    "Criar um Decorator para cada projétil, acrescentando sprite e cor como funcionalidades dinâmicas extras.",
+    "Usar um Proxy virtual que cria cada projétil sob demanda, mas mantém todos os dados de cada um individuais.",
+    "Aplicar um Composite que agrupa todos os projéteis em um nó único, que guarda os dados de todos eles.",
+    "Compartilhar sprite e cor por uma fábrica e manter posição e velocidade, extrínsecas, em cada projétil."
+  ],
+  answer: 3,
+  feedback: "O **Flyweight** separa o ==term==estado intrínseco== do ==term==estado extrínseco==, e a fábrica reaproveita o objeto quando o estado compartilhado é o mesmo."
+},
+
+// 5 - Composite e interface
+{
+  aula: "Aula 14 - Padrões estruturais",
+  tipo: "Asserção + Justificativa",
+  texto: "Em um sistema de menus, itens simples e submenus implementam a mesma interface, e o submenu delega a operação aos seus filhos.",
+  question: "Analise as asserções e a relação proposta entre elas.",
+  assertions: [
+    "O Composite exige que o cliente distinga folhas de compostos antes de chamar a operação.",
+    "PORQUE um composto delega a operação aos seus componentes filhos, que podem ser folhas ou outros compostos."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 3,
+  feedback: "A I é falsa: o objetivo da **interface uniforme** é justamente dispensar essa distinção. A II é verdadeira, pois a ==rule==delegação== percorre a hierarquia."
+},
+
+// 6 - Decorator e princípio aberto-fechado
+{
+  aula: "Aula 14 - Padrões estruturais",
+  tipo: "Conceitual Contextualizada",
+  texto: "Uma loja de cafés vende bebidas que recebem extras como leite, canela e chantilly. A equipe quer adicionar novos extras no futuro sem alterar a classe que representa a bebida base.",
+  question: "Qual princípio de projeto o Decorator adota para atender a essa demanda?",
+  options: [
+    "Aberto para extensão e fechado para modificação, pois o objeto base permanece inalterado.",
+    "Aberto para modificação e fechado para extensão, pois cada extra altera a classe da bebida base.",
+    "Responsabilidade única, pois a bebida base passa a cuidar de todos os extras possíveis.",
+    "Separação entre estados, pois o preço da bebida base é compartilhado por todos os extras."
+  ],
+  answer: 0,
+  feedback: "O ==rule==princípio aberto-fechado== é adotado porque novas funcionalidades entram como **decoradores**, sem editar o objeto base."
+},
+
+// 7 - Vantagens e custos dos padrões
+{
+  aula: "Aula 14 - Padrões estruturais",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Um grupo de estudos compara os custos e os benefícios dos padrões estruturais para decidir quando aplicá-los em projetos de diferentes tamanhos.",
+  question: "Avalie as afirmações a seguir e assinale a alternativa correta.",
+  assertions: [
+    "O Adapter pode adicionar uma camada extra de complexidade, especialmente em sistemas simples em que sua implementação é desnecessária.",
+    "O Proxy pode prejudicar o desempenho quando o acesso direto ao objeto real seria mais rápido.",
+    "O Flyweight sempre traz benefícios, mesmo quando os objetos são altamente dinâmicos e têm poucas propriedades comuns.",
+    "O Bridge é mais indicado para sistemas que realmente necessitam de múltiplas dimensões de variação."
+  ],
+  options: [
+    "I, II e IV, apenas",
+    "II e III, apenas",
+    "I, III e IV, apenas",
+    "III e IV, apenas"
+  ],
+  answer: 0,
+  feedback: "A III é falsa: o **Flyweight** perde o sentido quando há poucas propriedades comuns. Em geral, o uso deve ser ponderado, com a ==warn==complexidade extra== comparada ao benefício."
+},
+
+// 8 - Proxy virtual em código
+{
+  aula: "Aula 14 - Padrões estruturais",
+  tipo: "Análise Aplicada",
+  texto: "O código abaixo usa um proxy para evitar carregar uma imagem pesada antes de ela ser realmente exibida. O carregamento imprime uma mensagem no construtor da classe real.",
+  question: "Após as três chamadas a display, quantas vezes a mensagem loading será exibida?",
+  code: `class RealImage {
+  constructor(f) { this.f = f; console.log("loading " + f); }
+  display( ) { console.log("showing " + this.f); }
+}
+class ProxyImage {
+  constructor(f) { this.f = f; this.real = null; }
+  display( ) {
+    if (!this.real) { this.real = new RealImage(this.f); }
+    this.real.display( );
+  }
+}
+const img = new ProxyImage("a.png");
+img.display( );
+img.display( );
+img.display( );`,
+  options: [
+    "Nenhuma vez, pois o proxy apenas repassa chamadas e nunca instancia a imagem real.",
+    "Três vezes, pois cada chamada a display cria uma nova instância da imagem real.",
+    "Uma vez, apenas na primeira exibição, quando o objeto real é criado sob demanda.",
+    "Quatro vezes, pois o proxy também carrega a imagem real ao ser construído."
+  ],
+  answer: 2,
+  feedback: "O proxy só cria o objeto real quando `this.real` ainda é nulo, o que caracteriza o ==term==proxy virtual==. A **criação sob demanda** acontece uma única vez."
+},
+
+// 9 - Escolha entre Adapter e Facade
+{
+  aula: "Aula 14 - Padrões estruturais",
+  tipo: "Análise Aplicada",
+  texto: "Uma fintech precisa integrar um gateway de pagamento externo, cuja interface é incompatível com a do sistema. Em paralelo, o time quer oferecer ao front-end uma única chamada que coordene quatro subsistemas internos de cobrança.",
+  question: "Que combinação de padrões atende às duas necessidades?",
+  options: [
+    "Facade para o gateway externo e Adapter para os subsistemas internos.",
+    "Adapter para o gateway externo e Facade para os subsistemas internos.",
+    "Bridge para o gateway externo e Proxy para os subsistemas internos.",
+    "Decorator para o gateway externo e Composite para os subsistemas internos."
+  ],
+  answer: 1,
+  feedback: "O **Adapter** resolve a ==term==incompatibilidade de interfaces==, e o Facade entrega uma interface unificada sobre vários subsistemas."
+},
+
+// 10 - Quando usar o Composite
+{
+  aula: "Aula 14 - Padrões estruturais",
+  tipo: "Conceitual Contextualizada",
+  texto: "Uma equipe de produto precisa representar menus de interface, estruturas organizacionais e árvores de decisão, todos com itens que contêm outros itens.",
+  question: "Qual cenário descreve corretamente o uso adequado do Composite?",
+  options: [
+    "Criar uma única instância de uma classe e fornecer um ponto global de acesso a ela.",
+    "Controlar o acesso a recursos remotos ou caros por meio de um representante do objeto.",
+    "Representar partes de um todo em hierarquias, como menus e estruturas organizacionais.",
+    "Reduzir o consumo de memória compartilhando os dados comuns entre objetos semelhantes."
+  ],
+  answer: 2,
+  feedback: "O **Composite** é indicado para ==def==hierarquias parte-todo==, em que o cliente manipula folhas e compostos pela mesma interface."
 },
 
 ],

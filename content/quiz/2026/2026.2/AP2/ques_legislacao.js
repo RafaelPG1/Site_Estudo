@@ -459,6 +459,160 @@ window.questoes = {
   answer: 2,
   feedback: "Os trabalhistas até 150 salários mínimos têm prioridade. O que exceder esse teto passa a ser tratado como crédito quirografário."
 },
+
+// ===== AULA 12 =====
+// 1 - Objetivo da recuperação judicial
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Explicativa",
+  texto: "A recuperação judicial foi trazida pela Lei nº 11.101/2005 (LRE) e substituiu a antiga concordata. Ela dá à empresa em crise um novo respiro, permitindo acordar com os credores uma saída para a situação financeira. O Art. 47 resume o seu objetivo: viabilizar a superação da crise e preservar a empresa.",
+  question: "Segundo o Art. 47 da LRE, qual é o objetivo da recuperação judicial?",
+  options: [
+    "Liquidar os bens do devedor com rapidez para pagar os credores na ordem legal.",
+    "Viabilizar a superação da crise, mantendo a empresa produtiva, os empregos e os credores.",
+    "Impedir que os credores participem das decisões sobre a situação financeira da empresa.",
+    "Substituir a concordata pela falência, extinguindo a empresa em dificuldade."
+  ],
+  answer: 1,
+  feedback: "A recuperação busca a preservação da empresa, de sua função social e do estímulo à atividade econômica, e não a sua liquidação."
+},
+// 2 - Sujeito ativo
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Explicativa",
+  texto: "O sujeito ativo da recuperação judicial é o devedor, ou seja, o empresário ou a sociedade empresária. Só ele pode pedir a recuperação. O credor, por sua vez, não tem essa legitimidade: a ele cabe, quando for o caso, pedir a falência do devedor.",
+  question: "Quem pode requerer a recuperação judicial?",
+  options: [
+    "O devedor, empresário ou sociedade empresária, e somente ele.",
+    "O credor que tiver o maior crédito perante a sociedade empresária.",
+    "Qualquer credor, desde que obtenha a concordância dos demais.",
+    "O Ministério Público, em defesa da função social da empresa."
+  ],
+  answer: 0,
+  feedback: "O pedido de recuperação é privativo do **devedor**. A figura do credor só pode pedir a falência."
+},
+// 3 - Foro competente
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Explicativa",
+  texto: "O pedido de recuperação judicial é feito no juízo do local do principal estabelecimento do devedor, ou da filial, quando a empresa tem sede no exterior. O principal estabelecimento é onde se concentra a atividade, e não necessariamente a matriz.",
+  question: "Qual é o foro competente para o pedido de recuperação judicial?",
+  options: [
+    "O juízo do local da sede da empresa do credor principal.",
+    "O juízo do principal estabelecimento do credor, onde está a maior parte do crédito.",
+    "O juízo do local da matriz, sempre, ainda que a atividade se concentre em outro lugar.",
+    "O juízo do local do principal estabelecimento do devedor."
+  ],
+  answer: 3,
+  feedback: "O critério é o **principal estabelecimento do devedor**, que não se confunde necessariamente com a matriz."
+},
+// 4 - Créditos sujeitos ao plano
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Contextualizada",
+  texto: "A Sociedade Alfa pediu recuperação judicial em março. Um fornecedor possui crédito constituído em janeiro, mas que só vence em setembro. O administrador da empresa afirma que esse crédito não entra no plano porque ainda não venceu.",
+  question: "A afirmação do administrador está correta?",
+  options: [
+    "Não, pois se sujeitam os créditos existentes na data do pedido, ainda que não vencidos.",
+    "Sim, pois só entram no plano os créditos já vencidos na data do pedido de recuperação.",
+    "Sim, pois créditos de fornecedores nunca se sujeitam à recuperação judicial da devedora.",
+    "Não, pois só entram no plano os créditos constituídos depois da data do pedido."
+  ],
+  answer: 0,
+  feedback: "O Art. 49 da LRE submete à recuperação **todos os créditos existentes na data do pedido**, vencidos ou vincendos."
+},
+// 5 - Credor fiduciário
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Contextualizada",
+  texto: "A Beta Ltda. entrou com pedido de recuperação judicial. Entre os seus credores estão um banco, que financiou um caminhão com alienação fiduciária, e um fornecedor sem garantia. O sócio quer saber quem terá o crédito incluído no plano.",
+  question: "Quanto ao crédito do banco, assinale a alternativa correta.",
+  options: [
+    "Sujeita-se à recuperação, pois a lei não prevê exceções para credores com garantia.",
+    "Sujeita-se à recuperação, pois o caminhão passa a integrar o patrimônio da devedora.",
+    "Só se sujeita se o banco concordar expressamente com o plano de recuperação.",
+    "Não se sujeita, pois o credor proprietário fiduciário é exceção prevista na lei."
+  ],
+  answer: 3,
+  feedback: "O credor **proprietário fiduciário** é uma das exceções do Art. 49, assim como o arrendador mercantil e os créditos tributários."
+},
+// 6 - Descumprimento do plano
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Contextualizada",
+  texto: "A Gama S/A teve a recuperação judicial concedida. No décimo mês, deixou de pagar uma obrigação prevista no plano e que vencia dentro do prazo de acompanhamento judicial de dois anos. Um credor perguntou qual é a consequência.",
+  question: "Qual é a consequência do descumprimento nesse período?",
+  options: [
+    "O encerramento imediato do processo, com a quitação de todas as dívidas.",
+    "A extinção automática das dívidas vincendas, perdoadas pelo juiz.",
+    "A convolação da recuperação em falência, nos termos do Art. 73 da LRE.",
+    "A prorrogação do prazo do plano por mais dois anos, sem outras consequências."
+  ],
+  answer: 2,
+  feedback: "O descumprimento de obrigação do plano durante os dois anos leva à **convolação em falência** (Art. 61, §1º, e Art. 73)."
+},
+// 7 - Requisitos do Art. 48
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Aplicação",
+  texto: "Uma sociedade empresária exerce a atividade regularmente há apenas um ano e oito meses. Está em crise e pretende pedir recuperação judicial. Os sócios nunca foram condenados por crime falimentar.",
+  question: "Segundo o Art. 48 da LRE, o pedido pode ser feito?",
+  options: [
+    "Sim, pois o único requisito é não ter sócios condenados por crime falimentar.",
+    "Sim, pois a lei não exige tempo mínimo de atividade para pedir a recuperação.",
+    "Não, pois o devedor deve exercer regularmente a atividade há mais de dois anos.",
+    "Não, pois a lei exige mais de cinco anos de atividade regular do devedor."
+  ],
+  answer: 2,
+  feedback: "Os requisitos do Art. 48 são cumulativos, e o primeiro é o exercício regular da atividade há **mais de 2 anos**."
+},
+// 8 - Meios de recuperação
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Aplicação",
+  texto: "Em um plano de recuperação, a empresa propõe a venda parcial de bens, o aumento do capital social e, mediante convenção coletiva, a redução salarial com compensação de horários. Um sócio questiona se esses meios são admitidos.",
+  question: "Esses meios podem constar do plano?",
+  options: [
+    "Não, pois o Art. 50 é taxativo e proíbe qualquer alteração nas relações de trabalho da empresa.",
+    "Sim, pois o rol do Art. 50 é exemplificativo, e a redução exige acordo ou convenção.",
+    "Não, pois a venda de bens e o aumento do capital social só valem na falência.",
+    "Sim, mas a redução salarial pode ser imposta pela empresa, sem acordo ou convenção."
+  ],
+  answer: 1,
+  feedback: "O Art. 50 lista os meios de recuperação **dentre outros**, ou seja, o rol é exemplificativo."
+},
+// 9 - Vantagens da extrajudicial
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Aplicação",
+  texto: "Um devedor e seus principais credores já conversam sobre as condições de pagamento. Querem uma solução mais ágil, sem assembleia de credores e sem o risco de falência, e apenas precisam de homologação do juiz.",
+  question: "Que modalidade atende a essa situação?",
+  options: [
+    "A recuperação extrajudicial, regulada pelos arts. 161 a 167 da LRE.",
+    "A recuperação judicial, que dispensa a participação dos credores no processo.",
+    "A falência, que encerra a discussão entre o devedor e os credores.",
+    "A concordata, regulada pelo Decreto-lei 7.661/1945, ainda em vigor."
+  ],
+  answer: 0,
+  feedback: "A recuperação extrajudicial é um acordo com **fim homologatório**, mais célere, sem assembleia de credores e que afasta a falência."
+},
+// 10 - Créditos fora da extrajudicial
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Aplicação",
+  texto: "Uma sociedade elabora um plano de recuperação extrajudicial e pretende incluir créditos trabalhistas e tributários, para negociar todas as dívidas de uma só vez, em um único acordo com os credores.",
+  question: "Esse plano pode abranger esses créditos?",
+  options: [
+    "Sim, pois todos os créditos existentes se sujeitam ao plano extrajudicial da empresa.",
+    "Não, pois créditos trabalhistas e tributários não se sujeitam à extrajudicial.",
+    "Sim, desde que o juiz autorize a inclusão dos créditos no ato da homologação.",
+    "Apenas os tributários podem ser incluídos no plano, mas os trabalhistas não."
+  ],
+  answer: 1,
+  feedback: "Não se sujeitam à extrajudicial os créditos **tributários, trabalhistas** e de acidente de trabalho, entre outros."
+},
+
+
   ],
 
   fixacao: [
@@ -915,6 +1069,159 @@ window.questoes = {
   answer: 0,
   feedback: "O prazo prescricional das obrigações do falido recomeça a correr no dia em que transita em julgado a sentença de encerramento."
 },
+
+// ===== AULA 12 =====
+// 1 - Lei da recuperação
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Direta",
+  texto: "A recuperação judicial substituiu um instituto antigo do direito empresarial.",
+  question: "Qual instituto a recuperação judicial substituiu?",
+  options: [
+    "A falência",
+    "A dissolução parcial",
+    "A concordata",
+    "A liquidação"
+  ],
+  answer: 2,
+  feedback: "A Lei nº 11.101/2005 (LRE) trouxe a recuperação judicial no lugar da antiga concordata."
+},
+// 2 - Legitimidade
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Direta",
+  texto: "A recuperação judicial só pode ser pedida por uma figura específica.",
+  question: "Quem pode pedir a recuperação judicial?",
+  options: [
+    "O credor",
+    "O devedor",
+    "O sócio retirante",
+    "O juiz"
+  ],
+  answer: 1,
+  feedback: "O sujeito ativo é o devedor, empresário ou sociedade empresária. O credor só pode pedir a falência."
+},
+// 3 - Foro
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Direta",
+  texto: "O pedido de recuperação é dirigido a um juízo definido pela lei.",
+  question: "Qual é o foro competente para o pedido de recuperação judicial?",
+  options: [
+    "Principal estabelecimento do devedor",
+    "Sede do credor principal",
+    "Domicílio de cada sócio da devedora",
+    "Principal estabelecimento do credor"
+  ],
+  answer: 0,
+  feedback: "O foro é o juízo do principal estabelecimento do devedor, que nem sempre é a matriz."
+},
+// 4 - Tempo de atividade
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Contexto",
+  texto: "Para pedir recuperação judicial, o devedor deve cumprir requisitos cumulativos do Art. 48.",
+  question: "Há quanto tempo, no mínimo, o devedor deve exercer regularmente a atividade?",
+  options: [
+    "Mais de 5 anos",
+    "Mais de 2 anos",
+    "Mais de 1 ano",
+    "Mais de 10 anos"
+  ],
+  answer: 1,
+  feedback: "O primeiro requisito do Art. 48 é exercer regularmente a atividade há mais de 2 anos."
+},
+// 5 - Recuperação anterior
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Contexto",
+  texto: "Uma empresa obteve recuperação judicial há três anos e quer pedir outra.",
+  question: "Em regra, há quanto tempo não se pode ter obtido recuperação judicial para pedir uma nova?",
+  options: [
+    "Há menos de 5 anos",
+    "Há menos de 2 anos",
+    "Há menos de 10 anos",
+    "Há menos de 1 ano"
+  ],
+  answer: 0,
+  feedback: "O devedor não pode ter obtido recuperação há menos de 5 anos, por isso essa empresa não pode pedir de novo."
+},
+// 6 - Créditos sujeitos
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Contexto",
+  texto: "Uma empresa pediu recuperação em março, e um fornecedor tem crédito que só vence em setembro.",
+  question: "Quais créditos se sujeitam à recuperação judicial, segundo o Art. 49?",
+  options: [
+    "Apenas os já vencidos",
+    "Só os constituídos depois do pedido",
+    "Os existentes na data do pedido",
+    "Somente os de maior valor"
+  ],
+  answer: 2,
+  feedback: "Estão sujeitos todos os créditos existentes na data do pedido, ainda que não vencidos."
+},
+// 7 - Rol do Art. 50
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Aplicação",
+  texto: "Uma empresa quer propor, no plano, um meio de recuperação que não aparece na lista do Art. 50.",
+  question: "Como se classifica o rol de meios de recuperação do Art. 50?",
+  options: [
+    "Taxativo",
+    "Facultativo ao juiz",
+    "Exclusivo dos credores",
+    "Exemplificativo"
+  ],
+  answer: 3,
+  feedback: "O Art. 50 traz os meios dentre outros, ou seja, o rol é exemplificativo."
+},
+// 8 - Convolação
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Aplicação",
+  texto: "O devedor deixou de cumprir uma obrigação do plano no primeiro ano após a concessão.",
+  question: "Qual é a consequência do descumprimento dentro dos dois anos?",
+  options: [
+    "Convolação em falência",
+    "Arquivamento do processo",
+    "Novo prazo sem consequência",
+    "Extinção das dívidas"
+  ],
+  answer: 0,
+  feedback: "O descumprimento nesse período leva à convolação da recuperação em falência (Art. 73)."
+},
+// 9 - Assembleia de credores
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Aplicação",
+  texto: "Um devedor quer um processo mais célere e sem a figura da assembleia de credores.",
+  question: "Qual modalidade dispensa a assembleia de credores?",
+  options: [
+    "Recuperação judicial",
+    "Falência",
+    "Recuperação extrajudicial",
+    "Concordata"
+  ],
+  answer: 2,
+  feedback: "Uma das vantagens da extrajudicial é a inexistência da figura da assembleia de credores."
+},
+// 10 - Créditos fora da extrajudicial
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Aplicação",
+  texto: "Uma empresa montou um plano de recuperação extrajudicial e quer saber o que fica de fora dele.",
+  question: "Qual crédito NÃO está sujeito à recuperação extrajudicial?",
+  options: [
+    "Crédito quirografário",
+    "Crédito com garantia real",
+    "Crédito subordinado",
+    "Crédito trabalhista"
+  ],
+  answer: 3,
+  feedback: "Créditos trabalhistas, tributários e de acidente de trabalho não se sujeitam à recuperação extrajudicial."
+},
+
   ],
 
   enade: [
@@ -1371,6 +1678,159 @@ window.questoes = {
   answer: 0,
   feedback: "Durante a falência, a ==def==prescrição== fica suspensa. Com o **trânsito em julgado** da sentença de encerramento, o prazo das obrigações do falido volta a correr nesse mesmo dia."
 },
+
+// ===== AULA 12 =====
+// 1 - Objetivo da recuperação
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Conceitual Contextualizada",
+  texto: "A recuperação judicial foi trazida pela Lei nº 11.101/2005 e tem por objetivo viabilizar a superação da crise econômico-financeira do devedor, a fim de permitir a manutenção da fonte produtora, do emprego dos trabalhadores e dos interesses dos credores, promovendo a preservação da empresa, sua função social e o estímulo à atividade econômica (Art. 47). A Indústria Delta, que emprega 300 pessoas, enfrenta forte crise de caixa, mas ainda tem mercado e capacidade produtiva.",
+  question: "Considerando o objetivo da recuperação judicial, assinale a alternativa correta sobre a situação da Indústria Delta.",
+  options: [
+    "A recuperação permite que a Delta supere a crise e continue produzindo, preservando empregos e credores.",
+    "A recuperação visa liquidar o patrimônio da Delta para que os credores sejam pagos o mais rápido possível.",
+    "A recuperação serve apenas aos interesses dos credores, e a manutenção dos empregos não integra o objetivo.",
+    "A recuperação só se justifica se a Delta já estiver sem mercado e sem qualquer capacidade produtiva."
+  ],
+  answer: 0,
+  feedback: "O Art. 47 mostra que a recuperação busca a ==def==preservação da empresa==: **manter a fonte produtora, o emprego e os interesses dos credores**, e não liquidar o devedor."
+},
+// 2 - Recuperação anterior
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Análise Aplicada",
+  texto: "Poderá requerer recuperação judicial o devedor que, no momento do pedido, exerça regularmente suas atividades há mais de 2 anos e atenda cumulativamente a requisitos como: não ser falido, não ter obtido recuperação judicial há menos de 5 anos e não ter sido condenado por crime previsto na lei (Art. 48). A Comercial Épsilon, com 8 anos de atividade regular, obteve a concessão de uma recuperação judicial há três anos e, agora, em nova crise, quer pedir outra.",
+  question: "Com base no Art. 48 da LRE, assinale a alternativa correta.",
+  options: [
+    "O pedido pode ser feito, pois o tempo de atividade de 8 anos supre qualquer outro requisito.",
+    "O pedido não pode ser feito, pois a Épsilon obteve recuperação há menos de 5 anos.",
+    "O pedido pode ser feito, pois o prazo de vedação para nova recuperação é de apenas 2 anos.",
+    "O pedido não pode ser feito, pois quem já teve recuperação não pode pedir outra jamais."
+  ],
+  answer: 1,
+  feedback: "Os requisitos do Art. 48 são **cumulativos**. A Épsilon cumpre o tempo de atividade, mas obteve recuperação há menos de ==rule==5 anos==, e por isso não pode pedir nova."
+},
+// 3 - Legitimidade para o pedido
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Análise Aplicada",
+  texto: "O sujeito ativo da recuperação judicial é o devedor, isto é, o empresário ou a sociedade empresária, e somente ele pode pedi-la. A figura do credor só pode pedir a falência. O Banco Zeta, credor da Sociedade Ômega por valor elevado e já vencido, resolveu ingressar com um pedido de recuperação judicial em nome da devedora, para acelerar a negociação da dívida.",
+  question: "Sobre a iniciativa do Banco Zeta, assinale a alternativa correta.",
+  options: [
+    "O pedido é válido, pois todo credor de crédito vencido pode requerer a recuperação do devedor.",
+    "O pedido é válido, desde que o banco tenha a concordância de pelo menos metade dos demais credores.",
+    "Ele não pode pedir, pois a legitimidade é do devedor, e ao credor cabe apenas a falência.",
+    "O pedido não pode ser feito, pois a recuperação só pode ser requerida pelo Ministério Público."
+  ],
+  answer: 2,
+  feedback: "Na recuperação judicial, o ==term==sujeito ativo== é o **devedor**. O credor não tem legitimidade para pedi-la e só pode requerer a falência."
+},
+// 4 - Foro do pedido
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Análise Aplicada",
+  texto: "O foro para a solicitação da recuperação judicial é o juízo do local do principal estabelecimento do devedor ou da filial de empresa com sede no exterior. O principal estabelecimento não corresponde necessariamente à matriz. A Têxtil Sigma tem a matriz registrada em Fortaleza, mas concentra a produção, o faturamento e a administração efetiva em Sobral.",
+  question: "Qual é o foro competente para o pedido de recuperação judicial da Têxtil Sigma?",
+  options: [
+    "O juízo de Sobral, pois ali está o principal estabelecimento da devedora.",
+    "O juízo de Fortaleza, pois a matriz é sempre o foro obrigatório da recuperação.",
+    "O juízo do domicílio do credor com maior crédito perante a devedora.",
+    "O juízo que o devedor escolher livremente entre qualquer das suas unidades."
+  ],
+  answer: 0,
+  feedback: "O critério é o ==def==principal estabelecimento== do devedor, onde a atividade se concentra, e **não necessariamente a matriz**."
+},
+// 5 - Créditos sujeitos e exceções
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Análise Aplicada",
+  texto: "Estão sujeitos à recuperação judicial todos os créditos existentes na data do pedido, ainda que não vencidos (Art. 49). Não se aplicam à recuperação, como exceção, entre outros, os créditos tributários e os do credor proprietário fiduciário. A Metalúrgica Lambda pediu recuperação e possui três credores: um fornecedor sem garantia, com crédito que vence em 90 dias; a Fazenda, com crédito tributário; e um banco, com alienação fiduciária de uma máquina.",
+  question: "Quais créditos se sujeitam ao plano de recuperação?",
+  options: [
+    "Os três, pois todos os créditos existentes na data do pedido se sujeitam à recuperação.",
+    "Apenas o do fornecedor, pois existe na data do pedido, ainda que vincendo.",
+    "O do fornecedor e o do banco, pois só o crédito tributário é exceção.",
+    "Nenhum deles, pois créditos vincendos ficam fora da recuperação."
+  ],
+  answer: 1,
+  feedback: "O crédito do fornecedor **existe na data do pedido**, ainda que vincendo, e se sujeita ao plano. O tributário e o do ==term==proprietário fiduciário== são exceções."
+},
+// 6 - Redução salarial como meio
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Análise Aplicada",
+  texto: "O Art. 50 da LRE traz os meios de recuperação judicial, dentre outros, em rol exemplificativo, como prazos e condições especiais de pagamento, alteração do controle societário, aumento de capital, venda parcial de bens e redução salarial, compensação de horários e redução da jornada, mediante acordo ou convenção coletiva. A Rede Ípsilon pretende incluir no plano a redução salarial temporária dos empregados.",
+  question: "Segundo o Art. 50 da LRE, assinale a alternativa correta.",
+  options: [
+    "A redução é proibida, pois o Art. 50 veda qualquer alteração das relações de trabalho.",
+    "A redução pode ser imposta pela empresa, desde que prevista no plano de recuperação.",
+    "A redução é admitida apenas se constar expressamente do rol, pois ele é taxativo.",
+    "A redução é admitida como meio, desde que feita mediante acordo ou convenção coletiva."
+  ],
+  answer: 3,
+  feedback: "A redução salarial é um dos meios do Art. 50, mas depende de ==rule==acordo ou convenção coletiva==. O rol é **exemplificativo**."
+},
+// 7 - Convolação em falência
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Análise Aplicada",
+  texto: "Proferida a decisão que concede a recuperação, o devedor permanece em recuperação judicial até que se cumpram as obrigações previstas no plano que vencerem até 2 anos depois da concessão. Durante esse período, o descumprimento de qualquer obrigação do plano acarreta a convolação da recuperação em falência (Arts. 61, §1º, e 73). A Cerâmica Ômicron teve a recuperação concedida e, no 14º mês, deixou de pagar uma parcela prevista no plano.",
+  question: "Qual é a consequência jurídica da situação da Cerâmica Ômicron?",
+  options: [
+    "A recuperação converte-se em falência, pois o descumprimento ocorreu no prazo de dois anos.",
+    "O processo é arquivado, pois o descumprimento de uma só parcela não gera efeitos relevantes.",
+    "O plano é prorrogado por mais dois anos automaticamente, sem outra consequência jurídica.",
+    "As parcelas vincendas são perdoadas e passam a ser consideradas totalmente extintas."
+  ],
+  answer: 0,
+  feedback: "O descumprimento nos dois anos de acompanhamento leva à ==proc==convolação em falência==, e o plano antes acordado é convertido em falência dentro do próprio processo."
+},
+// 8 - Vantagens da extrajudicial
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Conceitual Contextualizada",
+  texto: "A recuperação extrajudicial tem por objetivo um acordo com fim homologatório, formado e cumprido entre o devedor e os credores, regulado pelos arts. 161 a 167 da LRE. Entre as suas vantagens estão um processo mais célere e eficiente, a inexistência da figura da assembleia de credores, a ausência de previsão legal de fiscalização pelo Ministério Público, salvo violação das leis, e o afastamento da falência. A Comércio Pi negocia diretamente com seus credores.",
+  question: "Considerando as características da recuperação extrajudicial, assinale a alternativa correta.",
+  options: [
+    "O processo exige assembleia de credores e a fiscalização obrigatória do Ministério Público.",
+    "O acordo dispensa a homologação judicial, pois é totalmente conduzido fora do Judiciário.",
+    "O acordo é formado entre devedor e credores, sem assembleia, e passa por homologação do juiz.",
+    "A via extrajudicial não afasta a falência e se torna mais lenta que a recuperação judicial."
+  ],
+  answer: 2,
+  feedback: "A recuperação extrajudicial é um ==def==acordo homologatório==: **mais célere, sem assembleia de credores** e sem fiscalização do Ministério Público, salvo violação das leis."
+},
+// 9 - Homologação do plano
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Análise Aplicada",
+  texto: "O devedor que preencher os requisitos do Art. 48 poderá propor e negociar com credores plano de recuperação extrajudicial. Mas ele não poderá requerer a homologação se estiver pendente pedido de recuperação judicial ou se houver obtido recuperação judicial ou homologação de outro plano extrajudicial há menos de 2 anos (Art. 161, §3º). A Distribuidora Rô obteve a homologação de um plano extrajudicial há um ano e, agora, propõe novo plano aos credores.",
+  question: "Com base no Art. 161, §3º, da LRE, assinale a alternativa correta.",
+  options: [
+    "A Rô pode requerer a homologação normalmente, pois a lei não limita a repetição do plano.",
+    "A Rô pode requerer a homologação, pois o prazo de vedação só vale para a recuperação judicial.",
+    "A Rô não pode requerer a homologação, pois só se admite um plano extrajudicial em toda a vida.",
+    "A Rô não pode requerer a homologação do novo plano, pois obteve a de outro há menos de 2 anos."
+  ],
+  answer: 3,
+  feedback: "O §3º do Art. 161 veda a homologação de novo plano ==rule==antes de 2 anos== da homologação de outro ou da recuperação judicial, ou havendo pedido de recuperação pendente."
+},
+// 10 - Conteúdo do plano extrajudicial
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Análise Aplicada",
+  texto: "O plano de recuperação extrajudicial só pode incluir os créditos constituídos até a data do pedido de homologação, não pode prever o pagamento antecipado de nenhuma dívida (Art. 161, §2º) e não pode conferir afastamento de variação cambial sem anuência do credor (Art. 163, §5º). Não se sujeitam a ele, ainda, os créditos tributários e os trabalhistas. A Gráfica Tau elaborou um plano que prevê o pagamento antecipado de um credor e a inclusão de dívidas trabalhistas.",
+  question: "Sobre esse plano, assinale a alternativa correta.",
+  options: [
+    "O plano é adequado, pois o pagamento antecipado é permitido para o credor mais relevante.",
+    "O plano é adequado, pois todos os créditos, inclusive os trabalhistas, se sujeitam à extrajudicial.",
+    "O plano é inadequado, pois não pode prever pagamento antecipado nem incluir créditos trabalhistas.",
+    "O plano é inadequado apenas quanto às dívidas trabalhistas, pois o pagamento antecipado é livre."
+  ],
+  answer: 2,
+  feedback: "O plano **não pode prever pagamento antecipado de nenhuma dívida** e ==term==créditos trabalhistas== não se sujeitam à recuperação extrajudicial."
+},
+
 ],
 
 ava: [
