@@ -4,7 +4,12 @@
    ============================================= */
 
 window.__nexusConteudo = {
+
+
    aulas: [
+
+
+
     // aula 9
 {
   aula: "Sociedades",

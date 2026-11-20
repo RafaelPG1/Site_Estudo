@@ -957,6 +957,168 @@ console.log(Object.keys(flyweights).length);`,
 },
 
 
+// aula: Aula 15 - Padrões comportamentais
+
+// 1 - Chain of Responsibility
+{
+  aula: "Aula 15 - Padrões comportamentais",
+  tipo: "Explicativa",
+  texto: "No Chain of Responsibility, os objetos são encadeados, e o pedido percorre a cadeia até encontrar quem o trate. Cada elo decide se processa a solicitação ou a repassa ao próximo. Assim, quem faz o pedido não precisa saber qual objeto vai atendê-lo, o que reduz o acoplamento entre remetente e receptores.",
+  question: "Qual é a principal característica do padrão Chain of Responsibility?",
+  options: [
+    "Um objeto central coordena a comunicação de todos os demais, evitando referências diretas.",
+    "O pedido percorre uma cadeia de objetos, e cada um decide se o trata ou o repassa.",
+    "O pedido é encapsulado em um objeto para ser enfileirado, registrado e desfeito depois.",
+    "Os elementos de uma coleção são percorridos em sequência sem expor sua estrutura interna."
+  ],
+  answer: 1,
+  feedback: "O ==def==Chain of Responsibility== desacopla o remetente dos receptores: vários objetos podem colaborar na resolução de uma mesma solicitação."
+},
+
+// 2 - Command
+{
+  aula: "Aula 15 - Padrões comportamentais",
+  tipo: "Explicativa",
+  texto: "O Command transforma uma solicitação em um objeto. Como a ação passa a ser um objeto, ela pode ser guardada em uma fila, registrada em um histórico, associada a um botão ou a um atalho e até desfeita. É por isso que ele aparece com frequência em interfaces gráficas e editores de texto.",
+  question: "O que o padrão Command encapsula?",
+  options: [
+    "Uma família de algoritmos intercambiáveis, trocados durante a execução.",
+    "O esqueleto de um algoritmo, deixando para as subclasses a implementação de etapas específicas.",
+    "Uma gramática para linguagens específicas, usada para interpretar sentenças dessas linguagens.",
+    "Uma solicitação como objeto, para enfileirar, registrar e desfazer ações no sistema."
+  ],
+  answer: 3,
+  feedback: "Ao tratar a ação como um ==term==objeto==, o **Command** viabiliza ações como desfazer e refazer, comuns em editores de texto."
+},
+
+// 3 - Iterator
+{
+  aula: "Aula 15 - Padrões comportamentais",
+  tipo: "Explicativa",
+  texto: "Para percorrer uma lista ou um mapa, o código cliente normalmente teria de conhecer como a coleção guarda os seus itens. O Iterator evita isso: ele oferece uma forma uniforme de acessar os elementos em sequência, com operações como next e hasNext, sem expor a implementação da coleção.",
+  question: "Qual é a vantagem central do padrão Iterator?",
+  options: [
+    "Acessar os elementos de uma coleção em sequência, sem expor sua implementação.",
+    "Notificar automaticamente vários objetos quando o estado de um deles for alterado.",
+    "Capturar e restaurar o estado de um objeto sem violar o seu encapsulamento.",
+    "Separar um algoritmo dos objetos sobre os quais ele opera, em estruturas complexas."
+  ],
+  answer: 0,
+  feedback: "O **Iterator** padroniza o percurso de coleções. Em contrapartida, ==warn==adiciona sobrecarga== ao código."
+},
+
+// 4 - Observer
+{
+  aula: "Aula 15 - Padrões comportamentais",
+  tipo: "Contextualizada",
+  texto: "Em um aplicativo de cotações, vários painéis exibem o preço de um mesmo ativo. Quando o preço muda, todos os painéis abertos precisam ser atualizados na hora. A equipe não quer que o ativo conheça cada painel nem que cada painel consulte o preço o tempo todo.",
+  question: "Qual padrão resolve essa necessidade, e como?",
+  options: [
+    "Mediator: um objeto central faz os painéis consultarem uns aos outros.",
+    "Memento: o ativo guarda os preços anteriores para restaurar o estado de cada painel.",
+    "Observer: o ativo avisa os painéis cadastrados sempre que seu estado muda.",
+    "Template Method: cada painel redefine as etapas do algoritmo de atualização do preço."
+  ],
+  answer: 2,
+  feedback: "No ==def==Observer==, o objeto observado mantém os observadores e os avisa por meio de um método como notify, que chama update em cada um."
+},
+
+// 5 - Mediator
+{
+  aula: "Aula 15 - Padrões comportamentais",
+  tipo: "Contextualizada",
+  texto: "Em uma tela de cadastro, botões, caixas de texto e listas se comunicam diretamente entre si. Cada novo componente exige alterar vários outros, e a manutenção ficou difícil. A equipe pensa em um objeto único para coordenar essas interações.",
+  question: "O que o padrão Mediator muda nessa tela?",
+  options: [
+    "Faz cada componente guardar uma cópia do estado dos demais para consultá-lo quando preciso.",
+    "Centraliza a comunicação em um mediador, sem dependências diretas entre componentes.",
+    "Cria uma cadeia em que cada componente repassa o evento ao próximo até que alguém o trate.",
+    "Permite que cada componente troque seu comportamento conforme o seu estado interno."
+  ],
+  answer: 1,
+  feedback: "O ==def==Mediator== reduz o acoplamento entre componentes, mas pode centralizar lógica demais e se tornar um ponto crítico."
+},
+
+// 6 - Memento
+{
+  aula: "Aula 15 - Padrões comportamentais",
+  tipo: "Contextualizada",
+  texto: "Um software de design gráfico permite desfazer alterações. Para voltar a um estado anterior, ele precisa guardar uma cópia do estado do documento, mas a classe do documento não deve expor seus atributos internos para quem faz esse armazenamento.",
+  question: "Qual padrão atende a esse requisito, e por quê?",
+  options: [
+    "Observer, pois avisa o histórico sempre que algum atributo do documento é alterado.",
+    "Visitor, pois permite acrescentar a operação de salvar sem alterar a classe do documento.",
+    "State, pois cada versão do documento é uma classe com comportamento diferente.",
+    "Memento, pois captura e restaura o estado do objeto sem violar o seu encapsulamento."
+  ],
+  answer: 3,
+  feedback: "O **Memento** guarda o estado em um objeto à parte, preservando o ==rule==encapsulamento==. O custo é o consumo de memória com objetos grandes."
+},
+
+// 7 - State
+{
+  aula: "Aula 15 - Padrões comportamentais",
+  tipo: "Aplicação",
+  texto: "Uma máquina de lavar tem estados como ligada e parada, e o mesmo comando de acionar produz comportamentos diferentes conforme o estado atual. O código está cheio de condicionais que verificam em qual estado a máquina está.",
+  question: "Qual padrão elimina essas condicionais?",
+  options: [
+    "State, que delega o comportamento a uma classe para cada estado do objeto.",
+    "Strategy, que troca a família de algoritmos escolhida pelo cliente em tempo de execução.",
+    "Command, que guarda cada acionamento como objeto para poder desfazê-lo depois.",
+    "Iterator, que percorre os estados possíveis sem revelar como a máquina os guarda."
+  ],
+  answer: 0,
+  feedback: "No **State**, o objeto altera o comportamento quando o estado interno muda, como em ==term==máquinas de estados finitos==. A desvantagem é dividir o comportamento em várias classes."
+},
+
+// 8 - Strategy
+{
+  aula: "Aula 15 - Padrões comportamentais",
+  tipo: "Aplicação",
+  texto: "Uma loja virtual calcula impostos de formas diferentes conforme o país do cliente. Hoje, o método de cálculo tem um grande bloco de if e else que cresce a cada novo país, e a equipe quer trocar a regra de cálculo dinamicamente.",
+  question: "Qual solução é a mais adequada?",
+  options: [
+    "Visitor: uma operação por país, aplicada a cada objeto do pedido sem alterar suas classes.",
+    "Interpreter: uma gramática para as fórmulas, interpretada a cada cálculo de imposto.",
+    "Strategy: uma classe por regra de cálculo, intercambiáveis por meio de um contexto.",
+    "Memento: cada cálculo anterior guardado para que o cliente possa restaurá-lo depois."
+  ],
+  answer: 2,
+  feedback: "O ==def==Strategy== encapsula uma família de algoritmos e os torna intercambiáveis. O custo é o aumento da quantidade de classes."
+},
+
+// 9 - Template Method
+{
+  aula: "Aula 15 - Padrões comportamentais",
+  tipo: "Aplicação",
+  texto: "Um framework de relatórios sempre executa as mesmas etapas: carregar dados, formatar e exportar. Cada cliente precisa personalizar apenas a formatação e a exportação, sem alterar a ordem das etapas.",
+  question: "Qual padrão assegura essa estrutura comum?",
+  options: [
+    "Template Method, que define o esqueleto do algoritmo e deixa as etapas às subclasses.",
+    "Chain of Responsibility, que passa o relatório de um objeto a outro até alguém o exportar.",
+    "Observer, que avisa cada cliente quando uma etapa do relatório é concluída.",
+    "Command, que registra cada etapa como objeto para que possa ser desfeita depois."
+  ],
+  answer: 0,
+  feedback: "No **Template Method**, o método da classe base chama as etapas na ordem fixa, e as subclasses implementam o ==rule==passo específico==. Em troca, a flexibilidade das subclasses fica restrita."
+},
+
+// 10 - Visitor
+{
+  aula: "Aula 15 - Padrões comportamentais",
+  tipo: "Aplicação",
+  texto: "Uma estrutura de objetos de uma loja (produtos, combos e serviços) precisa ganhar novas operações, como calcular imposto e gerar relatório. A equipe prefere não alterar as classes desses objetos a cada operação nova.",
+  question: "Qual padrão atende a essa necessidade, e qual é o seu custo?",
+  options: [
+    "Flyweight, que compartilha o estado dos objetos, mas exige copiar cada objeto ao usá-lo.",
+    "Mediator, que centraliza as operações em um objeto único, sem qualquer ponto crítico.",
+    "Iterator, que percorre os objetos e já inclui as operações novas em cada classe.",
+    "Visitor, que separa o algoritmo dos objetos, mas exige mudanças ao surgirem novos elementos."
+  ],
+  answer: 3,
+  feedback: "O **Visitor** acrescenta comportamentos sem mexer nas classes, mas ==warn==viola o princípio aberto/fechado== ao exigir alterações em visitantes e elementos nas novas operações."
+},
+
 ],
 
 fixacao: [
@@ -1990,6 +2152,191 @@ console.log(new Proxy(new RealSubject( )).request( ));`,
   feedback: "O Proxy imprime check, chama o objeto real e devolve ok, que é impresso pelo cliente."
 },
 
+// aula: Aula 15 - Padrões comportamentais
+
+// 1 - Observer
+{
+  aula: "Aula 15 - Padrões comportamentais",
+  tipo: "Direta",
+  texto: "Alguns padrões comportamentais tratam da comunicação entre objetos quando o estado de um deles muda.",
+  question: "Qual padrão notifica automaticamente vários objetos quando o estado de outro objeto muda?",
+  options: [
+    "Mediator, que centraliza a comunicação entre objetos",
+    "Memento, que restaura o estado",
+    "Observer, que notifica os dependentes",
+    "Visitor, que separa algoritmos dos objetos"
+  ],
+  answer: 2,
+  feedback: "O Observer permite que múltiplos objetos sejam notificados automaticamente quando o objeto observado muda de estado."
+},
+
+// 2 - Template Method
+{
+  aula: "Aula 15 - Padrões comportamentais",
+  tipo: "Direta",
+  texto: "Há padrões que organizam a estrutura de algoritmos, muito usados em frameworks.",
+  question: "Qual padrão define o esqueleto de um algoritmo e deixa as etapas específicas para as subclasses?",
+  options: [
+    "Template Method, que define o esqueleto",
+    "Strategy, que troca algoritmos inteiros em execução",
+    "Command, que encapsula pedidos",
+    "State, que muda comportamento por estado"
+  ],
+  answer: 0,
+  feedback: "O Template Method define o esqueleto do algoritmo, e as subclasses implementam etapas sem alterar a estrutura."
+},
+
+// 3 - Interpreter
+{
+  aula: "Aula 15 - Padrões comportamentais",
+  tipo: "Direta",
+  texto: "Um dos padrões é usado em interpretadores de expressões matemáticas.",
+  question: "Qual padrão define uma gramática para linguagens específicas e interpreta as suas sentenças?",
+  options: [
+    "Iterator, que percorre coleções em sequência",
+    "Visitor, que separa algoritmos",
+    "Mediator, que centraliza a comunicação",
+    "Interpreter, que define uma gramática"
+  ],
+  answer: 3,
+  feedback: "O Interpreter define uma gramática e interpreta sentenças, mas pode ser difícil de manter para gramáticas complexas."
+},
+
+// 4 - Chain of Responsibility
+{
+  aula: "Aula 15 - Padrões comportamentais",
+  tipo: "Contexto",
+  texto: "Um sistema de suporte técnico tem três níveis, e cada nível trata problemas mais complexos que o anterior, repassando o que não resolve.",
+  question: "Qual padrão representa essa cadeia de atendimento?",
+  options: [
+    "Observer, que notifica vários objetos de uma só vez",
+    "Chain of Responsibility, que encadeia tratadores",
+    "Command, que encapsula pedidos",
+    "Template Method, que fixa o esqueleto"
+  ],
+  answer: 1,
+  feedback: "No Chain of Responsibility, cada objeto decide processar o pedido ou passá-lo ao próximo na cadeia."
+},
+
+// 5 - Memento
+{
+  aula: "Aula 15 - Padrões comportamentais",
+  tipo: "Contexto",
+  texto: "Em um editor de texto, o usuário quer voltar ao conteúdo de alguns instantes atrás.",
+  question: "Qual padrão captura e restaura o estado de um objeto sem violar o seu encapsulamento?",
+  options: [
+    "Strategy, que troca algoritmos em execução",
+    "Iterator, que percorre coleções",
+    "Memento, que restaura o estado do objeto",
+    "Interpreter, que define uma gramática"
+  ],
+  answer: 2,
+  feedback: "O Memento guarda o estado em um objeto à parte e o restaura depois, preservando o encapsulamento."
+},
+
+// 6 - Strategy
+{
+  aula: "Aula 15 - Padrões comportamentais",
+  tipo: "Contexto",
+  texto: "Um sistema de vendas precisa alternar entre algoritmos de ordenação conforme a situação.",
+  question: "Qual padrão permite trocar dinamicamente a estratégia de execução?",
+  options: [
+    "Strategy, que troca algoritmos em tempo real",
+    "Visitor, que separa algoritmo e objetos de uma estrutura",
+    "State, que muda o comportamento",
+    "Mediator, que centraliza a comunicação"
+  ],
+  answer: 0,
+  feedback: "O Strategy encapsula uma família de algoritmos e os torna intercambiáveis."
+},
+
+// 7 - Mediator
+{
+  aula: "Aula 15 - Padrões comportamentais",
+  tipo: "Aplicação",
+  texto: "Em uma interface, botões e caixas de texto se comunicam diretamente entre si, o que dificulta a manutenção.",
+  question: "Qual padrão centraliza essa comunicação em um objeto único?",
+  options: [
+    "Observer, que notifica vários objetos automaticamente",
+    "Command, que encapsula pedidos",
+    "Iterator, que percorre coleções",
+    "Mediator, que centraliza a comunicação"
+  ],
+  answer: 3,
+  feedback: "O Mediator remove as dependências diretas, e os objetos se comunicam por meio de um mediador."
+},
+
+// 8 - Visitor
+{
+  aula: "Aula 15 - Padrões comportamentais",
+  tipo: "Aplicação",
+  texto: "Uma equipe precisa criar novas operações sobre uma estrutura de objetos complexa sem alterar as classes dos objetos.",
+  question: "Qual padrão separa o algoritmo dos objetos sobre os quais ele opera?",
+  options: [
+    "Template Method, que fixa o esqueleto do algoritmo",
+    "Visitor, que separa o algoritmo dos objetos",
+    "Strategy, que troca algoritmos",
+    "Memento, que restaura o estado"
+  ],
+  answer: 1,
+  feedback: "O Visitor adiciona comportamentos a objetos sem alterar as suas classes."
+},
+
+// 9 - Command em código
+{
+  aula: "Aula 15 - Padrões comportamentais",
+  tipo: "Código",
+  texto: "O código abaixo executa e depois desfaz um comando que acrescenta texto a um editor.",
+  question: "O que será exibido no console, na ordem?",
+  code: `class AddTextCommand {
+  constructor(editor, text) { this.editor = editor; this.text = text; }
+  execute( ) { this.editor.content += this.text; }
+  undo( ) {
+    this.editor.content = this.editor.content.slice(0, -this.text.length);
+  }
+}
+const editor = { content: "" };
+const cmd = new AddTextCommand(editor, "ok");
+cmd.execute( );
+console.log(editor.content);
+cmd.undo( );
+console.log(editor.content);`,
+  options: [
+    "ok e depois ok, pois undo não remove nada",
+    "uma linha vazia e depois ok, na ordem inversa",
+    "ok e depois uma linha vazia",
+    "Erro, pois undo não está definido na classe"
+  ],
+  answer: 2,
+  feedback: "execute acrescenta ok ao conteúdo e undo remove esse texto, deixando o conteúdo vazio."
+},
+
+// 10 - Strategy em código
+{
+  aula: "Aula 15 - Padrões comportamentais",
+  tipo: "Código",
+  texto: "O código abaixo troca a estratégia do contexto entre uma soma e uma multiplicação.",
+  question: "O que será exibido no console, na ordem?",
+  code: `class AddStrategy { execute(a, b) { return a + b; } }
+class MultiplyStrategy { execute(a, b) { return a * b; } }
+class Context {
+  setStrategy(s) { this.s = s; }
+  run(a, b) { return this.s.execute(a, b); }
+}
+const c = new Context( );
+c.setStrategy(new AddStrategy( ));
+console.log(c.run(4, 3));
+c.setStrategy(new MultiplyStrategy( ));
+console.log(c.run(4, 3));`,
+  options: [
+    "7 e depois 12",
+    "12 e depois 7",
+    "7 e depois 7",
+    "12 e depois 12"
+  ],
+  answer: 0,
+  feedback: "Com a soma, 4 + 3 resulta em 7. Após trocar a estratégia, 4 * 3 resulta em 12."
+},
 ],
 
 enade: [
@@ -3156,6 +3503,217 @@ img.display( );`,
   feedback: "O **Composite** é indicado para ==def==hierarquias parte-todo==, em que o cliente manipula folhas e compostos pela mesma interface."
 },
 
+// aula: Aula 15 - Padrões comportamentais
+
+// 1 - Observer e notificação
+{
+  aula: "Aula 15 - Padrões comportamentais",
+  tipo: "Asserção + Justificativa",
+  texto: "Em um sistema de notícias, vários assinantes precisam ser avisados em tempo real sempre que uma matéria é publicada.",
+  question: "Analise as asserções e a relação proposta entre elas.",
+  assertions: [
+    "O ==def==Observer== permite que múltiplos objetos sejam notificados automaticamente quando o objeto observado muda de estado.",
+    "PORQUE o objeto observado mantém uma lista de observadores e chama o método de atualização de cada um ao notificar."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 0,
+  feedback: "As duas asserções são verdadeiras e II explica I: o **Observer** automatiza a notificação, e o objeto observado não precisa conhecer o que cada observador faz."
+},
+
+// 2 - State e classes por estado
+{
+  aula: "Aula 15 - Padrões comportamentais",
+  tipo: "Asserção + Justificativa",
+  texto: "Uma máquina de estados finitos alterna entre os estados de partida e parada, e o comportamento de cada acionamento depende do estado atual.",
+  question: "Analise as asserções e a relação proposta entre elas.",
+  assertions: [
+    "O ==def==State== permite que um objeto altere seu comportamento quando o seu estado interno muda.",
+    "PORQUE ele concentra toda a lógica de cada estado em uma única classe, o que evita a criação de classes por estado."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 2,
+  feedback: "A I é verdadeira, e a II é falsa: o **State** divide o comportamento em ==warn==várias classes==, uma para cada estado, o que pode aumentar a complexidade."
+},
+
+// 3 - Template Method e Strategy
+{
+  aula: "Aula 15 - Padrões comportamentais",
+  tipo: "Asserção + Justificativa",
+  texto: "Uma equipe estuda dois padrões que organizam algoritmos: um define a sequência de etapas, e o outro permite trocar o algoritmo inteiro.",
+  question: "Analise as asserções e a relação proposta entre elas.",
+  assertions: [
+    "O ==def==Template Method== define o esqueleto de um algoritmo e deixa para as subclasses a implementação de etapas específicas.",
+    "PORQUE o Strategy permite definir uma família de algoritmos e torná-los intercambiáveis."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 1,
+  feedback: "As duas asserções são verdadeiras, mas II não justifica I: o **Template Method** fixa a ordem das etapas por herança, enquanto o Strategy troca o algoritmo por composição."
+},
+
+// 4 - Custos dos padrões
+{
+  aula: "Aula 15 - Padrões comportamentais",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Um grupo de estudos discute as desvantagens apontadas para quatro padrões comportamentais antes de escolher qual deles adotar em um sistema.",
+  question: "Avalie as afirmações a seguir e assinale a alternativa correta.",
+  assertions: [
+    "O Chain of Responsibility pode dificultar o rastreamento da execução em cadeias muito longas.",
+    "O Command pode resultar em muitas classes se cada ação for encapsulada separadamente.",
+    "O Memento preserva o encapsulamento, mas pode consumir muita memória em objetos grandes.",
+    "O Mediator elimina qualquer ponto crítico, pois distribui a lógica por todos os componentes."
+  ],
+  options: [
+    "I e II, apenas",
+    "I, II e IV, apenas",
+    "II, III e IV, apenas",
+    "I, II e III, apenas"
+  ],
+  answer: 3,
+  feedback: "A IV é falsa: o **Mediator** pode ==warn==centralizar excessivamente a lógica==, tornando o próprio mediador um ponto crítico."
+},
+
+// 5 - Interpreter, Iterator e Visitor
+{
+  aula: "Aula 15 - Padrões comportamentais",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Uma equipe revisa três padrões comportamentais ligados ao processamento de estruturas de dados e de linguagens em um novo módulo.",
+  question: "Avalie as afirmações a seguir e assinale a alternativa correta.",
+  assertions: [
+    "O Interpreter serve a gramáticas fixas, mas pode ser difícil de manter em gramáticas complexas.",
+    "O Iterator acessa os elementos de uma coleção em sequência sem expor sua implementação.",
+    "O Visitor separa um algoritmo dos objetos em que opera, sem alterar as classes desses objetos.",
+    "O Visitor respeita plenamente o princípio aberto/fechado, pois novas operações nunca exigem alterar visitantes ou elementos."
+  ],
+  options: [
+    "I e II, apenas",
+    "I, II e III, apenas",
+    "II e IV, apenas",
+    "I, III e IV, apenas"
+  ],
+  answer: 1,
+  feedback: "A IV é falsa: o **Visitor** ==warn==viola o princípio aberto/fechado== ao exigir alterações nas classes de visitantes e elementos para novas operações."
+},
+
+// 6 - Mediator como ponto crítico
+{
+  aula: "Aula 15 - Padrões comportamentais",
+  tipo: "Conceitual Contextualizada",
+  texto: "Uma tela de cadastro usa um mediador que coordena a comunicação de todos os componentes. Com o tempo, o mediador concentrou tanta lógica que qualquer alteração nele afeta toda a tela.",
+  question: "Qual limitação do padrão Mediator se manifesta nesse cenário?",
+  options: [
+    "O aumento do acoplamento, pois cada componente passa a conhecer diretamente todos os outros.",
+    "A impossibilidade de reutilizar os componentes, pois cada um depende de uma subclasse.",
+    "O consumo de memória, pois cada componente guarda uma cópia do estado dos demais.",
+    "A centralização excessiva da lógica, que transforma o mediador em um ponto crítico do sistema."
+  ],
+  answer: 3,
+  feedback: "O **Mediator** reduz o acoplamento entre os componentes, mas o ==warn==ponto crítico== passa a ser o próprio mediador, quando ele acumula lógica demais."
+},
+
+// 7 - Rastreamento no Chain of Responsibility
+{
+  aula: "Aula 15 - Padrões comportamentais",
+  tipo: "Conceitual Contextualizada",
+  texto: "Um sistema de suporte encadeia dezenas de tratadores. Quando um chamado não é resolvido como esperado, a equipe tem dificuldade para descobrir por quais objetos a solicitação passou.",
+  question: "Qual desvantagem do Chain of Responsibility essa situação ilustra?",
+  options: [
+    "A dificuldade de rastrear a execução em cadeias muito longas.",
+    "A necessidade de o remetente conhecer o receptor que tratará cada solicitação.",
+    "A impossibilidade de mais de um objeto colaborar na resolução de uma solicitação.",
+    "O aumento do acoplamento entre o remetente do pedido e os objetos da cadeia."
+  ],
+  answer: 0,
+  feedback: "No **Chain of Responsibility**, o remetente fica desacoplado dos receptores, mas as ==warn==cadeias longas== dificultam o rastreamento da execução."
+},
+
+// 8 - Custo de memória do Memento
+{
+  aula: "Aula 15 - Padrões comportamentais",
+  tipo: "Conceitual Contextualizada",
+  texto: "Um editor gráfico guarda uma cópia completa do estado do documento a cada alteração para permitir desfazer. Em arquivos muito grandes, o consumo de memória cresce de forma preocupante.",
+  question: "Qual limitação do padrão Memento esse cenário evidencia?",
+  options: [
+    "A violação do encapsulamento, pois o editor expõe os atributos internos do documento.",
+    "A impossibilidade de restaurar estados anteriores, pois o estado nunca é capturado.",
+    "O alto consumo de memória quando o padrão é aplicado a objetos grandes.",
+    "A dependência direta entre o documento e cada tela que exibe o seu conteúdo."
+  ],
+  answer: 2,
+  feedback: "O **Memento** preserva o encapsulamento, mas ==warn==consome muita memória== se aplicado a objetos grandes."
+},
+
+// 9 - Saída do Strategy
+{
+  aula: "Aula 15 - Padrões comportamentais",
+  tipo: "Análise Aplicada",
+  texto: "O código abaixo usa o padrão Strategy para trocar o cálculo executado pelo contexto.",
+  question: "Qual é a saída exibida no console, na ordem?",
+  code: `class AddStrategy { execute(a, b) { return a + b; } }
+class MultiplyStrategy { execute(a, b) { return a * b; } }
+class Context {
+  setStrategy(s) { this.s = s; }
+  run(a, b) { return this.s.execute(a, b); }
+}
+const c = new Context( );
+c.setStrategy(new AddStrategy( ));
+console.log(c.run(4, 3));
+c.setStrategy(new MultiplyStrategy( ));
+console.log(c.run(4, 3));`,
+  options: [
+    "12 e depois 7",
+    "7 e depois 12",
+    "7 e depois 7",
+    "12 e depois 12"
+  ],
+  answer: 1,
+  feedback: "O contexto executa a **estratégia atual**: com a soma, 4 + 3 resulta em 7, e após ==proc==setStrategy== com a multiplicação, 4 * 3 resulta em 12."
+},
+
+// 10 - Alternância do State
+{
+  aula: "Aula 15 - Padrões comportamentais",
+  tipo: "Análise Aplicada",
+  texto: "O código abaixo implementa o padrão State com dois estados, e cada estado troca o estado do contexto para o outro após executar.",
+  question: "Após a configuração inicial, o método request é chamado três vezes. Qual é a saída, na ordem?",
+  code: `class StartState {
+  handle(ctx) { console.log("start"); ctx.setState(new StopState( )); }
+}
+class StopState {
+  handle(ctx) { console.log("stop"); ctx.setState(new StartState( )); }
+}
+class Context {
+  setState(s) { this.state = s; }
+  request( ) { this.state.handle(this); }
+}
+const ctx = new Context( );
+ctx.setState(new StartState( ));
+ctx.request( );
+ctx.request( );
+ctx.request( );`,
+  options: [
+    "start, start e start",
+    "stop, start e stop",
+    "start, stop e stop",
+    "start, stop e start"
+  ],
+  answer: 3,
+  feedback: "Cada estado executa e **troca o estado do contexto**: start passa para stop, stop volta para start, e o ==proc==ciclo== se repete na terceira chamada."
+},
 ],
 
 ava: [
