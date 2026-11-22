@@ -5,6 +5,309 @@ window.questoes = {
 
   // Questões de Banco de dados 
   questoes: [
+// ===== AULA 7 =====
+// 1 - Primeiros institutos
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Explicativa",
+  texto: "O comércio é mais antigo do que o direito, e já na Idade Média alcançara relevância em todos os povos. Foi nesse período de formação do direito comercial que surgiram os seus primeiros institutos jurídicos, segundo André Santa Cruz Ramos.",
+  question: "Quais institutos surgiram na formação do direito comercial?",
+  options: [
+    "Falência, concordata, recuperação judicial e registro de empresas.",
+    "Títulos de crédito, sociedades, contratos mercantis e bancos, entre outros.",
+    "Sociedades limitadas, empresas individuais, franquias e cooperativas.",
+    "Propriedade industrial, contratos de trabalho, tributos e agências reguladoras."
+  ],
+  answer: 1,
+  feedback: "Letra de câmbio (==def==título de crédito==), comendas (sociedades), contrato de seguro (contrato mercantil) e bancos foram os primeiros institutos."
+},
+// 2 - Teoria dos atos de comércio
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Explicativa",
+  texto: "Em 1807, a França publicou o primeiro código comercial, que adotou a teoria dos atos de comércio. Ela listava quais atos eram considerados comerciais, como a compra e a venda de bens imóveis. O Brasil seguiu esse ideal em 1850, com o seu primeiro código comercial.",
+  question: "Qual é o critério adotado pela teoria dos atos de comércio?",
+  options: [
+    "A qualidade de quem pratica o ato, que precisa ser comerciante registrado.",
+    "A organização dos fatores de produção para a atividade econômica.",
+    "O lucro obtido pela pessoa com a atividade que exerce habitualmente.",
+    "A atividade praticada, ou seja, o que se faz, e não a pessoa que a realiza."
+  ],
+  answer: 3,
+  feedback: "Na ==term==teoria dos atos de comércio== valia o ato previsto em lista, e não o sujeito que o realizava."
+},
+// 3 - Superação da lista
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Explicativa",
+  texto: "A lista de atos de comércio foi considerada ultrapassada porque os atos mudam e se inovam com a evolução da sociedade, e por isso logo se desatualizam. Na Itália, isso levou à unificação do direito privado: o Código Civil passou a tratar a legislação empresarial e civil juntos. O Código Civil brasileiro de 2002 adotou a teoria da empresa.",
+  question: "Por que a lista de atos de comércio foi considerada ultrapassada?",
+  options: [
+    "Porque os atos mudam com a evolução da sociedade, e a lista se desatualiza.",
+    "Porque a lista só alcançava atividades de natureza intelectual, científica e artística, sem atos mercantis.",
+    "Porque o Estado passou a proibir a exploração econômica pelos particulares.",
+    "Porque a lista incluía atividades que nunca existiram na prática comercial."
+  ],
+  answer: 0,
+  feedback: "A ==proc==teoria da empresa== substituiu a lista fechada de atos: o critério passou a ser a **atividade econômica organizada**."
+},
+// 4 - Liberdade de iniciativa
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Contextualizada",
+  texto: "Marina abre uma loja de roupas sem pedir autorização prévia ao Estado, confiante de que o ordenamento jurídico garante a livre atuação do indivíduo no mercado. Ela sabe que se trata do princípio mais importante da seara empresarial.",
+  question: "Qual princípio sustenta a atuação de Marina, e onde ele está previsto?",
+  options: [
+    "Função social da empresa, que obriga o Estado a autorizar cada atividade.",
+    "Preservação da empresa, que impede a abertura de novos concorrentes.",
+    "Liberdade de iniciativa, prevista no caput do Art. 170 da Constituição.",
+    "Defesa do consumidor, que exige prévia autorização para abrir a loja."
+  ],
+  answer: 2,
+  feedback: "A **liberdade de iniciativa** permite a livre atuação no mercado, sem o consentimento estatal (Art. 170, ==def==caput==)."
+},
+// 5 - Abuso do poder econômico
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Contextualizada",
+  texto: "Duas grandes empresas combinam os preços entre si para eliminar concorrentes e aumentar arbitrariamente os lucros. O caso chega ao órgão responsável por fiscalizar a atividade econômica do país.",
+  question: "Qual previsão constitucional se aplica e qual órgão fiscaliza?",
+  options: [
+    "Art. 173, § 4º, pois a lei reprimirá o abuso do poder econômico, e o CADE fiscaliza.",
+    "Art. 170, caput, pois a livre iniciativa autoriza a combinação de preços entre concorrentes.",
+    "Art. 966 do Código Civil, que atribui à Junta Comercial a fiscalização da concorrência.",
+    "Art. 173, § 4º, que permite o abuso, e o CADE apenas registra os preços praticados."
+  ],
+  answer: 0,
+  feedback: "O § 4º do Art. 173 manda a lei ==warn==reprimir== o abuso do poder econômico, e o **CADE** impede a concorrência desonesta."
+},
+// 6 - Função social
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Contextualizada",
+  texto: "Uma indústria estrutura a sua atividade apenas em torno do lucro e não avalia as consequências sociais do que faz, nem a imagem que passa ao público que a consome.",
+  question: "Qual princípio do direito empresarial está sendo desconsiderado?",
+  options: [
+    "Liberdade de concorrência, que proíbe qualquer lucro acima do praticado no mercado.",
+    "Função social da empresa, que exige medir as consequências sociais da atividade.",
+    "Garantia da propriedade privada, que obriga a empresa a ceder seus bens.",
+    "Preservação da empresa, que veda a obtenção de renda pela atividade."
+  ],
+  answer: 1,
+  feedback: "Pelo princípio da ==def==função social da empresa==, a atividade deve considerar o **impacto social** perante a sociedade."
+},
+// 7 - Empresa e empresário
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Aplicação",
+  texto: "Maria produz e vende doces de forma profissional, comprando insumos e contratando empregados. Um colega afirma que “a empresa de Maria é a sua pessoa”.",
+  question: "Segundo a teoria da empresa, como se distinguem empresa e empresário?",
+  options: [
+    "A empresa é a atividade exercida, e o empresário é o sujeito que a exerce.",
+    "A empresa é o sujeito de direito, e o empresário é a atividade exercida.",
+    "A empresa é o estabelecimento físico, e o empresário é o contador.",
+    "Empresa e empresário são sinônimos e designam o mesmo sujeito de direito."
+  ],
+  answer: 0,
+  feedback: "**Empresa é a atividade**; o empresário é o sujeito. A ==warn==empresa não é sujeito de direito==, e o titular pode ser pessoa física ou jurídica."
+},
+// 8 - Profissionalismo
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Aplicação",
+  texto: "Pedro vendeu o seu carro usado uma única vez, para pagar uma dívida. Um amigo diz que, por ter vendido um bem, ele passou a ser empresário.",
+  question: "Pedro é empresário? Por quê?",
+  options: [
+    "Sim, pois a compra e a venda de bens é sempre atividade empresarial, ainda que única.",
+    "Sim, pois qualquer venda de bens caracteriza a circulação de bens e de serviços.",
+    "Não, pois falta o profissionalismo, que exige continuidade e habitualidade.",
+    "Não, pois somente as pessoas jurídicas podem ser empresárias."
+  ],
+  answer: 2,
+  feedback: "O ==def==profissionalismo== exige **continuidade e habitualidade**, e não algo pontual."
+},
+// 9 - Profissão intelectual
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Aplicação",
+  texto: "O Dr. Silva atende sozinho em sua clínica e contratou uma secretária para marcar as consultas. Ele não vende outros produtos nem organiza a atividade como uma empresa.",
+  question: "O Dr. Silva é considerado empresário?",
+  options: [
+    "Sim, pois contrata auxiliar e, por isso, há organização empresarial da atividade.",
+    "Não, pois exerce profissão intelectual, mesmo com a ajuda de uma secretária.",
+    "Sim, pois toda clínica médica é sociedade empresária por força de lei, sempre.",
+    "Não, pois médicos são impedidos de contratar colaboradores na clínica."
+  ],
+  answer: 1,
+  feedback: "O parágrafo único do Art. 966 exclui o profissional intelectual, ainda com ==rule==auxiliares ou colaboradores==, salvo se for elemento de empresa."
+},
+// 10 - Atividade rural
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Aplicação",
+  texto: "Seu João explora atividade rural como sua principal profissão e nunca se inscreveu no Registro Público de Empresas Mercantis. Ele quer saber como a lei o enquadra.",
+  question: "Qual é a situação de Seu João perante o Art. 971 do Código Civil?",
+  options: [
+    "Já é empresário, pois o registro de qualquer empresário é obrigatório e constitutivo.",
+    "Nunca poderá ser empresário, pois a atividade rural é vedada ao empresário.",
+    "É empresário apenas se tiver auxiliares, pois a atividade rural é intelectual.",
+    "Não é empresário até se inscrever, e depois se equipara ao empresário registrado."
+  ],
+  answer: 3,
+  feedback: "No ==rule==Art. 971== o registro do profissional rural é facultativo, e **só depois de inscrito** ele é equiparado ao empresário."
+},
+// ===== AULA 8 =====
+// 1 - Sócio e empresário
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Explicativa",
+  texto: "Na sociedade empresária, que é pessoa jurídica, quem pratica a atividade é a própria sociedade. Por isso, o fato de alguém ser sócio de uma empresa não o torna empresário. Empresário é quem pratica e organiza a atividade empresarial sozinho. Já a empresa é a atividade, como a comercialização de remédios em uma farmácia.",
+  question: "Quem é o empresário na sociedade empresária?",
+  options: [
+    "Cada um dos sócios, que passa a ser empresário ao ingressar na sociedade.",
+    "A própria pessoa jurídica, e não cada sócio individualmente.",
+    "Apenas o sócio administrador, que organiza a atividade empresarial.",
+    "O estabelecimento empresarial, que reúne os bens da sociedade."
+  ],
+  answer: 1,
+  feedback: "Na sociedade empresária, a atividade é praticada pela ==def==pessoa jurídica==, que tem **patrimônio próprio**, distinto do dos sócios."
+},
+// 2 - Estabelecimento empresarial
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Explicativa",
+  texto: "O estabelecimento empresarial, diferente do que se pensa, não é o espaço físico onde a atividade acontece. Ele é o conjunto de todos os bens do empresário que contribuem para a prática da empresa, sejam móveis ou imóveis, corpóreos ou incorpóreos, como marcas e patentes. Está regulado nos Arts. 1.142 a 1.149 do Código Civil.",
+  question: "Como se define o estabelecimento empresarial?",
+  options: [
+    "Espaço físico em que a atividade empresarial é exercida pelo empresário.",
+    "Terreno em que o empresário exerce suas atividades, e nada além disso.",
+    "Patrimônio total do empresário, incluindo os bens estranhos à atividade.",
+    "Conjunto de bens do empresário que contribuem para a prática da empresa."
+  ],
+  answer: 3,
+  feedback: "O estabelecimento é uma ==term==universalidade de fato==: não se confunde com o terreno, nem com o **patrimônio** do empresário."
+},
+// 3 - Firma e denominação
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Explicativa",
+  texto: "O nome empresarial é o elemento de identidade do empresário individual, da sociedade empresária e da EIRELI. Segundo o Art. 1.555 do Código Civil, ele pode ser firma ou denominação. A firma contém o nome do empresário, enquanto a denominação deve designar a atividade e pode ter um nome ou elemento de fantasia.",
+  question: "Em que a firma social se distingue da denominação?",
+  options: [
+    "Firma social para sócios com responsabilidade ilimitada, e denominação para responsabilidade limitada.",
+    "A firma social é usada por sociedade de responsabilidade limitada, e a denominação, pela de responsabilidade ilimitada.",
+    "A firma e a denominação são sinônimas, e a lei permite usar uma ou outra em qualquer tipo de sociedade.",
+    "A denominação é exclusiva do empresário individual, e a firma, de qualquer sociedade empresária."
+  ],
+  answer: 0,
+  feedback: "A **firma social** (razão social) liga-se à ==rule==responsabilidade ilimitada== dos sócios, e a denominação, à responsabilidade limitada."
+},
+// 4 - Menor e herança
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Contextualizada",
+  texto: "Joana, de 15 anos e não emancipada, herdou do pai falecido a empresa que ele já exercia. A mãe quer que a empresa continue funcionando, e a família pergunta ao advogado se isso é possível.",
+  question: "Qual é a resposta correta, segundo o Art. 974 do Código Civil?",
+  options: [
+    "Não, pois o menor não emancipado nunca pode dar continuidade a uma empresa.",
+    "Sim, sem necessidade de autorização judicial, por ser herdeira da empresa.",
+    "Sim, por meio de representante, com autorização judicial que pode ser revogada.",
+    "Não, pois o Art. 974 alcança apenas quem se torna incapaz depois de iniciar a atividade."
+  ],
+  answer: 2,
+  feedback: "A exceção do Art. 974 busca a ==def==preservação da empresa==: exige **autorização judicial** e assistência ou representação."
+},
+// 5 - EIRELI
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Contextualizada",
+  texto: "Luís quer abrir um negócio sozinho, sem sócios, mas sem arriscar o seu patrimônio pessoal. Ele ouviu falar da EIRELI, instituída pela Lei nº 12.441/2011, e quer saber como o capital deve ser formado.",
+  question: "Segundo a aula, como deve ser a integralização do capital da EIRELI?",
+  options: [
+    "100 salários mínimos, em bens ou dinheiro, nunca com prestação de serviços.",
+    "50 salários mínimos, em bens, dinheiro ou prestação de serviços.",
+    "100 salários mínimos, em dinheiro ou prestação de serviços, mas nunca em bens.",
+    "Sem valor mínimo, pois o capital pode ser integralizado depois do registro."
+  ],
+  answer: 0,
+  feedback: "A EIRELI exige ==rule==100 salários mínimos== integralizados e é pessoa jurídica. **Atenção:** figura extinta pela Lei nº 14.195/2021, mas prevista nesta aula."
+},
+// 6 - Cláusula de não concorrência
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Contextualizada",
+  texto: "Em março de 2024, Rui vendeu o seu estabelecimento de papelaria para Clara. Dois anos depois, Rui abriu uma nova papelaria no mesmo bairro, sem qualquer autorização expressa de Clara.",
+  question: "A conduta de Rui é permitida?",
+  options: [
+    "Sim, pois a proibição de concorrência dura apenas 1 ano após a transferência do estabelecimento.",
+    "Não, pois o alienante não pode concorrer com o adquirente por 5 anos seguintes à transferência.",
+    "Sim, pois a proibição só existe para o arrendamento e o usufruto do estabelecimento.",
+    "Não, pois a proibição de concorrência é perpétua e vale para qualquer alienação feita."
+  ],
+  answer: 1,
+  feedback: "O Art. 1.147 veda a ==warn==concorrência== do alienante por **5 anos consecutivos**, salvo autorização expressa."
+},
+// 7 - Empresário irregular
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Aplicação",
+  texto: "Uma padaria funciona há anos, com empregados e clientela, mas o empresário nunca promoveu a sua inscrição no Registro Público de Empresas Mercantis. Surge dívida, e ele quer pedir recuperação judicial.",
+  question: "Qual é a situação do empresário não registrado?",
+  options: [
+    "Perde o status de empresário, e todos os negócios que praticou são nulos.",
+    "Pode requerer recuperação judicial, mas não pode participar de licitações.",
+    "Os sócios respondem de forma limitada, e ele pode requerer a falência de devedor seu.",
+    "Os negócios são válidos, mas é irregular e não pode pedir recuperação nem licitar."
+  ],
+  answer: 3,
+  feedback: "A natureza do registro é ==def==declaratória==: o empresário **não perde o status**, mas fica irregular e sem os benefícios do registro."
+},
+// 8 - Princípio da veracidade
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Aplicação",
+  texto: "A sociedade “Silva & Costa” mantém na firma social o nome do sócio Silva, que faleceu há dois anos, e deixou de usar o nome de Costa, que se retirou. A Junta Comercial questiona a situação.",
+  question: "Qual princípio do nome empresarial está sendo violado?",
+  options: [
+    "Veracidade, pois o nome deve corresponder à realidade da atividade exercida.",
+    "Novidade, pois o nome deve ser diferente dos nomes já existentes na Junta.",
+    "Territorialidade, pois o nome só vale no estado em que a sociedade foi registrada.",
+    "Fantasia, pois a firma social nunca pode conter o nome de pessoas físicas."
+  ],
+  answer: 0,
+  feedback: "Pela ==rule==veracidade== **não se mantém na firma** o nome de sócio falecido, expulso ou retirado."
+},
+// 9 - Classificação por porte
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Aplicação",
+  texto: "Uma loja de comércio varejista fatura R$ 2.500.000,00 por ano e emprega 30 pessoas. Os sócios querem saber o enquadramento nos termos do quadro comparativo da aula.",
+  question: "Como essa empresa se enquadra?",
+  options: [
+    "Microempresa (ME), pois a receita pode chegar a R$ 4.800.000,00 por ano.",
+    "Microempreendedor individual (MEI), pois pode ter até 49 empregados no comércio.",
+    "EPP, pois a receita excede R$ 360.000,00 e o comércio emprega de 10 a 49.",
+    "Microempresa (ME), pois o comércio pode empregar até 99 pessoas por empresa."
+  ],
+  answer: 2,
+  feedback: "A **EPP** tem receita entre R$ 360.000,00 e R$ 4.800.000,00 e, no comércio, de ==def==10 a 49 empregados==."
+},
+// 10 - Impedimento legal
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Aplicação",
+  texto: "Fábio, servidor público civil da ativa, pretende abrir um comércio em nome próprio, como empresário individual, e continuar no cargo. Ele afirma que, por ter plena capacidade civil, nada o impede.",
+  question: "Fábio pode exercer a atividade de empresário?",
+  options: [
+    "Sim, pois a plena capacidade civil basta para exercer a atividade de empresário individual.",
+    "Não, pois é preciso não ser legalmente impedido, e o servidor civil da ativa é impedido.",
+    "Sim, pois os impedimentos legais alcançam apenas servidores militares.",
+    "Não, pois somente pessoas jurídicas podem exercer a atividade de empresário individual."
+  ],
+  answer: 1,
+  feedback: "O Art. 972 exige ==rule==capacidade civil== e **ausência de impedimentos legais**, e o servidor civil da ativa está no rol dos impedidos."
+},
+
 
     // ===== AULA 9 =====
 // 1 - Sócio e empresário
@@ -616,6 +919,310 @@ window.questoes = {
   ],
 
   fixacao: [
+// ===== AULA 7 =====
+// 1 - Código francês
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Direta",
+  texto: "A França foi pioneira na codificação do direito comercial, em 1807.",
+  question: "Qual teoria o primeiro código comercial francês adotou?",
+  options: [
+    "Teoria da empresa",
+    "Teoria da personalidade jurídica",
+    "Teoria dos atos de comércio",
+    "Teoria da desconsideração"
+  ],
+  answer: 2,
+  feedback: "O Código Comercial Francês de 1807 adotou a teoria dos atos de comércio."
+},
+// 2 - Código Civil de 2002
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Direta",
+  texto: "O Brasil mudou de teoria ao unificar o direito privado.",
+  question: "Qual código brasileiro adotou a teoria da empresa?",
+  options: [
+    "Código Civil, Lei nº 10.406/2002",
+    "Código Comercial Imperial de 1850",
+    "Constituição Federal de 1988",
+    "Código Civil Brasileiro de 1916"
+  ],
+  answer: 0,
+  feedback: "O Código Civil de 2002 adotou a teoria da empresa, buscando unificar o direito privado."
+},
+// 3 - Princípio principal
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Direta",
+  texto: "O direito empresarial é guiado por princípios, previstos na Constituição.",
+  question: "Qual é o princípio mais importante da seara empresarial?",
+  options: [
+    "Função social da empresa",
+    "Preservação da empresa",
+    "Defesa do consumidor",
+    "Liberdade de iniciativa"
+  ],
+  answer: 3,
+  feedback: "A liberdade de iniciativa é o princípio mais importante e está no caput do Art. 170 da Constituição."
+},
+// 4 - Geradora de empregos
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Contexto",
+  texto: "Uma empresa privada cria empregos e fomenta a economia social.",
+  question: "Qual condição fundamental da liberdade de iniciativa isso ilustra?",
+  options: [
+    "Busca do lucro como estímulo central",
+    "Reconhecimento da empresa como geradora de empregos",
+    "Imprescindibilidade da empresa privada",
+    "Proteção jurídica do investimento privado"
+  ],
+  answer: 1,
+  feedback: "Uma das quatro condições é o reconhecimento da empresa privada como geradora de empregos e fomentadora da economia social."
+},
+// 5 - Fiscalização
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Contexto",
+  texto: "Há práticas de concorrência desonesta e atos contra a ordem econômica.",
+  question: "Qual órgão fiscaliza a atividade econômica e propõe impedir esses atos?",
+  options: [
+    "CVM, do mercado de capitais",
+    "OAB, da classe dos advogados",
+    "CADE, de defesa econômica",
+    "Junta Comercial, de registro"
+  ],
+  answer: 2,
+  feedback: "O CADE (Conselho Administrativo de Defesa Econômica) fiscaliza a atividade econômica do país."
+},
+// 6 - Escritor
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Contexto",
+  texto: "Um escritor publica livros e crônicas sozinho, em caráter profissional.",
+  question: "Esse profissional é considerado empresário?",
+  options: [
+    "Não, exerce profissão intelectual literária",
+    "Sim, pois publica de forma habitual",
+    "Sim, pois a atividade é econômica",
+    "Só se for registrado na Junta Comercial"
+  ],
+  answer: 0,
+  feedback: "Quem exerce profissão intelectual, de natureza científica, literária ou artística, não é empresário."
+},
+// 7 - Circulação de serviços
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Aplicação",
+  texto: "Uma agência de turismo faz a mediação para a prestação de serviços.",
+  question: "Que atividade empresarial isso caracteriza?",
+  options: [
+    "Produção de bens, a fabricação",
+    "Circulação de bens, a compra e venda",
+    "Produção de serviços, a prestação",
+    "Circulação de serviços, a mediação"
+  ],
+  answer: 3,
+  feedback: "A circulação de serviços é a mediação para a prestação dos serviços, como fazem as agências de turismo."
+},
+// 8 - Fatores de produção
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Aplicação",
+  texto: "Uma atividade tem mão de obra e capital, mas não tem matéria-prima nem tecnologia.",
+  question: "Há organização da atividade nesse caso?",
+  options: [
+    "Sim, dois fatores já bastam para isso",
+    "Não, falta algum dos quatro fatores",
+    "Sim, o capital sozinho é suficiente",
+    "Só se houver registro na Junta Comercial"
+  ],
+  answer: 1,
+  feedback: "A organização exige quatro fatores: mão de obra, matéria-prima, capital e tecnologia. Faltando algum, não há organização."
+},
+// 9 - Sociedade por ações
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Aplicação",
+  texto: "Uma sociedade por ações, de qualquer objeto, quer saber como é classificada.",
+  question: "Como é classificada a sociedade por ações, independentemente do objeto?",
+  options: [
+    "Sempre simples",
+    "Simples, se tiver objeto intelectual",
+    "Sempre empresária",
+    "Depende da decisão da Junta Comercial"
+  ],
+  answer: 2,
+  feedback: "Pelo Art. 982, parágrafo único, a sociedade por ações é sempre empresária."
+},
+// 10 - Cooperativa
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Aplicação",
+  texto: "Uma cooperativa exerce atividade com forte caráter econômico.",
+  question: "Como é classificada a sociedade cooperativa, independentemente do objeto?",
+  options: [
+    "Sempre simples",
+    "Sempre empresária",
+    "Empresária, se tiver lucro",
+    "Empresária, se tiver auxiliares"
+  ],
+  answer: 0,
+  feedback: "A cooperativa é sempre simples, conforme o Art. 982, parágrafo único, do Código Civil."
+},
+// ===== AULA 8 =====
+// 1 - Lei da EIRELI
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Direta",
+  texto: "A EIRELI foi instituída por uma lei específica e delineada no Art. 980-A do Código Civil.",
+  question: "Qual lei instituiu a EIRELI?",
+  options: [
+    "Lei nº 11.101/2005",
+    "Lei nº 12.441/2011",
+    "Lei nº 8.934/1994",
+    "Lei Complementar nº 123/2006"
+  ],
+  answer: 1,
+  feedback: "A EIRELI foi instituída pela Lei nº 12.441/2011 (figura que depois foi extinta pela Lei nº 14.195/2021)."
+},
+// 2 - Registro prévio
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Direta",
+  texto: "O Código Civil impõe o registro do empresário em momento específico.",
+  question: "Qual artigo impõe a inscrição do empresário antes do início da atividade?",
+  options: [
+    "Art. 967, inscrição prévia obrigatória",
+    "Art. 966, conceito de empresário",
+    "Art. 972, capacidade civil",
+    "Art. 974, continuação da empresa por incapaz"
+  ],
+  answer: 0,
+  feedback: "O Art. 967 torna obrigatória a inscrição do empresário no Registro Público de Empresas Mercantis antes do início da atividade."
+},
+// 3 - Natureza do registro
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Direta",
+  texto: "O empresário comum que não tem registro não perde o seu status de empresário.",
+  question: "Qual é a natureza jurídica do registro do empresário comum?",
+  options: [
+    "Constitutiva, cria o empresário",
+    "Autorizativa, depende de licença",
+    "Tributária, condição fiscal",
+    "Declaratória, não constitutiva"
+  ],
+  answer: 3,
+  feedback: "A natureza é declaratória: o registro é simples condição de regularidade, e não cria a condição de empresário."
+},
+// 4 - Herança de empresa
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Contexto",
+  texto: "Um menor não emancipado herdou a empresa do pai e quer dar continuidade a ela.",
+  question: "Qual é a condição para a continuidade da empresa?",
+  options: [
+    "Apenas a vontade expressa dos pais",
+    "Somente o registro no Portal do Empreendedor",
+    "Autorização judicial e assistência ou representação",
+    "Emancipação automática pela herança"
+  ],
+  answer: 2,
+  feedback: "As exceções do Art. 974 exigem autorização judicial, que pode ser revogada, e assistência ou representação."
+},
+// 5 - Capital da EIRELI
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Contexto",
+  texto: "Uma EIRELI está sendo criada com capital de 100 salários mínimos.",
+  question: "Com que o capital NÃO pode ser integralizado?",
+  options: [
+    "Com prestação de serviços",
+    "Com dinheiro depositado",
+    "Com bens móveis ou imóveis",
+    "Com bens e dinheiro juntos"
+  ],
+  answer: 0,
+  feedback: "O capital pode ser integralizado com bens e dinheiro, mas nunca com prestação de serviços."
+},
+// 6 - Sociedade limitada
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Contexto",
+  texto: "Uma sociedade empresária em que os sócios têm responsabilidade limitada quer escolher o seu nome.",
+  question: "Qual forma de nome empresarial se aplica a essa sociedade?",
+  options: [
+    "Firma individual",
+    "Razão social",
+    "Marca registrada",
+    "Denominação"
+  ],
+  answer: 3,
+  feedback: "A denominação é usada pela sociedade em que os sócios têm responsabilidade limitada."
+},
+// 7 - Servidor público
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Aplicação",
+  texto: "Um servidor público civil da ativa quer abrir um comércio em nome próprio.",
+  question: "Há impedimento para exercer a atividade de empresário?",
+  options: [
+    "Não, a capacidade civil basta",
+    "Sim, o servidor civil da ativa é impedido",
+    "Não, só militares são impedidos",
+    "Sim, mas só no primeiro ano"
+  ],
+  answer: 1,
+  feedback: "Servidores públicos civis da ativa estão entre os legalmente impedidos de exercer a atividade de empresário."
+},
+// 8 - Alienação sem bens
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Aplicação",
+  texto: "O alienante do estabelecimento não ficou com bens suficientes para pagar o seu passivo.",
+  question: "O que a eficácia da alienação exige, nesse caso?",
+  options: [
+    "Pagamento de todos os credores ou consentimento deles",
+    "Somente a publicação na imprensa oficial",
+    "Autorização da Junta Comercial",
+    "Apenas o pagamento dos credores trabalhistas"
+  ],
+  answer: 0,
+  feedback: "Pelo Art. 1.146, é preciso pagar todos os credores ou obter o consentimento, expresso ou tácito, deles em 30 dias."
+},
+// 9 - Prazo de concorrência
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Aplicação",
+  texto: "O alienante de um estabelecimento quer abrir um negócio concorrente com o do adquirente.",
+  question: "Por quanto tempo é proibida a concorrência do alienante?",
+  options: [
+    "3 anos subsequentes ao contrato",
+    "1 ano após a averbação",
+    "10 anos a partir da alienação",
+    "5 anos depois da transferência"
+  ],
+  answer: 3,
+  feedback: "É proibida a concorrência do alienante nos 5 anos consecutivos à transferência (Art. 1.147)."
+},
+// 10 - Limite do MEI
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Aplicação",
+  texto: "Um trabalhador por conta própria quer se legalizar como microempreendedor individual.",
+  question: "Qual é o limite de receita bruta anual do MEI, segundo o quadro da aula?",
+  options: [
+    "Até R$ 360.000,00 por ano",
+    "Até R$ 4.800.000,00 por ano",
+    "Até R$ 81.000,00 por ano",
+    "Até R$ 180.000,00 por ano"
+  ],
+  answer: 2,
+  feedback: "O MEI aufere anualmente valor igual ou inferior a R$ 81.000,00, e se registra no Portal do Empreendedor."
+},
+
+
     // ===== AULA 9 =====
 // 1 - Registro simples
 {
@@ -1225,6 +1832,312 @@ window.questoes = {
   ],
 
   enade: [
+
+// ===== AULA 7 =====
+// 1 - Atos de comércio
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Conceitual Contextualizada",
+  texto: "Pela teoria dos atos de comércio, adotada na França em 1807 e no Brasil em 1850, a lei listava os atos considerados comerciais, e o que importava era a atividade praticada, e não quem a realizava. Em 1850, Antônio comprava e vendia bens com habitualidade, e outro cidadão, sem profissão definida, praticou um dos atos da lista uma única vez.",
+  question: "Segundo a teoria dos atos de comércio, assinale a alternativa correta sobre a caracterização desses atos.",
+  options: [
+    "O ato era comercial se estivesse previsto na lista legal, pois o critério era a atividade, e não a pessoa.",
+    "O ato só era comercial se praticado por comerciante registrado, pois o critério era a qualidade do sujeito.",
+    "O ato era comercial apenas se houvesse organização dos quatro fatores de produção na atividade.",
+    "O ato deixava de ser comercial se fosse praticado uma só vez, pois a habitualidade era requisito da lista."
+  ],
+  answer: 0,
+  feedback: "O critério era ==def==o ato previsto em lista==: **a atividade, e não a pessoa**, definia o ato de comércio, o que a tornou ultrapassada com o tempo."
+},
+// 2 - Art. 966 aplicado
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Análise Aplicada",
+  texto: "O Art. 966 do Código Civil considera empresário quem exerce profissionalmente atividade econômica organizada para a produção ou a circulação de bens ou de serviços. Uma agência faz a mediação entre turistas e hotéis, com equipe contratada, capital próprio e sistema de reservas, de forma contínua e com finalidade lucrativa.",
+  question: "Com base no Art. 966, assinale a alternativa correta sobre a agência.",
+  options: [
+    "Não é empresária, pois a prestação de serviços nunca configura atividade empresarial.",
+    "Não é empresária, pois a mediação não é atividade econômica e não visa a lucro.",
+    "É empresária, pois exerce profissionalmente atividade organizada de circulação de serviços.",
+    "É empresária apenas se for pessoa física, pois a pessoa jurídica exerce só a produção de bens."
+  ],
+  answer: 2,
+  feedback: "Estão presentes os requisitos do ==rule==Art. 966==: **profissionalismo, atividade econômica organizada** e circulação de serviços (mediação)."
+},
+// 3 - Empresa x empresário
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Conceitual Contextualizada",
+  texto: "Empresa é a atividade exercida, e empresário é o sujeito que a exerce, podendo ser pessoa física (empresário individual) ou pessoa jurídica (sociedade empresária). Em uma reunião, o sócio Paulo afirma que a empresa da família é a titular dos direitos e a responsável pelas dívidas da atividade.",
+  question: "Considerando a teoria da empresa, assinale a alternativa correta sobre a afirmação de Paulo.",
+  options: [
+    "Está correta, pois a empresa é sujeito de direito e titular de todas as relações jurídicas.",
+    "Está incorreta, pois a empresa é a atividade, e o titular de direitos é o empresário, o sujeito.",
+    "Está correta, pois a empresa e o empresário são expressões equivalentes na teoria da empresa.",
+    "Está incorreta, pois apenas a pessoa física pode ser titular da atividade empresarial."
+  ],
+  answer: 1,
+  feedback: "A ==warn==empresa não é sujeito de direito==: ela é a **atividade**, e o titular é o empresário, pessoa física ou jurídica."
+},
+// 4 - Abuso do poder econômico
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Análise Aplicada",
+  texto: "A Constituição Federal estabelece que a lei reprimirá o abuso do poder econômico que vise à dominação dos mercados, à eliminação da concorrência e ao aumento arbitrário dos lucros (Art. 173, § 4º). Uma empresa dominante passa a vender abaixo do custo para quebrar os concorrentes e, em seguida, eleva os preços de forma arbitrária.",
+  question: "Com base nesse dispositivo, assinale a alternativa correta.",
+  options: [
+    "A conduta é protegida, pois a liberdade de iniciativa autoriza qualquer prática para vencer a concorrência.",
+    "A conduta é protegida, pois o Estado não pode fiscalizar a atividade econômica privada.",
+    "A conduta só seria reprimida se a empresa não tivesse registro na Junta Comercial.",
+    "A conduta é passível de repressão, pois visa eliminar a concorrência e elevar arbitrariamente os lucros."
+  ],
+  answer: 3,
+  feedback: "Há ==rule==abuso do poder econômico==: a lei deve **reprimir** a eliminação da concorrência, e o CADE fiscaliza a atividade econômica."
+},
+// 5 - Elementos de organização
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Conceitual Contextualizada",
+  texto: "A organização da atividade empresarial é caracterizada pela presença de quatro fatores de produção: mão de obra, matéria-prima, capital e tecnologia. Se faltar algum deles, não há que se falar em organização da atividade. Um grupo de pessoas presta uma atividade de forma pessoal, apenas com o próprio trabalho, sem os demais fatores.",
+  question: "Assinale a alternativa correta sobre a caracterização dessa atividade como empresarial.",
+  options: [
+    "Não há organização da atividade, pois faltam fatores de produção, logo ela não é empresarial.",
+    "Há organização, pois a mão de obra, isoladamente, é suficiente para caracterizar a empresa.",
+    "Há organização, pois o profissionalismo dispensa a presença dos demais fatores de produção.",
+    "Não há organização, pois a atividade seria empresarial apenas se fosse exercida por pessoa jurídica."
+  ],
+  answer: 0,
+  feedback: "Sem os **quatro fatores**, falta a ==def==organização==, e a atividade não é empresarial."
+},
+// 6 - Elemento de empresa
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Análise Aplicada",
+  texto: "O parágrafo único do Art. 966 afasta a condição de empresário de quem exerce profissão intelectual, ainda com o concurso de auxiliares ou colaboradores, salvo se o exercício da profissão constituir elemento de empresa. A veterinária Lara mantém uma clínica e passa a vender ração, brinquedos e coleiras, em estrutura organizada.",
+  question: "Com base na regra, assinale a alternativa correta sobre a situação de Lara.",
+  options: [
+    "Lara continua sendo apenas profissional intelectual, pois a venda de produtos não altera o enquadramento.",
+    "A clínica nunca poderia ser empresária, pois a profissão veterinária é vedada ao empresário.",
+    "A clínica passa a ser empresária, pois a atividade intelectual de Lara vira elemento de empresa.",
+    "A clínica passa a ser empresária apenas se Lara se desfizer de todos os auxiliares contratados."
+  ],
+  answer: 2,
+  feedback: "Quando a atividade intelectual vira ==rule==elemento de empresa==, a sociedade passa a ser empresária, como no caso da clínica de **Lara**."
+},
+// 7 - Registro e condição de empresário
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Conceitual Contextualizada",
+  texto: "A condição de empresário decorre do exercício profissional da atividade econômica organizada para a produção ou a circulação de bens ou serviços. Marta mantém, há anos, uma padaria com empregados e matéria-prima, mas nunca promoveu o seu registro.",
+  question: "Segundo o material da aula, assinale a alternativa correta sobre a condição de Marta.",
+  options: [
+    "Não é empresária, pois somente depois do registro na Junta Comercial alguém se torna empresário de fato.",
+    "É considerada empresária, pois não é necessário ser registrada para ser considerada empresária.",
+    "Não é empresária, pois a padaria seria atividade rural, e o registro seria facultativo.",
+    "É empresária somente se a padaria tiver mais de dez empregados registrados na Junta."
+  ],
+  answer: 1,
+  feedback: "A **Parada Obrigatória** da aula afirma que ==warn==não é necessário ser registrado== para ser considerado empresário."
+},
+// 8 - Cooperativa
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Análise Aplicada",
+  texto: "Pelo Art. 982, parágrafo único, do Código Civil, independentemente de seu objeto, considera-se empresária a sociedade por ações e simples a cooperativa. Uma cooperativa de produtores opera com grande volume de vendas, estrutura organizada e finalidade econômica.",
+  question: "Aplicando esse dispositivo, assinale a alternativa correta sobre a classificação da cooperativa.",
+  options: [
+    "É sociedade empresária, pois o grande volume de vendas afasta a classificação como simples.",
+    "É sociedade empresária, pois a finalidade econômica a obriga a registro na Junta Comercial.",
+    "É sociedade simples apenas se tiver menos de dez cooperados com atividade pontual.",
+    "É sempre sociedade simples, independentemente do objeto e do volume de atividade econômica."
+  ],
+  answer: 3,
+  feedback: "A ==rule==cooperativa== é **sempre simples**, ao passo que a sociedade por ações é sempre empresária."
+},
+// 9 - Sociedade de advogados
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Conceitual Contextualizada",
+  texto: "Entre os casos que não são considerados empresários estão a sociedade de advogados, o profissional rural não registrado e as cooperativas. A sociedade de advogados tem o seu registro de constituição feito na própria OAB, onde adquire personalidade jurídica.",
+  question: "Considerando a regra, assinale a alternativa correta sobre a sociedade de advogados.",
+  options: [
+    "É sempre sociedade simples, com registro na OAB, e não é considerada empresária.",
+    "É sociedade empresária, pois o registro na OAB equivale ao registro na Junta Comercial.",
+    "É sociedade empresária sempre que contrata auxiliares, como secretárias e estagiários.",
+    "É sociedade simples apenas se tiver um único sócio exercendo a advocacia."
+  ],
+  answer: 0,
+  feedback: "O registro na ==def==OAB== confere personalidade jurídica, e a sociedade será **sempre simples**."
+},
+// 10 - Profissional rural
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Análise Aplicada",
+  texto: "Segundo o Art. 971 do Código Civil, o empresário cuja atividade rural constitua sua principal profissão pode requerer inscrição no Registro Público de Empresas Mercantis, e, depois de inscrito, fica equiparado, para todos os efeitos, ao empresário sujeito a registro. Um produtor rural nunca se inscreveu, e outro se inscreveu no ano passado.",
+  question: "Com base no Art. 971, assinale a alternativa correta.",
+  options: [
+    "Ambos são empresários equiparados, pois o registro do produtor rural é obrigatório e constitutivo.",
+    "Só o produtor inscrito é equiparado ao empresário sujeito a registro, pois é facultativo.",
+    "Nenhum deles pode ser equiparado, pois a atividade rural é vedada ao empresário.",
+    "Só o não inscrito é empresário, pois a inscrição transforma a atividade em intelectual."
+  ],
+  answer: 1,
+  feedback: "O registro do ==rule==profissional rural== é **facultativo**, e apenas depois da inscrição ele é equiparado ao empresário."
+},
+
+// ===== AULA 8 =====
+// 1 - Capacidade civil
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Conceitual Contextualizada",
+  texto: "Segundo o Art. 972 do Código Civil, podem exercer a atividade de empresário os que estiverem em pleno gozo da capacidade civil e não forem legalmente impedidos. O menor de 18 anos, em regra, não tem plena capacidade, salvo a hipótese do menor emancipado. Lucas, de 17 anos e não emancipado, quer abrir uma loja de roupas em seu nome.",
+  question: "Com base no Art. 972, assinale a alternativa correta sobre a pretensão de Lucas.",
+  options: [
+    "Lucas não pode iniciar a atividade, pois não tem o pleno gozo da capacidade civil exigida.",
+    "Lucas pode iniciar a atividade, pois a idade não interfere na condição de empresário.",
+    "Lucas pode iniciar a atividade, desde que obtenha o seu registro no Portal do Empreendedor.",
+    "Lucas não pode iniciar a atividade, pois somente pessoas jurídicas podem ser empresárias."
+  ],
+  answer: 0,
+  feedback: "O ==rule==Art. 972== exige **pleno gozo da capacidade civil**, e o menor não emancipado não o possui para iniciar a atividade."
+},
+// 2 - Continuidade por incapaz
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Análise Aplicada",
+  texto: "O Art. 974 permite que o incapaz, por meio de representante ou devidamente assistido, continue a empresa antes exercida por ele enquanto capaz, por seus pais ou pelo autor de herança, mediante autorização judicial, que pode ser revogada pelo juiz. Mariana, de 16 anos, herdou o negócio do pai, e a mãe quer mantê-lo em funcionamento.",
+  question: "Considerando o Art. 974, assinale a alternativa correta.",
+  options: [
+    "A continuidade é possível, sem autorização judicial, bastando a vontade da mãe.",
+    "A continuidade é vedada, pois o menor não emancipado nunca pode ser titular de empresa.",
+    "A continuidade é possível, com autorização judicial e assistência ou representação.",
+    "A continuidade é possível, mas Mariana poderá iniciar novas atividades sem representação."
+  ],
+  answer: 2,
+  feedback: "A exceção busca a ==def==preservação da empresa==, com **autorização judicial** e assistência ou representação conforme a incapacidade."
+},
+// 3 - Impedimentos legais
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Conceitual Contextualizada",
+  texto: "Além da capacidade civil, o exercício da atividade de empresário exige a ausência de impedimentos legais, como os que alcançam membros do Ministério Público, magistrados, membros da Defensoria Pública, empresários falidos, leiloeiros e servidores públicos civis da ativa. O juiz Paulo quer ser proprietário de uma loja de eletrônicos.",
+  question: "Assinale a alternativa correta sobre a pretensão do juiz Paulo.",
+  options: [
+    "Pode, pois a plena capacidade civil afasta qualquer impedimento legal à atividade empresarial.",
+    "Não pode, pois os magistrados são legalmente impedidos de exercer a atividade de empresário.",
+    "Pode, desde que a loja seja registrada no Registro Civil das Pessoas Jurídicas.",
+    "Não pode, pois só é impedido o empresário que não tem plena capacidade civil."
+  ],
+  answer: 1,
+  feedback: "Os ==rule==impedimentos legais== são o segundo requisito do Art. 972: **magistrados** estão entre os impedidos."
+},
+// 4 - Empresário irregular
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Análise Aplicada",
+  texto: "O registro empresarial é obrigatório e deve ser feito antes do início da atividade (Art. 967), mas tem natureza declaratória. O empresário não registrado é irregular, e não pode requerer recuperação judicial e extrajudicial, requerer a falência de devedor seu nem participar de licitações. Uma padaria funciona há anos sem registro, e o titular quer participar de uma licitação.",
+  question: "Com base nessas regras, assinale a alternativa correta.",
+  options: [
+    "Os negócios do titular são nulos, pois o registro tem natureza constitutiva da condição de empresário.",
+    "O titular pode participar de licitação, pois o registro é mera formalidade sem efeitos práticos.",
+    "O titular perde a condição de empresário e os sócios passam a ter responsabilidade limitada.",
+    "Os negócios do titular são válidos, mas, por ser irregular, ele não pode participar de licitação."
+  ],
+  answer: 3,
+  feedback: "O registro é ==def==declaratório==: o titular **mantém o status** de empresário, mas fica irregular e sem os benefícios do registro."
+},
+// 5 - EIRELI
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Conceitual Contextualizada",
+  texto: "A EIRELI, instituída pela Lei nº 12.441/2011 e prevista no Art. 980-A do Código Civil, é formada por uma única pessoa, titular de 100% do capital social. É pessoa jurídica, e as suas dívidas recaem sobre os bens da empresa, e não da pessoa física. Luís constituiu uma EIRELI com o capital mínimo integralizado.",
+  question: "Com base na aula, assinale a alternativa correta sobre a responsabilidade de Luís pelas dívidas da empresa.",
+  options: [
+    "Luís responde ilimitadamente, pois é o único titular e se confunde com a pessoa jurídica da empresa.",
+    "Luís não responde pessoalmente, pois a EIRELI é pessoa jurídica e responde com os bens da empresa.",
+    "Luís responde solidariamente com os sócios, pois a EIRELI exige no mínimo dois titulares.",
+    "Luís responde ilimitadamente, pois a EIRELI é apenas outro nome do empresário individual comum."
+  ],
+  answer: 1,
+  feedback: "A ==rule==EIRELI== é **pessoa jurídica**, distinta do titular (figura extinta pela Lei nº 14.195/2021, mas tratada nesta aula)."
+},
+// 6 - Sub-rogação em contratos
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Análise Aplicada",
+  texto: "Na transferência do estabelecimento, o adquirente se sub-roga nos contratos de exploração que não tenham caráter pessoal, salvo disposição em contrário. Os terceiros podem rescindir o contrato em 90 dias da publicação da transferência, se ocorrer justa causa, ressalvada a responsabilidade do alienante (Art. 1.148). Após o trespasse, um fornecedor quer encerrar o contrato com a loja.",
+  question: "Com base no Art. 1.148, assinale a alternativa correta.",
+  options: [
+    "O adquirente se sub-roga no contrato, e o fornecedor só rescinde em 90 dias com justa causa.",
+    "O contrato se extingue automaticamente com o trespasse, e o fornecedor não tem prazo a observar.",
+    "O fornecedor pode rescindir o contrato a qualquer tempo, sem justa causa, em nome do alienante.",
+    "O adquirente não se sub-roga em nenhum contrato, e o alienante continua o único responsável."
+  ],
+  answer: 0,
+  feedback: "A ==def==sub-rogação== vale para contratos sem caráter pessoal, e a rescisão em **90 dias** exige justa causa."
+},
+// 7 - Passivo do alienante
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Conceitual Contextualizada",
+  texto: "O trespasse só gera efeitos após a averbação e a publicação. Se o alienante não ficar com bens suficientes para solver o seu passivo, a eficácia da alienação depende do pagamento de todos os credores ou do consentimento deles, de modo expresso ou tácito, em 30 dias após a notificação (Art. 1.146). Um comerciante vendeu a sua loja e ficou sem patrimônio para quitar as suas dívidas.",
+  question: "Assinale a alternativa correta sobre a eficácia da venda.",
+  options: [
+    "Independe dos credores, pois a averbação do contrato basta para a eficácia da alienação.",
+    "Depende apenas da autorização da Junta Comercial, sem qualquer manifestação dos credores.",
+    "Depende do pagamento de todos os credores ou do consentimento deles, expresso ou tácito.",
+    "Depende do consentimento apenas dos credores com garantia real sobre os bens da loja."
+  ],
+  answer: 2,
+  feedback: "O ==rule==Art. 1.146== protege os credores: sem bens suficientes, é preciso **pagar ou obter o consentimento** deles."
+},
+// 8 - Veracidade do nome
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Análise Aplicada",
+  texto: "O nome empresarial obedece aos princípios da veracidade e da novidade (Art. 34 da Lei nº 8.934/1994). Pela veracidade, o nome deve estar de acordo com a realidade da atividade exercida, e não pode permanecer na firma social o nome de sócio que tenha falecido, sido expulso ou se retirado. A firma “Almeida & Pires” mantém o nome de Pires, que se retirou da sociedade.",
+  question: "Com base nesses princípios, assinale a alternativa correta.",
+  options: [
+    "A manutenção do nome de Pires é permitida, pois o nome empresarial é inalterável após o registro.",
+    "A manutenção do nome de Pires viola o princípio da veracidade, pois ele se retirou da sociedade.",
+    "A manutenção do nome de Pires viola o princípio da novidade, pois o nome é igual ao de outra firma.",
+    "A manutenção do nome de Pires é permitida, pois o princípio da veracidade vale apenas para a denominação."
+  ],
+  answer: 1,
+  feedback: "Pela ==rule==veracidade==, o nome do sócio que **se retirou** não pode ser mantido na firma social."
+},
+// 9 - Nome da sociedade anônima
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Conceitual Contextualizada",
+  texto: "Conforme o quadro de nomes empresariais, cada tipo societário adota a variante permitida: o empresário individual usa firma, a sociedade limitada, firma ou denominação, e a sociedade anônima, apenas denominação, acompanhada de “Sociedade Anônima” ou “Companhia”. Uma sociedade anônima será constituída e precisa definir o seu nome.",
+  question: "Assinale a alternativa correta sobre o nome empresarial dessa sociedade.",
+  options: [
+    "Deve usar denominação, com a expressão “Sociedade Anônima” ou “Companhia”.",
+    "Deve usar firma social, com o nome completo dos sócios fundadores.",
+    "Deve usar firma ou denominação, com a expressão “LTDA” ao final.",
+    "Não pode ter nome empresarial, pois a sociedade anônima não possui firma nem denominação."
+  ],
+  answer: 0,
+  feedback: "A ==def==sociedade anônima== usa **somente denominação**, o que a distingue da sociedade limitada, que pode usar firma ou denominação."
+},
+// 10 - Enquadramento em EPP
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Análise Aplicada",
+  texto: "No quadro comparativo da aula, a microempresa (ME) tem receita bruta anual de até R$ 360.000,00, e a empresa de pequeno porte (EPP), receita superior a R$ 360.000,00 e até R$ 4.800.000,00. No comércio e nos serviços, a ME tem até 9 pessoas, e a EPP, de 10 a 49. Uma loja de comércio fatura R$ 2.500.000,00 por ano e emprega 30 pessoas.",
+  question: "Com base no quadro, assinale a alternativa correta.",
+  options: [
+    "A loja se enquadra como ME, pois o faturamento é inferior a R$ 4.800.000,00.",
+    "A loja se enquadra como MEI, pois todo comércio pode ter até 49 empregados.",
+    "A loja se enquadra como ME, pois o comércio pode empregar até 99 pessoas.",
+    "A loja se enquadra como EPP, pelo faturamento e pelo número de empregados."
+  ],
+  answer: 3,
+  feedback: "A ==rule==EPP== reúne receita entre R$ 360.000,00 e R$ 4.800.000,00 e, no comércio, **10 a 49 empregados**."
+},
+
+
     // ===== AULA 9 =====
 // 1 - Registro da sociedade
 {

@@ -8,8 +8,816 @@ window.__nexusConteudo = {
 
    aulas: [
 
+// aula 7
+{
+  aula: "Evolução do direito empresarial e teoria da empresa",
+  ideia_central: "O direito empresarial nasceu como direito comercial, ligado à teoria dos atos de comércio (França, 1807; Brasil, 1850), e evoluiu para a teoria da empresa, adotada pelo Código Civil de 2002, que define a empresa como atividade econômica organizada e o empresário como o sujeito que a exerce profissionalmente (Art. 966); a matéria é guiada por princípios (liberdade de iniciativa, liberdade de concorrência, garantia e defesa da propriedade privada, preservação da empresa e função social da empresa) e exclui da condição de empresário certos casos, como os profissionais intelectuais, o profissional rural não registrado, as sociedades de advogados e as cooperativas.",
+  secoes: [
+    {
+      id: "objetivos_introducao",
+      titulo: "Objetivos de Aprendizagem e Introdução",
+      blocos: [
+        {
+          tipo: "lista",
+          titulo: "Objetivos de Aprendizagem",
+          itens: [
+            "Conhecer sobre a origem do direto empresarial no tempo;",
+            "Aprender acerca da formação do direito empresarial no Brasil;",
+            "Dominar noções introdutórias a respeito da teoria da empresa e do sujeito que protagoniza o direito empresarial."
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "Temas",
+          itens: [
+            "Introdução",
+            "1 Breve histórico como direito comercial",
+            "2 Princípios do direito empresarial",
+            "3 Teoria da empresa",
+            "3.1 Empresário",
+            "3.2 O não empresário",
+            "Considerações finais",
+            "Referências"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Iniciando o nosso estudo jurídico sobre o direito comercial, iremos começar a tratar e dar continuidade ao aprendizado sobre o **direito empresarial**, essa ciência que nasceu da simples, mas edificante necessidade humana, que é o contato com o outro."
+        },
+        {
+          tipo: "texto",
+          texto: "Neste e nos módulos seguintes, iremos começar tratando dos aspectos históricos, de que modo a relação empresarial se desenvolveu ao longo do tempo e como chegamos até a complexidade do direito empresarial com tantas nuances, particularidades e inovações. Para que seu raciocínio seja formado com acontecimentos e institutos que possuem uma cronologia de informações, é muito importante que você acompanhe os artigos citados, e até mesmo quando eles não estiverem expressos, a fim de que você possa fazer a leitura complementar da legislação referida proposta no texto."
+        },
+        {
+          tipo: "texto",
+          texto: "Boa leitura!"
+        }
+      ]
+    },
+    {
+      id: "breve_historico",
+      titulo: "1 Breve histórico como direito comercial",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Muito antes de ser reconhecido como direito empresarial, tal direito começou a ser desenhado historicamente como **direito comercial**. Isso se deve ao fato que o comércio é um instituto muito mais antigo do que o direito, que surge para regulamentar a relação entre os indivíduos. Sendo assim, o comércio - como você bem sabe - já estava presente desde a Idade Média, onde apresentou relevância durante o exercício das atividades mercantis."
+        },
+        {
+          tipo: "destaque",
+          texto: "Saiba Mais: Em contrapartida, na Idade Média, o comércio já teria alcançado um nível mais acentuado, pelo qual ele não se apresentava somente como uma simples característica de alguns povos em especial, sua presença já marcara um aspecto comum entre todos os povos, visto que era assim a maneira que se encontravam de viver em sociedade. E, exatamente aqui, é onde habitualmente os autores costumam indicar que houve o surgimento de um regime jurídico exclusivo para dirigir as relações mercantis."
+        },
+        {
+          tipo: "texto",
+          texto: "O professor André Santa Cruz Ramos relata que é neste período de formação do direito comercial que surgem seus primeiros institutos jurídicos, como os **títulos de crédito** (letra de câmbio), as **sociedades** (comendas), os **contratos mercantis** (contrato de seguro) e os **bancos**."
+        },
+        {
+          tipo: "texto",
+          texto: "Em termos de marcos históricos, em **1807** foi o momento em que se deu a iniciativa de codificação e publicação do primeiro código comercial, que foi o da França, o qual adotou a **teoria dos atos de comércio**, que ditava os atos de quais eram considerados comerciais, como a compra e a venda de bens imóveis. A condição de validação para caracterizar o ato como um ato de comércio ou não era direcionada para o que se faz (atividade) e não para quem a realizava."
+        },
+        {
+          tipo: "texto",
+          texto: "Esse acontecimento foi um grande marco histórico para o direito comercial mundial, e por mais que tenha acontecido na França, possuiu reflexos no Brasil, mais precisamente no ano de **1850**. Sob a influência da teoria dos atos de comércio, em 1850, instituiu-se o primeiro código comercial brasileiro, que foi claramente influenciado pelo ideal francês, o qual adotava a mesma teoria."
+        },
+        {
+          tipo: "texto",
+          texto: "No ano de 1946, na Itália, despertou-se a percepção de que o uso de uma lista que determinava ou não quais eram os atos de comércio era ultrapassada, pois com o tempo os atos mudam, inovam-se, acompanham a evolução da sociedade e por isso logo se desatualizam."
+        },
+        {
+          tipo: "texto",
+          texto: "Por isso, na Itália, logo se estabeleceu a compreensão que o direito privado precisa ser unificado. E, por essa razão o Código Civil Italiano começou a tratar ao mesmo tempo da legislação empresarial e das regras de direito civil no mesmo código."
+        },
+        {
+          tipo: "texto",
+          texto: "Por esse motivo, mais uma vez, sofrendo as influências internacionais, o novo - à época - Código Civil Brasileiro publicado em **2002** adotou a chamada **teoria da empresa**, que objetivara a tentativa (tentativa pois o código civil brasileiro não traz toda a legislação do direito civil, existindo ainda algumas leis fora de seu código) essa unificação do direito privado."
+        }
+      ]
+    },
+    {
+      id: "principios",
+      titulo: "2 Princípios do direito empresarial",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Depois de compreendido como se deu a mudança de Código Comercial para Código Empresarial, daremos continuidade ao conhecimento desta real ciência que nos cerca tão corriqueiramente no mais ordinário dos dias."
+        },
+        {
+          tipo: "texto",
+          texto: "Como já conversamos em outras aulas, o direito possui a particularidade de sua ciência ser alicerçada por princípios que guiam a compreensão do entendimento daquela área específica; não seria diferente com o direito empresarial, cuja matéria é a que disciplina as regras específicas do mercado e as suas especificidades. Dentre os princípios do direito empresarial estão:"
+        },
+        {
+          tipo: "lista",
+          titulo: "Princípios do direito empresarial",
+          itens: [
+            "Liberdade de iniciativa;",
+            "Liberdade de concorrência;",
+            "Garantia e defesa da propriedade privada;",
+            "Preservação da empresa;",
+            "Função social da empresa."
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "**Liberdade de iniciativa**: é o princípio mais importante da seara empresarial e tem previsão no ordenamento jurídico no caput Art. 170 da Constituição Federal:"
+        },
+        {
+          tipo: "texto",
+          texto: "“Art. 170 a ordem econômica, fundada na valorização do trabalho humano e na livre iniciativa, tem por fim assegurar a todos existências dignas, conforme os ditames da justiça social, observados os seguintes princípios: soberania nacional; propriedade privada; função social da propriedade; livre concorrência; defesa do consumidor.”"
+        },
+        {
+          tipo: "texto",
+          texto: "Para as autoridades do direito empresarial, costuma-se dizer que esse princípio se desdobra em quatro condições fundamentais, a saber:"
+        },
+        {
+          tipo: "imagem",
+          src: "figura_1_principios_do_direito_empresarial.png",
+          pasta: "imagens_legislacao/aula_07",
+          alt: "Figura 1 – Princípios do direito empresarial (Os quatro princípios do direito empresarial): quatro cartões coloridos com as condições fundamentais da liberdade de iniciativa: imprescindibilidade da empresa privada para que a sociedade tenha acesso aos bens e serviços de que necessita para sobreviver; busca do lucro como o estímulo central dos empresários para exercerem a atividade; indispensabilidade de proteção jurídica do investimento privado (leis que protejam os investimentos dos empresários); reconhecimento da empresa privada como geradora de empregos e fomentando a economia social. Fonte: Autora.",
+          num: 1
+        },
+        {
+          tipo: "texto",
+          texto: "Dessa forma, esse princípio, em linhas gerais, faz referência à perspectiva que permite a livre atuação do indivíduo no mercado sem o consentimento estatal para tanto:"
+        },
+        {
+          tipo: "texto",
+          texto: "**Liberdade de concorrência**: também previsto no inciso IV do Art. 170 da Constituição Brasileira, que é correlacionado ao da livre iniciativa – tem por objetivo garantir aos empresários a exploração de atividade econômica sem a intervenção estatal - nasce o princípio da liberdade de concorrência que tem por finalidade a melhoria de custos, pois fica diante da possibilidade da variedade de preços perante a pluralidade de fornecedores. Como medida de precaução e proteção do cumprimento desse princípio, a Constituição Federal trás no § 4º do Art. 173 a seguinte previsão:"
+        },
+        {
+          tipo: "texto",
+          texto: "“Art. 173 [...] § 4º A lei **reprimirá** o abuso do poder econômico que vise à dominação dos mercados, à eliminação da concorrência e ao aumento arbitrário dos lucros.” (grifos nossos)."
+        },
+        {
+          tipo: "texto",
+          texto: "Logo, ainda teremos como desdobramento desse princípio a criação do **CADE (Conselho Administrativo de Defesa Econômica)**, que é o órgão responsável por fiscalizar a atividade econômica do nosso país, propondo impedir as práticas de concorrência desonesta e os atos que caracterizem crime contra a ordem econômica, conforme as indicações previstas acima, no § 4º do Art. 173 da Constituição Federal."
+        },
+        {
+          tipo: "texto",
+          texto: "**Garantia e defesa da propriedade privada**: também prevista no Art. 170 da Constituição Federal, mas dessa vez no inciso II, a garantia da propriedade privada juntamente com os princípios da livre iniciativa e livre concorrência, tratados acima, correspondem ao **tripé principiológico** do direito empresarial. Faz referência ao que se é necessária (para obter sob a propriedade privada da empresa) para que possa livremente dispor de seus bens e serviços, frutos desta reservada propriedade, sem a interferência estatal para concretizá-la;"
+        },
+        {
+          tipo: "texto",
+          texto: "**Preservação da empresa**: influenciou mudanças legislativas a fim de que se defenda a essência da atividade econômica, ponderando sobre o propósito geral da atuação, que visa ao lucro/aferição de renda;"
+        },
+        {
+          tipo: "texto",
+          texto: "**Função social da empresa**: este princípio defende que não é somente em torno do lucro que estrutura a atividade. Para o princípio da função social da empresa, a atividade precisa mensurar as consequências sociais que ela terá perante a sociedade, sua posição coletiva enquanto serviço que atende a uma imagem condizente com o público que a consome."
+        },
+        {
+          tipo: "texto",
+          texto: "Nota de rodapé 3: Art. 173 [...] § Ressalvados os casos previstos nesta Constituição, a exploração direta de atividade econômica pelo Estado só será permitida quando necessária aos imperativos da segurança nacional ou a relevante interesse coletivo, conforme definidos em lei."
+        }
+      ]
+    },
+    {
+      id: "teoria_empresa",
+      titulo: "3 Teoria da empresa",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Conforme visto acima, depois da teoria dos atos de comércio ser identificada como ultrapassada por delimitar critérios para a definição da atividade como empresária, instigou-se a busca por um apropriado sentido técnico-jurídico que definisse a empresa como **uma atividade econômica organizada**."
+        },
+        {
+          tipo: "texto",
+          texto: "O professor André Santa Cruz Ramos exprime que a partir da desconstrução da teoria dos atos de comércio e da afirmação da teoria da empresa como critério delimitador das regras do regime jurídico empresarial - o fenômeno econômico empresa - visto como organismo econômico em que há articulação dos fatores de produção (natureza, trabalho, capital e tecnologia) para o atendimento das necessidades do mercado (produção e circulação de bens e serviços), é absorvido pelo direito empresarial com o sentido técnico jurídico de atividade econômica organizada, sendo tal entendimento efetivamente exercido a partir da vigência do Código Civil de 2002, que inclusive em seu Art. 966 trata da definição de empresário, a saber:"
+        },
+        {
+          tipo: "texto",
+          texto: "“Art. 966. Considera-se empresário quem exerce profissionalmente atividade econômica organizada para a produção ou a circulação de bens ou de serviços.”"
+        },
+        {
+          tipo: "texto",
+          texto: "Depois de explicado esse ponto, a conclusão é que **empresa é a atividade exercida e o empresário é o sujeito que exerce a empresa**. A empresa não é sujeito de direito; o titular da empresa, portanto, é o empresário, que vale lembrar: pode ser pessoa física ou jurídica. Apesar das expressões serem comumente empregadas de maneira errada, é fundamental que você entenda que as definições se conectam, mas não se confundem."
+        },
+        {
+          tipo: "texto",
+          texto: "A partir daí se tem o desenvolvimento do direito empresarial partindo dos sujeitos da relação empresarial."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "3.1 Empresário"
+        },
+        {
+          tipo: "texto",
+          texto: "Para fins de diferenciação mais específica, a conceituação do Art. 966 do Código Civil trata:"
+        },
+        {
+          tipo: "lista",
+          titulo: "Quem pode ser empresário",
+          itens: [
+            "Pessoa Física – empresário individual;",
+            "Pessoa Jurídica – sociedade empresária ou empresa individual de responsabilidade limitada (EIRELI)."
+          ]
+        },
+        {
+          tipo: "imagem",
+          src: "figura_2_pessoa_fisica_x_pessoa_juridica.png",
+          pasta: "imagens_legislacao/aula_07",
+          alt: "Figura 2 – Pessoa física x Pessoa jurídica: esquema em que o empresário se divide em pessoa física (empresário individual, ilustrada por uma mulher com uma prancheta) e pessoa jurídica (sociedade empresária e EIRELI, ilustrada por um prédio comercial). Fonte: Autora.",
+          num: 2
+        },
+        {
+          tipo: "destaque",
+          texto: "Parada Obrigatória: Em 2011, tivemos a introdução da EIRELI (empresa individual de responsabilidade limitada) em nosso sistema. Refere-se a uma “sociedade” de um só indivíduo, e seu objetivo é que o empresário revista o seu patrimônio particular, desligando-o do patrimônio empresarial no exercício da atividade empresária, pois, apenas como empresário individual, todo seu patrimônio (estando ligado ou não à atividade empresarial) assume a responsabilidade pelas dívidas da atividade empresária, logo, ele responderia ilimitadamente por elas."
+        },
+        {
+          tipo: "texto",
+          texto: "Retomando e detalhando a definição dada um pouco mais acima de empresário, temos: Considera-se **empresário** (gênero) **quem exerce profissionalmente a atividade econômica organizada** para a **produção ou a circulação de bens ou de serviços**."
+        },
+        {
+          tipo: "lista",
+          titulo: "Os requisitos destacados fazem referência à(ao):",
+          itens: [
+            "1. Profissionalismo: a ideia associada aqui é a continuidade/habitualidade, não podendo ser algo pontual, a pessoalidade que é ligada ao fato de o empresário realizar as contratações e o domínio das informações referentes ao produto que comercializa;",
+            "2. Atividade: como já dito acima, a empresa é a atividade e o empresário é o sujeito de direito que a realiza;",
+            "3. Econômica: é o propósito financeiro, a finalidade é lucrativa;",
+            "4. Organizada: a caracterização da organização é feita pela presença de 4 fatores de produção, quais sejam: mão de obra, matéria-prima, capital e tecnologia. Se por acaso for dada a ausência de algum deles, não há que se falar em organização da atividade;",
+            "5. Produção ou circulação de bens e serviços: a produção de bens se relaciona com a fabricação das mercadorias; a produção de serviços é a própria prestação em si; a circulação de bens é a atividade comercial de compra e venda e a circulação de serviços é a mediação para a prestação dos serviços, como as agências de turismo fazem."
+          ]
+        },
+        {
+          tipo: "destaque",
+          texto: "Parada Obrigatória: Não é necessário ser registrado para ser considerado empresário."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "3.2 O não empresário"
+        },
+        {
+          tipo: "texto",
+          texto: "Para que não haja enganos quanto à caracterização do sujeito empresário, iremos abordar as exceções que não entram na designação do mesmo, por mais que os tipos elencados a seguir possam ser parecer enquadrados na definição, é importante que você conheça sua particularidade e compreenda o porquê eles não configurarem esta condição."
+        },
+        {
+          tipo: "texto",
+          texto: "A primeiríssima exceção já foi até abordada aqui, um pouco mais acima, e diz respeito à ausência do fator **organização empresarial**, tratando de sua importância, o parágrafo único do Art. 966 no Código Civil, que diz:"
+        },
+        {
+          tipo: "texto",
+          texto: "“Art. 966. [...] **Parágrafo único**. Não se considera empresário quem exerce profissão intelectual, de natureza científica, literária ou artística, ainda com o concurso de auxiliares ou colaboradores, salvo se o exercício da profissão constituir elemento de empresa.”"
+        },
+        {
+          tipo: "texto",
+          texto: "Dando continuidade às exceções, aqueles que exercem profissão intelectual também não são empresários. Isso quer dizer que o profissionalismo liberal **não** se encaixa como atividade empresarial. Aqueles que exercem profissão científica são os conhecidos profissionais autônomos, como os médicos, advogados e contadores."
+        },
+        {
+          tipo: "texto",
+          texto: "Para ficar mais claro, exemplificando: o médico que trabalha sozinho, atendendo em sua clínica **não** é empresário. Um hospital em que o mesmo médico citado no exemplo acima trabalha, como elemento de empresa também não é empresário, porque os pacientes se deslocam até lá pelo atendimento (medicina) e não pelo médico específico."
+        },
+        {
+          tipo: "destaque",
+          texto: "Saiba Mais: O hospital se enquadra como sociedade empresária. Um médico pode estabelecer uma sociedade simples com outros médicos."
+        },
+        {
+          tipo: "texto",
+          texto: "Da mesma forma que os profissionais que exercem profissão literária, como escritores e jornalistas também **não são empresários**. E, ainda, aqueles que exercem a profissão artística, como desenhistas, cantores, dançarinos e artistas plásticos não são considerados empresários."
+        },
+        {
+          tipo: "texto",
+          texto: "Sobre a exceção trazida pela expressão “ainda com o concurso de auxiliares ou colaboradores”, ela menciona que nas atividades intelectuais que citamos acima, que são desempenhadas de maneira pessoal ainda que contenham algum tipo de auxílio - como a contratação de secretárias - ainda não será considerada sociedade empresária, pois na profissão intelectual o afastamento dessa caracterização se dá pelo papel acessório que a colaboração alcança."
+        },
+        {
+          tipo: "texto",
+          texto: "De igual maneira, a expressão “salvo se o exercício da profissão constituir elemento de empresa” é usada para informar que a atividade intelectual leva o seu proprietário a ser visto como empresário se ela (atividade) estiver incorporada em uma causa mais complexa que traduza na particularidade da atividade empresarial. Por exemplo: a veterinária Lara, que possuí a clínica veterinária Abraço de pet e lá começa a vender ração de cachorro, brinquedo para animais, coleiras e afins, a Abraço de Pet passa a ser uma sociedade, pois a atividade intelectual da Lara como veterinária passa a ser só mais um dos elementos da empresa."
+        },
+        {
+          tipo: "lista",
+          titulo: "Além do profissional intelectual, não é empresário:",
+          itens: [
+            "A sociedade de advogados;",
+            "O profissional rural não registrado;",
+            "Os empresários de cooperativas."
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "O **profissional rural** porque o registro é facultativo. Contudo, apenas, após a inscrição, será considerado empresário, conforme o Art. 971 do Código Civil, que trata:"
+        },
+        {
+          tipo: "texto",
+          texto: "“Art. 971. O empresário, cuja **atividade rural** constitua sua principal profissão, pode, observadas as formalidades de que tratam o Art. 968 e seus parágrafos, requerer inscrição no Registro Público de Empresas Mercantis da respectiva sede, caso em que, **depois de inscrito, ficará equiparado, para todos os efeitos, ao empresário sujeito a registro**”."
+        },
+        {
+          tipo: "texto",
+          texto: "A **sociedade de advogados** porque o registro de constituição é feito na própria OAB (onde adquire personalidade jurídica) e a sociedade será **sempre** simples."
+        },
+        {
+          tipo: "texto",
+          texto: "E, as **sociedades cooperativas**, que independentemente do objeto serão simples, conforme preceitua o Art. 982, parágrafo único do Código Civil que diz: “Art. 982 [...] Parágrafo único: Independentemente de seu objeto, considera-se empresária a sociedade por ações; e, simples, a cooperativa”."
+        },
+        {
+          tipo: "lista",
+          titulo: "Desta forma:",
+          itens: [
+            "Sociedade Cooperativa → sempre simples",
+            "Sociedade por Ações → sempre empresária"
+          ]
+        }
+      ]
+    },
+    {
+      id: "consideracoes_finais",
+      titulo: "Considerações finais",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Iniciamos o estudo do direito empresarial tratando de sua evolução histórica e o marco temporal que o fez ganhar esse status de suma importância no cenário jurídico social como nós conhecemos atualmente."
+        },
+        {
+          tipo: "texto",
+          texto: "Depois de encerrado esse reconhecimento histórico, passamos ao estudo da compreensão principiológica que a empresarialidade exige. A partir daí, começamos a tratar do Direito Empresarial na esfera brasileira e como esta é tratada na esfera jurídica, começando a compreensão do sujeito que inaugura a formação de uma empresa. Seguiremos compreendendo a complexidade da relação que aqui existe."
+        },
+        {
+          tipo: "texto",
+          texto: "Bons Estudos!!"
+        }
+      ]
+    }
+  ]
+},
 
-
+// aula 8
+{
+  aula: "Empresa, Empresário Individual, EIRELI, Registro, Estabelecimento e Nome Empresarial MEI, ME e EPP",
+  ideia_central: "A empresa é a atividade, e o empresário é quem a exerce: o empresário individual é pessoa física e responde ilimitadamente com seu patrimônio pessoal, ao passo que a EIRELI (Lei nº 12.441/2011, Art. 980-A) é pessoa jurídica de titular único, com capital mínimo de 100 salários mínimos e responsabilidade limitada. O registro empresarial é obrigatório antes do início da atividade, mas tem natureza declaratória; o estabelecimento é o conjunto de bens do empresário (trespasse: Arts. 1.142 a 1.149); o nome empresarial assume a forma de firma ou denominação e obedece aos princípios da veracidade e da novidade; e MEI, ME e EPP se distinguem por receita bruta anual, número de funcionários e registro.",
+  secoes: [
+    {
+      id: "objetivos_introducao",
+      titulo: "Objetivos de Aprendizagem e Introdução",
+      blocos: [
+        {
+          tipo: "lista",
+          titulo: "Objetivos de Aprendizagem",
+          itens: [
+            "Estabelecer a partir da descrição como se distingue o elemento empresa do conceito da figura do empresário;",
+            "Conhecer a diferencia entre estas figuras: empresário individual e EIRELI;",
+            "Aprender as características e as particularidades do MEI, ME e EPP."
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "Temas",
+          itens: [
+            "Introdução",
+            "1 Empresa",
+            "1.1 Conceito",
+            "2 Empresário individual: definição, requisitos e responsabilidade",
+            "3 EIRELI",
+            "4 Registro, estabelecimento e nome empresarial",
+            "Considerações finais",
+            "Referências"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Iniciando o nosso estudo jurídico sobre o direito comercial, iremos começar a tratar e dar continuidade ao aprendizado sobre o Direito Empresarial, essa ciência que nasceu da simples e edificante necessidade humana, que é o contato com o outro."
+        },
+        {
+          tipo: "texto",
+          texto: "Neste e nos módulos seguintes, iremos começar tratando dos aspectos históricos e de como a relação empresarial se desenvolveu ao longo do tempo e como chegamos até a complexidade do direito empresarial com tantas nuances, particularidades e inovações. Para que seu raciocínio seja formado com acontecimentos e institutos que possuem uma cronologia de informações, é muito importante que você acompanhe os artigos citados e até mesmo quando eles não estiverem expressos, que você possa fazer a leitura complementar da legislação referida proposta no texto."
+        },
+        {
+          tipo: "texto",
+          texto: "Boa leitura!"
+        }
+      ]
+    },
+    {
+      id: "empresa",
+      titulo: "1 Empresa",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "A partir de agora, iremos tratar acerca da empresa e das suas nuances dentro do direito empresarial."
+        },
+        {
+          tipo: "subtitulo",
+          texto: "1.1 Conceito"
+        },
+        {
+          tipo: "texto",
+          texto: "Primordialmente, é importante que em sua mente os conceitos já estejam delineados para que não confunda a atividade com quem a pratica. Está lembrado o conceito trazido pelo Art. 966 do Código Civil? Então, **a empresa é a atividade** organizada para a produção ou a circulação de bens ou de serviços."
+        },
+        {
+          tipo: "texto",
+          texto: "Na Sociedade empresária (pessoa jurídica), não é porque sou sócio de uma empresa que serei empresário; **empresário é quem pratica, organiza a atividade empresarial sozinho**, na sociedade empresária, quem pratica a atividade é a pessoa jurídica. Por exemplo: a empresa de uma farmácia é a comercialização de remédios, ou seja, o objeto da atividade, consegue compreender?"
+        },
+        {
+          tipo: "texto",
+          texto: "Sistematizando:"
+        },
+        {
+          tipo: "tabela",
+          titulo: "Quadro 1 – Empresarial Individual x Sociedade Empresarial",
+          colunas: [
+            "Empresarial individual",
+            "Sociedade empresarial"
+          ],
+          linhas: [
+            [
+              "Pessoa Física",
+              "Pessoa Jurídica"
+            ],
+            [
+              "Patrimônio pessoal e empresa se confundem",
+              "Têm patrimônio próprio, distinto dos sócios"
+            ],
+            [
+              "Pessoa física responde pelos direitos e obrigações (quer dizer que a responsabilidade pessoal é do empresário)",
+              "A pessoa jurídica responde pelos direitos e obrigações (quer dizer que, em regra, não há responsabilidade pessoal dos sócios)"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      id: "empresario_individual",
+      titulo: "2 Empresário individual: definição, requisitos e responsabilidade",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Iniciando a análise sobre a figura do empresário individual, devo dizê-lo que é a pessoa física, que - como a identificação de seu tipo empresarial - individualmente executa a atividade, do conceito já conhecido por você, a saber: econômica organizada para a produção ou para a circulação de bens e serviços."
+        },
+        {
+          tipo: "texto",
+          texto: "O Código Civil traz dois requisitos para tornar possível que o sujeito seja validamente empresário da seguinte forma: “Art. 972 podem exercer a atividade de empresário os que estiverem **em pleno gozo da capacidade civil e não forem legalmente impedidos**”."
+        },
+        {
+          tipo: "texto",
+          texto: "Tratando sobre os temas destacados, o primeiro diz respeito ao gozo da capacidade plena do empresário. E, o que isso quer dizer? Significa dizer que o empresário **não** pode ser menor de 18 anos de idade (aqui entra a hipótese do menor emancipado), nem ébrios habituais, viciados em tóxicos, deficientes mentais, excepcionais, pródigos e, nos moldes do Art. 3º do Código Civil, também os índios. Esse rol de particularidades se refere à capacidade tratada pelo diploma cível brasileiro."
+        },
+        {
+          tipo: "texto",
+          texto: "Nota de rodapé 1: Art. 972 [...] § Podem exercer a atividade de empresário os que estiverem em pleno gozo da capacidade civil e não forem legalmente impedidos."
+        },
+        {
+          tipo: "texto",
+          texto: "Ainda tratando sobre a questão da capacidade, o Art. 974 do Código Civil traz algumas exceções à regra da capacidade, são estas: “Art. 974. Poderá o incapaz, **por meio de representante** ou devidamente assistido, continuar a empresa antes exercida por ele enquanto capaz, por seus pais ou pelo autor de herança”:"
+        },
+        {
+          tipo: "lista",
+          titulo: "Parágrafos do Art. 974",
+          itens: [
+            "§ 1º Nos casos deste artigo, precederá autorização judicial, após exame das circunstâncias e dos riscos da empresa, bem como da conveniência em continuá-la podendo a autorização ser revogada pelo juiz, ouvidos os pais, tutores ou representantes legais do menor ou do interdito, sem prejuízo dos direitos adquiridos por terceiros.",
+            "§ 2º Não ficam sujeitos ao resultado da empresa os bens que o incapaz já possuía, ao tempo da sucessão ou da interdição, desde que estranhos ao acervo daquela, devendo tais fatos constar do alvará que conceder a autorização.",
+            "§ 3º O Registro Público de Empresas Mercantis a cargo das Juntas Comerciais deverá registrar contratos ou alterações contratuais de sociedade que envolva sócio incapaz, desde que atendidos, de forma conjunta, os seguintes pressupostos:",
+            "I – o sócio incapaz não pode exercer a administração da sociedade;",
+            "II – o capital social deve ser totalmente integralizado;",
+            "III – o sócio relativamente incapaz deve ser assistido e o absolutamente incapaz deve ser representado por seus representantes legais."
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "**O menor não emancipado**, como trata o caput do Art., não poderá iniciar a atividade, porém, pode dar continuidade a mesma, se antes fosse exercida por seus pais ou por autor de herança da qual ele é sucessão. Essa exceção é a tentativa de preservação da empresa."
+        },
+        {
+          tipo: "texto",
+          texto: "Aquele que supervenientemente sobreveio uma incapacidade (era capaz e por algum acontecimento eventual se rompeu a capacidade plena) é autorizada a continuação do exercício empresarial. Para tanto, essas exceções são condicionadas a duas exigências, a saber:"
+        },
+        {
+          tipo: "lista",
+          titulo: "Condições das exceções",
+          itens: [
+            "Autorização judicial, que a qualquer tempo poderá ser revogada pelo juiz;",
+            "Assistência ou representação (estando sujeita ao nível da incapacidade)."
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Nota de rodapé 2: Art. 974 [...] § Poderá o incapaz, por meio de representante ou devidamente assistido, continuar a empresa antes exercida por ele enquanto capaz, por seus pais ou pelo autor de herança."
+        },
+        {
+          tipo: "texto",
+          texto: "O segundo requisito destacado trata sobre a **ausência de impedimentos legais**, que são: membros do Ministério Público; Magistrados; membros da Defensoria Pública; empresários falidos; leiloeiros; despachantes aduaneiros; cônsules, no seus distritos; médicos, para o exercício simultâneo de farmácia, e farmacêuticos no exercício simultâneo da medicina; pessoas condenadas à pena que vede, ainda que temporariamente, o acesso a cargos públicos; servidores públicos civis da ativa; servidores militares da ativa das Forças Armadas e das Polícias Militares; os deputados e os senadores não poderão ser proprietários, controladores ou diretores de empresa, que goze de favor decorrente de contrato com pessoa jurídica de direito público; estrangeiros (sem visto permanente), em certos casos e estrangeiro (com visto permanente), em certos casos."
+        },
+        {
+          tipo: "texto",
+          texto: "Sobre a responsabilidade do empresário individual, ela será **ilimitada**, dessa forma, a pessoa do empresário individual se responsabiliza com seus bens pessoais pela dívidas empresariais adquiridas."
+        },
+        {
+          tipo: "destaque",
+          texto: "Saiba Mais: Na qualidade do empresário casado, ele pode alienar imóveis da sociedade ou gravá-los de ônus real sem a necessidade de outorga conjugal, qualquer que seja o regime de bens. Mas, para destiná-los ao patrimônio empresarial, é necessária a outorga conjugal! Já na qualidade de sócios casados, os cônjuges podem contratar a sociedade, entre si ou com terceiros, salvo se casados no regime de comunhão universal ou separação obrigatória de bens (nesses casos, eles podem, sim, contratar sociedade individualmente com terceiros)."
+        }
+      ]
+    },
+    {
+      id: "eireli",
+      titulo: "3 EIRELI",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Não podemos avançar o tema empresarial sem que você conheça a figura da EIRELI, que quer dizer Empresa Individual de Responsabilidade Limitada) e foi instituída pela **lei 12.441/11**, sendo delineada no **Art. 980-A** do Código Civil."
+        },
+        {
+          tipo: "texto",
+          texto: "A EIRELI se trata de uma nova espécie de empresário, formada por uma única pessoa, que poderá ser pessoa natural, que será titular de 100% do capital social, e **não** poderá ter sócios. É isso mesmo que você leu, essa “moderna” espécie de empresário é pessoa jurídica, que não se confunde com seu titular ou criador, **pois não há responsabilidade pessoal!** Assim, as dívidas da EIRELI recairão sobre os bens da empresa, e não da pessoa física."
+        },
+        {
+          tipo: "texto",
+          texto: "Para a sua criação, deverão ser integralizados **100 salários mínimos** vigentes e necessita de registro na Junta Comercial, podendo ser integralizado com bens e dinheiro, mas nunca com prestação de serviços."
+        },
+        {
+          tipo: "texto",
+          texto: "Acerca do nome empresarial (iremos aprender melhor mais adiante) você precisa saber apenas que nesse tipo é firma ou denominação + a expressão EIRELI. Para as regras gerais, serão aplicadas - no que couberem - as regras da sociedade limitada."
+        },
+        {
+          tipo: "destaque",
+          texto: "Parada Obrigatória: A finalidade da criação da EIRELI é o benefício que ela oferece a quem a elege como espécie empresária. Note que aqui o empreendedor não responderá ilimitadamente pelas dívidas advindas na prática econômica. Apenas ficará responsável (e de forma limitada) pelo capital social já integralizado (100 salários mínimos, lembra?). A EIRELI é uma grande sacada para blindar o capital do empresário."
+        },
+        {
+          tipo: "texto",
+          texto: "O professor André Luiz Santa Cruz Ramos mesmo confirma em suas palavras que o objetivo é permitir que um determinado empreendedor, individualmente, exercesse atividade empresarial limitando sua responsabilidade, em princípio, ao capital investido no empreendimento, ficando seus bens particulares resguardados."
+        }
+      ]
+    },
+    {
+      id: "registro_estabelecimento_nome",
+      titulo: "4 Registro, estabelecimento e nome empresarial",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O Registro empresarial é obrigatório e deve ser feito antes do início da atividade, conforme preceitua o Art. 967 do Código Civil, que diz: “Art. 967. É obrigatória a inscrição do empresário no Registro Público de Empresas Mercantis da respectiva sede, antes do início de sua atividade”."
+        },
+        {
+          tipo: "texto",
+          texto: "A natureza jurídica do registro é meramente **declaratória** e não constitutiva, ou seja, para o empresário comum, o registro é uma simples condição de regularidade. Assim, o empresário que não possua o registro não perde o status de empresário, já que você sabe e está lembrado que o que caracteriza o empresário é a atividade por ele realizada, logo, os negócios jurídicos praticados por ele são válidos."
+        },
+        {
+          tipo: "texto",
+          texto: "Ele se torna apenas irregular sendo impossibilitado de gozar dos benefícios que a condição de registro lhe proporciona."
+        },
+        {
+          tipo: "lista",
+          titulo: "O empresário não registrado (situação irregular) não pode requerer para si:",
+          itens: [
+            "Recuperação judicial e extrajudicial;",
+            "Não pode requerer falência de devedor seu;",
+            "Não pode participar de procedimentos licitatórios;",
+            "Os sócios responderão pessoal e ilimitadamente pelas obrigações."
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "O local do registro é tratado conforme o tipo empresarial que se é encaixado. Por exemplo:"
+        },
+        {
+          tipo: "lista",
+          titulo: "Local do registro",
+          itens: [
+            "Empresário e Sociedade Empresarial → Junta Comercial (Registro Público das Empresas Mercantis);",
+            "Sociedade Simples → Registro Civil das Pessoas Jurídicas;",
+            "MEI → Portal do empreendedor."
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "Nota de rodapé 4: Art. 967 [...] § É obrigatória a inscrição do empresário no Registro Público de Empresas Mercantis da respectiva sede, antes do início de sua atividade."
+        },
+        {
+          tipo: "texto",
+          texto: "O **estabelecimento empresarial**, diferente do que pensamos comumente, não é espaço físico onde a atividade empresarial se dá. A sua regulamentação está presente nos Arts. 1.142 a 1.149 do Código Civil."
+        },
+        {
+          tipo: "texto",
+          texto: "Estabelecimento empresarial é o conjunto de todos os bens do empresário que contribuam para a prática da empresa, por empresário ou sociedade empresária. Podem ser bens móveis, imóveis, corpóreos e incorpóreos (marcas, patentes, propriedade intelectual e afins); assim sendo, o estabelecimento empresarial é elemento indispensável ao exercício empresa. Pode ser ainda objeto unitário de direito e negócios jurídicos que sejam compatíveis com sua natureza, conforme trata o Art. 1.143 do Código Civil."
+        },
+        {
+          tipo: "texto",
+          texto: "A natureza jurídica é a **universalidade de fato**, isso quer dizer que o conjunto de bens que pode ser destinado de acordo com a vontade do particular."
+        },
+        {
+          tipo: "texto",
+          texto: "E, só para enfatizar, o estabelecimento empresarial não se confunde com o terreno em que o empresário exerce suas atividades nem com o patrimônio do empresário ou da sociedade empresária."
+        },
+        {
+          tipo: "destaque",
+          texto: "Parada Obrigatória: O estabelecimento pode ser alienado enquanto o nome empresarial, em regra, não pode ser objeto de alienação."
+        },
+        {
+          tipo: "texto",
+          texto: "Agora trataremos sobre o contrato de **trespasse**, que é o negócio jurídico mais comum no estabelecimento comercial, que diz respeito ao contrato que tem por finalidade a alienação, o usufruto ou o arrendamento do estabelecimento e somente gerará efeitos após a averbação à margem da inscrição do empresário/sociedade empresária no Registro Público de Empresas Mercantis e publicada na imprensa oficial, conforme dita o Art. 1.145 do Código Civil."
+        },
+        {
+          tipo: "texto",
+          texto: "Na hipótese da sucessão empresarial, pela qual o alienante não tiver bens suficientes para solver seu passivo, a efetividade da alienação necessitará do pagamento de todos os credores ou do consentimento destes de modo expresso ou tácito (no prazo de 30 dias após a sua notificação), segundo o Art. 1.146 do Código Civil."
+        },
+        {
+          tipo: "texto",
+          texto: "Sobre a concorrência, é proibido que o alienante do estabelecimento a faça em face ao adquirente, nos **5 anos** consecutivos à transferência. O Art. 1.147 do Código Civil dita que nas situações de arrendamento ou usufruto do estabelecimento o impedimento permanecerá durante todo o prazo do contrato (mesmo que superior aos 5 anos)."
+        },
+        {
+          tipo: "texto",
+          texto: "Para os contratos anteriores, a regra é que a transferência implica a sub-rogação do adquirente, nos contratos estipulados, parava exploração do estabelecimento (se não tiverem caráter pessoal) e a exceção se dará somente se houver disposição em contrário; podendo, assim, os terceiros rescindirem o contrato em 90 dias da publicação de transferência **se** ocorrer justa causa (ressalvada a responsabilidade do alienante), obedecendo ao determinado no Art. 1.148 do Código Civil."
+        },
+        {
+          tipo: "texto",
+          texto: "E sobre a cessão de créditos referentes ao estabelecimento transferido - de que trata o Art. 1.149 do Código Civil - produzirá efeitos em relação aos respectivos devedores, **desde o momento da publicação de transferência**, mas o devedor ficará dispensado se tiver pago ao cedente de boa-fé."
+        },
+        {
+          tipo: "texto",
+          texto: "O **Nome empresarial** é o elemento de identidade do empresário individual, da sociedade empresária e da EIRELI. O Art. 1.555 do Código Civil descreve os dois tipos e determina que o nome empresarial pode ser nas variantes de **firma** e **denominação**."
+        },
+        {
+          tipo: "lista",
+          titulo: "Firma",
+          itens: [
+            "Individual: só o empresário individual.",
+            "Social (Razão Social): sociedade empresária em que os sócios tenham responsabilidade ilimitada (ficam solidária e ilimitadamente responsáveis os demais sócios cujos nomes figurarem na firma);",
+            "A composição da firma deve conter o nome do empresário e pode ter a designação do gênero de atividade."
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "Denominação",
+          itens: [
+            "Sociedade empresária em que os sócios tenham responsabilidade limitada.",
+            "A composição da denominação deve ter a designação da atividade e pode ter um nome (homenagem) ou um elemento fantasia."
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "A proteção ao nome empresarial decorre automaticamente do registro, segundo o Art. 33 da Lei 8.934/94. Na esfera estadual (Juntas Comerciais), dilata-se a todo o território nacional se registrado na forma da lei especial."
+        },
+        {
+          tipo: "texto",
+          texto: "O nome empresarial obedecerá aos princípios da **veracidade** e da **novidade** trazidos no Art. 34 da Lei 8.934/94, in verbis: “Art. 34. O nome empresarial obedecerá aos princípios da veracidade e da novidade”."
+        },
+        {
+          tipo: "texto",
+          texto: "O princípio da veracidade aduz que o nome deve estar de acordo com a realidade da atividade empresarial exercida. **Não sendo permitido** que se mantenha na firma social o nome do sócio que tenha falecido, sido expulso ou se retirado."
+        },
+        {
+          tipo: "texto",
+          texto: "Já o princípio da novidade estabelece que o nome empresarial deve ser diferente dos já existentes, indicando, assim, para que se faça previamente uma busca na junta comercial."
+        },
+        {
+          tipo: "destaque",
+          texto: "Saiba Mais: NOME EMPRESARIAL ≠ MARCA. O nome empresarial é elemento que nomeia o empresário ou a sociedade. Já a Marca é o elemento que indica o produto ou serviço."
+        },
+        {
+          tipo: "texto",
+          texto: "Para resumir nos diferentes tipos, o nome empresarial se dará da seguinte forma:"
+        },
+        {
+          tipo: "tabela",
+          titulo: "Quadro 2 – Diferentes tipos do nome empresarial",
+          colunas: [
+            "Tipo",
+            "Firma",
+            "Denominação",
+            "Observações"
+          ],
+          linhas: [
+            [
+              "Empresário Individual",
+              "X",
+              "-",
+              "Nome completo/abreviado + Objeto (opcional)"
+            ],
+            [
+              "EIRELI",
+              "X",
+              "X",
+              "+ EIRELI"
+            ],
+            [
+              "Sociedade Limitada",
+              "X",
+              "X",
+              "+ “LIMITADA” ou “LTDA”"
+            ],
+            [
+              "Sociedade Anônima",
+              "-",
+              "X",
+              "+ “Sociedade Anônima” / “Companhia”"
+            ],
+            [
+              "Sociedade em Comandita por Ações",
+              "X",
+              "X",
+              "+ “Comandita por Ações”"
+            ],
+            [
+              "Sociedade em Nome Coletivo",
+              "X",
+              "-",
+              "+ “Companhia”"
+            ],
+            [
+              "Sociedade em Comandita Simples",
+              "X",
+              "-",
+              "Nome de um dos comanditados + “& CIA”"
+            ],
+            [
+              "Sociedade em Conta de Participação",
+              "Não possui",
+              "Não possui",
+              "Proibida de adotar nome social"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      id: "mei_me_epp",
+      titulo: "Quadro comparativo: MEI, ME e EPP",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Quadro comparativo entre microempreendedor individual (MEI), microempresa (ME) e empresa de pequeno porte (EPP)."
+        },
+        {
+          tipo: "tabela",
+          titulo: "Quadro 3 – Quadro comparativo microempreendedor individual (MEI) x microempresa (ME) x empresa de pequeno porte (EPP)",
+          colunas: [
+            "Característica",
+            "Microempreendedor individual (MEI)",
+            "Microempresa (ME)",
+            "Empresa de pequeno porte (EPP)"
+          ],
+          linhas: [
+            [
+              "Definição",
+              "É a pessoa que trabalha por conta própria e se legaliza como pequeno empresário optante pelo Simples Nacional.",
+              "Sociedade empresária, a sociedade simples, a empresa individual de responsabilidade limitada e o empresário, devidamente registrados no Registro de Empresas Mercantis ou no Registro Civil de Pessoas Jurídicas.",
+              "Sociedade empresária, a sociedade simples, a empresa individual de responsabilidade limitada e o empresário, devidamente registrados no Registro de Empresas Mercantis ou no Registro Civil de Pessoas Jurídicas."
+            ],
+            [
+              "Pode ser",
+              "Apenas o empresário individual",
+              "Empresário Individual; Sociedade Empresária; EIRELI; Sociedade Simples.",
+              "Empresário Individual; Sociedade Empresária; EIRELI; Sociedade Simples."
+            ],
+            [
+              "Receita Bruta Anual",
+              "Que aufira anualmente valor igual ou inferior a R$ 81.000,00",
+              "Que aufira anualmente valor igual ou inferior a R$ 360.000,00",
+              "Que aufira anualmente valor superior a R$ 360.000,00 e igual ou inferior a R$ 4.800.000,00"
+            ],
+            [
+              "Número de Funcionários",
+              "Pode contar com um funcionário que não pode ser sócio do negócio.",
+              "Para as que atuam como comércio ou no setor de serviços, podem ter até 9 pessoas trabalhando, ou 19 pessoas, no caso de empresas dos setores industrial ou de construção.",
+              "Para as que oferecem serviços ou são intituladas como comércio, podem empregar de 10 a 49 pessoas, já as empresas do setor industrial e de construção podem contratar entre 20 a 99 pessoas."
+            ],
+            [
+              "Regulamentação",
+              "Lei Complementar nº 123/2006 (a partir do Art. 18-A)",
+              "Lei Complementar nº 123/2006 (a partir do Art. 3º)",
+              "Lei Complementar nº 123/2006 (a partir do Art. 3º)"
+            ],
+            [
+              "Sócio/Titular",
+              "Um titular",
+              "Pode ser constituída por sócios",
+              "Pode ser constituída por sócios"
+            ],
+            [
+              "Onde Registrar?",
+              "Portal do Empreendedor",
+              "Junta Comercial",
+              "Junta Comercial"
+            ],
+            [
+              "Precisa de Contrato Social?",
+              "Não! Mas possui certificado da condição empresarial de microempreendedor.",
+              "Sim",
+              "Sim"
+            ],
+            [
+              "Opções Tributária",
+              "Simples Nacional",
+              "Simples Nacional",
+              "Até R$ 360.000,00 → Simples Nacional; A partir de R$ 360.000,00 - até R$ 4.800.000,00 → Lucro Presumido; Acima de R$ 4.800.000,00 → Lucro Real."
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      id: "consideracoes_finais",
+      titulo: "Considerações finais",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Podemos aprender neste módulo mais acerca da atividade, como a empresa exercida pelos empresários, como sujeito desta relação de troca contínua. Podemos conhecer a figura do empresário individual e, também, a figura da EIRELI como uma nova composição dentro da seara empresarial."
+        },
+        {
+          tipo: "texto",
+          texto: "Ademais, conhecemos os institutos inerentes ao estudo empresarial, como o nome empresarial como elemento essencial da empresa, da mesma forma que a essencialidade do registro, como elemento de constituição da empresa, assim como as regras atinentes ao nome."
+        },
+        {
+          tipo: "texto",
+          texto: "E, podemos encerrar o módulo com um quadro comparativo explicitando as figuras tão conhecidas do dia a dia empresarial, a saber: o MEI, o ME e o EPP. Traçando, dessa maneira, elementos diferenciadores entre si e característicos de cada modelo empresarial"
+        },
+        {
+          tipo: "texto",
+          texto: "Bons Estudos!"
+        }
+      ]
+    }
+  ]
+},
     // aula 9
 {
   aula: "Sociedades",

@@ -1568,6 +1568,271 @@ aulas: [
       ]
     }
   ]
+},
+
+// aula 15
+
+{
+  aula: "Fatores psicossociais relacionados ao trabalho",
+  ideia_central: "Os fatores psicossociais no trabalho são as situações cotidianas que nascem e se mantêm nas interações entre as pessoas e os processos de trabalho, e os riscos psicossociais têm origem na organização e na gestão das atividades, e não apenas em características individuais: por isso, a prevenção exige abordagem ampliada, com mudanças organizacionais e institucionais, apoiada em nove parâmetros de análise situacional (Lima, 2022) e em um diagnóstico estruturado em seis passos, previsto no GRO (NR-1) e na NR-17.",
+  secoes: [
+    {
+      id: "objetivos_introducao",
+      titulo: "Objetivos e Introdução",
+      blocos: [
+        {
+          tipo: "lista",
+          titulo: "Objetivos",
+          itens: [
+            "Definir e contextualizar os fatores psicossociais relacionados ao trabalho;",
+            "Indicar os parâmetros concretos para a análise psicossocial do trabalho real;",
+            "Descrever etapas e procedimentos para o diagnóstico organizacional sobre os fatores psicossociais relacionados ao trabalho."
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "Temas",
+          itens: [
+            "Introdução",
+            "1 Os fatores psicossociais no trabalho",
+            "2 A organização do trabalho e os riscos psicossociais",
+            "3 Os parâmetros de análise situacional dos riscos e proteções",
+            "3.1 O diagnóstico psicossocial do riscos",
+            "Considerações finais",
+            "Referências"
+          ]
+        },
+        {
+          tipo: "texto",
+          texto: "O estudo dos fatores psicossociais no trabalho permite compreender como as condições organizacionais e as relações humanas influenciam diretamente a saúde mental dos trabalhadores. No cotidiano das atividades profissionais, diferentes elementos como ritmo, exigências, relações interpessoais e suporte recebido **podem favorecer ou dificultar o equilíbrio psicológico**. Por isso, antes de analisar riscos específicos, é fundamental entender como a organização do trabalho cria contextos que podem gerar bem-estar, satisfação e engajamento ou, ao contrário, produzir tensão, insegurança, ansiedade e adoecimento."
+        },
+        {
+          tipo: "texto",
+          texto: "Ao aprofundar essa perspectiva, o módulo apresenta os riscos psicossociais, como situações ou características do ambiente laboral que não surgem apenas de tendências individuais, mas de práticas de gestão, estruturas organizacionais, metas excessivas, relações conflituosas ou falta de reconhecimento. Assim, compreender os riscos psicossociais implica olhar para a maneira como o trabalho é organizado e distribuído, bem como os seus impactos na disposição dos trabalhadores."
+        },
+        {
+          tipo: "texto",
+          texto: "Para que seja possível identificar esses fatores de forma sistemática, apresentaremos **parâmetros de análise situacional**, que funcionam como categorias concretas de observação do trabalho. Esses parâmetros ajudam a reconhecer como ambientes, relações, autonomia, ritmo, organização interna e gestão interferem na saúde mental. Trata-se de um instrumento essencial para pesquisadores, gestores e profissionais de saúde, pois permite avaliar, com maior precisão, quais aspectos cotidianos podem gerar riscos ou, por outro lado, atuar como elementos de proteção."
+        },
+        {
+          tipo: "texto",
+          texto: "Por fim, o módulo introduz um conjunto de **orientações para a realização do diagnóstico psicossocial dos riscos**, detalhando etapas práticas que devem ser seguidas pelas organizações. Essas etapas incluem desde a decisão de buscar apoio especializado até a comunicação com os trabalhadores, a avaliação da atividade real e o acompanhamento das medidas de prevenção. O objetivo é mostrar que o diagnóstico não é apenas um procedimento técnico, mas um processo que exige participação coletiva, compromisso institucional e sensibilidade para compreender a complexidade do trabalho humano."
+        },
+        {
+          tipo: "texto",
+          texto: "Boa leitura!"
+        }
+      ]
+    },
+    {
+      id: "fatores_psicossociais",
+      titulo: "1 Os fatores psicossociais no trabalho",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "No cotidiano dos processos produtivos, o trabalho se realiza em meio a tarefas, ajustes, planos, acordos e todas as dificuldades que a atividade prática cotidiana implica. As experiências desafiam a entender como tais vivências podem impactar positiva e/ou negativamente a disposição das pessoas para resolverem os problemas do dia a dia. A tal disposição para enfrentar os problemas equiparamos a noção de **saúde mental no trabalho**."
+        },
+        {
+          tipo: "texto",
+          texto: "A atividade de trabalhar, ainda que preserve as potências de transformação humana, no contexto da gestão ágil tem frequentemente configurado vivências de insegurança, ansiedade e com sérios impactos na saúde mental. As novas formas de organização produtiva, marcadas pela competitividade, pela flexibilização e pela intensificação das exigências, têm provocado impactos significativos sobre a saúde mental e a subjetividade dos trabalhadores."
+        },
+        {
+          tipo: "texto",
+          texto: "Tais impactos não se limitam a fatores individuais e orgânicos (bem-estar físico ou dores no corpo, por exemplo), mas emergem da interação entre as condições objetivas de trabalho e os modos de agir coletivamente no trabalho. Ou seja, os impactos dos novos modelos de gestão forçam os trabalhadores a desenvolverem novas formas de interpretação dos problemas, comunicação, decisões, responsabilidades e aprendizagens. A todas as situações cotidianas que nascem e se mantêm pelas interações entre as pessoas e os processos de trabalho podemos denominar de **fatores psicossociais no trabalho**."
+        },
+        {
+          tipo: "destaque",
+          texto: "Saiba mais: Utilizamos como definição de fatores psicossociais a apreensão dinâmica dos acontecimentos em que atuam simultaneamente, pelo menos, dupla influência na atividade: os determinantes sociais da ação e as potencialidades da pessoa para agir. Neste sentido, um fator representa o elemento que atua em algo ou alguém, o ocorrido que gera um resultado. Já o fenômeno psicossocial se define aqui como “o continuum ontológico do processo relacional” (Ribeiro, 2017, p. 263), sendo as situações concretas de trabalho um conjunto de meios, objetivos e fins “que liga irreconciliavelmente o psíquico e o social (ou: o individual e o coletivo)” (Oliveira, 2017, p. 282)."
+        },
+        {
+          tipo: "texto",
+          texto: "Compreender os fatores psicossociais exige considerar a dimensão social e concreta do trabalho. O sofrimento psíquico, o estresse ocupacional e o esgotamento não são fenômenos isolados, mas expressões de contradições presentes nas relações de poder, nas políticas de produtividade e na precarização dos vínculos laborais. Da mesma forma, em sentido contrário, a satisfação com o trabalho são expressões de relações coesas e eficientes nos processos organizativos. Sendo assim, a prevenção dos riscos psicossociais requer uma abordagem ampliada, que vá além das estratégias de adaptação individual e promova mudanças organizacionais e institucionais. Isso inclui repensar os modelos de gestão, valorizar o diálogo e a participação dos trabalhadores, e reconhecer o papel do trabalho como espaço de construção de identidade e saúde."
+        },
+        {
+          tipo: "imagem",
+          src: "figura_1_psicossociais_no_trabalho.png",
+          pasta: "imagens_psicologia_organizacional/aula_15",
+          alt: "Figura 1 – Psicossociais no Trabalho: ilustração de uma cabeça humana em perfil, formada por pontos coloridos, de onde saem linhas conectadas a ícones de trabalho (e-mail, documentos, gráficos, alvo, relógio, engrenagens e pessoas). Fonte: Elaborado pelo autor utilizando o Google Gemini (2026).",
+          num: 1
+        }
+      ]
+    },
+    {
+      id: "organizacao_riscos",
+      titulo: "2 A organização do trabalho e os riscos psicossociais",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Os riscos psicossociais dizem respeito ao conjunto de fatores do ambiente de trabalho que desgastam a disposição física e psicológica para os trabalhadores resolverem os problemas inerentes às suas tarefas. Esses riscos não se restringem às dimensões subjetivas, mas estão intrinsecamente ligados à estrutura e à dinâmica das organizações, ou seja, à forma como o trabalho é concebido, distribuído e avaliado. Tal definição indica que, curiosamente, se um líder de equipe estabelece reiteradas cobranças, a fim de aumentar a produtividade do setor, tal pressão sendo mal conduzida, pode desgastar mais do que estimular a qualidade e a quantidade dos resultados."
+        },
+        {
+          tipo: "texto",
+          texto: "Nesse contexto, o **estresse ocupacional** é apresentado como uma resposta psicofisiológica a essas condições adversas. Ele se manifesta quando as demandas do trabalho superam os recursos pessoais e organizacionais disponíveis para enfrentá-las. O estresse não é apenas um estado emocional, mas um fenômeno complexo que envolve componentes cognitivos, afetivos e corporais, podendo evoluir para formas mais graves de adoecimento, como a síndrome de Burnout, a depressão e os transtornos de ansiedade relacionados ao trabalho."
+        },
+        {
+          tipo: "texto",
+          texto: "Os atuais modelos de gestão, voltados ao desempenho e ao cumprimento de metas, internaliza o controle dentro do próprio sujeito, levando-o a se autogerir e se autocobrar constantemente. Esse mecanismo produz um tipo de tensão invisível e permanente, pois o trabalhador se sente responsável não apenas por suas tarefas, mas pelo próprio sucesso ou fracasso diante das demandas organizacionais. Assim, o sofrimento psíquico deixa de ser entendido como resultado de dificuldades objetivas inerentes às tarefas e passa a ser interpretado como uma **falha pessoal de adaptação**, o que intensifica a vulnerabilidade emocional e o sentimento de culpa."
+        },
+        {
+          tipo: "texto",
+          texto: "Com base no Guia de Informações sobre os Fatores de Riscos Psicossociais Relacionados ao Trabalho (MTE, 2025), é possível compreender que a gestão da saúde mental no ambiente de trabalho é uma responsabilidade essencial das organizações e deve ser conduzida de forma estruturada, conforme as diretrizes da NR-1 e da NR-17. A inclusão dos fatores de risco psicossociais no Gerenciamento de Riscos Ocupacionais (GRO) representa um avanço significativo, pois reconhece que o sofrimento psíquico e os transtornos mentais relacionados ao trabalho têm origens nas organização e gestão das atividades laborais, e não apenas em características individuais dos trabalhadores. Assim, os gestores precisam entender que proteger a saúde mental é parte integrante da promoção de ambientes de trabalho seguros, produtivos e eticamente responsáveis."
+        },
+        {
+          tipo: "destaque",
+          texto: "Parada Obrigatória: As pesquisas de Psicologia do Trabalho afirmam que, assim como as condições físicas de trabalho (posição, mobiliário, ferramentas, ambiente etc.) produzem efeitos na saúde organiza (conforto ou dores nas costas, articulações e exaustão), os aspectos ligados à organização do trabalho (velocidade, complexidade, gestão, distribuição das tarefas etc.) produzem efeitos na saúde mental das pessoas (vitalidade ou esgotamento, irritação, frustrações, comunicação conflitos, etc.). Essa diferença é fundamental para identificar os possíveis fatores de risco e de proteção à saúde / saúde mental das pessoas."
+        },
+        {
+          tipo: "texto",
+          texto: "Para os líderes de uma instituição, a gestão dos riscos psicossociais envolve identificar e prevenir fatores organizacionais que podem gerar esgotamento ou adoecimento, como sobrecarga de tarefas, assédio moral, falta de autonomia, injustiça organizacional e ausência de reconhecimento."
+        },
+        {
+          tipo: "imagem",
+          src: "figura_2_gestao_de_riscos.png",
+          pasta: "imagens_psicologia_organizacional/aula_15",
+          alt: "Figura 2 – Gestão de Riscos: fotografia de uma mulher de cabelo cacheado em um escritório com várias estações de trabalho, com a mão no rosto e olhar tenso, digitando em um computador. Fonte: Elaborado pelo autor utilizando o Google Gemini (2026).",
+          num: 2
+        },
+        {
+          tipo: "texto",
+          texto: "Esses elementos, quando não gerenciados, afetam o equilíbrio psicológico dos trabalhadores, reduzindo o engajamento, aumentando o absenteísmo e os afastamentos por transtornos mentais que já figuram entre as principais causas de adoecimento ocupacional no Brasil, segundo dados do próprio MTE. Logo, compreender e intervir sobre tais fatores não é apenas uma exigência normativa, mas uma estratégia de gestão sustentável, que reduz perdas de produtividade e melhora a qualidade das relações de trabalho."
+        },
+        {
+          tipo: "imagem",
+          src: "figura_3_equilibrio_psicologico.png",
+          pasta: "imagens_psicologia_organizacional/aula_15",
+          alt: "Figura 3 – Equilíbrio psicológico: ilustração de um grupo de pessoas de diferentes perfis em um ambiente de trabalho colaborativo, algumas em pé e outras sentadas com notebooks, ligadas por linhas a ícones de e-mail, mensagens, gráficos, pastas e plantas. Fonte: Elaborado pelo autor utilizando o Google Gemini (2026).",
+          num: 3
+        }
+      ]
+    },
+    {
+      id: "parametros_analise",
+      titulo: "3 Os parâmetros de análise situacional dos riscos e proteções",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "Considerando que as ambiguidades da vida dramática no trabalho sejam produzidas concretamente nas experiências do sujeito em meio aos acontecimentos cotidianos nos quais interatuam, simultaneamente, as condições ambientais e as disposições pessoais para a ação (Lima, 2022), uma possível abordagem situada da saúde mental de trabalhadores aponta para o entendimento como os fatos concretos da experiência estão favorecendo e/ou constrangendo as ações das pessoas para a realização de um trabalho de qualidade?"
+        },
+        {
+          tipo: "texto",
+          texto: "Qualquer resposta neste sentido que seja coerente com a realidade prática das situações cotidianas deve assumir a **hipótese da prevalência situacional** como prerrogativa de análise. Quer dizer, se estabelece a premissa que a frequência de determinadas situações na organização do trabalho coletivo tem potencial tanto para causar desgaste psicológico como para proteger a saúde mental das pessoas que dele participam. Confirmar empiricamente tal hipótese significa que: se for possível identificar a frequência com que determinados acontecimentos desgastam e/ou protegem o poder de agir das pessoas ao enfrentarem os conflitos ligados ao trabalho, há possibilidade de escalonar a prevalência situacional de como as variações situacionais do dia a dia estão atuando como experiências concretas de risco e de segurança para a saúde mental."
+        },
+        {
+          tipo: "texto",
+          texto: "Mas como garantir que as avaliações diagnósticas dos riscos psicossociais no trabalho consigam abranger uma amplitude de situações que comprovadamente seja importante para o estudo da saúde mental no trabalho? A fim de propor uma saída para esta questão, (Lima, 2022) extraiu de 31 fontes bibliográficas os principais agentes etiológicos (causas de adoecimentos) vinculados aos fatores psicossociais no trabalho. Neste levantamento, o autor dedicou atenção para pesquisas coerentes entre si e que apresentem contribuições sobre a categoria trabalho como atividade prática objetiva e mediada por determinantes sociais da ação. Entraram também no rol de fundamentações as portarias, resoluções e listas de doenças que dirigem as políticas públicas de saúde e segurança de trabalhadores no Brasil. A partir dessas fontes, o autor sistematizou nove parâmetros de análise psicossocial do trabalho que, diferente de aspectos individuais de estresse ou transtorno, por exemplo, indicam as causas para os riscos nos acontecimentos cotidianos do trabalho."
+        },
+        {
+          tipo: "tabela",
+          titulo: "Parâmetros de análise psicossocial do trabalho",
+          colunas: [
+            "Parâmetro",
+            "Definição"
+          ],
+          linhas: [
+            [
+              "Ambiente de trabalho",
+              "Trata-se da espaço-temporalidade imediata da pessoa no trabalho. Às condições físicas do posto de trabalho somam-se a adequação e o funcionamento dos instrumentos necessários para a operação prática das tarefas."
+            ],
+            [
+              "Autonomia no trabalho",
+              "Possibilidade para auto regular a conduta no trabalho frente às condições, normas, prioridades e ritmo das tarefas. Inclui-se o poder de decisão, de criação de objetivos e a forma de resolver os problemas no trabalho."
+            ],
+            [
+              "Coesão organizativa",
+              "É a disposição coletiva para resolver as tarefas com objetivos comuns. Cumpre-se na divisão e na cooperação interna e externa ao setor. Inclui a ajuda mútua para compromissos em torno da qualidade do trabalho, a reciprocidade e o amparo nos casos de erros."
+            ],
+            [
+              "Contrato de trabalho",
+              "Enquadra as percepções sobre a relação entre o que se oferece e o que se recebe pelo trabalho. São as proporcionalidades entre os direitos e deveres, planos de carreira e a segurança pela continuidade do contrato."
+            ],
+            [
+              "Conteúdo do trabalho",
+              "É a complexidade para a resolução dos problemas ligados à tarefa. Inclui a variedade de tarefas, os procedimentos simultâneos, as relações, as decisões, as interrupções, os retrabalhos e a consciência de responsabilidade."
+            ],
+            [
+              "Intensidade do trabalho",
+              "Ligado à relação entre o tempo efetivo das operações, a duração da performance e o tempo disponível para o trabalho. Inclui as exigências por produtividade, aceleração, jornadas e cobranças por resultados."
+            ],
+            [
+              "Gestão do trabalho",
+              "Potencial de organização, integração e condução da força de trabalho de uma ou mais equipes. Inclui a mobilização de objetivos comuns, integração, comunicação, reconhecimento, exemplos e abertura para o diálogo."
+            ],
+            [
+              "Qualidade das relações",
+              "Hábitos, conteúdo e formas de comunicação dentro e fora dos setores. São verificados os argumentos que valorizam o trabalho do outro, no respeito à dignidade humana, na diversidade e na equidade de direitos."
+            ]
+          ]
+        },
+        {
+          tipo: "subtitulo",
+          texto: "3.1 O diagnóstico psicossocial do riscos"
+        },
+        {
+          tipo: "texto",
+          texto: "Focalizar a frequência e a relevância de aspectos práticos da atividade concreta conduz empiricamente a aproximação com os fatores psicossociais nas situações de trabalho, um conjunto de fatos heterogêneos, simultâneos e complexos. Mas como proceder para efetivar tal diagnóstico? A seguir indicamos algumas orientações de como proceder para a realização da identificação de perigos, da avaliação de riscos e da implementação de medidas de prevenção referente aos fatores de risco psicossociais relacionados ao trabalho. No geral, recomenda-se a observação dos seguintes passos para a realização desse processo na organização:"
+        },
+        {
+          tipo: "lista",
+          titulo: "Passos do diagnóstico psicossocial",
+          itens: [
+            "1. Verificar se precisa de ajuda especializada – A organização precisa verificar se necessita de ajuda especializada. Nos casos em que a organização não conhece o tema ou não possui qualquer experiência com a identificação e avaliação dos fatores de risco psicossociais relacionados ao trabalho, pode buscar auxílio de profissionais com o conhecimento técnico que for necessário. Essa busca por profissionais especializados, sempre que possível, deve se basear também na escuta ativa da Comissão Interna de Prevenção de Acidentes e de Assédio – CIPA, caso exista, e das representações dos trabalhadores (item 5.3.1 da NR-5).",
+            "2. Envolver todas as partes interessadas – Buscando ou não ajuda de profissionais externos, a organização precisa envolver os profissionais de SST, os níveis gerenciais, a alta administração, o líder de equipe, o supervisor de área, e assim por diante, além de todos os trabalhadores. Todos serão importantes nesse processo.",
+            "3. Atribuir responsabilidades – A organização precisa atribuir responsabilidades para a condução de diferentes etapas do processo. Com responsabilidades bem definidas fica mais fácil desenvolver o trabalho.",
+            "4. Comunicar os trabalhadores – A comunicação transparente com os trabalhadores é essencial. Se a identificação e avaliação de fatores de risco psicossociais relacionados ao trabalho nunca foi feita dentro da empresa, é muito importante, de forma antecipada, conversar com os trabalhadores sobre esse tema e prestar o máximo de esclarecimento. Por exemplo, informar que vai ser aplicado um questionário (se for esse o caso), os seus objetivos e os resultados esperados. Deixar isso claro para os trabalhadores, a fim de facilitar e promover a adesão.",
+            "5. Implementação da identificação de perigos e avaliação de riscos – A implementação do processo de identificação de perigos e avaliação de riscos ocorre por meio da avaliação ergonômica preliminar (AEP), incluindo o aspecto fundamental de viabilizar a participação do trabalhador em todas as etapas. O que se faz na AEP? Resumidamente, a organização deve descrever as características do trabalho nas diferentes atividades, áreas e postos de trabalho, considerando a atividade real que o trabalhador está desenvolvendo. Cabe destacar, não se trata da tarefa prescrita, mas da atividade que está sendo efetivamente realizada, ou seja, o trabalho real.",
+            "6. Implementação do controle e acompanhamento das medidas de prevenção – Concluída a etapa de identificação do perigo e avaliação do risco, passa-se à etapa de implementação do controle e acompanhamento das medidas de prevenção. Verificado o nível de risco resultante da avaliação e sua classificação de prioridade, deve-se adotar, aprimorar ou manter medidas de prevenção para diminuir ou controlar o nível de risco que foi apurado. Isso deve ser feito por meio de um plano de ação, documento com os registros que demonstram a implementação das medidas de prevenção e o seu acompanhamento. De acordo com a NR-1, deve ser definido cronograma com responsáveis, formas de acompanhamento e aferição de resultados."
+          ]
+        },
+        {
+          tipo: "lista",
+          titulo: "Parada Obrigatória – Inventário de riscos ocupacionais (NR-1)",
+          itens: [
+            "Segundo a NR1, o inventário de riscos ocupacionais resultante do processo de diagnóstico deve incluir as seguintes informações a serem incluídas no Gerenciamento de Riscos Ocupacionais (GRO):",
+            "I. Caracterização dos processos e ambientes de trabalho;",
+            "II. Caracterização das atividades;",
+            "II. Descrição dos perigos, com a identificação das fontes e/ou",
+            "IV. Circunstâncias;",
+            "V. Indicação das possíveis lesões ou agravos à saúde decorrentes",
+            "VI. da exposição dos trabalhadores aos perigos;",
+            "VII. Indicação dos grupos de trabalhadores expostos aos perigos;",
+            "VIII. Descrição das medidas de prevenção implementadas;",
+            "IX. Caracterização da exposição dos trabalhadores aos perigos;",
+            "X. Dados da análise preliminar ou do monitoramento das",
+            "XI. Exposições a agentes físicos, químicos e biológicos e os",
+            "XII. Resultados da avaliação de ergonomia nos termos da nr-17; e",
+            "XIII. Avaliação dos riscos, incluindo a classificação para fins de",
+            "XIV. Elaboração do plano de ação."
+          ]
+        }
+      ]
+    },
+    {
+      id: "consideracoes_finais",
+      titulo: "Considerações finais",
+      blocos: [
+        {
+          tipo: "texto",
+          texto: "O Módulo 15 nos permitiu compreender que os fatores psicossociais no trabalho são a **apreensão dinâmica de acontecimentos** nos quais atuam simultaneamente os determinantes sociais da ação e as potencialidades individuais. Essa inter-relação define a saúde mental no trabalho como a disposição das pessoas para enfrentar os problemas e os conflitos do dia a dia. Diante da intensificação das exigências e das novas formas de organização produtiva, a prevenção dos riscos psicossociais exige uma **abordagem ampliada**, que promova mudanças organizacionais e institucionais, indo além das estratégias de adaptação individual."
+        },
+        {
+          tipo: "texto",
+          texto: "Vimos que os riscos psicossociais não se restringem a dimensões subjetivas, mas estão intrinsecamente ligados à estrutura e dinâmica da organização do trabalho — a forma como o trabalho é concebido e distribuído. Eles representam um conjunto de fatores do ambiente que desgastam a disposição física e psicológica dos trabalhadores, manifestando-se em condições como o estresse ocupacional e a Síndrome de Burnout. Por essa razão, a gestão da saúde mental é uma responsabilidade essencial das organizações, com o reconhecimento do sofrimento psíquico como resultado de origens na organização e gestão das atividades laborais, conforme as diretrizes da NR-1 (GRO) e NR-17."
+        },
+        {
+          tipo: "texto",
+          texto: "A fim de tornar o diagnóstico desses riscos coerente com a realidade prática, o módulo apresentou a **hipótese da prevalência situacional**, indicando que a frequência de determinadas situações tem o potencial de desgastar ou proteger a saúde mental. Para operacionalizar essa análise, foram sistematizados nove parâmetros psicossociais como categorias concretas de observação do trabalho, abrangendo aspectos como Autonomia no Trabalho, Intensidade do Trabalho, Conteúdo do Trabalho e Gestão do Trabalho, permitindo uma avaliação precisa dos fatores de risco e proteção."
+        },
+        {
+          tipo: "texto",
+          texto: "Por fim, o módulo detalhou os procedimentos e etapas para o diagnóstico psicossocial dos riscos, enfatizando que o processo deve ser estruturado, transparente e envolver todas as partes interessadas. A fase de identificação de perigos e avaliação de riscos ocorre por meio da **Avaliação Ergonômica Preliminar (AEP)**, devendo focar na atividade que está sendo efetivamente realizada, ou seja, o **trabalho real**, e não apenas na tarefa prescrita. O resultado desse processo deve culminar em um **Plano de Ação** para o controle e acompanhamento das medidas de prevenção, com cronograma e definição de responsáveis."
+        },
+        {
+          tipo: "texto",
+          texto: "Bons estudos!"
+        }
+      ]
+    }
+  ]
 }
 
 ],

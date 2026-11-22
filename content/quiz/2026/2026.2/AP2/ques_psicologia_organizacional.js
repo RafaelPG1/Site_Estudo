@@ -923,6 +923,168 @@ window.questoes = {
   feedback: "A Portaria associa a exposição a ==term==eventos traumáticos== (acidentes, agressões, desastres, violência) ao transtorno de estresse pós-traumático, código 6B40."
 },
 
+// aula: Aula 15 - Fatores psicossociais relacionados ao trabalho
+
+// 1 - Fatores psicossociais
+{
+  aula: "Aula 15 - Fatores psicossociais relacionados ao trabalho",
+  tipo: "Explicativa",
+  texto: "Os impactos do trabalho sobre a saúde mental não se limitam a fatores individuais e orgânicos, como dores no corpo. Eles emergem da interação entre as condições objetivas de trabalho e os modos de agir coletivamente. A todas as situações cotidianas que nascem e se mantêm pelas interações entre as pessoas e os processos de trabalho, o módulo chama de fatores psicossociais.",
+  question: "O que são fatores psicossociais no trabalho?",
+  options: [
+    "Características individuais e orgânicas do trabalhador, como o bem-estar físico e as dores no corpo.",
+    "Traços de personalidade que predispõem o trabalhador ao estresse e ao esgotamento no cotidiano.",
+    "Situações cotidianas que nascem das interações entre as pessoas e os processos de trabalho.",
+    "Condições físicas do posto de trabalho, como o mobiliário, as ferramentas e o ambiente."
+  ],
+  answer: 2,
+  feedback: "Os ==def==fatores psicossociais== unem o social e o psíquico: não são só do indivíduo nem só da organização, mas da interação entre eles."
+},
+
+// 2 - Riscos psicossociais
+{
+  aula: "Aula 15 - Fatores psicossociais relacionados ao trabalho",
+  tipo: "Explicativa",
+  texto: "Os riscos psicossociais são o conjunto de fatores do ambiente de trabalho que desgastam a disposição física e psicológica dos trabalhadores para resolver os problemas das suas tarefas. Eles não se restringem à subjetividade: estão ligados à estrutura e à dinâmica das organizações.",
+  question: "Segundo o módulo, onde estão ancorados os riscos psicossociais?",
+  options: [
+    "Na forma como o trabalho é concebido, distribuído e avaliado pela organização.",
+    "Nas fragilidades individuais de adaptação de cada trabalhador às metas da empresa.",
+    "Nos conflitos de personalidade entre colegas, que independem da gestão do trabalho.",
+    "Na ausência de equipamentos de proteção individual nos postos de trabalho."
+  ],
+  answer: 0,
+  feedback: "Os **riscos psicossociais** vêm da ==rule==organização do trabalho==, e não apenas de características individuais dos trabalhadores."
+},
+
+// 3 - Estresse ocupacional
+{
+  aula: "Aula 15 - Fatores psicossociais relacionados ao trabalho",
+  tipo: "Explicativa",
+  texto: "O estresse ocupacional é uma resposta psicofisiológica às condições adversas de trabalho. Envolve componentes cognitivos, afetivos e corporais e pode evoluir para formas mais graves de adoecimento, como a síndrome de Burnout, a depressão e os transtornos de ansiedade relacionados ao trabalho.",
+  question: "Em que situação o estresse ocupacional se manifesta?",
+  options: [
+    "Quando o trabalhador deixa de se autocobrar e reduz voluntariamente o ritmo das tarefas.",
+    "Quando falta capacidade emocional ao trabalhador, entendida como característica individual fixa.",
+    "Quando a jornada ultrapassa o limite legal, independentemente das demais condições de trabalho.",
+    "Quando as demandas superam os recursos pessoais e organizacionais para enfrentá-las."
+  ],
+  answer: 3,
+  feedback: "O **estresse ocupacional** surge do ==term==desequilíbrio== entre demandas e recursos, e não é apenas um estado emocional."
+},
+
+// 4 - Cobrança mal conduzida
+{
+  aula: "Aula 15 - Fatores psicossociais relacionados ao trabalho",
+  tipo: "Contextualizada",
+  texto: "Em uma equipe de vendas, o líder faz cobranças reiteradas para elevar a produtividade do setor. Com o tempo, os resultados pioram, a qualidade cai e os integrantes relatam cansaço e irritação.",
+  question: "Como o módulo interpreta essa situação?",
+  options: [
+    "A pressão constante sempre eleva a produtividade, pois estimula o autocontrole da equipe.",
+    "A pressão mal conduzida pode desgastar mais do que estimular a qualidade dos resultados.",
+    "O desgaste decorre da fraqueza individual dos integrantes, e não da forma de gestão.",
+    "As cobranças devem ser extintas, pois metas são incompatíveis com a saúde mental."
+  ],
+  answer: 1,
+  feedback: "O módulo usa esse exemplo para mostrar que ==warn==cobrança mal conduzida== é fator de risco e pode reduzir o desempenho que pretendia aumentar."
+},
+
+// 5 - Falha pessoal de adaptação
+{
+  aula: "Aula 15 - Fatores psicossociais relacionados ao trabalho",
+  tipo: "Contextualizada",
+  texto: "Em uma empresa voltada a metas, os trabalhadores se autogerem e se autocobram o tempo todo. Quando uma funcionária adoece, ela conclui que não soube se adaptar às exigências e sente culpa, embora a carga venha crescendo há meses.",
+  question: "Que mecanismo do modelo de gestão explica essa interpretação?",
+  options: [
+    "A responsabilidade é transferida à CIPA, que passa a gerir sozinha o sofrimento dos trabalhadores.",
+    "As dificuldades são atribuídas às condições objetivas das tarefas, vistas como inerentes ao cargo.",
+    "O controle é internalizado no sujeito, e o sofrimento vira falha pessoal de adaptação.",
+    "O controle gerencial é eliminado, e o trabalhador fica sem referências sobre o seu desempenho."
+  ],
+  answer: 2,
+  feedback: "Esse mecanismo produz uma ==def==tensão invisível e permanente==, que intensifica a vulnerabilidade emocional e o sentimento de culpa."
+},
+
+// 6 - Saúde física e saúde mental
+{
+  aula: "Aula 15 - Fatores psicossociais relacionados ao trabalho",
+  tipo: "Contextualizada",
+  texto: "Dois trabalhadores procuram o serviço de saúde. O primeiro tem dores nas costas por causa de uma cadeira inadequada. O segundo sente esgotamento e irritação por causa do ritmo, da complexidade e da distribuição das tarefas.",
+  question: "Que diferença a Parada Obrigatória do módulo destaca entre os dois casos?",
+  options: [
+    "As condições físicas afetam a saúde mental, e a organização do trabalho afeta só o conforto corporal.",
+    "Os dois aspectos afetam apenas a saúde orgânica, sem relação com o sofrimento psíquico.",
+    "Somente a organização do trabalho importa, pois as condições físicas nunca adoecem.",
+    "As condições físicas afetam a saúde orgânica, e a organização do trabalho afeta a saúde mental."
+  ],
+  answer: 3,
+  feedback: "Distinguir **condição física** de ==rule==organização do trabalho== é fundamental para identificar fatores de risco e de proteção à saúde mental."
+},
+
+// 7 - Intensidade do trabalho
+{
+  aula: "Aula 15 - Fatores psicossociais relacionados ao trabalho",
+  tipo: "Aplicação",
+  texto: "Em um setor, as metas crescem a cada mês, as jornadas são estendidas e a cobrança por resultados é constante. Os trabalhadores dizem que o tempo disponível nunca é suficiente para executar o que se exige.",
+  question: "Qual parâmetro de análise psicossocial predomina nesse cenário?",
+  options: [
+    "Intensidade do trabalho, ligada ao tempo efetivo das operações e ao tempo disponível para executá-las.",
+    "Contrato de trabalho, ligado às proporcionalidades entre os direitos, os deveres e a carreira.",
+    "Ambiente de trabalho, ligado à espaço-temporalidade imediata e aos instrumentos de trabalho.",
+    "Qualidade das relações, ligada aos hábitos e às formas de comunicação dentro e fora dos setores."
+  ],
+  answer: 0,
+  feedback: "A ==def==intensidade do trabalho== inclui as exigências por produtividade, aceleração, jornadas e cobranças por resultados."
+},
+
+// 8 - Autonomia no trabalho
+{
+  aula: "Aula 15 - Fatores psicossociais relacionados ao trabalho",
+  tipo: "Aplicação",
+  texto: "Um trabalhador cumpre ordens detalhadas: não decide a prioridade das tarefas, não ajusta o ritmo e não escolhe como resolver os problemas que surgem. Ele relata sensação constante de desgaste.",
+  question: "Qual parâmetro está comprometido nesse caso?",
+  options: [
+    "Coesão organizativa, que envolve cooperação interna e ajuda mútua entre os integrantes.",
+    "Conteúdo do trabalho, que envolve a complexidade dos problemas ligados à tarefa.",
+    "Autonomia no trabalho, que envolve poder de decisão e auto regulação da conduta.",
+    "Gestão do trabalho, que envolve a condução e a integração das equipes de trabalho."
+  ],
+  answer: 2,
+  feedback: "A ==def==autonomia== é a possibilidade de auto regular a conduta frente às condições, normas, prioridades e ritmo das tarefas."
+},
+
+// 9 - Comunicar os trabalhadores
+{
+  aula: "Aula 15 - Fatores psicossociais relacionados ao trabalho",
+  tipo: "Aplicação",
+  texto: "Uma empresa vai aplicar pela primeira vez um questionário para identificar fatores de risco psicossociais e quer que os trabalhadores participem. Ela decide conversar antes com todos, explicando os objetivos e os resultados esperados.",
+  question: "Qual passo do diagnóstico essa decisão representa?",
+  options: [
+    "Atribuir responsabilidades, definindo quem conduz cada etapa do processo de diagnóstico.",
+    "Comunicar os trabalhadores, esclarecendo os objetivos e resultados do questionário.",
+    "Implementar o controle, definindo cronograma e formas de aferição dos resultados.",
+    "Verificar a necessidade de ajuda especializada, ouvindo a CIPA e as representações."
+  ],
+  answer: 1,
+  feedback: "A **comunicação transparente** facilita a ==proc==adesão== dos trabalhadores, sobretudo quando o tema nunca foi tratado na empresa."
+},
+
+// 10 - Trabalho real na AEP
+{
+  aula: "Aula 15 - Fatores psicossociais relacionados ao trabalho",
+  tipo: "Aplicação",
+  texto: "Ao conduzir a avaliação ergonômica preliminar, um técnico descreve apenas o que o manual do cargo determina e não observa o que os trabalhadores realmente fazem no posto.",
+  question: "Qual é a falha nesse procedimento?",
+  options: [
+    "Focar a tarefa prescrita, e não a atividade efetivamente realizada, o trabalho real.",
+    "Descrever apenas as áreas e os postos, sem abordar as diferentes atividades desenvolvidas.",
+    "Deixar de classificar a prioridade dos riscos antes de elaborar o plano de ação.",
+    "Incluir a participação dos trabalhadores em todas as etapas da avaliação dos riscos."
+  ],
+  answer: 0,
+  feedback: "A AEP deve descrever a **atividade real**, ou seja, o ==term==trabalho real==, e não apenas a tarefa prescrita."
+},
+
   ],
 
   fixacao: [
@@ -1842,6 +2004,168 @@ window.questoes = {
   ],
   answer: 0,
   feedback: "A carga qualitativa diz respeito à complexidade e ao significado das tarefas executadas."
+},
+
+// aula: Aula 15 - Fatores psicossociais relacionados ao trabalho
+
+// 1 - Parâmetros
+{
+  aula: "Aula 15 - Fatores psicossociais relacionados ao trabalho",
+  tipo: "Direta",
+  texto: "O módulo apresenta categorias concretas de observação do trabalho, sistematizadas a partir de 31 fontes bibliográficas.",
+  question: "Como se chamam as categorias que ajudam a reconhecer fatores de risco e de proteção no trabalho?",
+  options: [
+    "Escalas de estresse ocupacional",
+    "Indicadores de absenteísmo",
+    "Parâmetros de análise situacional",
+    "Perfis individuais de personalidade"
+  ],
+  answer: 2,
+  feedback: "São os parâmetros de análise situacional, que funcionam como categorias concretas de observação do trabalho."
+},
+
+// 2 - Sigla GRO
+{
+  aula: "Aula 15 - Fatores psicossociais relacionados ao trabalho",
+  tipo: "Direta",
+  texto: "As normas regulamentadoras brasileiras passaram a incluir os fatores psicossociais em um processo de gestão.",
+  question: "O que significa a sigla GRO?",
+  options: [
+    "Gerenciamento de Riscos Ocupacionais",
+    "Grupo de Resposta Organizacional",
+    "Gestão de Relações Operacionais",
+    "Guia de Riscos Organizacionais"
+  ],
+  answer: 0,
+  feedback: "O GRO é o Gerenciamento de Riscos Ocupacionais, previsto na NR-1, que passou a incluir os fatores de risco psicossociais."
+},
+
+// 3 - Autonomia
+{
+  aula: "Aula 15 - Fatores psicossociais relacionados ao trabalho",
+  tipo: "Direta",
+  texto: "Entre os parâmetros de análise, um trata da possibilidade de auto regular a conduta no trabalho.",
+  question: "Qual parâmetro inclui o poder de decisão e a criação de objetivos?",
+  options: [
+    "Intensidade do trabalho",
+    "Qualidade das relações",
+    "Conteúdo do trabalho",
+    "Autonomia no trabalho"
+  ],
+  answer: 3,
+  feedback: "A autonomia no trabalho envolve o poder de decisão, a criação de objetivos e a forma de resolver os problemas."
+},
+
+// 4 - Origem do sofrimento
+{
+  aula: "Aula 15 - Fatores psicossociais relacionados ao trabalho",
+  tipo: "Contexto",
+  texto: "Uma empresa percebe que o sofrimento dos seus trabalhadores vem de metas excessivas e da falta de reconhecimento.",
+  question: "Onde estão as causas desses riscos psicossociais?",
+  options: [
+    "Em tendências individuais de cada trabalhador",
+    "Nas práticas de gestão e nas estruturas da organização",
+    "Em condições físicas do mobiliário e dos instrumentos",
+    "Em conflitos pessoais entre os colegas de equipe"
+  ],
+  answer: 1,
+  feedback: "Os riscos psicossociais surgem de práticas de gestão, estruturas organizacionais, metas excessivas e falta de reconhecimento."
+},
+
+// 5 - Coesão
+{
+  aula: "Aula 15 - Fatores psicossociais relacionados ao trabalho",
+  tipo: "Contexto",
+  texto: "Em um setor, os colegas dividem tarefas com objetivos comuns, se ajudam e se amparam nos casos de erro.",
+  question: "Qual parâmetro de análise está presente nesse setor?",
+  options: [
+    "Autonomia no trabalho",
+    "Conteúdo do trabalho",
+    "Coesão organizativa",
+    "Gestão do trabalho"
+  ],
+  answer: 2,
+  feedback: "A coesão organizativa é a disposição coletiva para resolver as tarefas com objetivos comuns, com ajuda mútua e reciprocidade."
+},
+
+// 6 - Contrato
+{
+  aula: "Aula 15 - Fatores psicossociais relacionados ao trabalho",
+  tipo: "Contexto",
+  texto: "Um trabalhador relata que o que recebe pelo trabalho não é proporcional ao que oferece e que não vê plano de carreira.",
+  question: "Qual parâmetro de análise está comprometido?",
+  options: [
+    "Contrato de trabalho",
+    "Qualidade das relações",
+    "Ambiente de trabalho",
+    "Gestão do trabalho"
+  ],
+  answer: 0,
+  feedback: "O contrato de trabalho trata da relação entre o que se oferece e o que se recebe, incluindo direitos, deveres e carreira."
+},
+
+// 7 - Primeiro passo
+{
+  aula: "Aula 15 - Fatores psicossociais relacionados ao trabalho",
+  tipo: "Aplicação",
+  texto: "Uma organização nunca avaliou fatores de risco psicossociais e não tem experiência com o tema.",
+  question: "Qual é o primeiro passo do diagnóstico psicossocial nesse caso?",
+  options: [
+    "Atribuir responsabilidades às etapas",
+    "Comunicar os trabalhadores sobre o questionário",
+    "Implementar o plano de ação e o acompanhamento",
+    "Verificar se precisa de ajuda especializada"
+  ],
+  answer: 3,
+  feedback: "O primeiro passo é verificar se a organização precisa de ajuda especializada, com escuta ativa da CIPA e das representações."
+},
+
+// 8 - Avaliação ergonômica
+{
+  aula: "Aula 15 - Fatores psicossociais relacionados ao trabalho",
+  tipo: "Aplicação",
+  texto: "Ao fazer a avaliação ergonômica preliminar, o profissional quer descrever o que o trabalhador efetivamente faz.",
+  question: "Qual foco deve orientar essa descrição?",
+  options: [
+    "A tarefa prescrita nos manuais de cargo",
+    "A atividade real, o trabalho real",
+    "O desempenho individual medido por metas",
+    "A média das metas de cada setor"
+  ],
+  answer: 1,
+  feedback: "A AEP considera a atividade real, e não a tarefa prescrita: o trabalho que está sendo efetivamente realizado."
+},
+
+// 9 - Plano de ação
+{
+  aula: "Aula 15 - Fatores psicossociais relacionados ao trabalho",
+  tipo: "Aplicação",
+  texto: "Concluída a avaliação de riscos, a empresa precisa definir cronograma, responsáveis e formas de acompanhamento das medidas.",
+  question: "Em qual documento esses registros devem constar?",
+  options: [
+    "Questionário de adesão",
+    "Guia de informações do MTE",
+    "Plano de ação",
+    "Ata da CIPA"
+  ],
+  answer: 2,
+  feedback: "O plano de ação registra a implementação das medidas de prevenção, com cronograma, responsáveis e aferição de resultados."
+},
+
+// 10 - Abordagem ampliada
+{
+  aula: "Aula 15 - Fatores psicossociais relacionados ao trabalho",
+  tipo: "Aplicação",
+  texto: "Uma gerente propõe resolver o esgotamento da equipe apenas com treinamentos individuais de resiliência.",
+  question: "Por que essa medida, isolada, é insuficiente?",
+  options: [
+    "Prevenir exige ir além da adaptação individual, com mudanças organizacionais",
+    "O desgaste mental depende apenas de recursos individuais",
+    "Treinamentos são vetados pela NR-17 em qualquer situação",
+    "A gestão não responde por riscos psicossociais nas empresas"
+  ],
+  answer: 0,
+  feedback: "A prevenção dos riscos psicossociais requer abordagem ampliada, com mudanças organizacionais e institucionais."
 },
     
   ],
@@ -2944,7 +3268,191 @@ window.questoes = {
   answer: 0,
   feedback: "A Portaria **atualiza** a lista com base na CID-11 e associa ==term==fatores de risco== organizacionais a transtornos e síndromes, com os seus códigos."
 },
+// aula: Aula 15 - Fatores psicossociais relacionados ao trabalho
 
+// 1 - GRO e origem do sofrimento
+{
+  aula: "Aula 15 - Fatores psicossociais relacionados ao trabalho",
+  tipo: "Asserção + Justificativa",
+  texto: "Uma consultoria explica a gestores como as normas regulamentadoras tratam a saúde mental no ambiente de trabalho.",
+  question: "Analise as asserções e a relação proposta entre elas.",
+  assertions: [
+    "A inclusão dos fatores de risco psicossociais no ==def==GRO== representa um avanço, pois o sofrimento psíquico não deve ser lido como falha pessoal de adaptação.",
+    "PORQUE esse sofrimento tem origens na organização e na gestão das atividades laborais, e não apenas em características individuais dos trabalhadores."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 0,
+  feedback: "As duas asserções são verdadeiras e II explica I: o **GRO** reconhece a origem organizacional do sofrimento, por isso ele não é uma falha individual."
+},
+
+// 2 - Adaptação individual
+{
+  aula: "Aula 15 - Fatores psicossociais relacionados ao trabalho",
+  tipo: "Asserção + Justificativa",
+  texto: "Um gestor discute como proteger a saúde mental da equipe e propõe uma medida de prevenção.",
+  question: "Analise as asserções e a relação proposta entre elas.",
+  assertions: [
+    "A prevenção dos riscos psicossociais se resolve integralmente com estratégias de ==warn==adaptação individual==, como a terapia individual dos trabalhadores.",
+    "PORQUE os riscos psicossociais estão intrinsecamente ligados à estrutura e à dinâmica das organizações."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 3,
+  feedback: "A I é falsa, e a II é verdadeira: a prevenção exige **abordagem ampliada**, com mudanças organizacionais e institucionais, além da adaptação individual."
+},
+
+// 3 - AEP e comunicação
+{
+  aula: "Aula 15 - Fatores psicossociais relacionados ao trabalho",
+  tipo: "Asserção + Justificativa",
+  texto: "Uma empresa que nunca identificou riscos psicossociais inicia o seu processo de diagnóstico.",
+  question: "Analise as asserções e a relação proposta entre elas.",
+  assertions: [
+    "Na ==proc==avaliação ergonômica preliminar==, a organização deve descrever a atividade real, e não a tarefa prescrita.",
+    "PORQUE a comunicação transparente com os trabalhadores é essencial quando a identificação de fatores de risco psicossociais nunca foi feita na empresa."
+  ],
+  options: [
+    "I e II são verdadeiras, e II justifica I",
+    "I e II são verdadeiras, mas II não justifica I",
+    "I é verdadeira e II é falsa",
+    "I é falsa e II é verdadeira"
+  ],
+  answer: 1,
+  feedback: "As duas são verdadeiras, mas II não justifica I: a **AEP** foca o trabalho real, e a comunicação é outro passo, voltado a esclarecer e promover a adesão."
+},
+
+// 4 - Parâmetros de análise
+{
+  aula: "Aula 15 - Fatores psicossociais relacionados ao trabalho",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Um grupo de estudo revisa quatro dos parâmetros de análise psicossocial do trabalho sistematizados por Lima (2022).",
+  question: "Avalie as afirmações a seguir e assinale a alternativa correta.",
+  assertions: [
+    "A autonomia no trabalho envolve o poder de decisão e a forma de resolver os problemas no trabalho.",
+    "O contrato de trabalho trata da relação entre o que se oferece e o que se recebe pelo trabalho.",
+    "A intensidade do trabalho trata da complexidade para a resolução dos problemas ligados à tarefa.",
+    "A gestão do trabalho inclui mobilização de objetivos comuns, comunicação, reconhecimento e abertura ao diálogo."
+  ],
+  options: [
+    "I e II, apenas",
+    "I, II e IV, apenas",
+    "II, III e IV, apenas",
+    "I, III e IV, apenas"
+  ],
+  answer: 1,
+  feedback: "A III é falsa: a ==warn==complexidade da tarefa== é o **conteúdo do trabalho**, enquanto a intensidade liga o tempo efetivo das operações ao tempo disponível."
+},
+
+// 5 - Diagnóstico e inventário
+{
+  aula: "Aula 15 - Fatores psicossociais relacionados ao trabalho",
+  tipo: "Múltiplas Afirmativas",
+  texto: "Uma equipe de SST estuda os passos do diagnóstico e o inventário de riscos ocupacionais previstos na NR-1.",
+  question: "Avalie as afirmações a seguir e assinale a alternativa correta.",
+  assertions: [
+    "A hipótese da prevalência situacional supõe que a frequência de certas situações pode desgastar ou proteger a saúde mental.",
+    "Ao comunicar os trabalhadores, devem-se esclarecer os objetivos e os resultados esperados, como a aplicação de um questionário.",
+    "O primeiro passo do diagnóstico é atribuir responsabilidades, sendo a busca por ajuda especializada uma etapa posterior.",
+    "O inventário de riscos ocupacionais deve incluir a elaboração do plano de ação."
+  ],
+  options: [
+    "I, II e III, apenas",
+    "II e IV, apenas",
+    "I, II e IV, apenas",
+    "I e III, apenas"
+  ],
+  answer: 2,
+  feedback: "A III é falsa: o primeiro passo é ==proc==verificar se precisa de ajuda especializada==, e só depois **atribuir responsabilidades**."
+},
+
+// 6 - Prevalência situacional
+{
+  aula: "Aula 15 - Fatores psicossociais relacionados ao trabalho",
+  tipo: "Conceitual Contextualizada",
+  texto: "Uma equipe quer avaliar riscos psicossociais observando a frequência com que acontecimentos do dia a dia desgastam ou protegem o poder de agir das pessoas diante dos conflitos do trabalho.",
+  question: "Qual premissa sustenta essa abordagem de análise?",
+  options: [
+    "A frequência de certas situações no trabalho pode causar desgaste ou proteger a saúde mental.",
+    "A saúde mental depende da personalidade, e as situações do cotidiano têm pouca relevância.",
+    "O desgaste psicológico só pode ser avaliado por diagnósticos clínicos individuais de cada pessoa.",
+    "A proteção da saúde mental decorre apenas da ausência de metas e de cobranças no trabalho."
+  ],
+  answer: 0,
+  feedback: "É a ==def==hipótese da prevalência situacional==: **escalonar a frequência** das situações permite identificar experiências concretas de risco e de proteção."
+},
+
+// 7 - Trabalho real e tarefa prescrita
+{
+  aula: "Aula 15 - Fatores psicossociais relacionados ao trabalho",
+  tipo: "Conceitual Contextualizada",
+  texto: "Um técnico precisa descrever as características do trabalho em diferentes áreas e postos, e debate se deve usar o manual de cargos ou observar a atividade dos trabalhadores.",
+  question: "Qual orientação do módulo resolve esse debate?",
+  options: [
+    "Considerar somente a tarefa prescrita, para padronizar a análise entre todos os postos de trabalho.",
+    "Dispensar a participação dos trabalhadores, que podem enviesar a descrição das atividades.",
+    "Priorizar o desempenho individual medido por metas, e não as características do trabalho.",
+    "Considerar a atividade realmente executada, o trabalho real, e não só a tarefa prescrita."
+  ],
+  answer: 3,
+  feedback: "A **AEP** deve focar o ==term==trabalho real==, e a participação do trabalhador deve ser viabilizada em todas as etapas."
+},
+
+// 8 - Qualidade das relações
+{
+  aula: "Aula 15 - Fatores psicossociais relacionados ao trabalho",
+  tipo: "Conceitual Contextualizada",
+  texto: "Em um setor, o trabalho dos colegas é pouco valorizado, a diversidade não é respeitada e há desigualdade de direitos entre os integrantes. A comunicação interna é marcada por desrespeito.",
+  question: "Qual parâmetro de análise psicossocial está mais comprometido?",
+  options: [
+    "Ambiente de trabalho, ligado às condições físicas do posto e ao funcionamento dos instrumentos de trabalho.",
+    "Qualidade das relações, ligada à comunicação, ao respeito à dignidade humana e à equidade de direitos.",
+    "Conteúdo do trabalho, ligado à variedade de tarefas e às interrupções durante as atividades.",
+    "Contrato de trabalho, ligado ao plano de carreira e à segurança pela continuidade do contrato."
+  ],
+  answer: 1,
+  feedback: "A ==def==qualidade das relações== verifica os hábitos e as formas de comunicação, o respeito à diversidade e a **equidade de direitos**."
+},
+
+// 9 - Metas e decisões
+{
+  aula: "Aula 15 - Fatores psicossociais relacionados ao trabalho",
+  tipo: "Análise Aplicada",
+  texto: "Uma empresa aumenta as metas a cada trimestre, estende as jornadas e cobra resultados diariamente. Ao mesmo tempo, os trabalhadores não podem decidir a prioridade das tarefas nem o modo de resolver os problemas.",
+  question: "Quais parâmetros de análise psicossocial são mais evidenciados nesse caso?",
+  options: [
+    "Ambiente de trabalho e contrato de trabalho da equipe.",
+    "Coesão organizativa e conteúdo do trabalho.",
+    "Intensidade do trabalho e autonomia no trabalho.",
+    "Qualidade das relações e gestão do trabalho na equipe."
+  ],
+  answer: 2,
+  feedback: "As **metas e jornadas** indicam ==mark==intensidade==, e a falta de decisão sobre prioridade e modo de resolver os problemas indica baixa **autonomia**."
+},
+
+// 10 - Coaching individual
+{
+  aula: "Aula 15 - Fatores psicossociais relacionados ao trabalho",
+  tipo: "Análise Aplicada",
+  texto: "Diante de casos de esgotamento, a gerente de uma empresa contrata um programa de coaching individual de resiliência, mas mantém as metas, a distribuição das tarefas e o modelo de gestão inalterados.",
+  question: "Como o módulo avalia essa medida isolada?",
+  options: [
+    "Insuficiente, pois a prevenção exige mudanças organizacionais, além da adaptação individual.",
+    "Adequada, pois os riscos psicossociais dependem apenas da capacidade de adaptação individual.",
+    "Obrigatória, pois a NR-1 determina o coaching individual como medida de controle dos riscos.",
+    "Irrelevante, pois qualquer ação sobre os trabalhadores impede a prevenção dos riscos."
+  ],
+  answer: 0,
+  feedback: "A **abordagem ampliada** vai além da ==warn==adaptação individual==: é preciso repensar modelos de gestão, valorizar o diálogo e a participação."
+},
   ],
 
   ava: [
