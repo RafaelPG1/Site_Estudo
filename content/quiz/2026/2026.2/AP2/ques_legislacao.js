@@ -1831,919 +1831,918 @@ window.questoes = {
 
   ],
 
-  enade: [
-
-// ===== AULA 7 =====
-// 1 - Atos de comércio
-{
-  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
-  tipo: "Conceitual Contextualizada",
-  texto: "Pela teoria dos atos de comércio, adotada na França em 1807 e no Brasil em 1850, a lei listava os atos considerados comerciais, e o que importava era a atividade praticada, e não quem a realizava. Em 1850, Antônio comprava e vendia bens com habitualidade, e outro cidadão, sem profissão definida, praticou um dos atos da lista uma única vez.",
-  question: "Segundo a teoria dos atos de comércio, assinale a alternativa correta sobre a caracterização desses atos.",
-  options: [
-    "O ato era comercial se estivesse previsto na lista legal, pois o critério era a atividade, e não a pessoa.",
-    "O ato só era comercial se praticado por comerciante registrado, pois o critério era a qualidade do sujeito.",
-    "O ato era comercial apenas se houvesse organização dos quatro fatores de produção na atividade.",
-    "O ato deixava de ser comercial se fosse praticado uma só vez, pois a habitualidade era requisito da lista."
-  ],
-  answer: 0,
-  feedback: "O critério era ==def==o ato previsto em lista==: **a atividade, e não a pessoa**, definia o ato de comércio, o que a tornou ultrapassada com o tempo."
-},
-// 2 - Art. 966 aplicado
+enade: [
+  // ===== AULA 7 =====
+// 1 - Profissão intelectual
 {
   aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
   tipo: "Análise Aplicada",
-  texto: "O Art. 966 do Código Civil considera empresário quem exerce profissionalmente atividade econômica organizada para a produção ou a circulação de bens ou de serviços. Uma agência faz a mediação entre turistas e hotéis, com equipe contratada, capital próprio e sistema de reservas, de forma contínua e com finalidade lucrativa.",
-  question: "Com base no Art. 966, assinale a alternativa correta sobre a agência.",
+  texto: "O Código Civil considera empresário quem exerce profissionalmente atividade econômica organizada para a produção ou a circulação de bens ou de serviços (Art. 966). Contudo, não se considera empresário quem exerce profissão intelectual, de natureza científica, literária ou artística, ainda com o concurso de auxiliares ou colaboradores, salvo se o exercício da profissão constituir elemento de empresa. Helena é dentista e atende pessoalmente todos os pacientes de uma clínica que montou há seis anos. Ela contratou 12 empregados (recepcionistas, auxiliares e uma gerente administrativa), tem CNPJ, fatura mais de R$ 2 milhões por ano e mantém uma marca registrada para a clínica. Uma credora, ao saber que Helena não tem registro na Junta Comercial, sustenta que ela é empresária irregular.",
+  question: "Considerando a situação descrita e o conceito de empresário do Código Civil, assinale a alternativa correta.",
   options: [
-    "Não é empresária, pois a prestação de serviços nunca configura atividade empresarial.",
-    "Não é empresária, pois a mediação não é atividade econômica e não visa a lucro.",
-    "É empresária, pois exerce profissionalmente atividade organizada de circulação de serviços.",
-    "É empresária apenas se for pessoa física, pois a pessoa jurídica exerce só a produção de bens."
+    "Helena é empresária irregular, pois organiza capital e empregados para prestar serviços de saúde.",
+    "Helena é empresária, pois o faturamento elevado e a marca registrada afastam a regra do intelectual.",
+    "Helena exerce profissão intelectual e não é empresária, pois a atividade não é elemento de empresa.",
+    "Helena é empresária, pois o auxílio de empregados é o que define a atividade empresarial."
   ],
   answer: 2,
-  feedback: "Estão presentes os requisitos do ==rule==Art. 966==: **profissionalismo, atividade econômica organizada** e circulação de serviços (mediação)."
+  feedback: "A **profissão intelectual** exercida pessoalmente não é empresarial, mesmo com auxiliares, faturamento alto e marca. Só seria ==rule==elemento de empresa== se a atividade se diluísse na organização dos fatores de produção."
 },
-// 3 - Empresa x empresário
+// 2 - Cooperativa
 {
   aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
   tipo: "Conceitual Contextualizada",
-  texto: "Empresa é a atividade exercida, e empresário é o sujeito que a exerce, podendo ser pessoa física (empresário individual) ou pessoa jurídica (sociedade empresária). Em uma reunião, o sócio Paulo afirma que a empresa da família é a titular dos direitos e a responsável pelas dívidas da atividade.",
-  question: "Considerando a teoria da empresa, assinale a alternativa correta sobre a afirmação de Paulo.",
+  texto: "Quanto à forma, as sociedades são empresárias ou simples. A sociedade por ações é sempre empresária e a cooperativa é sempre simples, independentemente do seu objeto (Art. 982, parágrafo único). A cooperativa é sociedade de pessoas, com capital variável e sem objetivo de lucro para a própria sociedade. A Cooperativa Agrícola Vale Verde reúne 800 associados produtores de leite, tem fábrica própria de laticínios, 150 empregados, faturamento anual superior a R$ 300 milhões e exporta para três países. Um fornecedor, ao cobrar uma dívida, afirma que ela deve ser tratada como sociedade empresária, dado o seu porte e o caráter industrial.",
+  question: "Considerando a situação descrita e a classificação das sociedades no Código Civil, assinale a alternativa correta.",
   options: [
-    "Está correta, pois a empresa é sujeito de direito e titular de todas as relações jurídicas.",
-    "Está incorreta, pois a empresa é a atividade, e o titular de direitos é o empresário, o sujeito.",
-    "Está correta, pois a empresa e o empresário são expressões equivalentes na teoria da empresa.",
-    "Está incorreta, pois apenas a pessoa física pode ser titular da atividade empresarial."
-  ],
-  answer: 1,
-  feedback: "A ==warn==empresa não é sujeito de direito==: ela é a **atividade**, e o titular é o empresário, pessoa física ou jurídica."
-},
-// 4 - Abuso do poder econômico
-{
-  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
-  tipo: "Análise Aplicada",
-  texto: "A Constituição Federal estabelece que a lei reprimirá o abuso do poder econômico que vise à dominação dos mercados, à eliminação da concorrência e ao aumento arbitrário dos lucros (Art. 173, § 4º). Uma empresa dominante passa a vender abaixo do custo para quebrar os concorrentes e, em seguida, eleva os preços de forma arbitrária.",
-  question: "Com base nesse dispositivo, assinale a alternativa correta.",
-  options: [
-    "A conduta é protegida, pois a liberdade de iniciativa autoriza qualquer prática para vencer a concorrência.",
-    "A conduta é protegida, pois o Estado não pode fiscalizar a atividade econômica privada.",
-    "A conduta só seria reprimida se a empresa não tivesse registro na Junta Comercial.",
-    "A conduta é passível de repressão, pois visa eliminar a concorrência e elevar arbitrariamente os lucros."
-  ],
-  answer: 3,
-  feedback: "Há ==rule==abuso do poder econômico==: a lei deve **reprimir** a eliminação da concorrência, e o CADE fiscaliza a atividade econômica."
-},
-// 5 - Elementos de organização
-{
-  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
-  tipo: "Conceitual Contextualizada",
-  texto: "A organização da atividade empresarial é caracterizada pela presença de quatro fatores de produção: mão de obra, matéria-prima, capital e tecnologia. Se faltar algum deles, não há que se falar em organização da atividade. Um grupo de pessoas presta uma atividade de forma pessoal, apenas com o próprio trabalho, sem os demais fatores.",
-  question: "Assinale a alternativa correta sobre a caracterização dessa atividade como empresarial.",
-  options: [
-    "Não há organização da atividade, pois faltam fatores de produção, logo ela não é empresarial.",
-    "Há organização, pois a mão de obra, isoladamente, é suficiente para caracterizar a empresa.",
-    "Há organização, pois o profissionalismo dispensa a presença dos demais fatores de produção.",
-    "Não há organização, pois a atividade seria empresarial apenas se fosse exercida por pessoa jurídica."
+    "A cooperativa é sociedade simples por força de lei, qualquer que seja o seu porte ou objeto.",
+    "A cooperativa é empresária, pois a atividade industrial organizada a enquadra no Art. 966.",
+    "A cooperativa é empresária, pois o faturamento elevado e os empregados afastam o caráter simples.",
+    "A cooperativa é simples apenas enquanto não explorar atividade econômica organizada."
   ],
   answer: 0,
-  feedback: "Sem os **quatro fatores**, falta a ==def==organização==, e a atividade não é empresarial."
+  feedback: "Por **determinação legal**, a cooperativa é ==rule==sociedade simples==, e a sociedade por ações é sempre empresária. O porte e o objeto não mudam essa classificação."
 },
-// 6 - Elemento de empresa
+// 3 - Produtor rural
 {
   aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
   tipo: "Análise Aplicada",
-  texto: "O parágrafo único do Art. 966 afasta a condição de empresário de quem exerce profissão intelectual, ainda com o concurso de auxiliares ou colaboradores, salvo se o exercício da profissão constituir elemento de empresa. A veterinária Lara mantém uma clínica e passa a vender ração, brinquedos e coleiras, em estrutura organizada.",
-  question: "Com base na regra, assinale a alternativa correta sobre a situação de Lara.",
+  texto: "O Código Civil trata de modo especial o empresário rural. Quem exerce atividade rural não é obrigado a se inscrever no Registro Público de Empresas Mercantis, mas pode requerer a inscrição. Se o fizer, ficará equiparado, para todos os efeitos, ao empresário sujeito a registro (Art. 971). Osvaldo explora 600 hectares de soja em Quixeramobim, tem 40 empregados, maquinário próprio, vende a produção a tradings e nunca registrou sua atividade na Junta Comercial. O contador sugere a inscrição, mas o filho de Osvaldo afirma que, pelo tamanho da operação, o registro já seria obrigatório.",
+  question: "Considerando a situação descrita e o tratamento do produtor rural no Código Civil, assinale a alternativa correta.",
   options: [
-    "Lara continua sendo apenas profissional intelectual, pois a venda de produtos não altera o enquadramento.",
-    "A clínica nunca poderia ser empresária, pois a profissão veterinária é vedada ao empresário.",
-    "A clínica passa a ser empresária, pois a atividade intelectual de Lara vira elemento de empresa.",
-    "A clínica passa a ser empresária apenas se Lara se desfizer de todos os auxiliares contratados."
+    "A inscrição é obrigatória, pois a dimensão da atividade e o número de empregados o enquadram como empresário comum.",
+    "A inscrição é vedada, pois a atividade rural é civil e não admite o regime empresarial.",
+    "A inscrição é facultativa, mas só produz efeitos se o Fisco autorizar a mudança de regime.",
+    "A inscrição é facultativa e, se Osvaldo se inscrever, será equiparado ao empresário sujeito a registro."
+  ],
+  answer: 3,
+  feedback: "O produtor rural tem a **opção**: sem inscrição, segue o regime próprio. Com ela, vale a ==rule==equiparação== ao empresário sujeito a registro (Art. 971). O porte não torna o registro obrigatório."
+},
+// 4 - Teoria da empresa
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Conceitual Contextualizada",
+  texto: "O Código Comercial de 1850 adotava a teoria dos atos de comércio: era comerciante quem praticava a mercancia, e várias atividades, como a prestação de serviços em geral, ficavam fora do regime comercial. O Código Civil de 2002 passou à teoria da empresa, que considera empresário quem exerce profissionalmente atividade econômica organizada para a produção ou a circulação de bens ou de serviços, ainda que não faça mercancia. A Limpeza Total Ltda. presta serviços de limpeza predial a condomínios e empresas, com 80 empregados, equipe de supervisão, estoque de materiais e contratos de longo prazo. Nunca comprou mercadorias para revender. Seu sócio acredita que, por não praticar mercancia, a sociedade seria mera prestadora civil.",
+  question: "Considerando a situação descrita e a teoria adotada pelo Código Civil de 2002, assinale a alternativa correta.",
+  options: [
+    "A sociedade é civil, pois a prestação de serviços sem compra para revenda não é atividade empresarial típica, ainda que organizada.",
+    "A sociedade é empresária, pois presta serviços mediante atividade econômica organizada, ainda sem mercancia.",
+    "A sociedade é civil, pois a teoria da empresa preserva a mercancia como critério central.",
+    "A sociedade só é empresária porque tem mais de 50 empregados, critério fixado pelo Código Civil."
+  ],
+  answer: 1,
+  feedback: "Na ==def==teoria da empresa==, importa a **atividade econômica organizada**, e não a mercancia. Serviços entram no conceito, salvo exceções como a profissão intelectual."
+},
+// 5 - Abuso do poder econômico
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Análise Aplicada",
+  texto: "A Constituição Federal assegura a livre iniciativa e a livre concorrência, mas determina que a lei reprima o abuso do poder econômico que vise à dominação dos mercados, à eliminação da concorrência e ao aumento arbitrário dos lucros (Art. 173, §4º). No plano administrativo, a defesa da concorrência é conduzida pelo CADE. A Cimentos Atlas detém 70% do mercado regional de cimento. Durante oito meses, vendeu o produto abaixo do custo e levou três concorrentes menores à falência. Depois disso, elevou os preços em 40%. A Atlas alega que preço é livre, que não cometeu fraude e que nenhum consumidor foi lesado individualmente.",
+  question: "Considerando a situação descrita e os limites constitucionais da livre iniciativa, assinale a alternativa correta.",
+  options: [
+    "A conduta é lícita, pois a liberdade de fixar preços afasta o controle estatal sobre a empresa dominante.",
+    "A conduta configura abuso do poder econômico, pois buscou eliminar concorrentes e elevar lucros.",
+    "A conduta só seria ilícita se algum consumidor provasse prejuízo individual e direto.",
+    "A conduta é lícita, pois a Constituição só reprime o abuso praticado por empresa estatal."
+  ],
+  answer: 1,
+  feedback: "A livre iniciativa **tem limites**: vender abaixo do custo para eliminar rivais e depois elevar preços é ==warn==abuso do poder econômico==, reprimido pelo Art. 173, §4º, e apurado pelo CADE."
+},
+// 6 - Empresa, empresário e estabelecimento
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Conceitual Contextualizada",
+  texto: "No direito empresarial, é preciso distinguir três conceitos. Empresa é a atividade econômica organizada, exercida profissionalmente. Empresário é o sujeito que exerce essa atividade, seja pessoa física (empresário individual) ou pessoa jurídica (sociedade empresária). Estabelecimento é o complexo de bens organizado para o exercício da empresa (Art. 1.142). A Livraria Pedra Viva, de Dona Neide, funciona em um prédio alugado, com estoque de 4 mil livros, sistema de vendas, marca e clientela fiel. Neide vendeu o ponto, o estoque e a marca a um grupo investidor, mas continua atendendo no balcão como funcionária contratada. Um sobrinho afirma que, como a livraria funciona do mesmo jeito, nada mudou quanto a quem é o titular da atividade.",
+  question: "Considerando a situação descrita e os conceitos de empresa, empresário e estabelecimento, assinale a alternativa correta.",
+  options: [
+    "Neide alienou a empresa, que é um bem corpóreo e pode ser vendido junto com o estoque e a marca da livraria.",
+    "Neide alienou o empresário, pois estabelecimento e empresário formam um só objeto de venda.",
+    "Neide continua sendo a empresária, pois quem atende no balcão define o titular da atividade.",
+    "Neide alienou o estabelecimento, e o grupo investidor passa a ser o empresário que exerce a atividade."
+  ],
+  answer: 3,
+  feedback: "**Empresa** é a atividade, **empresário** é quem a exerce e ==def==estabelecimento== é o complexo de bens usado nela. Só o estabelecimento se vende, e quem o adquire passa a exercer a atividade."
+},
+// 7 - Elemento de empresa
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Análise Aplicada",
+  texto: "A profissão intelectual não é empresarial, salvo se o seu exercício constituir elemento de empresa (Art. 966, parágrafo único). Isso ocorre quando a atividade intelectual se torna apenas uma parte de uma organização maior de fatores de produção, que passa a ser o foco do negócio. Ana Beatriz, pediatra, e dois sócios fundaram o Hospital Santa Luz, com 120 leitos, 300 empregados, centro cirúrgico, laboratório e convênios com planos de saúde. O atendimento é feito por uma equipe de 40 médicos contratados, e a atividade principal dos sócios é administrar o complexo hospitalar. Os sócios sustentam que, por serem médicos, a sociedade seria simples.",
+  question: "Considerando a situação descrita e a exceção do parágrafo único do Art. 966, assinale a alternativa correta.",
+  options: [
+    "A sociedade é simples, pois a medicina é profissão intelectual e isso basta para afastar o caráter empresarial.",
+    "A sociedade é empresária, pois a organização dos fatores de produção supera o exercício pessoal da medicina.",
+    "A sociedade é simples, pois os sócios são médicos e atendem no próprio hospital.",
+    "A sociedade é empresária apenas porque tem mais de 100 leitos, critério estabelecido em lei."
+  ],
+  answer: 1,
+  feedback: "Quando a profissão intelectual vira ==def==elemento de empresa==, a **organização** passa a ser o objeto do negócio, e a sociedade é empresária. A formação dos sócios não decide."
+},
+// 8 - Sociedade de advogados
+{
+  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
+  tipo: "Análise Aplicada",
+  texto: "A sociedade de advogados tem natureza de sociedade simples e é registrada no Conselho Seccional da OAB em cuja base territorial tiver sede, sendo vedado o registro na Junta Comercial. A lei proíbe ainda que ela tenha caráter mercantil ou realize atividade estranha à advocacia (Lei nº 8.906/1994, Arts. 15 a 16). A Bastos & Rocha Advogados tem 30 advogados e 80 empregados, atende grandes empresas e fatura mais de R$ 15 milhões por ano. Os sócios querem registrar a sociedade na Junta Comercial, por entenderem que o porte da banca a tornaria sociedade empresária e que o registro traria mais credibilidade.",
+  question: "Considerando a situação descrita e a natureza da sociedade de advogados, assinale a alternativa correta.",
+  options: [
+    "A banca pode ser registrada na Junta, pois o porte e o número de funcionários a tornam sociedade empresária de fato.",
+    "A banca pode ser registrada na Junta, pois o registro nela substitui o da OAB nas bancas de grande porte.",
+    "A banca não pode ser registrada na Junta, pois a sociedade de advogados é simples e seu registro é feito na OAB.",
+    "A banca deve ser registrada no cartório de títulos e documentos, e não na OAB, por ser sociedade simples."
   ],
   answer: 2,
-  feedback: "Quando a atividade intelectual vira ==rule==elemento de empresa==, a sociedade passa a ser empresária, como no caso da clínica de **Lara**."
+  feedback: "A sociedade de advogados é **simples** e se registra na ==rule==OAB==, nunca na Junta. O porte, o faturamento e o número de empregados não a transformam em empresária."
 },
-// 7 - Registro e condição de empresário
-{
-  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
-  tipo: "Conceitual Contextualizada",
-  texto: "A condição de empresário decorre do exercício profissional da atividade econômica organizada para a produção ou a circulação de bens ou serviços. Marta mantém, há anos, uma padaria com empregados e matéria-prima, mas nunca promoveu o seu registro.",
-  question: "Segundo o material da aula, assinale a alternativa correta sobre a condição de Marta.",
-  options: [
-    "Não é empresária, pois somente depois do registro na Junta Comercial alguém se torna empresário de fato.",
-    "É considerada empresária, pois não é necessário ser registrada para ser considerada empresária.",
-    "Não é empresária, pois a padaria seria atividade rural, e o registro seria facultativo.",
-    "É empresária somente se a padaria tiver mais de dez empregados registrados na Junta."
-  ],
-  answer: 1,
-  feedback: "A **Parada Obrigatória** da aula afirma que ==warn==não é necessário ser registrado== para ser considerado empresário."
-},
-// 8 - Cooperativa
+// 9 - Registro declaratório
 {
   aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
   tipo: "Análise Aplicada",
-  texto: "Pelo Art. 982, parágrafo único, do Código Civil, independentemente de seu objeto, considera-se empresária a sociedade por ações e simples a cooperativa. Uma cooperativa de produtores opera com grande volume de vendas, estrutura organizada e finalidade econômica.",
-  question: "Aplicando esse dispositivo, assinale a alternativa correta sobre a classificação da cooperativa.",
+  texto: "A inscrição do empresário no Registro Público de Empresas Mercantis é obrigatória. Mas o registro tem natureza declaratória: a qualidade de empresário decorre do exercício da atividade, e não da inscrição. O empresário irregular continua sujeito às obrigações próprias do regime, mas não tem acesso a certos benefícios. Sidney vende roupas em feiras e por redes sociais há três anos, contratou duas vendedoras, compra mercadorias em volume e nunca se registrou na Junta Comercial. Ficou devendo R$ 80 mil a um fornecedor, que quer pedir sua falência. Sidney responde que, sem registro, não é empresário e por isso não pode ter falência decretada.",
+  question: "Considerando a situação descrita e a natureza do registro do empresário, assinale a alternativa correta.",
   options: [
-    "É sociedade empresária, pois o grande volume de vendas afasta a classificação como simples.",
-    "É sociedade empresária, pois a finalidade econômica a obriga a registro na Junta Comercial.",
-    "É sociedade simples apenas se tiver menos de dez cooperados com atividade pontual.",
-    "É sempre sociedade simples, independentemente do objeto e do volume de atividade econômica."
-  ],
-  answer: 3,
-  feedback: "A ==rule==cooperativa== é **sempre simples**, ao passo que a sociedade por ações é sempre empresária."
-},
-// 9 - Sociedade de advogados
-{
-  aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
-  tipo: "Conceitual Contextualizada",
-  texto: "Entre os casos que não são considerados empresários estão a sociedade de advogados, o profissional rural não registrado e as cooperativas. A sociedade de advogados tem o seu registro de constituição feito na própria OAB, onde adquire personalidade jurídica.",
-  question: "Considerando a regra, assinale a alternativa correta sobre a sociedade de advogados.",
-  options: [
-    "É sempre sociedade simples, com registro na OAB, e não é considerada empresária.",
-    "É sociedade empresária, pois o registro na OAB equivale ao registro na Junta Comercial.",
-    "É sociedade empresária sempre que contrata auxiliares, como secretárias e estagiários.",
-    "É sociedade simples apenas se tiver um único sócio exercendo a advocacia."
+    "Sidney é empresário irregular e pode ter a falência requerida, pois a qualidade decorre da atividade.",
+    "Sidney não é empresário, pois a qualidade de empresário só nasce com o registro na Junta.",
+    "Sidney não pode ter a falência requerida, pois só os empresários com registro ativo na Junta se sujeitam a ela.",
+    "Sidney pode ter a falência requerida, mas só depois de regularizar o registro na Junta."
   ],
   answer: 0,
-  feedback: "O registro na ==def==OAB== confere personalidade jurídica, e a sociedade será **sempre simples**."
+  feedback: "O registro é ==def==declaratório==: **a atividade é que faz o empresário**. Sidney é empresário irregular e, por isso, se sujeita à falência."
 },
-// 10 - Profissional rural
+// 10 - Elementos de organização
 {
   aula: "Aula 7 - Evolução do direito empresarial e teoria da empresa",
   tipo: "Análise Aplicada",
-  texto: "Segundo o Art. 971 do Código Civil, o empresário cuja atividade rural constitua sua principal profissão pode requerer inscrição no Registro Público de Empresas Mercantis, e, depois de inscrito, fica equiparado, para todos os efeitos, ao empresário sujeito a registro. Um produtor rural nunca se inscreveu, e outro se inscreveu no ano passado.",
-  question: "Com base no Art. 971, assinale a alternativa correta.",
+  texto: "A atividade empresarial é organizada quando o empresário combina os fatores de produção: capital, mão de obra, insumos e tecnologia. Sem essa organização, a atividade é exercida de forma autônoma e não é empresarial. Marcos é eletricista, faz os reparos sozinho, com ferramentas simples, atende por indicação e fatura em média R$ 12 mil por mês. Lúcia fabrica doces em uma pequena fábrica, com 15 empregados, máquinas, compra de matéria-prima em escala e venda a supermercados. Em uma discussão, um colega diz que os dois são empresários porque ambos têm renda elevada e atuam com habitualidade.",
+  question: "Considerando a situação descrita e os elementos da atividade empresarial, assinale a alternativa correta.",
   options: [
-    "Ambos são empresários equiparados, pois o registro do produtor rural é obrigatório e constitutivo.",
-    "Só o produtor inscrito é equiparado ao empresário sujeito a registro, pois é facultativo.",
-    "Nenhum deles pode ser equiparado, pois a atividade rural é vedada ao empresário.",
-    "Só o não inscrito é empresário, pois a inscrição transforma a atividade em intelectual."
+    "Marcos é empresário, pois o faturamento mensal expressivo basta para caracterizar a organização.",
+    "Marcos e Lúcia são empresários, pois ambos exercem atividade econômica de forma profissional.",
+    "Marcos exerce trabalho autônomo, sem organização dos fatores de produção, e Lúcia é empresária.",
+    "Nenhum dos dois é empresário, pois a fabricação de doces e os reparos elétricos são atividades civis."
   ],
-  answer: 1,
-  feedback: "O registro do ==rule==profissional rural== é **facultativo**, e apenas depois da inscrição ele é equiparado ao empresário."
+  answer: 2,
+  feedback: "Faltam a Marcos os ==term==fatores de produção== organizados, como mão de obra de terceiros e capital. **Renda e habitualidade** não bastam, e Lúcia, que os combina, é empresária."
 },
 
 // ===== AULA 8 =====
-// 1 - Capacidade civil
-{
-  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
-  tipo: "Conceitual Contextualizada",
-  texto: "Segundo o Art. 972 do Código Civil, podem exercer a atividade de empresário os que estiverem em pleno gozo da capacidade civil e não forem legalmente impedidos. O menor de 18 anos, em regra, não tem plena capacidade, salvo a hipótese do menor emancipado. Lucas, de 17 anos e não emancipado, quer abrir uma loja de roupas em seu nome.",
-  question: "Com base no Art. 972, assinale a alternativa correta sobre a pretensão de Lucas.",
-  options: [
-    "Lucas não pode iniciar a atividade, pois não tem o pleno gozo da capacidade civil exigida.",
-    "Lucas pode iniciar a atividade, pois a idade não interfere na condição de empresário.",
-    "Lucas pode iniciar a atividade, desde que obtenha o seu registro no Portal do Empreendedor.",
-    "Lucas não pode iniciar a atividade, pois somente pessoas jurídicas podem ser empresárias."
-  ],
-  answer: 0,
-  feedback: "O ==rule==Art. 972== exige **pleno gozo da capacidade civil**, e o menor não emancipado não o possui para iniciar a atividade."
-},
-// 2 - Continuidade por incapaz
+// 1 - Incapaz como empresário
 {
   aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
   tipo: "Análise Aplicada",
-  texto: "O Art. 974 permite que o incapaz, por meio de representante ou devidamente assistido, continue a empresa antes exercida por ele enquanto capaz, por seus pais ou pelo autor de herança, mediante autorização judicial, que pode ser revogada pelo juiz. Mariana, de 16 anos, herdou o negócio do pai, e a mãe quer mantê-lo em funcionamento.",
-  question: "Considerando o Art. 974, assinale a alternativa correta.",
+  texto: "O Código Civil exige capacidade civil plena para o exercício da empresa (Art. 972). Todavia, o incapaz, por meio de representante ou devidamente assistido, pode continuar a empresa antes exercida por ele enquanto capaz, por seus pais ou pelo autor de herança, mediante autorização judicial (Art. 974). Essa autorização não alcança os bens que o incapaz já possuía ao tempo da sucessão, desde que estranhos à empresa. Rafael, de 16 anos, herdou do pai, falecido recentemente, uma rede de três padarias em pleno funcionamento. Rafael também tem uma poupança de R$ 200 mil, deixada pela avó, sem relação com as padarias. A mãe quer manter os estabelecimentos abertos e pergunta se o filho pode continuar o negócio.",
+  question: "Considerando a situação descrita e as regras do Código Civil sobre o incapaz na empresa, assinale a alternativa correta.",
   options: [
-    "A continuidade é possível, sem autorização judicial, bastando a vontade da mãe.",
-    "A continuidade é vedada, pois o menor não emancipado nunca pode ser titular de empresa.",
-    "A continuidade é possível, com autorização judicial e assistência ou representação.",
-    "A continuidade é possível, mas Mariana poderá iniciar novas atividades sem representação."
-  ],
-  answer: 2,
-  feedback: "A exceção busca a ==def==preservação da empresa==, com **autorização judicial** e assistência ou representação conforme a incapacidade."
-},
-// 3 - Impedimentos legais
-{
-  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
-  tipo: "Conceitual Contextualizada",
-  texto: "Além da capacidade civil, o exercício da atividade de empresário exige a ausência de impedimentos legais, como os que alcançam membros do Ministério Público, magistrados, membros da Defensoria Pública, empresários falidos, leiloeiros e servidores públicos civis da ativa. O juiz Paulo quer ser proprietário de uma loja de eletrônicos.",
-  question: "Assinale a alternativa correta sobre a pretensão do juiz Paulo.",
-  options: [
-    "Pode, pois a plena capacidade civil afasta qualquer impedimento legal à atividade empresarial.",
-    "Não pode, pois os magistrados são legalmente impedidos de exercer a atividade de empresário.",
-    "Pode, desde que a loja seja registrada no Registro Civil das Pessoas Jurídicas.",
-    "Não pode, pois só é impedido o empresário que não tem plena capacidade civil."
-  ],
-  answer: 1,
-  feedback: "Os ==rule==impedimentos legais== são o segundo requisito do Art. 972: **magistrados** estão entre os impedidos."
-},
-// 4 - Empresário irregular
-{
-  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
-  tipo: "Análise Aplicada",
-  texto: "O registro empresarial é obrigatório e deve ser feito antes do início da atividade (Art. 967), mas tem natureza declaratória. O empresário não registrado é irregular, e não pode requerer recuperação judicial e extrajudicial, requerer a falência de devedor seu nem participar de licitações. Uma padaria funciona há anos sem registro, e o titular quer participar de uma licitação.",
-  question: "Com base nessas regras, assinale a alternativa correta.",
-  options: [
-    "Os negócios do titular são nulos, pois o registro tem natureza constitutiva da condição de empresário.",
-    "O titular pode participar de licitação, pois o registro é mera formalidade sem efeitos práticos.",
-    "O titular perde a condição de empresário e os sócios passam a ter responsabilidade limitada.",
-    "Os negócios do titular são válidos, mas, por ser irregular, ele não pode participar de licitação."
+    "Rafael não pode continuar a empresa, pois quem tem menos de 18 anos não pode figurar como empresário individual.",
+    "Rafael pode continuar a empresa com a assistência da mãe, dispensada a autorização judicial.",
+    "Rafael pode continuar a empresa, e a poupança da avó responde pelas dívidas das padarias.",
+    "Rafael pode continuar a empresa, assistido e com autorização judicial, sem risco para a poupança da avó."
   ],
   answer: 3,
-  feedback: "O registro é ==def==declaratório==: o titular **mantém o status** de empresário, mas fica irregular e sem os benefícios do registro."
+  feedback: "O incapaz pode **continuar** a empresa herdada, assistido e com ==proc==autorização judicial==. Os bens que ele já tinha e que não ligam à empresa ficam **preservados** das dívidas dela (Art. 974, §2º)."
 },
-// 5 - EIRELI
+// 2 - Impedimento legal
 {
   aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
-  tipo: "Conceitual Contextualizada",
-  texto: "A EIRELI, instituída pela Lei nº 12.441/2011 e prevista no Art. 980-A do Código Civil, é formada por uma única pessoa, titular de 100% do capital social. É pessoa jurídica, e as suas dívidas recaem sobre os bens da empresa, e não da pessoa física. Luís constituiu uma EIRELI com o capital mínimo integralizado.",
-  question: "Com base na aula, assinale a alternativa correta sobre a responsabilidade de Luís pelas dívidas da empresa.",
+  tipo: "Análise Aplicada",
+  texto: "Podem exercer atividade empresarial os que estiverem em pleno gozo da capacidade civil e não forem legalmente impedidos (Art. 972). Os servidores públicos estatutários, por exemplo, são proibidos de exercer o comércio, exceto como acionistas, cotistas ou comanditários. A pessoa legalmente impedida que exercer atividade própria de empresário responde pelas obrigações contraídas (Art. 973). Marta é auditora fiscal estatutária e, mesmo assim, abriu um minimercado em seu nome, como empresária individual. Em dois anos, comprou R$ 90 mil em mercadorias de um fornecedor e deixou de pagar. Quando cobrada, alega que, por ser servidora, estava impedida de empresariar e que por isso os contratos seriam nulos e nada deveria.",
+  question: "Considerando a situação descrita e as regras sobre impedimento para o exercício da empresa, assinale a alternativa correta.",
   options: [
-    "Luís responde ilimitadamente, pois é o único titular e se confunde com a pessoa jurídica da empresa.",
-    "Luís não responde pessoalmente, pois a EIRELI é pessoa jurídica e responde com os bens da empresa.",
-    "Luís responde solidariamente com os sócios, pois a EIRELI exige no mínimo dois titulares.",
-    "Luís responde ilimitadamente, pois a EIRELI é apenas outro nome do empresário individual comum."
+    "Marta responde pelas obrigações contraídas, pois não pode invocar o próprio impedimento para se eximir.",
+    "Marta não responde, pois o impedimento torna nulos os contratos e libera a empresária das dívidas.",
+    "Marta responde apenas até o limite do capital que declarou na abertura do minimercado como empresária individual.",
+    "Marta responde, mas somente se o fornecedor provar que ela agiu com má-fé."
+  ],
+  answer: 0,
+  feedback: "O impedimento **não é escudo**: quem exerce a atividade ==warn==responde pelas obrigações== que contraiu (Art. 973). O fornecedor de boa-fé não pode ser prejudicado."
+},
+// 3 - Empresário irregular
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Análise Aplicada",
+  texto: "A inscrição do empresário no Registro Público de Empresas Mercantis, antes do início da atividade, é obrigatória (Art. 967). O empresário sem registro é irregular: continua sujeito às obrigações do empresário, mas não tem os benefícios do regime regular. Na falência, o credor que for empresário deve provar a regularidade de sua atividade para requerê-la (Lei nº 11.101/2005, Art. 97, §1º). Joaquim vende ração em Quixadá há cinco anos. Tem CNPJ na Receita, emite nota fiscal e paga tributos, mas nunca registrou sua atividade na Junta Comercial. Ele é credor da Beta Ltda. por um título de R$ 80 mil, vencido e protestado, e pretende pedir a falência da devedora.",
+  question: "Considerando a situação descrita e as consequências da falta de registro, assinale a alternativa correta.",
+  options: [
+    "Joaquim pode requerer a falência, pois o CNPJ, a nota fiscal e o pagamento de tributos suprem o registro na Junta.",
+    "Joaquim pode requerer a falência, pois o registro apenas declara a qualidade de empresário.",
+    "Joaquim não pode requerer a falência, pois o credor empresário precisa provar a regularidade de sua atividade.",
+    "Joaquim não pode requerer a falência, pois sem registro deixa de ser empresário e vira particular."
+  ],
+  answer: 2,
+  feedback: "Sem registro o empresário é **irregular**, mas não deixa de ser empresário. Para pedir falência, precisa ==rule==provar a regularidade== (Art. 97, §1º), e o CNPJ não substitui a inscrição na Junta."
+},
+// 4 - Trespasse e dívidas
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Análise Aplicada",
+  texto: "O estabelecimento pode ser alienado (trespasse). O contrato só produz efeitos perante terceiros depois de averbado à margem da inscrição do empresário e publicado na imprensa oficial (Art. 1.144). O adquirente responde pelo pagamento dos débitos anteriores à transferência, desde que regularmente contabilizados, e o devedor primitivo continua solidariamente obrigado pelo prazo de um ano, a partir, quanto aos créditos vencidos, da publicação, e, quanto aos outros, do vencimento (Art. 1.146). Roberto vendeu a Padaria Trigo Dourado a Sandra em 10 de março, e a transferência foi publicada em 20 de março. Na data da venda, a padaria devia R$ 30 mil a um fornecedor de farinha, vencidos em fevereiro e lançados na contabilidade, e R$ 20 mil a um prestador de serviços, nunca contabilizados.",
+  question: "Considerando a situação descrita e a responsabilidade pelas dívidas do estabelecimento, assinale a alternativa correta.",
+  options: [
+    "Sandra responde pela dívida contabilizada, e Roberto continua solidário por um ano a partir da publicação.",
+    "Sandra responde pelas duas dívidas, e Roberto fica exonerado a partir da assinatura do contrato.",
+    "Sandra responde pela dívida contabilizada, e Roberto se exonera com a transferência do negócio.",
+    "Só Roberto responde pelas dívidas, pois elas nasceram antes da venda e Sandra não assumiu o passivo do negócio."
+  ],
+  answer: 0,
+  feedback: "O adquirente responde só pelos débitos **regularmente contabilizados**. O alienante segue ==rule==solidário por um ano== (Art. 1.146), contado da publicação para os créditos vencidos. A dívida não contabilizada não passa a Sandra."
+},
+// 5 - Nome empresarial
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Análise Aplicada",
+  texto: "O nome empresarial pode ser firma ou denominação. A firma é formada com o nome civil de um ou mais sócios, e a sociedade limitada pode adotar firma ou denominação. Vale o princípio da veracidade: o nome do sócio que vier a falecer, for excluído ou se retirar não pode ser conservado na firma social (Art. 1.165). A Pereira, Costa & Cia. Ltda. atua há 12 anos com firma formada pelo nome dos sócios fundadores. Há seis meses, o sócio Costa se retirou, recebeu seus haveres e deixou o quadro societário. Os sócios remanescentes alegam que a firma é conhecida no mercado, que a marca está registrada no INPI e que Costa, por e-mail, autorizou a manutenção do seu nome.",
+  question: "Considerando a situação descrita e o princípio da veracidade do nome empresarial, assinale a alternativa correta.",
+  options: [
+    "O nome de Costa pode ser conservado, pois ele autorizou o uso por escrito.",
+    "O nome de Costa não pode ser conservado na firma, mesmo com a autorização dele.",
+    "O nome de Costa pode ser conservado, pois a firma é conhecida e a marca está registrada.",
+    "O nome de Costa pode ser conservado por mais um ano, até a alteração do contrato social."
   ],
   answer: 1,
-  feedback: "A ==rule==EIRELI== é **pessoa jurídica**, distinta do titular (figura extinta pela Lei nº 14.195/2021, mas tratada nesta aula)."
+  feedback: "A ==rule==veracidade== impede manter o nome de **sócio que se retirou** (Art. 1.165). A autorização dele ou o prestígio da marca não mudam a regra, e a firma deve ser alterada."
 },
 // 6 - Sub-rogação em contratos
 {
   aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
   tipo: "Análise Aplicada",
-  texto: "Na transferência do estabelecimento, o adquirente se sub-roga nos contratos de exploração que não tenham caráter pessoal, salvo disposição em contrário. Os terceiros podem rescindir o contrato em 90 dias da publicação da transferência, se ocorrer justa causa, ressalvada a responsabilidade do alienante (Art. 1.148). Após o trespasse, um fornecedor quer encerrar o contrato com a loja.",
-  question: "Com base no Art. 1.148, assinale a alternativa correta.",
+  texto: "Salvo disposição em contrário, a transferência do estabelecimento importa a sub-rogação do adquirente nos contratos estipulados para a exploração do negócio, desde que não tenham caráter pessoal. Os terceiros podem rescindir o contrato em 90 dias, contados da publicação da transferência, se houver justa causa, ressalvada a responsabilidade do alienante (Art. 1.148). O Dr. Álvaro vendeu a Clínica Bem Viver à Dra. Teresa. A clínica tinha o contrato de locação do imóvel, um contrato de fornecimento com laboratório de exames e um contrato de prestação de serviços com um cirurgião renomado, contratado em razão de sua reputação pessoal. O contrato de venda não tratou dos contratos em curso.",
+  question: "Considerando a situação descrita e os efeitos do trespasse sobre os contratos, assinale a alternativa correta.",
   options: [
-    "O adquirente se sub-roga no contrato, e o fornecedor só rescinde em 90 dias com justa causa.",
-    "O contrato se extingue automaticamente com o trespasse, e o fornecedor não tem prazo a observar.",
-    "O fornecedor pode rescindir o contrato a qualquer tempo, sem justa causa, em nome do alienante.",
-    "O adquirente não se sub-roga em nenhum contrato, e o alienante continua o único responsável."
+    "Teresa se sub-roga nos contratos sem caráter pessoal, como a locação e o do laboratório.",
+    "Teresa se sub-roga em todos os contratos, inclusive o do cirurgião, pois a lei não distingue a natureza deles.",
+    "Nenhum contrato se transfere, pois cada um depende de novo ajuste entre Teresa e a outra parte.",
+    "Teresa se sub-roga apenas nos contratos escritos, e os verbais ficam com o alienante."
   ],
   answer: 0,
-  feedback: "A ==def==sub-rogação== vale para contratos sem caráter pessoal, e a rescisão em **90 dias** exige justa causa."
+  feedback: "Na falta de regra no contrato de venda, a ==rule==sub-rogação== alcança os contratos **impessoais** do negócio. O contrato do cirurgião, pelo caráter pessoal, fica fora (Art. 1.148)."
 },
-// 7 - Passivo do alienante
-{
-  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
-  tipo: "Conceitual Contextualizada",
-  texto: "O trespasse só gera efeitos após a averbação e a publicação. Se o alienante não ficar com bens suficientes para solver o seu passivo, a eficácia da alienação depende do pagamento de todos os credores ou do consentimento deles, de modo expresso ou tácito, em 30 dias após a notificação (Art. 1.146). Um comerciante vendeu a sua loja e ficou sem patrimônio para quitar as suas dívidas.",
-  question: "Assinale a alternativa correta sobre a eficácia da venda.",
-  options: [
-    "Independe dos credores, pois a averbação do contrato basta para a eficácia da alienação.",
-    "Depende apenas da autorização da Junta Comercial, sem qualquer manifestação dos credores.",
-    "Depende do pagamento de todos os credores ou do consentimento deles, expresso ou tácito.",
-    "Depende do consentimento apenas dos credores com garantia real sobre os bens da loja."
-  ],
-  answer: 2,
-  feedback: "O ==rule==Art. 1.146== protege os credores: sem bens suficientes, é preciso **pagar ou obter o consentimento** deles."
-},
-// 8 - Veracidade do nome
+// 7 - Não restabelecimento
 {
   aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
   tipo: "Análise Aplicada",
-  texto: "O nome empresarial obedece aos princípios da veracidade e da novidade (Art. 34 da Lei nº 8.934/1994). Pela veracidade, o nome deve estar de acordo com a realidade da atividade exercida, e não pode permanecer na firma social o nome de sócio que tenha falecido, sido expulso ou se retirado. A firma “Almeida & Pires” mantém o nome de Pires, que se retirou da sociedade.",
-  question: "Com base nesses princípios, assinale a alternativa correta.",
+  texto: "Não havendo autorização expressa, o alienante do estabelecimento não pode fazer concorrência ao adquirente nos cinco anos subsequentes à transferência (Art. 1.147). Essa proibição protege a clientela que integra o estabelecimento vendido. Carlos vendeu seu restaurante em Quixadá a Paula, e o contrato de venda não tratou de concorrência. Oito meses depois, Carlos abriu outro restaurante a 200 metros do primeiro, com cardápio parecido e levando parte da clientela. Carlos afirma que a lei só proíbe a concorrência se houver cláusula escrita no contrato e que ele cumpriu o que foi combinado.",
+  question: "Considerando a situação descrita e o dever do alienante, assinale a alternativa correta.",
   options: [
-    "A manutenção do nome de Pires é permitida, pois o nome empresarial é inalterável após o registro.",
-    "A manutenção do nome de Pires viola o princípio da veracidade, pois ele se retirou da sociedade.",
-    "A manutenção do nome de Pires viola o princípio da novidade, pois o nome é igual ao de outra firma.",
-    "A manutenção do nome de Pires é permitida, pois o princípio da veracidade vale apenas para a denominação."
-  ],
-  answer: 1,
-  feedback: "Pela ==rule==veracidade==, o nome do sócio que **se retirou** não pode ser mantido na firma social."
-},
-// 9 - Nome da sociedade anônima
-{
-  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
-  tipo: "Conceitual Contextualizada",
-  texto: "Conforme o quadro de nomes empresariais, cada tipo societário adota a variante permitida: o empresário individual usa firma, a sociedade limitada, firma ou denominação, e a sociedade anônima, apenas denominação, acompanhada de “Sociedade Anônima” ou “Companhia”. Uma sociedade anônima será constituída e precisa definir o seu nome.",
-  question: "Assinale a alternativa correta sobre o nome empresarial dessa sociedade.",
-  options: [
-    "Deve usar denominação, com a expressão “Sociedade Anônima” ou “Companhia”.",
-    "Deve usar firma social, com o nome completo dos sócios fundadores.",
-    "Deve usar firma ou denominação, com a expressão “LTDA” ao final.",
-    "Não pode ter nome empresarial, pois a sociedade anônima não possui firma nem denominação."
-  ],
-  answer: 0,
-  feedback: "A ==def==sociedade anônima== usa **somente denominação**, o que a distingue da sociedade limitada, que pode usar firma ou denominação."
-},
-// 10 - Enquadramento em EPP
-{
-  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
-  tipo: "Análise Aplicada",
-  texto: "No quadro comparativo da aula, a microempresa (ME) tem receita bruta anual de até R$ 360.000,00, e a empresa de pequeno porte (EPP), receita superior a R$ 360.000,00 e até R$ 4.800.000,00. No comércio e nos serviços, a ME tem até 9 pessoas, e a EPP, de 10 a 49. Uma loja de comércio fatura R$ 2.500.000,00 por ano e emprega 30 pessoas.",
-  question: "Com base no quadro, assinale a alternativa correta.",
-  options: [
-    "A loja se enquadra como ME, pois o faturamento é inferior a R$ 4.800.000,00.",
-    "A loja se enquadra como MEI, pois todo comércio pode ter até 49 empregados.",
-    "A loja se enquadra como ME, pois o comércio pode empregar até 99 pessoas.",
-    "A loja se enquadra como EPP, pelo faturamento e pelo número de empregados."
+    "Carlos agiu licitamente, pois a lei só proíbe a concorrência se houver cláusula escrita no contrato.",
+    "Carlos violou a regra, mas a proibição vale apenas por um ano a partir da transferência.",
+    "Carlos agiu licitamente, pois a proibição só vale para estabelecimentos em outro município.",
+    "Carlos violou o dever de não restabelecimento, pois não pode concorrer com Paula por cinco anos."
   ],
   answer: 3,
-  feedback: "A ==rule==EPP== reúne receita entre R$ 360.000,00 e R$ 4.800.000,00 e, no comércio, **10 a 49 empregados**."
+  feedback: "A proibição de ==rule==concorrência por 5 anos== vale **mesmo sem cláusula**, e só cede com autorização expressa (Art. 1.147). Abrir restaurante vizinho, com a mesma clientela, a descumpre."
+},
+// 8 - Nome da sociedade anônima
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Conceitual Contextualizada",
+  texto: "A sociedade anônima opera sob denominação designativa do objeto social, integrada pelas expressões 'sociedade anônima' ou 'companhia', por extenso ou abreviadas, sem usar 'companhia' ao final. Pode constar da denominação o nome do fundador, do acionista ou de pessoa que haja concorrido para a formação da empresa (Lei nº 6.404/1976, Art. 3º). Ricardo Alves, fundador de uma rede de peças para veículos, vai constituir uma sociedade anônima e pede ao advogado qual nome é válido, entre as ideias que ele e os sócios levantaram: Alves Autopeças Companhia, Companhia Alves Autopeças e Alves & Cia.",
+  question: "Considerando a situação descrita e as regras do nome da sociedade anônima, assinale a alternativa correta.",
+  options: [
+    "Alves Autopeças Companhia é válido, pois a expressão pode vir ao final se estiver por extenso.",
+    "Companhia Alves Autopeças é válido, pois traz a expressão no início, o objeto e o nome do fundador.",
+    "Alves & Cia. é válido, pois toda sociedade por ações adota firma formada com o nome do fundador.",
+    "Nenhum dos nomes é válido, pois a sociedade anônima não pode conter o nome de pessoas físicas nem a expressão companhia."
+  ],
+  answer: 1,
+  feedback: "A S/A usa ==def==denominação==, com o **objeto** e a expressão 'companhia' ou 'S/A'. O nome do fundador pode constar, mas 'companhia' **não vai ao final**, e a firma é incompatível com a S/A."
+},
+// 9 - Microempresa e EPP
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Análise Aplicada",
+  texto: "A Lei Complementar nº 123/2006 define como microempresa a sociedade ou empresário com receita bruta anual igual ou inferior a R$ 360 mil, e como empresa de pequeno porte aquela com receita bruta superior a R$ 360 mil e igual ou inferior a R$ 4,8 milhões. O MEI, por sua vez, é o empresário individual com receita bruta anual de até R$ 81 mil. Três empresas de Quixadá declararam as seguintes receitas anuais: a Padaria Alfa, R$ 350 mil; a Malharia Beta, R$ 2,1 milhões; e a Indústria Gama, R$ 5 milhões. As três são sociedades limitadas regulares.",
+  question: "Considerando a situação descrita e o enquadramento pela receita bruta anual, assinale a alternativa correta.",
+  options: [
+    "A Alfa é MEI, a Beta é microempresa e a Gama é empresa de pequeno porte, pois fatura até R$ 5 milhões.",
+    "A Alfa e a Beta são microempresas, e a Gama é empresa de pequeno porte.",
+    "A Alfa é microempresa, a Beta é empresa de pequeno porte e a Gama ultrapassa o limite de EPP.",
+    "A Alfa é microempresa, a Beta é empresa de médio porte e a Gama é empresa de pequeno porte."
+  ],
+  answer: 2,
+  feedback: "Até R$ 360 mil: ==term==microempresa==. De R$ 360 mil a R$ 4,8 milhões: **EPP**. A Gama, com R$ 5 milhões, fica acima do limite. O MEI é só empresário individual de até R$ 81 mil."
+},
+// 10 - Emancipação e empresa
+{
+  aula: "Aula 8 - Empresa, empresário individual, EIRELI, registro, estabelecimento e nome empresarial",
+  tipo: "Análise Aplicada",
+  texto: "A incapacidade do menor cessa, aos 16 anos completos, por concessão dos pais, mediante instrumento público, independentemente de homologação judicial (Art. 5º, parágrafo único, I). Com a cessação, o menor passa a ter capacidade civil plena e pode exercer empresa, desde que não impedido (Art. 972). Letícia, de 16 anos, e Gustavo, de 17 anos, querem abrir lojas virtuais. Os pais de Letícia a emanciparam por escritura pública em cartório, sem passar pelo juiz. Gustavo não foi emancipado, mas tem o apoio dos pais, que assinaram um termo de concordância e dizem que isso basta para ele empresariar sozinho.",
+  question: "Considerando a situação descrita e a capacidade para o exercício da empresa, assinale a alternativa correta.",
+  options: [
+    "Os dois podem ser empresários, pois a idade de 16 anos basta para a capacidade empresarial.",
+    "Nenhum dos dois pode ser empresário, pois a emancipação não confere capacidade empresarial.",
+    "Letícia só pode ser empresária se houver homologação judicial da emancipação concedida pelos pais dela.",
+    "Letícia, emancipada por instrumento público, pode ser empresária, mas Gustavo não pode sozinho."
+  ],
+  answer: 3,
+  feedback: "A **emancipação** por escritura pública, aos 16 anos, dispensa o juiz e dá ==rule==capacidade plena==. O simples consentimento dos pais não torna Gustavo capaz de empresariar sozinho."
 },
 
-
-    // ===== AULA 9 =====
-// 1 - Registro da sociedade
+// ===== AULA 9 =====
+// 1 - Sociedade em comum
+{
+  aula: "Aula 9 - Sociedades",
+  tipo: "Análise Aplicada",
+  texto: "A sociedade em comum é a que não tem seus atos constitutivos inscritos no registro competente. Ela não tem personalidade jurídica, e os sócios respondem solidária e ilimitadamente pelas obrigações sociais (Arts. 986 a 990). Os bens sociais respondem pelos atos de gestão praticados por qualquer dos sócios. Os sócios podem invocar o benefício de ordem, isto é, exigir que primeiro sejam executados os bens da sociedade, mas dele não pode se valer o sócio que contratou pela sociedade. Tiago, Bruna e Caio abriram um restaurante sem registrar o contrato social. Tiago assinou o contrato de fornecimento de carnes em nome do restaurante, e a dívida de R$ 60 mil não foi paga. O fornecedor quer executar Bruna, que nunca teve contato com ele.",
+  question: "Considerando a situação descrita e o regime da sociedade em comum, assinale a alternativa correta.",
+  options: [
+    "Bruna responde somente até o limite de sua participação, pois não foi ela quem assinou o contrato de fornecimento.",
+    "Bruna não responde, pois só Tiago, que contratou em nome do restaurante, responde pela dívida.",
+    "Bruna responde solidária e ilimitadamente, mas pode exigir antes a execução dos bens da sociedade em comum.",
+    "Bruna responde sem benefício de ordem, pois a sociedade sem registro não tem patrimônio próprio."
+  ],
+  answer: 2,
+  feedback: "Na sociedade em comum a responsabilidade é **solidária e ilimitada**, mas existe o ==proc==benefício de ordem==: primeiro os bens sociais. Quem contratou pela sociedade, como Tiago, não pode invocá-lo."
+},
+// 2 - Serviços na limitada
+{
+  aula: "Aula 9 - Sociedades",
+  tipo: "Análise Aplicada",
+  texto: "A sociedade limitada tem o capital dividido em quotas, e a responsabilidade de cada sócio é restrita ao valor de suas quotas, mas todos respondem solidariamente pela integralização do capital social (Art. 1.052). Diferentemente da sociedade simples, que admite contribuição em serviços (Art. 997, V), o sócio da limitada não pode contribuir com prestação de serviços (Art. 1.055, §2º). Ana, Bruno e Davi constituem uma limitada com capital de R$ 100 mil. Ana entra com R$ 50 mil em dinheiro e Bruno com R$ 30 mil em equipamentos. Davi, programador, propõe contribuir com seu trabalho na criação do sistema, estimado em R$ 20 mil, e afirma que o contrato social pode simplesmente prever essa forma de integralização.",
+  question: "Considerando a situação descrita e as regras sobre o capital da sociedade limitada, assinale a alternativa correta.",
+  options: [
+    "A contribuição de Davi é válida, pois o contrato social pode prever o serviço como forma de integralização.",
+    "A contribuição de Davi com serviços é vedada na limitada, devendo ele integralizar em dinheiro ou bens.",
+    "A contribuição de Davi é válida, pois a limitada segue as regras da sociedade simples nesse ponto.",
+    "A contribuição de Davi é válida, mas o sócio responde só pelo valor atribuído ao serviço."
+  ],
+  answer: 1,
+  feedback: "Na limitada, a ==rule==contribuição em serviços== é **vedada** (Art. 1.055, §2º), ao contrário da sociedade simples. Davi deve integralizar com dinheiro ou bens."
+},
+// 3 - Cessão de quotas
+{
+  aula: "Aula 9 - Sociedades",
+  tipo: "Análise Aplicada",
+  texto: "Na sociedade limitada, o sócio pode ceder suas quotas a outro sócio, independentemente da audiência dos demais, ou a quem não seja sócio, se não houver oposição de titulares de mais de um quarto do capital social (Art. 1.057), salvo regra diversa no contrato. A cessão só tem eficácia perante a sociedade e terceiros depois da averbação do instrumento no contrato social. A Lima Ltda. tem capital de R$ 200 mil, dividido entre Adriano (60%), Beatriz (25%) e Cássio (15%). Adriano combinou vender toda a sua participação a um investidor de fora, e o contrato social nada diz sobre cessão. Beatriz e Cássio, que juntos somam 40% do capital, se opuseram, pois não conhecem o investidor. Adriano responde que, por deter a maioria do capital, pode decidir sozinho.",
+  question: "Considerando a situação descrita e as regras de cessão de quotas, assinale a alternativa correta.",
+  options: [
+    "A cessão não pode ser feita, pois a oposição de sócios com mais de 1/4 do capital a impede.",
+    "A cessão pode ser feita, pois Adriano detém a maioria do capital social e decide a venda sozinho.",
+    "A cessão pode ser feita, pois o sócio só precisa oferecer a quota antes aos demais sócios.",
+    "A cessão não pode ser feita, pois a venda a estranho exige o voto unânime dos sócios."
+  ],
+  answer: 0,
+  feedback: "A cessão a **estranho** pode ser barrada por sócios que somem ==rule==mais de 1/4== do capital. Aqui, 25% + 15% = 40%, e a maioria de Adriano não resolve."
+},
+// 4 - Responsabilidade do acionista
+{
+  aula: "Aula 9 - Sociedades",
+  tipo: "Análise Aplicada",
+  texto: "Na sociedade anônima, o capital é dividido em ações, e a responsabilidade do acionista é limitada ao preço de emissão das ações que subscrever ou adquirir (Lei nº 6.404/1976, Art. 1º). Por isso, em regra, o acionista não responde com seu patrimônio pelas dívidas da companhia e só pode ser cobrado pela parte que ainda não integralizou. Rui subscreveu 1.000 ações da Cia. Norte, com preço de emissão de R$ 10 por ação, e integralizou até agora R$ 6 mil. A companhia, com dívidas de R$ 5 milhões, teve a falência requerida, e um credor quer atingir o patrimônio pessoal de Rui, por ser um dos acionistas controladores.",
+  question: "Considerando a situação descrita e a responsabilidade do acionista, assinale a alternativa correta.",
+  options: [
+    "Rui responde pelas dívidas da companhia, na proporção das ações, com seu patrimônio.",
+    "Rui não responde por valor algum, pois a companhia tem patrimônio próprio e ele já pagou parte.",
+    "Rui responde ilimitadamente, pois é acionista controlador e as dívidas superam o patrimônio da companhia.",
+    "Rui responde apenas pelos R$ 4 mil que ainda faltam integralizar nas ações que subscreveu."
+  ],
+  answer: 3,
+  feedback: "A responsabilidade do acionista é limitada ao ==rule==preço de emissão== das ações. Rui deve apenas o que **falta integralizar**: R$ 10 mil menos R$ 6 mil, ou seja, R$ 4 mil."
+},
+// 5 - Responsabilidade do administrador
+{
+  aula: "Aula 9 - Sociedades",
+  tipo: "Análise Aplicada",
+  texto: "O administrador da sociedade anônima não é pessoalmente responsável pelas obrigações que contrair em nome da companhia e em virtude de ato regular de gestão. Responde civilmente pelos prejuízos que causar quando proceder, dentro de suas atribuições, com culpa ou dolo, ou com violação da lei ou do estatuto (Lei nº 6.404/1976, Art. 158). Hugo é diretor financeiro da Alfa S.A. O estatuto exige aprovação prévia do conselho de administração para empréstimos acima de R$ 500 mil. Mesmo assim, Hugo liberou R$ 2 milhões a um fornecedor, sem garantia e sem consultar o conselho. O fornecedor entrou em recuperação judicial e a companhia perdeu o valor. Hugo afirma que não tem responsabilidade, pois agiu como diretor, em nome da companhia e sem benefício pessoal.",
+  question: "Considerando a situação descrita e o regime de responsabilidade dos administradores, assinale a alternativa correta.",
+  options: [
+    "Hugo não responde, pois o administrador não responde pessoalmente por atos praticados em nome da companhia e dentro de seu cargo.",
+    "Hugo responde apenas se tiver obtido benefício pessoal com a operação, o que não ocorreu.",
+    "Hugo responde, mas somente em conjunto com todos os acionistas, na proporção de suas ações.",
+    "Hugo responde civilmente pelo prejuízo, pois agiu com violação do estatuto, ainda que em nome da companhia."
+  ],
+  answer: 3,
+  feedback: "O **ato regular de gestão** não gera responsabilidade pessoal, mas a ==warn==violação do estatuto== gera. Agir em nome da companhia e sem benefício pessoal não afasta o dever de indenizar (Art. 158)."
+},
+// 6 - Registro e personalidade
+{
+  aula: "Aula 9 - Sociedades",
+  tipo: "Análise Aplicada",
+  texto: "A sociedade adquire personalidade jurídica com a inscrição, no registro próprio, dos seus atos constitutivos (Art. 985). O contrato deve ser levado a registro nos 30 dias subsequentes à sua assinatura. Se o requerimento for feito depois desse prazo, a inscrição só produz efeitos a partir do arquivamento (Art. 1.151). A Tech Alfa Ltda. assinou o contrato social em 5 de março. Em 15 de março, antes de qualquer registro, contratou a compra de equipamentos, no valor de R$ 40 mil. O contrato social só foi protocolado na Junta em 20 de abril, e arquivado em 25 de abril.",
+  question: "Considerando a situação descrita e o início da personalidade jurídica, assinale a alternativa correta.",
+  options: [
+    "A personalidade surge com a assinatura do contrato social, e o contrato de 15 de março vincula só a sociedade.",
+    "A personalidade retroage a 5 de março, pois a lei dá efeito retroativo ao registro mesmo fora do prazo.",
+    "A personalidade surge com o arquivamento, e o contrato de 15 de março foi firmado em sociedade em comum.",
+    "A personalidade surge com a emissão do CNPJ, e o contrato de 15 de março obriga apenas a sociedade."
+  ],
+  answer: 2,
+  feedback: "A ==rule==personalidade jurídica== nasce com o **registro**. Pedido fora dos 30 dias não retroage, e o contrato feito antes disso foi de **sociedade em comum**, com responsabilidade ilimitada dos sócios."
+},
+// 7 - Conta de participação
+{
+  aula: "Aula 9 - Sociedades",
+  tipo: "Análise Aplicada",
+  texto: "Na sociedade em conta de participação, a atividade constitutiva do objeto social é exercida unicamente pelo sócio ostensivo, em seu nome individual e sob sua própria responsabilidade. O sócio participante, também chamado oculto, apenas participa dos resultados, e o contrato social só produz efeito entre os sócios. A inscrição do contrato não confere personalidade jurídica (Arts. 991 a 996). Fernando abriu uma pizzaria, em seu nome, com R$ 200 mil investidos por Gil, que nunca aparece no estabelecimento nem consta dos contratos. A pizzaria quebrou, e um fornecedor, titular de R$ 70 mil em notas, quer cobrar Fernando e Gil.",
+  question: "Considerando a situação descrita e o regime da sociedade em conta de participação, assinale a alternativa correta.",
+  options: [
+    "Fernando responde perante o fornecedor, e Gil responde apenas perante Fernando, nos termos do contrato.",
+    "Gil responde solidariamente com Fernando perante o fornecedor, pois é sócio da pizzaria.",
+    "Só a sociedade em conta de participação responde, pois tem personalidade jurídica própria.",
+    "Fernando e Gil respondem em partes iguais perante o fornecedor, pois o contrato produz efeitos perante terceiros."
+  ],
+  answer: 0,
+  feedback: "O **sócio ostensivo** responde sozinho perante terceiros. O ==term==sócio participante== (oculto) só tem relação com o ostensivo, e a conta de participação **não tem personalidade** (Arts. 991 a 996)."
+},
+// 8 - Comandita por ações
 {
   aula: "Aula 9 - Sociedades",
   tipo: "Conceitual Contextualizada",
-  texto: "O Código Civil classifica as sociedades em simples e empresárias conforme o objeto. Considera-se empresária a sociedade que exerce atividade própria de empresário sujeito a registro, e simples, as demais (Art. 982). O registro das empresárias é feito na Junta Comercial, e o das simples, no Registro Civil das Pessoas Jurídicas (Art. 1.150). Rafael e Lúcia constituíram uma sociedade para fabricar e vender móveis planejados em escala industrial, com compra de matéria-prima e contratação de vários funcionários. Acreditando que bastava um registro qualquer, protocolaram o contrato social no cartório de registro civil.",
-  question: "Considerando a classificação do Código Civil e as regras de registro, assinale a alternativa correta.",
+  texto: "A sociedade em comandita por ações tem o capital dividido em ações e se rege pelas normas da sociedade anônima. Só o acionista tem qualidade para administrar a sociedade como diretor, e responde subsidiária e ilimitadamente pelas obrigações sociais (Art. 1.090). Os demais acionistas respondem apenas pelo preço das ações. A Comandita Alfa por Ações tem três acionistas: Rui, que é o diretor, e dois investidores, Ana e Beto, que não participam da gestão. A sociedade acumulou dívidas e um credor, depois de esgotar o patrimônio social, pretende cobrar dos três acionistas, com seus bens pessoais.",
+  question: "Considerando a situação descrita e o regime de responsabilidade da comandita por ações, assinale a alternativa correta.",
   options: [
-    "É sociedade empresária, pois a atividade é própria de empresário, e seus atos devem ser registrados na Junta Comercial.",
-    "A sociedade é simples, pois apenas atividades de natureza intelectual se registram na Junta Comercial.",
-    "O Registro Civil das Pessoas Jurídicas é o órgão geral de registro, e vale para qualquer tipo de sociedade.",
-    "Como a sociedade tem poucos sócios, ela pode escolher livremente entre a Junta Comercial e o cartório."
-  ],
-  answer: 0,
-  feedback: "A fabricação e a venda em escala industrial são atividade própria de empresário, e por isso a sociedade é **empresária**, com registro na ==def==Junta Comercial==. O Registro Civil das Pessoas Jurídicas é reservado, em regra, às sociedades simples."
-},
-// 2 - Sociedade em comum
-{
-  aula: "Aula 9 - Sociedades",
-  tipo: "Análise Aplicada",
-  texto: "A sociedade em comum é aquela que ainda não registrou seus atos constitutivos e, por isso, não tem personalidade jurídica. Seus bens e dívidas formam um patrimônio especial, e todos os sócios respondem solidária e ilimitadamente pelas obrigações sociais, sendo excluído do benefício de ordem aquele que contratou pela sociedade (Art. 990). Três amigos abriram um restaurante sem registrar o contrato social. Pedro, um dos sócios, comprou insumos de um fornecedor em nome do negócio, mas a dívida não foi paga. O fornecedor quer cobrar o valor.",
-  question: "Com base nas regras da sociedade em comum, assinale a alternativa correta.",
-  options: [
-    "Somente Pedro responde pela dívida, pois foi o único sócio a contratar com o fornecedor.",
-    "A sociedade já tem personalidade jurídica desde o acordo verbal, e os sócios respondem apenas até o valor de suas quotas.",
-    "Todos os sócios respondem solidária e ilimitadamente, e Pedro, que contratou, não pode invocar o benefício de ordem.",
-    "O fornecedor não pode cobrar a dívida, pois uma sociedade sem registro não tem capacidade processual em nenhum dos polos."
-  ],
-  answer: 2,
-  feedback: "Sem registro não há personalidade jurídica. Todos os sócios respondem **solidária e ilimitadamente**, e quem contratou pela sociedade perde o ==rule==benefício de ordem==, isto é, não pode exigir que os bens da sociedade sejam executados primeiro."
-},
-// 3 - Conta de participação
-{
-  aula: "Aula 9 - Sociedades",
-  tipo: "Análise Aplicada",
-  texto: "A sociedade em conta de participação é tratada como um contrato especial de investimento, sem personalidade jurídica, patrimônio próprio nem nome empresarial. O contrato produz efeitos somente entre os sócios, e sua inscrição em qualquer registro não confere personalidade jurídica (Art. 993). Há dois tipos de sócio: o ostensivo, que exerce a atividade e opera frente a terceiros com responsabilidade ilimitada, e o participante, que apenas fornece capital e permanece oculto. Helena investiu dinheiro no negócio de Bruno por meio de uma conta de participação. O empreendimento deu prejuízo, e credores de Bruno querem cobrar também de Helena.",
-  question: "Considerando a natureza da conta de participação, assinale a alternativa correta.",
-  options: [
-    "Helena responde ilimitadamente perante os credores, pois todo sócio responde pelas dívidas da atividade.",
-    "Helena, sócia participante, responde apenas perante Bruno, o sócio ostensivo, que é quem opera frente aos terceiros.",
-    "Se o contrato for inscrito em algum registro, a sociedade adquire personalidade jurídica e os credores poderão cobrar de Helena.",
-    "A conta de participação tem patrimônio e nome empresarial próprios, e Helena responde com eles."
+    "Os três acionistas respondem ilimitadamente, pois a comandita não limita a responsabilidade de nenhum acionista.",
+    "Rui, como diretor, responde subsidiária e ilimitadamente, e Ana e Beto respondem só pelo preço das ações.",
+    "Rui responde só pelo preço das ações, pois a responsabilidade ilimitada pertence à própria sociedade.",
+    "Ana e Beto respondem ilimitadamente, pois a comandita exige a responsabilidade solidária de todos."
   ],
   answer: 1,
-  feedback: "O **sócio participante** é oculto e responde somente perante o sócio ostensivo. A inscrição do contrato em registro não cria personalidade jurídica, e a conta de participação não tem patrimônio nem nome empresarial."
+  feedback: "Na ==def==comandita por ações==, só o **acionista-diretor** responde de modo subsidiário e ilimitado. Os demais, como na S/A, respondem pelo preço das ações."
 },
-// 4 - Limitada: contribuição em serviços
+// 9 - Ação de responsabilidade contra administrador
 {
   aula: "Aula 9 - Sociedades",
   tipo: "Análise Aplicada",
-  texto: "Na sociedade limitada, o capital é dividido em quotas, e a responsabilidade dos sócios é, em regra, limitada ao valor de suas quotas, respondendo todos solidariamente pela integralização do capital. A lei veda a contribuição de sócio em serviços para a formação do capital (Art. 1.055). Mariana e Tiago estão constituindo uma sociedade limitada. Mariana integralizará sua quota em dinheiro. Tiago, sem recursos no momento, propõe integralizar a sua quota com o compromisso de prestar serviços de gestão durante cinco anos.",
-  question: "Segundo as regras da sociedade limitada, assinale a alternativa correta sobre a proposta de Tiago.",
+  texto: "Compete à companhia, mediante prévia deliberação da assembleia geral, a ação de responsabilidade civil contra o administrador, pelos prejuízos causados ao patrimônio social. Se a assembleia deliberar não promover a ação, ela poderá ser proposta por acionistas que representem 5% ou mais do capital social (Lei nº 6.404/1976, Art. 159). A Delta S.A. perdeu R$ 3 milhões por decisão de um diretor, que contrariou o estatuto. A assembleia geral, por maioria, deliberou não propor a ação. Dora, acionista com 7% do capital, e Elias, com 3%, querem propor a ação em nome da companhia.",
+  question: "Considerando a situação descrita e a legitimidade para a ação contra o administrador, assinale a alternativa correta.",
   options: [
-    "É válida, pois todos os tipos societários admitem a contribuição em serviços.",
-    "É válida, mas Tiago passará a responder ilimitadamente pelas dívidas da sociedade.",
-    "Só é válida se aprovada por três quartos do capital social.",
-    "Não é válida, pois a limitada veda a contribuição em serviços."
+    "Os dois podem propor a ação, pois qualquer acionista pode agir se a assembleia decide não promover.",
+    "Nenhum dos dois pode propor a ação, pois ela cabe somente à companhia, após deliberação favorável.",
+    "Dora pode propor a ação, mas precisa antes da autorização do Ministério Público.",
+    "Dora pode propor a ação, e Elias, com menos de 5%, não tem legitimidade para propô-la."
   ],
   answer: 3,
-  feedback: "A contribuição em **serviços** é permitida na sociedade simples, mas vedada na ==rule==limitada== e na sociedade anônima. Na limitada, o capital é formado por dinheiro ou bens passíveis de avaliação."
-},
-// 5 - Cessão de quotas
-{
-  aula: "Aula 9 - Sociedades",
-  tipo: "Análise Aplicada",
-  texto: "Na sociedade limitada, a cessão de quotas segue o que o contrato social estabelecer. Se o contrato for omisso, a cessão a outro sócio independe da concordância dos demais, e a cessão a quem não é sócio pode ser feita desde que não haja oposição de titulares de mais de um quarto do capital social (Art. 1.057). Em uma sociedade limitada com contrato omisso sobre o assunto, Roberto (30% do capital) quer vender suas quotas a um estranho. Silvia (20%) se opõe à venda. Davi (50%) não se opõe.",
-  question: "Considerando as regras de cessão de quotas, assinale a alternativa correta.",
-  options: [
-    "A cessão é inválida, pois qualquer sócio pode vetar a entrada de um estranho.",
-    "A cessão exige o consentimento unânime dos demais sócios.",
-    "A cessão é válida, pois Silvia, com 20%, não alcança mais de 1/4 do capital.",
-    "A cessão só seria possível se Roberto oferecesse antes as quotas a Davi, e este recusasse."
-  ],
-  answer: 2,
-  feedback: "Para barrar a cessão a estranho, os opositores precisam ter **mais de 1/4 do capital**. Silvia tem 20% e, sozinha, não atinge esse percentual. Se o contrato fosse silente, a cessão a outro sócio seria livre."
-},
-// 6 - S/A: responsabilidade do acionista
-{
-  aula: "Aula 9 - Sociedades",
-  tipo: "Conceitual Contextualizada",
-  texto: "A sociedade anônima é uma sociedade de capital, regida por estatuto e pela Lei nº 6.404/76, com capital dividido em ações. A responsabilidade do acionista é limitada ao preço de emissão das ações que subscreveu ou adquiriu, ou seja, ao valor ainda não integralizado. Carlos subscreveu 1.000 ações de uma sociedade anônima e integralizou apenas 40% do preço de emissão. A companhia entrou em grave crise, e credores passaram a cobrar suas dívidas.",
-  question: "Considerando o regime de responsabilidade na sociedade anônima, assinale a alternativa correta.",
-  options: [
-    "Carlos responde só pelo valor das ações que ainda não integralizou, e não pelas outras dívidas.",
-    "Carlos responde ilimitadamente, de forma subsidiária, por todas as dívidas da companhia.",
-    "Carlos não responde por nada, ainda que tenha deixado de integralizar parte do preço das ações.",
-    "Carlos responde solidariamente com todos os acionistas pela totalidade das dívidas sociais."
-  ],
-  answer: 0,
-  feedback: "Na S/A, a responsabilidade é **limitada ao preço de emissão** das ações. Como Carlos pagou 40%, ele deve integralizar os 60% restantes, mas seu patrimônio pessoal não responde pelas outras dívidas da ==def==companhia==."
-},
-// 7 - S/A: responsabilidade de administradores
-{
-  aula: "Aula 9 - Sociedades",
-  tipo: "Análise Aplicada",
-  texto: "Os administradores de uma sociedade anônima não respondem pessoalmente pelas obrigações que contraírem em nome da companhia em ato regular de gestão. Respondem civilmente pelos prejuízos quando agirem com dolo ou culpa, ou com violação da lei ou do estatuto. Não respondem por atos ilícitos de outros administradores, salvo se forem coniventes com eles, negligenciarem em descobri-los ou deixarem de agir para impedi-los. O diretor financeiro Paulo aprovou uma operação que violava expressamente o estatuto da companhia, causando prejuízo. A diretora Lúcia não participou da decisão e não tinha conhecimento da operação.",
-  question: "Com base nas regras de responsabilidade dos administradores, assinale a alternativa correta.",
-  options: [
-    "Paulo e Lúcia respondem solidariamente, pois a diretoria é um órgão colegiado.",
-    "Nenhum dos dois responde, pois atos de gestão nunca geram responsabilidade pessoal.",
-    "Somente a companhia responde, e os administradores têm imunidade em qualquer caso.",
-    "Paulo responde por violar o estatuto, e Lúcia só se fosse conivente ou omissa."
-  ],
-  answer: 3,
-  feedback: "Quem viola o **estatuto** ou a lei responde pelos prejuízos. A responsabilidade por ato de outro administrador exige ==warn==conivência==, negligência em descobrir ou omissão em impedir, e nenhuma delas foi descrita para Lúcia."
-},
-// 8 - Ação de responsabilidade contra administrador
-{
-  aula: "Aula 9 - Sociedades",
-  tipo: "Análise Aplicada",
-  texto: "Cabe à companhia, mediante deliberação da assembleia, promover a ação de responsabilidade contra o administrador. Se a assembleia decidir não promovê-la, acionistas que representem no mínimo 5% do capital social podem fazê-lo. Se, passados três meses da deliberação, ninguém propuser a ação, qualquer acionista poderá fazê-lo. Um grupo de acionistas que representa 6% do capital quer processar um diretor por prejuízos que ele teria causado. A assembleia geral, porém, votou contra a propositura da ação.",
-  question: "Considerando a legitimidade para a ação de responsabilidade, assinale a alternativa correta.",
-  options: [
-    "Só a companhia pode propor a ação, e a decisão da assembleia é definitiva.",
-    "Acionistas com ao menos 5% do capital podem propor a ação, mesmo após a recusa da assembleia.",
-    "Qualquer acionista, com qualquer percentual, pode propor a ação imediatamente, sem esperar a assembleia.",
-    "Somente o conselho fiscal pode propor a ação quando a assembleia se recusa a fazê-lo."
-  ],
-  answer: 1,
-  feedback: "A regra é que a ação parte da companhia. Havendo recusa da assembleia, a legitimidade passa aos acionistas com **5% do capital**, e, se nada for feito em três meses, a qualquer acionista."
-},
-// 9 - Comandita por ações
-{
-  aula: "Aula 9 - Sociedades",
-  tipo: "Análise Aplicada",
-  texto: "A sociedade em comandita por ações tem natureza híbrida e capital dividido em ações. Somente sócios podem administrá-la, e os diretores respondem de forma ilimitada, solidária e subsidiária. Eles são nomeados no ato constitutivo, e sua destituição exige o voto de no mínimo dois terços do capital social. O diretor destituído continua responsável, por dois anos, pelas obrigações sociais contraídas durante a sua administração (Art. 1.091 do Código Civil). Renato foi destituído do cargo de diretor de uma comandita por ações por votação de dois terços do capital. Seis meses depois, um credor cobrou dívida contraída durante a gestão dele.",
-  question: "Segundo as regras da comandita por ações, assinale a alternativa correta.",
-  options: [
-    "Renato continua responsável, pois o diretor destituído responde por dois anos pelas obrigações de sua gestão.",
-    "Com a destituição, Renato deixa imediatamente de responder por qualquer obrigação da sociedade.",
-    "Renato responde apenas até o valor das ações que possui, como qualquer acionista.",
-    "Somente os sócios comanditários respondem pelas dívidas, pois os diretores são apenas gestores."
-  ],
-  answer: 0,
-  feedback: "A responsabilidade do diretor (**comanditado**) é ilimitada, solidária e subsidiária, e sobrevive à destituição por ==rule==dois anos== quanto às obrigações contraídas na sua gestão."
+  feedback: "Se a assembleia decide **não promover** a ação, os acionistas com ==rule==5% do capital== ou mais podem propô-la. Dora (7%) pode. Elias (3%) não (Art. 159, §4º)."
 },
 // 10 - Alteração do contrato da sociedade simples
 {
   aula: "Aula 9 - Sociedades",
   tipo: "Análise Aplicada",
-  texto: "Na sociedade simples, as alterações do contrato social que tratem de matérias essenciais, como capital social, quota de cada sócio, denominação, prazo, participação nos lucros e perdas, dependem do consentimento de todos os sócios. As demais podem ser decididas por maioria absoluta, se o contrato não exigir deliberação unânime (Art. 999). Em uma sociedade simples com cinco sócios, quatro deles aprovaram o aumento do capital social. O quinto sócio votou contra. Os quatro sustentam que a decisão é válida por ter sido tomada pela maioria.",
-  question: "Considerando as regras de alteração do contrato da sociedade simples, assinale a alternativa correta.",
+  texto: "Na sociedade simples, as modificações do contrato social que tenham por objeto matéria indicada no Art. 997, como o nome, o objeto, a sede, o capital e a administração, dependem do consentimento de todos os sócios. As demais alterações podem ser decididas por maioria absoluta de votos, se o contrato não exigir quórum maior (Art. 999). A Consultoria Beta, sociedade simples, tem os sócios A (40%), B (30%) e C (30%). A e B aprovaram duas mudanças em reunião: a alteração do objeto social e a mudança do critério de convocação da reunião anual. C votou contra as duas e afirma que nenhuma vale sem o seu voto.",
+  question: "Considerando a situação descrita e o quórum para alteração do contrato, assinale a alternativa correta.",
   options: [
-    "A alteração é válida, pois a maioria absoluta dos sócios é suficiente para qualquer modificação.",
-    "A alteração é válida se tiver sido aprovada por dois terços dos sócios.",
-    "Não é válida, pois alterar o capital social exige consentimento de todos.",
-    "A alteração é válida, desde que o sócio dissidente seja excluído da sociedade."
+    "As duas podem ser decididas por maioria absoluta, pois a lei não distingue as matérias do contrato social.",
+    "A alteração do objeto exige o consentimento de todos, e a outra pode ser decidida por maioria absoluta.",
+    "As duas exigem unanimidade, pois todo ato de alteração do contrato afeta todos os sócios.",
+    "A alteração do objeto basta pela maioria absoluta, e a outra exige unanimidade."
   ],
-  answer: 2,
-  feedback: "Alterar o **capital social** é matéria que exige **unanimidade** na sociedade simples. A maioria absoluta só basta para os demais assuntos, quando o contrato não pedir deliberação unânime."
+  answer: 1,
+  feedback: "Matéria do ==rule==Art. 997== (como o objeto) exige **unanimidade**. As demais alterações, como o critério de convocação, valem por maioria absoluta (Art. 999)."
 },
+
 // ===== AULA 10 =====
-// 1 - Dissolução parcial por morte
-{
-  aula: "Aula 10 - Dissolução de sociedades",
-  tipo: "Conceitual Contextualizada",
-  texto: "A dissolução parcial atinge apenas um ou alguns sócios, como nos casos de morte, retirada, exclusão e falência de sócio, e a sociedade continua em funcionamento, pois prevalece a preservação da empresa. Já a dissolução total extingue a personalidade jurídica da sociedade. Na morte de sócio, os herdeiros podem ingressar na sociedade, mas só com a concordância dos demais sócios. Na Alfa Ltda., o sócio Ricardo faleceu. Nenhum dos herdeiros quis ocupar o lugar dele, e os demais sócios decidiram dar continuidade à atividade.",
-  question: "Com base na distinção entre dissolução parcial e total, assinale a alternativa correta sobre a situação da Alfa Ltda.",
-  options: [
-    "Ocorre dissolução total, pois a morte de qualquer sócio extingue a personalidade jurídica da sociedade.",
-    "Ocorre dissolução parcial, pois a sociedade continua e a participação de Ricardo deve ser apurada.",
-    "Ocorre dissolução total, pois a sociedade passa a ter um sócio a menos e deve ser extinta de imediato.",
-    "Não ocorre dissolução de nenhum tipo, pois os herdeiros assumem automaticamente a condição de sócios."
-  ],
-  answer: 1,
-  feedback: "A morte de sócio é causa de **dissolução parcial**. Como os herdeiros não quiseram ingressar, a quota de Ricardo é liquidada, e a sociedade segue em atividade. Os herdeiros só poderiam entrar com a ==rule==concordância dos demais== sócios."
-},
-// 2 - Retirada em prazo determinado
+// 1 - Morte de sócio
 {
   aula: "Aula 10 - Dissolução de sociedades",
   tipo: "Análise Aplicada",
-  texto: "Nas sociedades por prazo indeterminado, o sócio pode se retirar a qualquer tempo, bastando comunicar os demais com 60 dias de antecedência, para que tenham tempo de promover a alteração contratual. Nas sociedades por prazo determinado, o sócio que quiser sair antes do término precisa comprovar justa causa em juízo. Beatriz é sócia de uma sociedade constituída por dez anos. No terceiro ano, sem nenhum motivo específico, ela notificou os demais sócios, com 60 dias de antecedência, de que deseja se retirar.",
-  question: "Considerando as regras de retirada de sócio, assinale a alternativa correta.",
+  texto: "A morte de um sócio não extingue necessariamente a sociedade. Em regra, resolve-se a sociedade em relação a ele e liquida-se sua quota, salvo se o contrato dispuser diferentemente, se os sócios remanescentes optarem pela dissolução da sociedade ou se, por acordo com os herdeiros, regular-se a substituição do sócio falecido (Art. 1.028). Liquidar a quota significa apurar e pagar aos herdeiros o valor dos haveres. A Gráfica Ceará Ltda. tem três sócios, e o contrato social não prevê o que ocorre com a morte de sócio. Fábio faleceu e deixou como única herdeira a filha Lívia, arquiteta, que deseja ingressar na gráfica no lugar do pai. Os dois sócios remanescentes preferem continuar sem Lívia e oferecem pagar os haveres.",
+  question: "Considerando a situação descrita e as regras de resolução da sociedade em relação ao sócio falecido, assinale a alternativa correta.",
   options: [
-    "Beatriz pode se retirar livremente, pois basta a comunicação com 60 dias de antecedência.",
-    "Beatriz só pode se retirar se houver unanimidade dos demais sócios, mesmo sem justa causa.",
-    "Beatriz não pode se retirar em nenhuma hipótese antes de findos os dez anos.",
-    "Como o prazo é determinado, Beatriz precisaria comprovar justa causa em juízo antes do término."
-  ],
-  answer: 3,
-  feedback: "A comunicação com **60 dias** vale para sociedades de prazo indeterminado. Em sociedade de ==def==prazo determinado==, a saída antecipada exige a comprovação de justa causa em juízo."
-},
-// 3 - Exclusão de sócio
-{
-  aula: "Aula 10 - Dissolução de sociedades",
-  tipo: "Análise Aplicada",
-  texto: "O sócio que não cumpre a obrigação de integralizar sua quota no prazo acordado pode ser excluído pelos demais, o que configura dissolução parcial e pode ocorrer de forma extrajudicial. A exclusão exige uma causa prevista em lei. Ela não pode ocorrer pela mera vontade dos demais sócios, sem motivo que a justifique. Gustavo prometeu integralizar sua quota em um prazo combinado com os outros sócios, mas não o fez. Os demais sócios, reunidos, decidiram excluí-lo. Em outra sociedade, os sócios querem excluir um colega apenas porque não simpatizam com ele.",
-  question: "Considerando as regras de exclusão de sócio, assinale a alternativa correta.",
-  options: [
-    "Só a de Gustavo é possível, pois ele descumpriu a obrigação de integralizar.",
-    "As duas exclusões dependem sempre de ação judicial, independentemente do motivo.",
-    "As duas exclusões são válidas, pois os sócios podem excluir qualquer colega por mera vontade.",
-    "Nenhuma das duas é possível, pois o sócio inadimplente responde apenas com seu patrimônio pessoal."
+    "A quota de Fábio é liquidada, e Lívia só ingressa na sociedade se houver acordo com os sócios.",
+    "Lívia ingressa automaticamente na sociedade, pois sucede o pai na posição de sócio por direito hereditário.",
+    "A sociedade se dissolve totalmente com a morte do sócio, devendo o patrimônio ser partilhado.",
+    "Lívia ingressa se for maior de idade, sem necessidade de acordo com os sócios."
   ],
   answer: 0,
-  feedback: "A exclusão exige uma ==rule==causa prevista em lei==, como o descumprimento da obrigação de integralizar. A **mera vontade** dos demais sócios, sem motivação legal, não autoriza excluir ninguém."
+  feedback: "Na falta de regra no contrato, a morte do sócio leva à ==proc==liquidação da quota==, e os herdeiros recebem **haveres**. Ingressar no lugar do falecido depende de acordo (Art. 1.028)."
 },
-// 4 - Credor particular do sócio
+// 2 - Exclusão de sócio
 {
   aula: "Aula 10 - Dissolução de sociedades",
-  tipo: "Conceitual Contextualizada",
-  texto: "O credor particular de um sócio pode, quando faltarem outros bens do devedor, buscar satisfazer seu crédito sobre a participação dele na sociedade. Se a sociedade não estiver dissolvida, o credor pode requerer a liquidação da quota do devedor. O valor, apurado na forma do Art. 1.031 do Código Civil, será depositado em dinheiro no juízo da execução até 90 dias após a liquidação (Art. 1.026). Fábio é sócio de uma sociedade e deve uma quantia a um banco. Ele não tem outros bens suficientes, e o banco quer receber o que for possível.",
-  question: "Considerando as regras sobre credor particular de sócio, assinale a alternativa correta.",
+  tipo: "Análise Aplicada",
+  texto: "A maioria dos sócios, representativa de mais da metade do capital social, pode excluir da sociedade limitada o sócio que esteja pondo em risco a continuidade da empresa em virtude de atos de inegável gravidade, desde que isso esteja previsto no contrato social. A exclusão deve ser determinada em reunião ou assembleia especialmente convocada para esse fim, ciente o acusado em tempo hábil para permitir seu comparecimento e o exercício do direito de defesa (Art. 1.085). A Delta Ltda. tem os sócios Alice (45%), Bruno (30%) e Caio (25%). O contrato prevê a exclusão por justa causa. Alice e Bruno descobriram que Caio desviou R$ 150 mil do caixa e, na reunião ordinária seguinte, sem que Caio estivesse presente ou tivesse sido avisado da pauta, aprovaram sua exclusão.",
+  question: "Considerando a situação descrita e os requisitos legais para exclusão de sócio, assinale a alternativa correta.",
   options: [
-    "O banco pode penhorar diretamente os bens da sociedade para pagar a dívida pessoal de Fábio.",
-    "O banco se torna sócio da sociedade no lugar de Fábio.",
-    "O banco pode requerer a liquidação da quota, com depósito em juízo em 90 dias.",
-    "A quota de Fábio só pode ser liquidada se a sociedade for totalmente dissolvida."
+    "A exclusão é válida, pois Alice e Bruno somam 75% do capital e a justa causa dispensa formalidades.",
+    "A exclusão é inválida, pois só pode ser feita por decisão judicial, e não por deliberação dos sócios.",
+    "A exclusão é inválida, pois Caio não foi convocado em tempo hábil para exercer sua defesa.",
+    "A exclusão é válida, pois a gravidade do desvio dispensa a ciência prévia do acusado."
   ],
   answer: 2,
-  feedback: "A sociedade tem personalidade própria, e seus bens não respondem pela dívida pessoal do sócio. O credor pode pedir a **liquidação da quota**, medida que provoca dissolução parcial, com depósito em juízo em até ==def==90 dias==."
+  feedback: "A maioria e a previsão contratual existem, mas faltou a ==rule==convocação especial== com ciência prévia. Sem **direito de defesa**, a exclusão é inválida (Art. 1.085)."
 },
-// 5 - Falência de sócio
+// 3 - Credor particular do sócio
 {
   aula: "Aula 10 - Dissolução de sociedades",
   tipo: "Análise Aplicada",
-  texto: "Segundo o Art. 1.030 do Código Civil, é excluído de pleno direito da sociedade o sócio declarado falido, ou aquele cuja quota tenha sido liquidada a pedido de credor particular. Essa exclusão caracteriza dissolução parcial, e é seguida da apuração dos haveres, com a determinação do valor da participação do sócio. Marcos, sócio de uma sociedade com outros três sócios, teve sua falência declarada. Os demais sócios discutem se precisam votar a exclusão dele ou se a sociedade deve ser encerrada por causa da falência de Marcos.",
-  question: "Com base no Art. 1.030 do Código Civil, assinale a alternativa correta.",
+  texto: "O patrimônio da sociedade é distinto do patrimônio dos sócios. O credor particular do sócio não pode executar bens da sociedade: pode fazer recair a execução sobre o que ao sócio couber nos lucros da sociedade ou na parte que lhe tocar em liquidação. Se a sociedade não tiver duração determinada, o credor pode ainda requerer a liquidação da quota do devedor (Art. 1.026). Paulo é sócio da Transportes Delta Ltda., com 90% do capital, e deve R$ 400 mil a um banco, em dívida pessoal. O banco quer penhorar um caminhão da sociedade, argumentando que Paulo é praticamente o dono da empresa.",
+  question: "Considerando a situação descrita e a proteção do patrimônio social, assinale a alternativa correta.",
   options: [
-    "Marcos só poderá ser excluído se houver votação unânime dos demais sócios.",
-    "Marcos é excluído de pleno direito, com dissolução parcial e apuração dos haveres.",
-    "A falência de um sócio provoca a dissolução total, e a sociedade deve ser encerrada.",
-    "A falência de Marcos apenas suspende seus direitos, e ele permanece sócio normalmente."
+    "O banco pode penhorar o caminhão, pois Paulo detém 90% do capital e controla a empresa.",
+    "O banco não pode penhorar o caminhão, mas pode atingir os lucros e a quota que Paulo tem.",
+    "O banco pode penhorar o caminhão, mas só até o valor proporcional à participação de Paulo.",
+    "O banco não pode atingir a quota de Paulo, pois a dívida pessoal é estranha à sociedade."
   ],
   answer: 1,
-  feedback: "A falência do sócio é causa de **dissolução parcial**: ele é excluído de pleno direito, não precisa de votação, e a sociedade continua. A ==proc==apuração dos haveres== determina o valor a que ele tem direito."
+  feedback: "Os bens do caminhão são da ==warn==pessoa jurídica==, ainda que Paulo tenha 90%. O credor particular alcança apenas **lucros** e **quota** do sócio (Art. 1.026)."
 },
-// 6 - Unipessoalidade
+// 4 - Liquidação e partilha
 {
   aula: "Aula 10 - Dissolução de sociedades",
   tipo: "Análise Aplicada",
-  texto: "Dissolve-se a sociedade quando falta a pluralidade de sócios e ela não é reconstituída no prazo de cento e oitenta dias (Art. 1.033, IV, do Código Civil). Após esse prazo, a sociedade entra em fase de liquidação. Uma sociedade simples tinha dois sócios. Um deles se retirou, e a sociedade passou a ter um único sócio. Três meses depois, o sócio remanescente ainda não havia admitido nenhum novo sócio e perguntou ao advogado se a sociedade já estaria dissolvida.",
-  question: "Considerando a regra de pluralidade de sócios, assinale a alternativa correta.",
+  texto: "Dissolvida a sociedade, segue-se a liquidação, em que o liquidante realiza o ativo, paga o passivo e, por fim, partilha o remanescente entre os sócios, na proporção de suas quotas. Os sócios só recebem o que sobrar depois de pagas as dívidas, e o liquidante responde pelos atos que praticar contra a lei ou o contrato (Arts. 1.102 a 1.112). A Eletro Sul Ltda. foi dissolvida por deliberação dos sócios, e o liquidante apurou que o ativo realizado soma R$ 500 mil e as dívidas somam R$ 380 mil, entre fornecedores, tributos e empregados. Os três sócios pedem ao liquidante a distribuição imediata de R$ 250 mil, sob o argumento de que o ativo supera as dívidas e de que o restante pode esperar.",
+  question: "Considerando a situação descrita e a ordem da liquidação, assinale a alternativa correta.",
   options: [
-    "A sociedade se dissolveu no momento em que o sócio se retirou, e já está em liquidação.",
-    "A sociedade pode permanecer indefinidamente com um único sócio, sem qualquer providência.",
-    "O prazo de reconstituição é de 90 dias, que já se esgotou.",
-    "Ainda há prazo: são 180 dias para recompor a pluralidade e evitar a dissolução."
+    "O liquidante pode distribuir R$ 250 mil, pois o ativo supera o passivo e o restante ainda cobre as dívidas pendentes.",
+    "O liquidante deve partilhar o ativo primeiro, e os credores cobram dos sócios o que faltar depois.",
+    "O liquidante deve distribuir R$ 250 mil, e os credores concorrem com os sócios no saldo restante.",
+    "O liquidante deve pagar as dívidas antes e partilhar só o saldo remanescente, de R$ 120 mil, entre os sócios."
   ],
   answer: 3,
-  feedback: "A lei garante **180 dias** para reconstituir a pluralidade. Passado o prazo sem novo sócio, ocorre a ==def==unipessoalidade== como causa de dissolução, e a sociedade entra em liquidação."
+  feedback: "Na ==proc==liquidação==, os **credores vêm antes dos sócios**. Pagas as dívidas de R$ 380 mil, restam R$ 120 mil a partilhar, e a distribuição de R$ 250 mil deixaria dívidas sem pagamento."
 },
-// 7 - Liquidante
+// 5 - Dissolução por vontade
 {
   aula: "Aula 10 - Dissolução de sociedades",
   tipo: "Análise Aplicada",
-  texto: "Na fase de liquidação, que vem depois da dissolução, a personalidade da sociedade fica limitada aos atos relativos à resolução das pendências obrigacionais. O administrador deixa de ser o responsável por manifestar a vontade da sociedade, e essa função passa ao liquidante, que a representa judicial e extrajudicialmente, com deveres semelhantes aos do administrador e obrigação de prestar contas. A sociedade Beta foi dissolvida e está em liquidação. Seu antigo administrador, mesmo assim, continua assinando contratos de novos negócios em nome da empresa.",
-  question: "Considerando a fase de liquidação, assinale a alternativa correta.",
+  texto: "A sociedade se dissolve, entre outras causas, pelo vencimento do prazo de duração, pelo consenso unânime dos sócios, pela deliberação dos sócios, por maioria absoluta, na sociedade de prazo indeterminado, e pela falta de pluralidade de sócios não reconstituída em 180 dias (Art. 1.033). A Ótica Aurora Ltda. foi constituída sem prazo determinado, e seus sócios são Márcia (55%), Nelson (25%) e Olavo (20%). Márcia quer encerrar a atividade e propõe a dissolução da sociedade. Nelson e Olavo, que dependem da ótica para sustentar suas famílias, discordam e afirmam que só uma decisão unânime pode dissolver a sociedade.",
+  question: "Considerando a situação descrita e as causas de dissolução da sociedade, assinale a alternativa correta.",
   options: [
-    "É indevida, pois quem representa a sociedade em liquidação é o liquidante, com atos limitados às pendências.",
-    "A conduta é válida, pois o administrador mantém todos os poderes até a partilha.",
-    "A conduta é válida, desde que os novos contratos tenham lucro.",
-    "A conduta é indevida apenas porque a sociedade ainda não fez a partilha entre os sócios."
+    "A dissolução só é possível com o consenso unânime de todos os sócios, inclusive Nelson e Olavo, que discordam de Márcia.",
+    "A dissolução só é possível por decisão judicial, pois há sócios que discordam do encerramento.",
+    "A dissolução é possível, pois, em sociedade por prazo indeterminado, basta a deliberação da maioria absoluta.",
+    "A dissolução só é possível se a maioria for superior a três quartos do capital social."
+  ],
+  answer: 2,
+  feedback: "Em sociedade de ==rule==prazo indeterminado==, a **maioria absoluta** pode deliberar a dissolução (Art. 1.033, III). Márcia, com 55%, atinge esse quórum."
+},
+// 6 - Retirada em prazo determinado
+{
+  aula: "Aula 10 - Dissolução de sociedades",
+  tipo: "Análise Aplicada",
+  texto: "Na sociedade por prazo indeterminado, o sócio pode retirar-se mediante notificação aos demais com antecedência mínima de 60 dias. Na sociedade por prazo determinado, o sócio só pode retirar-se se provar justa causa, judicialmente (Art. 1.029). Marcos é sócio da Alfa Serviços Ltda., cujo contrato fixa duração de 10 anos. No quarto ano, ele perdeu o interesse no negócio e notificou os demais sócios, com 90 dias de antecedência, de que quer sair e receber os haveres. Ele argumenta que o aviso foi maior que o mínimo de 60 dias.",
+  question: "Considerando a situação descrita e as regras de retirada de sócio, assinale a alternativa correta.",
+  options: [
+    "Marcos pode retirar-se com a notificação, pois 90 dias supera o aviso mínimo de 60 dias previsto em lei.",
+    "Marcos só pode retirar-se provando justa causa judicialmente, pois o prazo da sociedade é determinado.",
+    "Marcos pode retirar-se se oferecer a quota aos demais sócios antes da saída.",
+    "Marcos só pode retirar-se com autorização unânime dos demais sócios, sem recurso ao Judiciário."
+  ],
+  answer: 1,
+  feedback: "O aviso de ==rule==60 dias== vale para o **prazo indeterminado**. Em prazo determinado, o sócio precisa provar **justa causa** em juízo, e perder o interesse não basta."
+},
+// 7 - Falência de sócio
+{
+  aula: "Aula 10 - Dissolução de sociedades",
+  tipo: "Análise Aplicada",
+  texto: "Será excluído de pleno direito da sociedade simples o sócio declarado falido, ou aquele cuja quota tenha sido liquidada a pedido de credor particular (Art. 1.030, parágrafo único). A exclusão de pleno direito decorre da própria lei, sem necessidade de reunião ou decisão dos demais sócios. Paulo é sócio de uma sociedade simples de consultoria, com 30% do capital, e também é empresário individual. Teve a sua falência pessoal decretada, por dívidas do seu negócio individual. Os outros sócios discutem se precisam fazer reunião e conceder defesa a Paulo para excluí-lo.",
+  question: "Considerando a situação descrita e os efeitos da falência do sócio, assinale a alternativa correta.",
+  options: [
+    "Paulo permanece sócio, pois a falência pessoal não afeta a sociedade de que ele participa.",
+    "Paulo só é excluído se os demais sócios deliberarem em reunião, assegurada a sua defesa.",
+    "Paulo é excluído de pleno direito da sociedade, e sua quota é liquidada, sem reunião.",
+    "A sociedade se dissolve totalmente, pois a falência de um sócio extingue a sociedade."
+  ],
+  answer: 2,
+  feedback: "A falência do sócio gera ==rule==exclusão de pleno direito==, por força de lei, sem reunião ou defesa. Os demais **continuam** a sociedade e liquidam a quota de Paulo."
+},
+// 8 - Pluralidade de sócios
+{
+  aula: "Aula 10 - Dissolução de sociedades",
+  tipo: "Análise Aplicada",
+  texto: "A sociedade se dissolve quando a falta de pluralidade de sócios não é reconstituída no prazo de 180 dias (Art. 1.033, IV). Nesse período, o sócio remanescente pode procurar um novo sócio ou, se preferir, requerer a transformação do registro da sociedade para empresário individual. A Consultoria Delta, sociedade simples, tinha dois sócios, Lia e Murilo. Murilo se retirou e recebeu seus haveres. Lia seguiu tocando a consultoria sozinha e, 8 meses depois, ainda não havia reconstituído a pluralidade, nem pedido a transformação. Um cliente questiona se a sociedade ainda existe.",
+  question: "Considerando a situação descrita e a falta de pluralidade de sócios, assinale a alternativa correta.",
+  options: [
+    "A sociedade se dissolve imediatamente com a saída de Murilo, sem qualquer prazo para reconstituição da pluralidade de sócios.",
+    "A sociedade continua indefinidamente, pois a lei admite a sociedade simples com um só sócio.",
+    "A sociedade só se dissolve se um credor requerer, pois a falta de pluralidade não é causa de dissolução.",
+    "A sociedade se dissolve por falta de pluralidade em 180 dias, e Lia poderia ter pedido a transformação."
+  ],
+  answer: 3,
+  feedback: "A ==rule==pluralidade== precisa ser refeita em **180 dias**. Passado o prazo, ocorre a dissolução, e o caminho alternativo era transformar o registro em empresário individual."
+},
+// 9 - Liquidante
+{
+  aula: "Aula 10 - Dissolução de sociedades",
+  tipo: "Análise Aplicada",
+  texto: "Dissolvida a sociedade, o liquidante procede à liquidação. Ele pode ser o administrador, um sócio ou pessoa estranha à sociedade, nomeado no contrato social ou eleito pelos sócios, e tem o dever de arrecadar bens, pagar o passivo e prestar contas (Arts. 1.102 a 1.103). A Gráfica Sol Ltda. foi dissolvida por consenso dos sócios Ana, que é administradora, e Beto. O contrato nada prevê sobre liquidação. Eles querem contratar o contador Sérgio, que não é sócio, para fazer a liquidação, mas Beto afirma que só um sócio pode exercer a função de liquidante.",
+  question: "Considerando a situação descrita e as regras sobre o liquidante, assinale a alternativa correta.",
+  options: [
+    "Sérgio pode ser liquidante, pois a função pode ser exercida por pessoa estranha, eleita pelos sócios.",
+    "Sérgio não pode ser liquidante, pois a função só pode ser exercida por sócio com mais de 50% do capital.",
+    "Sérgio não pode ser liquidante, pois só o juiz pode nomear o liquidante, mesmo na dissolução consensual.",
+    "Sérgio pode ser liquidante, mas só se Ana, que era administradora, renunciar à função de liquidante."
   ],
   answer: 0,
-  feedback: "Na liquidação, o **liquidante** assume a representação, e a sociedade só pratica atos necessários a resolver pendências. Novos negócios em nome da sociedade fogem desse limite."
+  feedback: "O ==term==liquidante== pode ser **sócio, administrador ou pessoa estranha**, escolhido no contrato ou eleito pelos sócios. Beto está errado, e o estranho pode atuar."
 },
-// 8 - Liquidação e partilha
+// 10 - Apuração de haveres
 {
   aula: "Aula 10 - Dissolução de sociedades",
   tipo: "Análise Aplicada",
-  texto: "A liquidação levanta o patrimônio da sociedade e paga as dívidas em aberto, e só depois ocorre a partilha do que restar entre os sócios, na proporção de suas partes. Em uma sociedade dissolvida, os sócios, ansiosos para receber, querem dividir logo entre si o saldo da conta bancária da empresa, embora ainda existam dívidas com fornecedores e com o fisco.",
-  question: "Considerando a ordem das fases da dissolução total, assinale a alternativa correta.",
+  texto: "Quando a sociedade se resolve em relação a um sócio, o valor da quota, considerada pelo montante efetivamente realizado, é liquidado, salvo disposição contratual em contrário, com base na situação patrimonial da sociedade na data da resolução, verificada em balanço especialmente levantado. A quota liquidada é paga em dinheiro, no prazo de 90 dias, salvo acordo ou disposição em contrário (Art. 1.031). A Delta Ltda. tem capital registrado de R$ 100 mil, e Carla detém 30%. Ao se retirar, o balanço especial apurou patrimônio líquido de R$ 600 mil. Os outros sócios oferecem R$ 30 mil, pois dizem que a quota vale o capital inscrito no contrato.",
+  question: "Considerando a situação descrita e a apuração de haveres, assinale a alternativa correta.",
   options: [
-    "Os sócios podem dividir o saldo agora e pagar as dívidas depois, com os próprios recursos da partilha.",
-    "As dívidas passam a ser dos sócios, que ficam livres para dividir o saldo na proporção de suas quotas.",
-    "A partilha só ocorre depois de apurado o ativo e pagas as dívidas, com o remanescente.",
-    "As dívidas deixam de existir com a dissolução, e o saldo pode ser dividido livremente."
+    "Os haveres são apurados por balanço especial na data da resolução, e não pelo capital registrado.",
+    "Carla recebe R$ 30 mil, pois a quota vale apenas o capital registrado no contrato social da sociedade.",
+    "Carla recebe o valor do último balanço anual, qualquer que seja a data da saída.",
+    "Carla recebe o valor que os sócios remanescentes fixarem livremente para suas quotas."
   ],
-  answer: 2,
-  feedback: "A ordem é **dissolução, liquidação e partilha**. Primeiro se apura o ativo e se pagam as dívidas, e só o que ==proc==restar== é partilhado entre os sócios."
+  answer: 0,
+  feedback: "Os haveres seguem a ==proc==situação patrimonial real== na data da saída, e não o capital do contrato. Carla, com 30% de R$ 600 mil, recebe **R$ 180 mil**, em 90 dias."
 },
-// 9 - Apuração dos haveres
-{
-  aula: "Aula 10 - Dissolução de sociedades",
-  tipo: "Análise Aplicada",
-  texto: "Quando a sociedade se resolve em relação a um sócio, o valor da sua quota é liquidado, salvo disposição contratual em contrário, com base na situação patrimonial da sociedade na data da resolução, verificada em balanço especialmente levantado. A quota liquidada é paga em dinheiro, no prazo de noventa dias, salvo acordo ou estipulação contratual (Art. 1.031). Joana se retirou de uma sociedade que continuará em atividade. O contrato social não trata do cálculo nem do pagamento dos haveres.",
-  question: "Considerando a apuração dos haveres, assinale a alternativa correta.",
-  options: [
-    "A quota de Joana é paga pelo valor nominal, em doze parcelas mensais, sem balanço.",
-    "Liquidação por balanço especial, com pagamento em 90 dias, salvo acordo.",
-    "Joana nada recebe, pois a sociedade continua em funcionamento e o capital permanece.",
-    "O valor é fixado livremente pelos sócios que permanecem, sem balanço."
-  ],
-  answer: 1,
-  feedback: "A apuração dos haveres evita que os sócios que ficam se apropriem do capital de quem saiu. O valor segue o **balanço especial** da data da resolução, com pagamento em ==rule==90 dias==, salvo acordo."
-},
-// 10 - Dissolução por vontade na limitada
-{
-  aula: "Aula 10 - Dissolução de sociedades",
-  tipo: "Análise Aplicada",
-  texto: "Um dos casos de dissolução total é a vontade dos sócios, quando eles decidem de comum acordo encerrar as atividades, mesmo antes do prazo previsto. Na sociedade limitada, essa deliberação exige o voto de três quartos do capital social. Na sociedade anônima, ela é tratada em assembleia geral extraordinária. Em uma sociedade limitada, sócios que representam 60% do capital social querem dissolver a empresa e acreditam que a maioria é suficiente. Os 40% restantes são contra.",
-  question: "Considerando as regras de dissolução por vontade dos sócios, assinale a alternativa correta.",
-  options: [
-    "Os 60% bastam, pois a dissolução voluntária se decide por maioria absoluta.",
-    "A dissolução exige a unanimidade, sem exceções.",
-    "Basta a metade do capital social para dissolver a limitada.",
-    "Não bastam: a limitada exige três quartos do capital social."
-  ],
-  answer: 3,
-  feedback: "Na **sociedade limitada**, a dissolução por vontade dos sócios exige ==rule==3/4== do capital. Com 60%, o quórum não é atingido, e a deliberação não se aprova."
-},
+
 // ===== AULA 11 =====
-// 1 - Sujeitos à falência
-{
-  aula: "Aula 11 - Falência",
-  tipo: "Conceitual Contextualizada",
-  texto: "A falência é instituto próprio do devedor empresário e da sociedade empresária. A Lei nº 11.101/2005 não se aplica a certos devedores, como instituições financeiras, cooperativas de crédito, consórcios, seguradoras, operadoras de planos de saúde, sociedades de capitalização, empresas públicas e sociedades de economia mista (Art. 2º). O Banco Horizonte S.A. é uma instituição financeira com dívidas vencidas e sem recursos para pagá-las. Alguns credores ajuizaram pedido de falência dele com base na Lei nº 11.101/2005.",
-  question: "Considerando os devedores sujeitos à lei de falências, assinale a alternativa correta.",
-  options: [
-    "O pedido é cabível, pois qualquer sociedade anônima é empresária e se sujeita à lei de falências.",
-    "O pedido só é cabível se o banco for uma sociedade anônima aberta.",
-    "A lei não se aplica às instituições financeiras, que têm regime próprio.",
-    "O pedido é cabível, mas quem decide o processo é a assembleia geral de credores."
-  ],
-  answer: 2,
-  feedback: "O Art. 2º exclui as **instituições financeiras** da Lei nº 11.101/2005. Mesmo sendo empresária, ela se submete a ==rule==regime próprio== de liquidação."
-},
-// 2 - Legitimidade ativa
+// 1 - Pedido por impontualidade
 {
   aula: "Aula 11 - Falência",
   tipo: "Análise Aplicada",
-  texto: "Podem requerer a falência do devedor o próprio devedor (autofalência), o cônjuge sobrevivente, o herdeiro, o inventariante, o sócio ou acionista e qualquer credor. O credor que for empresário deve provar a regularidade de sua atividade empresarial (Art. 97). A empresa Delta Ltda., devedora de uma fornecedora, está insolvente. A fornecedora, que é empresária individual, nunca registrou sua atividade na Junta Comercial, mas pretende requerer a falência de Delta.",
-  question: "Considerando a legitimidade para requerer a falência, assinale a alternativa correta.",
+  texto: "A falência do devedor empresário pode ser requerida com base na impontualidade injustificada: quando, sem relevante razão de direito, ele não paga no vencimento obrigação líquida materializada em título ou títulos executivos protestados cuja soma ultrapasse o equivalente a 40 salários mínimos na data do pedido (Lei nº 11.101/2005, Art. 94, I). Credores podem reunir-se em litisconsórcio a fim de perfazer o limite mínimo para o pedido. A Distribuidora Beta Ltda. deixou de pagar, nos vencimentos, dois títulos protestados: um de uma fornecedora, equivalente a 25 salários mínimos, e outro de uma transportadora, equivalente a 22 salários mínimos. Os dois credores são pequenos empresários regulares e entendem que, individualmente, não alcançam o valor exigido.",
+  question: "Considerando a situação descrita e os requisitos do pedido de falência por impontualidade, assinale a alternativa correta.",
   options: [
-    "Não prospera, pois o credor empresário deve provar sua regularidade.",
-    "O pedido é válido, pois qualquer credor pode requerer a falência sem nenhuma condição.",
-    "Somente a própria Delta pode requerer a falência dela.",
-    "Somente o Ministério Público pode requerer a falência de empresa insolvente."
-  ],
-  answer: 0,
-  feedback: "Qualquer credor tem legitimidade, mas o **credor empresário** precisa ==rule==provar a regularidade== de sua atividade. A fornecedora, sem registro, não cumpre essa exigência."
-},
-// 3 - Pressupostos
-{
-  aula: "Aula 11 - Falência",
-  tipo: "Análise Aplicada",
-  texto: "Para a falência são necessários três pressupostos: devedor empresário, insolvência e sentença declaratória de falência. A insolvência é a incapacidade de pagar as dívidas, e se caracteriza, por exemplo, pela impontualidade injustificada, pela prática de atos de falência e pela execução frustrada. Rui, empresário, deixou de pagar no vencimento um título protestado, sem apresentar relevante razão de direito. Um credor quer saber se, por isso, Rui já está falido.",
-  question: "Considerando os pressupostos da falência, assinale a alternativa correta.",
-  options: [
-    "A falência decorre automaticamente do protesto, sem necessidade de sentença.",
-    "A impontualidade justificada de uma dívida basta para caracterizar a insolvência.",
-    "Somente o próprio Rui pode pedir a falência, pois o credor não tem legitimidade.",
-    "Há impontualidade injustificada, mas a falência só existe com a sentença declaratória."
-  ],
-  answer: 3,
-  feedback: "A **impontualidade injustificada** é uma das formas de caracterizar a insolvência, mas o estado de falência só nasce com a ==def==sentença declaratória==, o terceiro pressuposto."
-},
-// 4 - Falência x recuperação
-{
-  aula: "Aula 11 - Falência",
-  tipo: "Conceitual Contextualizada",
-  texto: "A falência gera o fim da atividade empresarial, e o devedor perde o direito de administrar seus bens e deles dispor. A recuperação judicial, por sua vez, possibilita a continuidade da atividade, e o devedor e os administradores são mantidos, mas ficam sob fiscalização do comitê e do administrador judicial, se houver. A diretora de uma empresa em crise financeira quer entender a diferença entre as duas situações antes de decidir como agir.",
-  question: "Considerando a diferença entre falência e recuperação judicial, assinale a alternativa correta.",
-  options: [
-    "Na falência a atividade continua com o devedor, e na recuperação ela é encerrada.",
-    "Na falência a atividade acaba, e na recuperação ela continua sob fiscalização.",
-    "Nos dois institutos o devedor é afastado da administração e perde seus bens.",
-    "Na recuperação judicial o devedor perde o direito de dispor de seus bens, e na falência ele permanece sob fiscalização."
+    "Os credores não podem requerer a falência, pois cada um deve alcançar o mínimo legal de 40 salários isoladamente.",
+    "Os credores podem requerer a falência em litisconsórcio, somando os créditos para superar o mínimo legal.",
+    "Os credores só podem requerer a falência se um deles comprar o crédito do outro antes do pedido.",
+    "Os credores podem requerer a falência, pois o limite mínimo vale apenas para a autofalência."
   ],
   answer: 1,
-  feedback: "A **falência** encerra a atividade e afasta o devedor, e a ==def==recuperação judicial== busca preservar a atividade, mantendo o devedor sob fiscalização."
+  feedback: "O **litisconsórcio** permite somar os títulos: 25 + 22 = 47 salários mínimos, acima do piso de ==rule==40 salários mínimos== exigido pelo Art. 94, I."
 },
-// 5 - Ordem de pagamento
+// 2 - Ordem de pagamento
 {
   aula: "Aula 11 - Falência",
   tipo: "Análise Aplicada",
-  texto: "Na falência, o pagamento dos créditos segue uma ordem legal, em respeito à igualdade entre os credores da mesma classe (par conditio creditorum). Na lei, a classificação é: créditos trabalhistas (até 150 salários mínimos por credor) e acidentários, créditos com garantia real, créditos tributários, créditos com privilégio especial, créditos com privilégio geral, créditos quirografários, multas e, por último, os créditos subordinados. Na falência da empresa Gama, há os seguintes credores: um empregado com crédito trabalhista de 80 salários mínimos, um banco com garantia real, um fornecedor quirografário e um sócio com crédito subordinado.",
-  question: "Considerando a ordem de preferência dos créditos, assinale a alternativa que apresenta a sequência correta de pagamento.",
+  texto: "A ordem de pagamento na falência segue o Art. 83 da Lei nº 11.101/2005: créditos trabalhistas, limitados a 150 salários mínimos por credor, e acidentários; créditos com garantia real, até o valor do bem gravado; créditos tributários, exceto multas; créditos com privilégio especial; créditos com privilégio geral; quirografários; multas; e subordinados. Antes dessa ordem, são pagos os créditos extraconcursais, como a remuneração do administrador judicial (Art. 84). Na falência da Metalúrgica Gama, há as seguintes pretensões: Fazenda Estadual (ICMS), fornecedor quirografário, Banco Delta com hipoteca de um galpão avaliado acima da dívida, empregado com crédito de 120 salários mínimos e a remuneração do administrador judicial.",
+  question: "Considerando a situação descrita e a ordem legal de pagamento, assinale a alternativa que apresenta a sequência correta.",
   options: [
-    "Empregado, banco com garantia real, fornecedor quirografário e sócio com crédito subordinado.",
-    "Banco com garantia real, empregado, fornecedor quirografário e sócio com crédito subordinado.",
-    "Fornecedor quirografário, empregado, banco com garantia real e sócio com crédito subordinado.",
-    "Sócio com crédito subordinado, fornecedor quirografário, banco com garantia real e empregado."
-  ],
-  answer: 0,
-  feedback: "Pela ordem legal, o crédito **trabalhista**, até o limite de 150 salários mínimos, vem antes do crédito com garantia real. Em seguida vêm os quirografários e, por fim, os ==term==subordinados==."
-},
-// 6 - Atos ineficazes
-{
-  aula: "Aula 11 - Falência",
-  tipo: "Análise Aplicada",
-  texto: "Alguns atos praticados pelo devedor antes da falência são ineficazes em relação à massa falida, ainda que não haja prova de fraude. Entre eles estão o pagamento de dívidas vincendas, a constituição de garantia real para dívida anterior e a prática de atos a título gratuito até dois anos antes da decretação da falência (Arts. 129 e 130 da Lei nº 11.101/2005). A empresa Delta doou um veículo de sua frota a um parente do sócio principal 18 meses antes da decretação de sua falência. O administrador judicial quer saber se pode contestar essa doação.",
-  question: "Considerando os atos ineficazes na falência, assinale a alternativa correta.",
-  options: [
-    "A doação é válida, pois só os atos praticados nos 90 dias anteriores ao pedido de falência podem ser considerados ineficazes.",
-    "A doação é válida, pois foi feita antes da sentença de falência, e atos anteriores nunca são atingidos.",
-    "A doação é ineficaz perante a massa, pois ato gratuito até dois anos antes da falência não a vincula.",
-    "A doação é nula e gera automaticamente a prisão do sócio principal."
-  ],
-  answer: 2,
-  feedback: "Os **atos gratuitos** praticados até **dois anos** antes da decretação da falência são ineficazes perante a massa. Os 90 dias do termo legal são outro critério, e a ineficácia não depende de prova de má-fé."
-},
-// 7 - Efeitos da sentença
-{
-  aula: "Aula 11 - Falência",
-  tipo: "Análise Aplicada",
-  texto: "A sentença que decreta a falência produz efeitos importantes: resulta na falência dos sócios com responsabilidade ilimitada, retira do falido o direito de administrar seus bens e deles dispor, e o inabilita para o exercício de atividade empresarial (Arts. 102 e 103 da Lei nº 11.101/2005). A sociedade Ômega, constituída em nome coletivo, teve sua falência decretada. Seus três sócios respondem ilimitadamente pelas obrigações sociais. Um deles pergunta ao advogado o que acontecerá com ele a partir da sentença.",
-  question: "Considerando os efeitos da sentença de falência, assinale a alternativa correta.",
-  options: [
-    "Somente a sociedade é atingida, e os sócios continuam com plena liberdade para administrar seus bens.",
-    "O falido continua administrando seus bens normalmente, sob fiscalização do juiz.",
-    "A sentença extingue imediatamente todas as dívidas da sociedade e dos sócios.",
-    "A falência atinge também os sócios de responsabilidade ilimitada, que ficam inabilitados."
+    "Empregado, administrador judicial, Fazenda Estadual, Banco Delta e fornecedor quirografário.",
+    "Administrador judicial, Banco Delta, empregado, Fazenda Estadual e fornecedor quirografário.",
+    "Administrador judicial, empregado, Fazenda Estadual, Banco Delta e fornecedor quirografário.",
+    "Administrador judicial, empregado, Banco Delta, Fazenda Estadual e fornecedor quirografário."
   ],
   answer: 3,
-  feedback: "Em sociedades em que os sócios têm **responsabilidade ilimitada**, a falência da sociedade acarreta a falência deles. O ==warn==inabilitação== para a atividade empresarial é um dos efeitos da sentença."
+  feedback: "Primeiro os ==term==extraconcursais== (administrador), depois, na ordem do Art. 83: **trabalhista** (até 150 salários mínimos), **garantia real**, **tributário** e **quirografário**."
 },
-// 8 - Restituição
+// 3 - Sócios do falido
 {
   aula: "Aula 11 - Falência",
   tipo: "Análise Aplicada",
-  texto: "O proprietário de bens que estejam em poder do falido na data da decretação da falência pode pedir a restituição deles, e também pode pedir a restituição de coisa vendida a crédito e entregue ao devedor nos 15 dias anteriores ao requerimento de falência, ou o valor em dinheiro, se o bem não mais existir. A Ótica Lume recebeu, em 4 de março, óculos vendidos a crédito por um fornecedor. A falência foi requerida em 14 de março, e depois decretada. Os óculos ainda estavam no estoque da ótica.",
-  question: "Considerando a restituição de bens na falência, assinale a alternativa correta sobre a situação do fornecedor.",
+  texto: "A sentença que decreta a falência da sociedade empresária atinge os sócios de responsabilidade ilimitada, como os das sociedades em nome coletivo e os comanditados, que ficam sujeitos aos mesmos efeitos jurídicos produzidos em relação à sociedade falida. Os sócios de responsabilidade limitada não têm a falência decretada, e sua responsabilidade pessoal, bem como a dos controladores e administradores, é apurada no próprio juízo da falência (Arts. 81 e 82). A Lima Ltda. teve a falência decretada. Os sócios são Ana (40% do capital, totalmente integralizado) e Beto (60%, administrador). Credores pedem a extensão da falência aos dois sócios, sob o argumento de que a sociedade quebrou por má gestão e de que Ana tem participação relevante.",
+  question: "Considerando a situação descrita e os efeitos da falência sobre os sócios, assinale a alternativa correta.",
   options: [
-    "O fornecedor só pode habilitar seu crédito como quirografário, sem direito algum à restituição.",
-    "Pode pedir a restituição, pois a entrega ocorreu nos 15 dias anteriores ao requerimento.",
-    "O fornecedor só poderia pedir a restituição se a entrega ocorresse 30 dias antes do requerimento.",
-    "A restituição só é cabível para bens de propriedade do próprio falido."
-  ],
-  answer: 1,
-  feedback: "A entrega ocorreu **dez dias** antes do requerimento, dentro do prazo de 15 dias. Por isso cabe o pedido de ==proc==restituição== da coisa vendida a crédito ou do seu valor, se ela não existir mais."
-},
-// 9 - Juízo falimentar
-{
-  aula: "Aula 11 - Falência",
-  tipo: "Análise Aplicada",
-  texto: "O juízo falimentar é indivisível e universal: em regra, todas as ações sobre bens, interesses e negócios do falido são julgadas por ele. A lei prevê exceções, como as causas trabalhistas, as causas fiscais e as ações em que o falido seja autor ou litisconsorte ativo, não reguladas pela lei de falências. Um ex-empregado de uma empresa que faliu tem uma ação trabalhista em andamento contra ela. O advogado da massa falida afirma que a ação deve ser enviada ao juízo falimentar.",
-  question: "Considerando a competência do juízo falimentar, assinale a alternativa correta.",
-  options: [
-    "A ação deve ser obrigatoriamente transferida ao juízo falimentar, que é universal e sem exceções.",
-    "A ação deve ficar suspensa até o encerramento da falência.",
-    "A causa trabalhista é exceção e segue na Justiça do Trabalho.",
-    "A ação se extingue com a decretação da falência, e o empregado perde o direito."
-  ],
-  answer: 2,
-  feedback: "As **causas trabalhistas** são exceção à indivisibilidade do juízo falimentar e seguem na Justiça do Trabalho. O crédito apurado é depois ==proc==habilitado== no processo de falência, na ordem de preferência."
-},
-// 10 - Encerramento
-{
-  aula: "Aula 11 - Falência",
-  tipo: "Análise Aplicada",
-  texto: "A falência é encerrada depois da realização do ativo e do pagamento dos credores, com relatório do administrador judicial e sentença do juiz. O prazo prescricional das obrigações do falido recomeça a correr no dia em que transitar em julgado a sentença de encerramento da falência (Art. 157 da Lei nº 11.101/2005). A falência de uma empresa foi encerrada por sentença que transitou em julgado em 10 de junho. Um credor, que não recebeu integralmente seu crédito, pergunta quando o prazo prescricional das obrigações do falido volta a correr.",
-  question: "Considerando o encerramento da falência, assinale a alternativa correta.",
-  options: [
-    "O prazo recomeça a correr no dia em que a sentença de encerramento transita em julgado.",
-    "O prazo prescricional só recomeça a correr cinco anos depois da sentença de encerramento.",
-    "O prazo prescricional nunca volta a correr, pois a falência suspende a prescrição definitivamente.",
-    "O prazo prescricional conta da data da decretação da falência, e não do encerramento."
+    "Os sócios não têm a falência decretada, e eventual responsabilidade pessoal é apurada no juízo falimentar.",
+    "Os sócios têm a falência decretada automaticamente, pois a sociedade e os sócios se confundem.",
+    "Apenas Beto tem a falência decretada, por ser o administrador responsável pela gestão que levou a sociedade à quebra.",
+    "Apenas Ana tem a falência decretada, pois sua participação ultrapassa 30% do capital social."
   ],
   answer: 0,
-  feedback: "Durante a falência, a ==def==prescrição== fica suspensa. Com o **trânsito em julgado** da sentença de encerramento, o prazo das obrigações do falido volta a correr nesse mesmo dia."
+  feedback: "Na limitada, a falência **não se estende** aos sócios. A ==warn==responsabilidade pessoal== de sócios e administradores é apurada no juízo falimentar (Art. 82), e não por decretação de falência."
+},
+// 4 - Depósito elisivo
+{
+  aula: "Aula 11 - Falência",
+  tipo: "Análise Aplicada",
+  texto: "Citado o devedor no pedido de falência, ele tem dez dias para contestar. Nesse prazo, pode também depositar o valor correspondente ao total do crédito, acrescido de correção monetária, juros e honorários advocatícios, o que elide a falência, ou seja, impede sua decretação. Feito o depósito, o devedor ainda pode contestar o pedido (Art. 98, parágrafo único). A Beta Ltda. foi citada em 3 de maio em pedido de falência baseado em título protestado de R$ 90 mil. No oitavo dia, depositou em juízo o valor total do título, com correção, juros e honorários, e disse que não pagaria diretamente ao credor porque discorda da dívida. O credor sustenta que o depósito não tem efeito, pois só vale o pagamento feito a ele.",
+  question: "Considerando a situação descrita e o depósito elisivo, assinale a alternativa correta.",
+  options: [
+    "O depósito não elide a falência, pois só o pagamento direto ao credor impede a decretação da falência.",
+    "O depósito não elide a falência, pois só pode ser feito depois da sentença de falência.",
+    "O depósito elide a falência, pois foi feito no prazo de contestação, com o valor atualizado.",
+    "O depósito elide a falência, mas impede que o devedor conteste a dívida no processo."
+  ],
+  answer: 2,
+  feedback: "O ==proc==depósito elisivo== feito em até dez dias, com **valor total atualizado**, impede a falência, e o devedor ainda pode **contestar** a dívida (Art. 98, parágrafo único)."
+},
+// 5 - Ineficácia de garantia
+{
+  aula: "Aula 11 - Falência",
+  tipo: "Análise Aplicada",
+  texto: "Alguns atos do devedor são ineficazes perante a massa falida, tenha ou não o contratante conhecimento do estado de crise e tenha ou não o devedor a intenção de fraudar credores. Entre eles estão o pagamento de dívidas não vencidas e a constituição de direito real de garantia, dentro do termo legal, tratando-se de dívida contraída anteriormente (Art. 129). O termo legal é fixado na sentença e não pode retrotrair por mais de 90 dias contados do pedido de falência, do pedido de recuperação judicial ou do primeiro protesto. Em 5 de abril, a Alfa Indústria deu uma hipoteca sobre seu galpão ao Banco Zeta, para garantir um empréstimo contraído no ano anterior. O pedido de falência foi feito em 10 de maio, e a sentença, em 20 de maio, fixou o termo legal em 60 dias antes do pedido. O banco alega que a Alfa estava solvente e que não houve fraude.",
+  question: "Considerando a situação descrita e os atos ineficazes na falência, assinale a alternativa correta.",
+  options: [
+    "A hipoteca é válida, pois foi constituída antes da sentença de falência e sem fraude comprovada pelo administrador.",
+    "A hipoteca só é ineficaz se o administrador provar que o banco sabia da crise da Alfa.",
+    "A hipoteca é ineficaz perante a massa, independentemente da boa-fé do banco e da intenção da Alfa.",
+    "A hipoteca é nula de pleno direito, e o banco perde o crédito contra a massa."
+  ],
+  answer: 2,
+  feedback: "A garantia real para **dívida anterior** dentro do ==term==termo legal== é ineficaz perante a massa (Art. 129). Não se discute fraude ou boa-fé, e o banco mantém o crédito, só que sem a garantia."
+},
+// 6 - Sujeitos à falência
+{
+  aula: "Aula 11 - Falência",
+  tipo: "Análise Aplicada",
+  texto: "A Lei nº 11.101/2005 não se aplica às empresas públicas e sociedades de economia mista, nem às instituições financeiras, cooperativas de crédito, consórcios, seguradoras, operadoras de planos de saúde, entidades de previdência complementar e sociedades de capitalização (Art. 2º). Esses entes têm regimes próprios de liquidação. Credores diversos pretendem pedir a falência de três devedores: a Companhia Estadual de Saneamento, uma sociedade de economia mista do Estado; o Banco Alfa S.A., instituição financeira privada; e a Indústria Gama Ltda., sociedade empresária comum. Todos estão com dívidas vencidas e protestadas.",
+  question: "Considerando a situação descrita e a incidência da Lei de Falências, assinale a alternativa correta.",
+  options: [
+    "Os três se sujeitam, pois todos são sociedades que exploram atividade econômica com dívidas vencidas e protestadas.",
+    "A economia mista e a Gama se sujeitam, e só o banco é excluído da Lei de Falências.",
+    "O banco e a Gama se sujeitam, e só a economia mista é excluída da Lei de Falências.",
+    "Só a Indústria Gama se sujeita à Lei de Falências, pois os outros devedores são excluídos pelo Art. 2º."
+  ],
+  answer: 3,
+  feedback: "O ==rule==Art. 2º== exclui a economia mista e as **instituições financeiras**, entre outros. Só a sociedade empresária comum, a Gama, se submete à falência."
+},
+// 7 - Juízo universal
+{
+  aula: "Aula 11 - Falência",
+  tipo: "Análise Aplicada",
+  texto: "O juízo da falência é indivisível e universal: ele é competente para conhecer todas as ações sobre bens, interesses e negócios da massa falida. Há exceções: as causas trabalhistas, as fiscais e as demais ações não reguladas pela lei de falências em que a massa falida seja autora ou litisconsorte ativa (Art. 76). Com a falência da Delta Ltda., chegam à massa três ações: uma cobrança comum de um fornecedor contra a Delta, uma execução fiscal movida pelo município e uma reclamação trabalhista de um ex-empregado. O administrador judicial pergunta quais delas devem seguir para o juízo da falência.",
+  question: "Considerando a situação descrita e a competência do juízo falimentar, assinale a alternativa correta.",
+  options: [
+    "As três vão ao juízo da falência, que é universal e atrai todas as ações contra a massa falida.",
+    "Só a reclamação trabalhista fica fora, e a execução fiscal vai ao juízo da falência.",
+    "A cobrança comum vai ao juízo da falência, e as causas fiscal e trabalhista ficam de fora.",
+    "Nenhuma vai ao juízo da falência, pois cada ação segue na vara em que foi proposta."
+  ],
+  answer: 2,
+  feedback: "O juízo é ==def==universal==, mas as **causas trabalhistas e fiscais** são exceções (Art. 76). A cobrança comum, sem exceção, atrai-se para ele."
+},
+// 8 - Restituição na falência
+{
+  aula: "Aula 11 - Falência",
+  tipo: "Análise Aplicada",
+  texto: "Pode pedir a restituição o proprietário de bem arrecadado em poder do falido. Também pode pedir a restituição da coisa vendida a crédito e entregue ao devedor nos 15 dias anteriores ao requerimento da falência, se ainda não alienada (Art. 85). Fora desse prazo, o fornecedor deve habilitar seu crédito como quirografário. A Marcenaria Pinho entregou uma máquina, vendida a crédito, à Móveis Delta em 1º de abril. A falência da Delta foi requerida em 10 de maio e decretada depois. A máquina ainda está no estoque da massa, e o fornecedor pede a restituição.",
+  question: "Considerando a situação descrita e a restituição de coisa vendida a crédito, assinale a alternativa correta.",
+  options: [
+    "O fornecedor não pode pedir a restituição, pois a entrega ocorreu mais de 15 dias antes do requerimento.",
+    "O fornecedor pode pedir a restituição, pois a máquina ainda está no estoque do devedor.",
+    "O fornecedor pode pedir a restituição, pois o prazo legal é de 60 dias antes do requerimento.",
+    "O fornecedor não pode pedir a restituição, pois a venda a crédito transfere de vez a propriedade e encerra qualquer direito."
+  ],
+  answer: 0,
+  feedback: "A entrega ocorreu cerca de **39 dias** antes do pedido, fora do prazo de ==rule==15 dias== do Art. 85. O fornecedor só pode habilitar o crédito, na classe correspondente."
+},
+// 9 - Autofalência
+{
+  aula: "Aula 11 - Falência",
+  tipo: "Análise Aplicada",
+  texto: "O devedor em crise econômico-financeira que julgue não atender aos requisitos para pleitear a recuperação judicial deverá requerer ao juízo sua falência, expondo as razões da impossibilidade de prosseguimento da atividade empresarial e juntando documentos como as demonstrações contábeis, a relação dos credores e a relação dos bens e direitos do ativo (Art. 105). A Gráfica Zeta Ltda. tem um ano e meio de atividade, dívidas muito superiores ao ativo e nenhum mercado para sustentar um plano. Os sócios querem simplesmente fechar as portas, deixar o imóvel e não pagar mais ninguém, e dizem que só os credores podem pedir a falência.",
+  question: "Considerando a situação descrita e o procedimento da autofalência, assinale a alternativa correta.",
+  options: [
+    "A Zeta pode encerrar as portas sem formalidade, pois só os credores podem pedir a falência.",
+    "A Zeta deve requerer a própria falência, expondo as razões e apresentando os documentos exigidos pela lei.",
+    "A Zeta deve pedir recuperação judicial antes, pois a lei exige a recuperação antes de qualquer falência.",
+    "A Zeta deve esperar a citação de um credor, pois o devedor não tem legitimidade para requerer a própria falência."
+  ],
+  answer: 1,
+  feedback: "O devedor **sem condições de recuperação** deve fazer a ==proc==autofalência== (Art. 105), com razões e documentos. Fechar as portas sem formalidade não encerra a dívida e pode gerar responsabilidade."
+},
+// 10 - Alienação do ativo sem sucessão
+{
+  aula: "Aula 11 - Falência",
+  tipo: "Análise Aplicada",
+  texto: "Na alienação de filiais ou de unidades produtivas isoladas do devedor na falência, o objeto da alienação fica livre de qualquer ônus e não há sucessão do arrematante nas obrigações do devedor, inclusive as de natureza tributária, as derivadas da legislação do trabalho e as decorrentes de acidentes de trabalho (Art. 141, II). A exceção ocorre se o arrematante for sócio da sociedade falida, parente do falido ou seu agente. Na falência da Delta, a filial de Sobral foi vendida em leilão ao Grupo Sol, por R$ 8 milhões. O Grupo Sol não tem ligação com os sócios nem com parentes do falido. Um ex-empregado da Delta quer cobrar do Grupo Sol sua dívida trabalhista, alegando sucessão.",
+  question: "Considerando a situação descrita e os efeitos da alienação na falência, assinale a alternativa correta.",
+  options: [
+    "O Grupo Sol sucede a Delta nas obrigações trabalhistas, pois adquiriu a atividade em funcionamento.",
+    "O Grupo Sol sucede a Delta nas dívidas tributárias e trabalhistas, até o valor de R$ 8 milhões pagos.",
+    "O Grupo Sol não sucede a Delta nas obrigações, pois o bem alienado na falência fica livre de ônus.",
+    "O Grupo Sol sucede a Delta nas obrigações se o ex-empregado provar que o preço pago foi baixo."
+  ],
+  answer: 2,
+  feedback: "Na falência, a venda tem ==rule==efeito sem sucessão==: o arrematante recebe o bem **livre de ônus**, inclusive dívidas trabalhistas e tributárias. A exceção seria ligação com o falido, o que não há."
 },
 
 // ===== AULA 12 =====
-// 1 - Objetivo da recuperação
-{
-  aula: "Aula 12 - Recuperação judicial e extrajudicial",
-  tipo: "Conceitual Contextualizada",
-  texto: "A recuperação judicial foi trazida pela Lei nº 11.101/2005 e tem por objetivo viabilizar a superação da crise econômico-financeira do devedor, a fim de permitir a manutenção da fonte produtora, do emprego dos trabalhadores e dos interesses dos credores, promovendo a preservação da empresa, sua função social e o estímulo à atividade econômica (Art. 47). A Indústria Delta, que emprega 300 pessoas, enfrenta forte crise de caixa, mas ainda tem mercado e capacidade produtiva.",
-  question: "Considerando o objetivo da recuperação judicial, assinale a alternativa correta sobre a situação da Indústria Delta.",
-  options: [
-    "A recuperação permite que a Delta supere a crise e continue produzindo, preservando empregos e credores.",
-    "A recuperação visa liquidar o patrimônio da Delta para que os credores sejam pagos o mais rápido possível.",
-    "A recuperação serve apenas aos interesses dos credores, e a manutenção dos empregos não integra o objetivo.",
-    "A recuperação só se justifica se a Delta já estiver sem mercado e sem qualquer capacidade produtiva."
-  ],
-  answer: 0,
-  feedback: "O Art. 47 mostra que a recuperação busca a ==def==preservação da empresa==: **manter a fonte produtora, o emprego e os interesses dos credores**, e não liquidar o devedor."
-},
-// 2 - Recuperação anterior
+// 1 - Requisitos do pedido
 {
   aula: "Aula 12 - Recuperação judicial e extrajudicial",
   tipo: "Análise Aplicada",
-  texto: "Poderá requerer recuperação judicial o devedor que, no momento do pedido, exerça regularmente suas atividades há mais de 2 anos e atenda cumulativamente a requisitos como: não ser falido, não ter obtido recuperação judicial há menos de 5 anos e não ter sido condenado por crime previsto na lei (Art. 48). A Comercial Épsilon, com 8 anos de atividade regular, obteve a concessão de uma recuperação judicial há três anos e, agora, em nova crise, quer pedir outra.",
-  question: "Com base no Art. 48 da LRE, assinale a alternativa correta.",
+  texto: "Pode requerer recuperação judicial o devedor que, no momento do pedido, exerça regularmente suas atividades há mais de 2 anos e atenda, cumulativamente, aos requisitos do Art. 48: não ser falido (ou, se foi, ter as responsabilidades declaradas extintas), não ter obtido recuperação judicial há menos de 5 anos e não ter sido condenado por crimes previstos na lei. A Indústria Gama S.A. foi constituída há 20 meses, emprega 400 pessoas, é a principal compradora de insumos de duas cidades do interior e enfrenta grave crise de caixa. Os administradores argumentam que a relevância social da empresa e a regularidade de seus impostos justificam o pedido imediato.",
+  question: "Considerando a situação descrita e os requisitos legais para pedir recuperação judicial, assinale a alternativa correta.",
   options: [
-    "O pedido pode ser feito, pois o tempo de atividade de 8 anos supre qualquer outro requisito.",
-    "O pedido não pode ser feito, pois a Épsilon obteve recuperação há menos de 5 anos.",
-    "O pedido pode ser feito, pois o prazo de vedação para nova recuperação é de apenas 2 anos.",
-    "O pedido não pode ser feito, pois quem já teve recuperação não pode pedir outra jamais."
+    "A Gama não pode pedir a recuperação, pois suas atividades regulares duram menos de dois anos.",
+    "A Gama pode pedir a recuperação, pois a relevância social dispensa o prazo mínimo de atividade.",
+    "A Gama pode pedir a recuperação, pois a regularidade fiscal substitui o tempo de atividade.",
+    "A Gama não pode pedir a recuperação, pois a lei exige mais de cinco anos de atividade regular."
+  ],
+  answer: 0,
+  feedback: "Os requisitos do Art. 48 são **cumulativos**. Faltam à Gama os ==rule==2 anos== de atividade regular, e a relevância social ou a regularidade fiscal não os substituem."
+},
+// 2 - Suspensão das execuções
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Análise Aplicada",
+  texto: "O deferimento do processamento da recuperação judicial suspende o curso da prescrição e de todas as ações e execuções contra o devedor, relativas a créditos sujeitos à recuperação, pelo prazo de 180 dias, contado do deferimento (Lei nº 11.101/2005, Art. 6º, §4º). Esse período permite ao devedor negociar com os credores sem a pressão de execuções individuais. O deferimento do processamento é diferente da concessão da recuperação, que só ocorre depois de aprovado o plano. O processamento da recuperação da Metalúrgica Ômega foi deferido em 10 de fevereiro. Em 5 de junho, uma fornecedora com crédito quirografário vencido retomou a execução contra a devedora, argumentando que a recuperação ainda não foi concedida e que a suspensão não a alcançaria.",
+  question: "Considerando a situação descrita e a suspensão das execuções, assinale a alternativa correta.",
+  options: [
+    "A execução pode prosseguir, pois a suspensão só começa com a concessão da recuperação.",
+    "A execução continua suspensa, pois a suspensão dura 180 dias contados do deferimento do processamento.",
+    "A execução pode prosseguir, pois o prazo de suspensão é de apenas 90 dias a partir do pedido.",
+    "A execução continua suspensa, mas somente se o crédito da fornecedora for de natureza trabalhista e antigo."
   ],
   answer: 1,
-  feedback: "Os requisitos do Art. 48 são **cumulativos**. A Épsilon cumpre o tempo de atividade, mas obteve recuperação há menos de ==rule==5 anos==, e por isso não pode pedir nova."
+  feedback: "A suspensão nasce com o ==term==deferimento do processamento==, e não com a concessão. De 10 de fevereiro a 5 de junho passaram cerca de **115 dias**, dentro dos 180."
 },
-// 3 - Legitimidade para o pedido
+// 3 - Prazo do plano
 {
   aula: "Aula 12 - Recuperação judicial e extrajudicial",
   tipo: "Análise Aplicada",
-  texto: "O sujeito ativo da recuperação judicial é o devedor, isto é, o empresário ou a sociedade empresária, e somente ele pode pedi-la. A figura do credor só pode pedir a falência. O Banco Zeta, credor da Sociedade Ômega por valor elevado e já vencido, resolveu ingressar com um pedido de recuperação judicial em nome da devedora, para acelerar a negociação da dívida.",
-  question: "Sobre a iniciativa do Banco Zeta, assinale a alternativa correta.",
+  texto: "O plano de recuperação judicial deve ser apresentado pelo devedor em juízo no prazo improrrogável de 60 dias da publicação da decisão que deferir o processamento da recuperação, sob pena de convolação em falência (Art. 53). Esse prazo evita que o devedor use o processo para ganhar tempo em prejuízo dos credores. A Têxtil Ômega teve o processamento deferido por decisão publicada em 6 de março. O devedor só protocolou o plano em 20 de junho, argumentando que a documentação contábil era volumosa, que as negociações com os bancos demoraram e que ainda restavam 80 dias do período de suspensão das execuções. Um credor requer a convolação da recuperação em falência.",
+  question: "Considerando a situação descrita e o prazo para apresentação do plano, assinale a alternativa correta.",
   options: [
-    "O pedido é válido, pois todo credor de crédito vencido pode requerer a recuperação do devedor.",
-    "O pedido é válido, desde que o banco tenha a concordância de pelo menos metade dos demais credores.",
-    "Ele não pode pedir, pois a legitimidade é do devedor, e ao credor cabe apenas a falência.",
-    "O pedido não pode ser feito, pois a recuperação só pode ser requerida pelo Ministério Público."
+    "O plano é aceito, pois o juiz pode prorrogar o prazo diante da complexidade da documentação.",
+    "O plano é aceito, pois o prazo de apresentação acompanha os 180 dias da suspensão das execuções.",
+    "O plano é aceito, e o devedor responde apenas com multa pelo atraso na apresentação.",
+    "O plano é intempestivo, e a consequência prevista é a convolação da recuperação em falência."
   ],
-  answer: 2,
-  feedback: "Na recuperação judicial, o ==term==sujeito ativo== é o **devedor**. O credor não tem legitimidade para pedi-la e só pode requerer a falência."
+  answer: 3,
+  feedback: "O prazo de ==rule==60 dias== é **improrrogável**. Passado o prazo, a consequência é a convolação em falência, e o período de suspensão das execuções é outro prazo, independente (Art. 53)."
 },
-// 4 - Foro do pedido
+// 4 - Créditos trabalhistas no plano
 {
   aula: "Aula 12 - Recuperação judicial e extrajudicial",
   tipo: "Análise Aplicada",
-  texto: "O foro para a solicitação da recuperação judicial é o juízo do local do principal estabelecimento do devedor ou da filial de empresa com sede no exterior. O principal estabelecimento não corresponde necessariamente à matriz. A Têxtil Sigma tem a matriz registrada em Fortaleza, mas concentra a produção, o faturamento e a administração efetiva em Sobral.",
-  question: "Qual é o foro competente para o pedido de recuperação judicial da Têxtil Sigma?",
+  texto: "O plano de recuperação judicial não pode prever prazo superior a um ano para pagamento dos créditos derivados da legislação do trabalho ou decorrentes de acidentes de trabalho vencidos até a data do pedido (Art. 54). Também deve prever o pagamento, em até 30 dias, de até cinco salários mínimos por trabalhador, de natureza estritamente salarial, vencidos nos três meses anteriores ao pedido. Prazos maiores, até dois anos, só são admitidos se cumpridas condições específicas, como garantias suficientes, aprovação da classe e garantia da integralidade do pagamento. A Rede Beta de Supermercados apresentou plano que prevê pagar os créditos trabalhistas em 24 meses, sem oferecer garantias e sem aprovação específica da classe trabalhista. A devedora afirma que o prazo é igual ao do restante do plano e que a maioria dos credores o aprovou.",
+  question: "Considerando a situação descrita e os limites do plano quanto aos créditos trabalhistas, assinale a alternativa correta.",
   options: [
-    "O juízo de Sobral, pois ali está o principal estabelecimento da devedora.",
-    "O juízo de Fortaleza, pois a matriz é sempre o foro obrigatório da recuperação.",
-    "O juízo do domicílio do credor com maior crédito perante a devedora.",
-    "O juízo que o devedor escolher livremente entre qualquer das suas unidades."
-  ],
-  answer: 0,
-  feedback: "O critério é o ==def==principal estabelecimento== do devedor, onde a atividade se concentra, e **não necessariamente a matriz**."
-},
-// 5 - Créditos sujeitos e exceções
-{
-  aula: "Aula 12 - Recuperação judicial e extrajudicial",
-  tipo: "Análise Aplicada",
-  texto: "Estão sujeitos à recuperação judicial todos os créditos existentes na data do pedido, ainda que não vencidos (Art. 49). Não se aplicam à recuperação, como exceção, entre outros, os créditos tributários e os do credor proprietário fiduciário. A Metalúrgica Lambda pediu recuperação e possui três credores: um fornecedor sem garantia, com crédito que vence em 90 dias; a Fazenda, com crédito tributário; e um banco, com alienação fiduciária de uma máquina.",
-  question: "Quais créditos se sujeitam ao plano de recuperação?",
-  options: [
-    "Os três, pois todos os créditos existentes na data do pedido se sujeitam à recuperação.",
-    "Apenas o do fornecedor, pois existe na data do pedido, ainda que vincendo.",
-    "O do fornecedor e o do banco, pois só o crédito tributário é exceção.",
-    "Nenhum deles, pois créditos vincendos ficam fora da recuperação."
+    "A cláusula é válida, pois o plano aprovado pela maioria dos credores pode fixar o prazo que entender conveniente.",
+    "A cláusula é inválida, pois, sem as condições legais, os créditos trabalhistas devem ser pagos em até um ano.",
+    "A cláusula é válida, pois o prazo de 24 meses é o mesmo adotado para os demais credores.",
+    "A cláusula é inválida, pois os créditos trabalhistas devem ser pagos à vista na homologação do plano."
   ],
   answer: 1,
-  feedback: "O crédito do fornecedor **existe na data do pedido**, ainda que vincendo, e se sujeita ao plano. O tributário e o do ==term==proprietário fiduciário== são exceções."
+  feedback: "O Art. 54 limita a ==rule==um ano== o prazo dos **créditos trabalhistas**. A extensão até dois anos exige garantias e aprovação da classe, o que não ocorreu aqui."
 },
-// 6 - Redução salarial como meio
+// 5 - Plano extrajudicial
 {
   aula: "Aula 12 - Recuperação judicial e extrajudicial",
   tipo: "Análise Aplicada",
-  texto: "O Art. 50 da LRE traz os meios de recuperação judicial, dentre outros, em rol exemplificativo, como prazos e condições especiais de pagamento, alteração do controle societário, aumento de capital, venda parcial de bens e redução salarial, compensação de horários e redução da jornada, mediante acordo ou convenção coletiva. A Rede Ípsilon pretende incluir no plano a redução salarial temporária dos empregados.",
-  question: "Segundo o Art. 50 da LRE, assinale a alternativa correta.",
+  texto: "O plano de recuperação extrajudicial pode abranger apenas parte dos créditos, e os créditos trabalhistas, tributários, de proprietário fiduciário e outros listados na lei não se sujeitam a ele. O plano pode ser homologado em juízo, e seus efeitos alcançam também os credores dissidentes da mesma espécie, se for aprovado por credores que representem mais de três quintos de todos os créditos de cada espécie abrangidos (Art. 163). A Gráfica Tau Ltda. propôs plano de recuperação extrajudicial que abrange os seus credores quirografários, cujos créditos somam R$ 2 milhões. Aderiram ao plano credores que representam R$ 1,3 milhão, ou seja, 65% do total da espécie. Um fornecedor com crédito de R$ 300 mil, que não aderiu, sustenta que ninguém pode ser obrigado por plano que não assinou.",
+  question: "Considerando a situação descrita e os efeitos do plano extrajudicial, assinale a alternativa correta.",
   options: [
-    "A redução é proibida, pois o Art. 50 veda qualquer alteração das relações de trabalho.",
-    "A redução pode ser imposta pela empresa, desde que prevista no plano de recuperação.",
-    "A redução é admitida apenas se constar expressamente do rol, pois ele é taxativo.",
-    "A redução é admitida como meio, desde que feita mediante acordo ou convenção coletiva."
-  ],
-  answer: 3,
-  feedback: "A redução salarial é um dos meios do Art. 50, mas depende de ==rule==acordo ou convenção coletiva==. O rol é **exemplificativo**."
-},
-// 7 - Convolação em falência
-{
-  aula: "Aula 12 - Recuperação judicial e extrajudicial",
-  tipo: "Análise Aplicada",
-  texto: "Proferida a decisão que concede a recuperação, o devedor permanece em recuperação judicial até que se cumpram as obrigações previstas no plano que vencerem até 2 anos depois da concessão. Durante esse período, o descumprimento de qualquer obrigação do plano acarreta a convolação da recuperação em falência (Arts. 61, §1º, e 73). A Cerâmica Ômicron teve a recuperação concedida e, no 14º mês, deixou de pagar uma parcela prevista no plano.",
-  question: "Qual é a consequência jurídica da situação da Cerâmica Ômicron?",
-  options: [
-    "A recuperação converte-se em falência, pois o descumprimento ocorreu no prazo de dois anos.",
-    "O processo é arquivado, pois o descumprimento de uma só parcela não gera efeitos relevantes.",
-    "O plano é prorrogado por mais dois anos automaticamente, sem outra consequência jurídica.",
-    "As parcelas vincendas são perdoadas e passam a ser consideradas totalmente extintas."
+    "O plano homologado vincula o fornecedor dissidente, pois aderiram mais de três quintos dos créditos da espécie.",
+    "O plano vincula só os credores que aderiram, pois a recuperação extrajudicial tem natureza contratual e não atinge terceiros.",
+    "O plano só pode vincular o fornecedor dissidente se a adesão alcançar a totalidade dos credores.",
+    "O plano vincula o fornecedor dissidente se o devedor depositar em juízo metade do valor do crédito."
   ],
   answer: 0,
-  feedback: "O descumprimento nos dois anos de acompanhamento leva à ==proc==convolação em falência==, e o plano antes acordado é convertido em falência dentro do próprio processo."
+  feedback: "Com adesão de mais de ==rule==3/5== dos créditos da espécie (65%), a **homologação** estende o plano aos **dissidentes** (Art. 163). Não se exige unanimidade."
 },
-// 8 - Vantagens da extrajudicial
-{
-  aula: "Aula 12 - Recuperação judicial e extrajudicial",
-  tipo: "Conceitual Contextualizada",
-  texto: "A recuperação extrajudicial tem por objetivo um acordo com fim homologatório, formado e cumprido entre o devedor e os credores, regulado pelos arts. 161 a 167 da LRE. Entre as suas vantagens estão um processo mais célere e eficiente, a inexistência da figura da assembleia de credores, a ausência de previsão legal de fiscalização pelo Ministério Público, salvo violação das leis, e o afastamento da falência. A Comércio Pi negocia diretamente com seus credores.",
-  question: "Considerando as características da recuperação extrajudicial, assinale a alternativa correta.",
-  options: [
-    "O processo exige assembleia de credores e a fiscalização obrigatória do Ministério Público.",
-    "O acordo dispensa a homologação judicial, pois é totalmente conduzido fora do Judiciário.",
-    "O acordo é formado entre devedor e credores, sem assembleia, e passa por homologação do juiz.",
-    "A via extrajudicial não afasta a falência e se torna mais lenta que a recuperação judicial."
-  ],
-  answer: 2,
-  feedback: "A recuperação extrajudicial é um ==def==acordo homologatório==: **mais célere, sem assembleia de credores** e sem fiscalização do Ministério Público, salvo violação das leis."
-},
-// 9 - Homologação do plano
+// 6 - Classes de credores
 {
   aula: "Aula 12 - Recuperação judicial e extrajudicial",
   tipo: "Análise Aplicada",
-  texto: "O devedor que preencher os requisitos do Art. 48 poderá propor e negociar com credores plano de recuperação extrajudicial. Mas ele não poderá requerer a homologação se estiver pendente pedido de recuperação judicial ou se houver obtido recuperação judicial ou homologação de outro plano extrajudicial há menos de 2 anos (Art. 161, §3º). A Distribuidora Rô obteve a homologação de um plano extrajudicial há um ano e, agora, propõe novo plano aos credores.",
-  question: "Com base no Art. 161, §3º, da LRE, assinale a alternativa correta.",
+  texto: "Na assembleia geral de credores da recuperação judicial, os credores se dividem em classes: a dos titulares de créditos derivados da legislação do trabalho ou de acidentes de trabalho; a dos titulares de créditos com garantia real; a dos titulares de créditos quirografários, com privilégio especial, com privilégio geral ou subordinados; e a dos titulares de créditos enquadrados como microempresa ou empresa de pequeno porte (Art. 41). A Rede Delta, em recuperação, tem como credores: Júlia, empregada; o Banco Zeta, com hipoteca; o fornecedor Gama S.A., sem garantia; e a Papelaria Mini, microempresa, também sem garantia.",
+  question: "Considerando a situação descrita e a formação das classes na assembleia geral, assinale a alternativa correta.",
   options: [
-    "A Rô pode requerer a homologação normalmente, pois a lei não limita a repetição do plano.",
-    "A Rô pode requerer a homologação, pois o prazo de vedação só vale para a recuperação judicial.",
-    "A Rô não pode requerer a homologação, pois só se admite um plano extrajudicial em toda a vida.",
-    "A Rô não pode requerer a homologação do novo plano, pois obteve a de outro há menos de 2 anos."
+    "Todos ficam em classe única, pois a assembleia reúne os credores de qualquer natureza.",
+    "A Papelaria Mini fica na classe dos quirografários, pois a classe própria é só para trabalhistas.",
+    "Cada credor fica em classe própria: trabalhista, garantia real, quirografária e microempresa.",
+    "O Banco Zeta fica na classe dos quirografários, pois garantia real não forma classe própria."
+  ],
+  answer: 2,
+  feedback: "São ==def==quatro classes==: **trabalhista, garantia real, quirografária** e **ME/EPP**. A Papelaria Mini vai à classe própria das microempresas, e não aos quirografários."
+},
+// 7 - Legitimidade após a morte
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Análise Aplicada",
+  texto: "A recuperação judicial pode ser requerida pelo devedor. Se ele falecer, a recuperação também poderá ser requerida pelo cônjuge sobrevivente, pelos herdeiros do devedor, pelo inventariante ou por sócio remanescente (Art. 48, §1º). Essa regra reconhece a importância de preservar a empresa mesmo após a morte do titular. Hélio, empresário individual há 15 anos, faleceu em meio a uma crise de caixa. Sua viúva, Cláudia, e dois filhos assumiram a loja. O fornecedor principal diz que só o próprio Hélio poderia pedir a recuperação e, com a morte, o processo seria impossível.",
+  question: "Considerando a situação descrita e a legitimidade para o pedido de recuperação, assinale a alternativa correta.",
+  options: [
+    "Cláudia pode requerer a recuperação, pois a lei legitima o cônjuge sobrevivente e os herdeiros.",
+    "Só o inventariante pode requerer a recuperação, e a viúva e os herdeiros não têm legitimidade para isso.",
+    "Ninguém pode requerer, pois a recuperação só é concedida ao empresário em vida.",
+    "Qualquer credor pode requerer em nome do espólio, e a viúva não tem legitimidade."
+  ],
+  answer: 0,
+  feedback: "A morte do **empresário** não impede o pedido: o ==rule==cônjuge sobrevivente==, os herdeiros, o inventariante e o sócio remanescente podem requerê-lo (Art. 48, §1º)."
+},
+// 8 - Alienação fiduciária
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Análise Aplicada",
+  texto: "Os créditos garantidos por alienação fiduciária não se sujeitam à recuperação judicial. Mas, durante o período de suspensão de 180 dias, o credor fiduciário não pode vender ou retirar do estabelecimento do devedor os bens de capital essenciais à sua atividade empresarial (Art. 49, §3º). A Transportadora Beta, que presta serviço de transporte de cargas, teve o processamento da recuperação deferido. O Banco Zeta tem alienação fiduciária sobre 10 caminhões da frota, todos usados nas rotas principais. Sessenta dias depois do deferimento, o banco, que diz não se submeter à recuperação, tenta retomar os caminhões.",
+  question: "Considerando a situação descrita e a posição do credor fiduciário, assinale a alternativa correta.",
+  options: [
+    "O banco se sujeita à recuperação e deve aderir ao plano como credor quirografário.",
+    "O banco pode retomar os caminhões imediatamente, pois a propriedade fiduciária é plena e sem exceção.",
+    "O banco só pode retomar os caminhões depois da concessão da recuperação, que ocorre apenas dois anos depois.",
+    "O banco não se sujeita à recuperação, mas não pode retirar bens essenciais à atividade durante a suspensão."
   ],
   answer: 3,
-  feedback: "O §3º do Art. 161 veda a homologação de novo plano ==rule==antes de 2 anos== da homologação de outro ou da recuperação judicial, ou havendo pedido de recuperação pendente."
+  feedback: "O crédito fiduciário ==term==não se sujeita== ao plano, mas há **trava**: durante os 180 dias, o banco não retira bens de capital essenciais (Art. 49, §3º)."
 },
-// 10 - Conteúdo do plano extrajudicial
+// 9 - Convolação por rejeição do plano
 {
   aula: "Aula 12 - Recuperação judicial e extrajudicial",
   tipo: "Análise Aplicada",
-  texto: "O plano de recuperação extrajudicial só pode incluir os créditos constituídos até a data do pedido de homologação, não pode prever o pagamento antecipado de nenhuma dívida (Art. 161, §2º) e não pode conferir afastamento de variação cambial sem anuência do credor (Art. 163, §5º). Não se sujeitam a ele, ainda, os créditos tributários e os trabalhistas. A Gráfica Tau elaborou um plano que prevê o pagamento antecipado de um credor e a inclusão de dívidas trabalhistas.",
-  question: "Sobre esse plano, assinale a alternativa correta.",
+  texto: "A recuperação judicial é convolada em falência, entre outras hipóteses, quando a assembleia geral de credores rejeita o plano de recuperação, nos termos da lei, ou quando o devedor descumpre obrigação do plano nos dois primeiros anos (Art. 73). Antes de decretar a falência por rejeição do plano, o juiz verifica se houve plano alternativo aprovado pelos credores (Art. 56, §4º). A Têxtil Ômega apresentou plano no prazo, mas a assembleia geral o rejeitou, por não alcançar o quórum em duas classes. Os credores, instados a apresentar plano alternativo, não o fizeram. A devedora pede mais um prazo para apresentar um novo plano.",
+  question: "Considerando a situação descrita e a consequência da rejeição do plano, assinale a alternativa correta.",
   options: [
-    "O plano é adequado, pois o pagamento antecipado é permitido para o credor mais relevante.",
-    "O plano é adequado, pois todos os créditos, inclusive os trabalhistas, se sujeitam à extrajudicial.",
-    "O plano é inadequado, pois não pode prever pagamento antecipado nem incluir créditos trabalhistas.",
-    "O plano é inadequado apenas quanto às dívidas trabalhistas, pois o pagamento antecipado é livre."
+    "A rejeição do plano é corrigida com novo prazo ao devedor, que pode apresentar quantos planos quiser.",
+    "A rejeição do plano pela assembleia, sem plano alternativo dos credores, leva à convolação em falência.",
+    "A rejeição do plano apenas suspende o processo, que fica parado até que os credores aprovem um plano.",
+    "A rejeição do plano em duas classes só leva à falência se o devedor deixar de pagar dívidas trabalhistas."
   ],
-  answer: 2,
-  feedback: "O plano **não pode prever pagamento antecipado de nenhuma dívida** e ==term==créditos trabalhistas== não se sujeitam à recuperação extrajudicial."
+  answer: 1,
+  feedback: "Plano **rejeitado** e sem alternativa dos credores leva à ==proc==convolação em falência== (Art. 73). O devedor não ganha novo prazo para apresentar outro plano."
 },
-
+// 10 - Afastamento do devedor
+{
+  aula: "Aula 12 - Recuperação judicial e extrajudicial",
+  tipo: "Análise Aplicada",
+  texto: "Durante a recuperação judicial, o devedor ou seus administradores são mantidos na condução da atividade empresarial, sob fiscalização do comitê, se houver, e do administrador judicial. O juiz deve afastá-los em hipóteses legais, como condenação por crime, indícios veementes de crime, dolo, simulação ou fraude contra os credores, gastos pessoais manifestamente excessivos e descapitalização injustificada (Art. 64). A Rede Ípsilon, em recuperação, tem como administrador o diretor Hugo, que, segundo o administrador judicial, desviou R$ 1 milhão do caixa para empresa de parente. Os credores pedem o afastamento imediato, e o devedor afirma que o afastamento só ocorre na falência.",
+  question: "Considerando a situação descrita e a gestão da empresa em recuperação, assinale a alternativa correta.",
+  options: [
+    "O devedor é afastado automaticamente da administração com o simples deferimento do processamento da recuperação judicial.",
+    "O devedor só pode ser afastado se a assembleia de credores aprovar por unanimidade.",
+    "Mesmo com o desvio, Hugo permanece no cargo, pois o afastamento só existe na falência.",
+    "O juiz deve afastar Hugo, pois o desvio caracteriza dolo ou fraude contra credores, hipótese do Art. 64."
+  ],
+  answer: 3,
+  feedback: "A regra é **manter o devedor** na gestão, mas o ==warn==Art. 64== manda afastá-lo em casos como **fraude** e dolo contra credores. O afastamento não depende da falência."
+},
 ],
 
 ava: [
